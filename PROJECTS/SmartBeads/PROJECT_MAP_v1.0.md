@@ -1,24 +1,13 @@
-# SmartBeads Project Map
-    ## Purpose
-    [Describe Project Purpose]
-    
-    ## Documentation
-    - LOCATION
-    - STRUCTURE
-    
-    ## Folders
-    - src
-    - docs
-    - tests
-    - assets
-    
-    ## Files
-    - PROJECT_SUMMARY_v1.0.md
-    - GPT_PROJECT_STATUS_01P_v0.1.md
-    - ...
-    
-    ## Future Modules
-    [List Anticipated Modules]
-    
-    ## Architecture Philosophy
-    [Describe]
+# Project Dashboard
+    - **Name**: SmartBeads
+    - **Version**: v1.0
+    - **Stage**: [Development Stage]
+    - **Primary Language**: [Language]
+    - **Repository**: [Repo Link]
+    - **Status**: [Project Status]
+    - **Documentation Files**: [List]
+    - **Source Folders**: [Describe src Structure]
+    - **Test Folders**: [Describe Test Structure]
+    - **Assets**: [List Assets]
+    - **Releases**: [Release Info]
+    - **Future Modules**: [Describe Future Modules]

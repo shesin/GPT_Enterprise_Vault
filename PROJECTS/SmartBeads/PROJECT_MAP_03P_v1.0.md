@@ -1,1 +1,1 @@
-[Detailed Project Structure & Philosophy]
+[Above Markdown Content]
