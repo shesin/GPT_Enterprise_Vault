@@ -92,3 +92,19 @@
 
 
 
+
+## Repository Hygiene
+
+Keep the vault focused on permanent assets:
+- decisions
+- maps
+- source code
+- project documentation
+
+Do not store temporary generated folders:
+- node_modules
+- build outputs
+- caches
+- machine-specific files
+
+Temporary dependencies can be regenerated when required.
