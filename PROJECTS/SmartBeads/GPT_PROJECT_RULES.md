@@ -34,3 +34,12 @@ Do not create files, classes, abstractions, or systems before there is a demonst
 
 Prefer extending existing code until a clear responsibility requires separation.
 
+
+## Rule 4 - Board Independence
+
+The SmartBeads engine shall not be tied to a specific board size or layout.
+
+Board variants (such as 6-bead and 7-bead) shall be implemented as board definitions that share the same game engine.
+
+Choose the preferred board through playtesting based on gameplay quality, never implementation convenience.
+
