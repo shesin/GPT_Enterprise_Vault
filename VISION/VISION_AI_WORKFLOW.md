@@ -108,3 +108,10 @@ Do not store temporary generated folders:
 - machine-specific files
 
 Temporary dependencies can be regenerated when required.
+
+Engineering progress is measured by completed, working features, not by the amount of code or documentation produced.
+
+If a task is likely to take more than 30–60 minutes without producing something testable, stop and split it into smaller tasks before continuing.
+
+Small, verified progress is preferred over large, unverified progress.
+
