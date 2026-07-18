@@ -1,1 +1,1 @@
-[]
+import { BoardConfiguration } from '../config/BoardConfig'; import { GameState } from '../models/GameState'; export class SmartBeadsEngine { private config: BoardConfiguration; private currentState: GameState; constructor(config: BoardConfiguration) { this.config = config; this.currentState = this.initializeInitialState(); } private initializeInitialState(): GameState { return { board: this.config, currentPlayer: 'RED', moveCount: 0, gameOver: false, winner: undefined }; } }
