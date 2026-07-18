@@ -115,3 +115,31 @@ If a task is likely to take more than 30–60 minutes without producing somethin
 
 Small, verified progress is preferred over large, unverified progress.
 
+
+## Module-Based Development
+
+Develop software one complete module at a time.
+
+Before implementation, define:
+
+Objective:
+A single sentence describing exactly what the module must accomplish.
+
+Completion Criteria:
+A single sentence describing how the module will be verified as complete.
+
+Workflow:
+
+Objective
+→ Discuss
+→ Implement
+→ Test
+→ Verify against Completion Criteria
+→ Commit
+→ Next Module
+
+Do not begin the next module until the current module satisfies its completion criteria.
+
+A module is either complete or incomplete.
+Avoid partially finished modules.
+
