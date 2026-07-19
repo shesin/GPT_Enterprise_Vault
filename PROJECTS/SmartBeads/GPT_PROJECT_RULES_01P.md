@@ -4,116 +4,123 @@
 
 This document contains the permanent engineering and design principles for SmartBeads.
 
-Only long-term project rules belong here.
+Only long-term rules belong here.
 
-Do not add temporary implementation details, project status, experiments, or next actions.
+Do not add temporary implementation details, status, experiments, or next actions.
 
 Target: 01P (~1 page)
 
-This is a living project constitution.
-
-When approaching the target size:
-
-- Consolidate and rewrite existing rules.
-- Replace obsolete or superseded rules.
-- Do not create versioned or overflow files (e.g. *_02P, *_v2, *_OLD).
-- Always maintain a single current document representing the latest permanent project principles.
-- If uncertain whether information belongs in this document, ask before adding it.
+When approaching the limit:
+- Consolidate existing rules.
+- Remove duplicates and obsolete rules.
+- Replace this file only.
+- Do not create overflow or version files.
+- If uncertain whether something belongs here, ask before adding it.
 
 ---
+## Rule
+
+AI Engineering Responsibility
+
+SmartBeads development follows the AI Engineering Responsibility Principle defined in VISION.
+
+Implementation prompts describe the engineering objective, constraints, and completion criteria. They do not prescribe implementation details.
+
+Repository-aware coding agents are responsible for understanding the current SmartBeads implementation before making changes.
+
+When implementing a task:
+
+* Inspect the current project structure.
+* Validate assumptions in the prompt.
+* Reuse existing architecture whenever practical.
+* Extend existing components before creating new ones.
+* Avoid duplicate files, duplicate concepts, and parallel architectures.
+* Preserve project structure unless an architectural change has been explicitly approved.
+* Verify the implementation before considering the task complete.
+
+If the repository differs from the prompt, trust the repository for implementation details and report the difference rather than creating a second solution.
+
+## Rule
+
+Verified files and actual test results are the source of truth.
+
+Do not rely on reports, assumptions, memory, or planned changes.
+
+Before and after important changes:
+- Check actual files.
+- Check actual diff.
+- Run practical verification where possible.
 
 ---
 
 ## Rule
 
-Prefer complete verification command blocks instead of multiple fragmented commands.
+Cline tasks must be small and measurable.
 
-When checking one task or milestone, provide a single command block that verifies the required state together.
+Every task must define:
+- Objective
+- Allowed files
+- Completion criteria
+- Verification method
 
-Avoid unnecessary command splitting unless different steps require separate execution or explanation.
+A task is complete only after verification evidence is available.
 
-## Rule
-
-The latest verified project files are the single source of truth.
-
-When modifying an existing document, use the verified current version as the base.
-
-Do not regenerate, rewrite, or recreate project documents from memory or previous discussions.
-
-If the current version is unavailable or uncertain, request the latest file before making changes.
+---
 
 ## Rule
 
 Model SmartBeads after the real physical bead board.
 
-Represent the board using its actual intersections and legal connections rather than an arbitrary square grid.
+Represent actual intersections and legal connections rather than forcing an arbitrary grid model.
 
 ---
 
 ## Rule
 
-Do not change the core gameplay simply to make implementation easier.
+Do not change gameplay only to simplify coding.
 
-Introduce new rules or gameplay changes only when they clearly improve gameplay and are permanently adopted.
-
----
-
-## Rule
-
-The software architecture should evolve with the project.
-
-Do not create files, classes, abstractions, or systems before there is a demonstrated need.
-
-Prefer extending existing code until a clear responsibility requires separation.
+Gameplay changes must improve balance, replayability, or fun and must be accepted before becoming permanent.
 
 ---
 
 ## Rule
 
-Verify the current project state before making changes, and verify the result immediately after making changes.
+Keep architecture minimal.
 
-Do not build on assumptions or implementation reports.
+Do not create files, classes, abstractions, or systems before a clear need exists.
 
-Whenever practical, confirm changes using the actual files or independent verification commands.
-
-Build only on verified foundations.
+Prefer extending existing components until separation is justified.
 
 ---
 
 ## Rule
 
-The first SmartBeads version must reproduce a recognized standard physical Guti/Sholo Guti board.
+Discover the smallest balanced and enjoyable version first.
 
-External references may be used to understand the traditional layout.
+Evaluate progressively:
 
-Any redesigned boards or experimental variants must be developed separately after the standard version is playable and validated.
+4 → 5 → 7 beads
 
----
-
-## Rule
-
-Discover the smallest balanced and enjoyable version before increasing board size.
-
-Prefer evaluating progressively larger game sizes (typically **4 → 5 → 7**) until the smallest balanced and enjoyable version is found.
-
-Use configurable boards, AI self-play, and playtesting to guide major design decisions.
+Use configuration, AI self-play, and playtesting to guide decisions.
 
 ---
 
 ## Rule
 
-Prefer configurable systems over duplicated implementations.
+Prefer configuration over duplication.
 
-Board sizes, layouts, starting positions, and future variants should reuse the same engine whenever practical.
+Different board sizes and variants should extend the existing architecture through configuration whenever practical.
+
+The implementation should evolve as the project grows without requiring redesign for each new board size.
 
 ---
 
 ## Rule
 
-Project documentation consists of:
+Project documentation is limited to:
 
 - PROJECT_MAP_05P.md
 - GPT_PROJECT_RULES_01P.md
 - GPT_PROJECT_STATUS_01P.md
 
-Do not create additional `GPT_*.md` documents unless a genuinely new permanent documentation category is required.
+Do not create additional GPT documents unless a new permanent category is required. 

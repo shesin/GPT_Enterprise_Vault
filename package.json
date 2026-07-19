@@ -1,6 +1,13 @@
 {
+  "scripts": {
+    "test": "jest",
+    "test:smartbeads": "jest PROJECTS/SmartBeads"
+  },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "jest": "^30.4.2"
+    "@types/node": "^24.0.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.9.0"
   }
 }

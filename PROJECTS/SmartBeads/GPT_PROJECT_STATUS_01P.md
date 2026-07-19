@@ -8,24 +8,25 @@ Core Engine Development
 
 ## Current Focus
 
-Build the configurable SmartBeads engine and validate gameplay through AI self-play.
+Fill physical board geometry for registered variants and validate gameplay through AI self-play.
 
 ---
 
 ## Completed
 
 * Project migrated into GPT_Enterprise_Vault.
-* Configurable board architecture established.
-* Initial 4 vs 4 prototype created.
+* BoardDefinition established as the authoritative board model.
+* Board variants `4`, `5`, and `7` registered through BoardConfig.
+* SmartBeadsEngine initializes any registered variant with an independent board copy.
 * Documentation structure simplified.
 
 ---
 
 ## Next Step
 
-Implement AI self-play and evaluate the 4 vs 4 prototype.
+Define intersections and connections for the 4-bead board from the physical model, then implement AI self-play evaluation.
 
-If needed, expand testing to 5 vs 5 and 7 vs 7 using the same engine.
+If needed, expand testing to 5-bead and 7-bead using the same engine.
 
 ---
 

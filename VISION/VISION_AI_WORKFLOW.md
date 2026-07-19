@@ -1,6 +1,14 @@
 # VISION_AI_WORKFLOW
 
-## Memory Architecture
+### AI Development Principle
+
+Repository-aware coding agents are responsible
+for understanding the implementation.
+
+Architecture guidance should define objectives
+and constraints rather than implementation details.
+
+The repository is the implementation source of truth.
 
 ### GPT Files
 
@@ -20,10 +28,10 @@
 
 ## Project Memory Model
 
-* Every project has its own PROJECT_MAP.md.
-* PROJECT_MAP starts with structure, then summary.
-* GPT_PROJECT_RULES contains permanent project rules.
-* GPT_PROJECT_STATUS reflects the current milestone.
+* Every project has its own PROJECT_MAP_05P.md.
+* PROJECT_MAP_05P.md starts with structure, then summary.
+* GPT_PROJECT_RULES_01P.md contains permanent project rules.
+* GPT_PROJECT_STATUS_01P.md reflects the current milestone.
 * Project GPT files stay inside the project folder.
 * Project files describe current work; VISION describes permanent rules.
 
@@ -32,8 +40,8 @@
 ## Vault Structure Principle
 
 * GPT_Enterprise_Vault is the main container.
-* Root PROJECT_MAP explains the complete vault structure and project relationships.
-* Projects explain themselves through their own PROJECT_MAP.
+* Root PROJECT_MAP_05P.md explains the complete vault structure and project relationships.
+* Projects explain themselves through their own PROJECT_MAP_05P.md.
 * SHARED contains reusable technology.
 
 ---

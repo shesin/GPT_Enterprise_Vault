@@ -20,9 +20,9 @@ PROJECT STARTUP
 Read:
 
 1. VISION/VISION_AI_WORKFLOW.md
-2. PROJECTS/<Project>/PROJECT_MAP.md
-3. PROJECTS/<Project>/GPT_PROJECT_RULES.md
-4. PROJECTS/<Project>/GPT_PROJECT_STATUS.md
+2. PROJECTS/<Project>/PROJECT_MAP_05P.md
+3. PROJECTS/<Project>/GPT_PROJECT_RULES_01P.md
+4. PROJECTS/<Project>/GPT_PROJECT_STATUS_01P.md
 
 Objectives:
 
@@ -43,13 +43,13 @@ PROJECTS/<Project>
 
 Review and update only if required:
 
-PROJECTS/<Project>/PROJECT_MAP.md
-PROJECTS/<Project>/GPT_PROJECT_RULES.md
-PROJECTS/<Project>/GPT_PROJECT_STATUS.md
+PROJECTS/<Project>/PROJECT_MAP_05P.md
+PROJECTS/<Project>/GPT_PROJECT_RULES_01P.md
+PROJECTS/<Project>/GPT_PROJECT_STATUS_01P.md
 
 Repository-wide updates (only if required):
 
-GPT_Enterprise_Vault/PROJECT_MAP.md
+GPT_Enterprise_Vault/PROJECT_MAP_05P.md
 VISION/VISION_AI_WORKFLOW.md
 
 Verify:

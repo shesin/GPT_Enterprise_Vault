@@ -1,11 +1,11 @@
 import { BoardDefinition } from '../models/GameState';
 
 /**
- * 7-bead board variant.
+ * 5-bead board variant.
  * Geometry (intersections / connections) to be filled from the physical board.
  */
-export const Board7: BoardDefinition = {
-  name: 'SmartBeads-7',
+export const Board5: BoardDefinition = {
+  name: 'SmartBeads-5',
   intersections: [],
   connections: [],
 };

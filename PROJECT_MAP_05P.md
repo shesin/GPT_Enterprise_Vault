@@ -9,7 +9,7 @@ GPT_Enterprise_Vault/
 ├── SHARED/            # Reusable engines and shared components
 ├── VISION/            # Permanent workflow and engineering principles
 │
-├── PROJECT_MAP.md     # Repository map
+├── PROJECT_MAP_05P.md # Repository map
 ├── package.json
 ├── package-lock.json
 └── .gitignore
@@ -25,8 +25,8 @@ GPT_Enterprise_Vault is the central repository for all software projects.
 
 Each project maintains its own:
 
-* PROJECT_MAP.md
-* GPT_PROJECT_RULES.md
-* GPT_PROJECT_STATUS.md
+* PROJECT_MAP_05P.md
+* GPT_PROJECT_RULES_01P.md
+* GPT_PROJECT_STATUS_01P.md
 
 The repository is organized to maximize reuse, minimize duplication, and support long-term project development.
