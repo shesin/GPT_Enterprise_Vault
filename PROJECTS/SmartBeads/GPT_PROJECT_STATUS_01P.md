@@ -8,7 +8,7 @@ Core Engine Development
 
 ## Current Focus
 
-Fill physical board geometry for registered variants and validate gameplay through AI self-play.
+Add capture rules on the BoardDefinition graph, then AI self-play on Board4.
 
 ---
 
@@ -17,16 +17,17 @@ Fill physical board geometry for registered variants and validate gameplay throu
 * Project migrated into GPT_Enterprise_Vault.
 * BoardDefinition established as the authoritative board model.
 * Board variants `4`, `5`, and `7` registered through BoardConfig.
-* SmartBeadsEngine initializes any registered variant with an independent board copy.
+* Board4 rebuilt as a configurable 4×4 orthogonal grid with center nodes and maxPlies.
+* SmartBeadsEngine applies legal slides, optional ply limits, capture-count wins, and center tie-break.
 * Documentation structure simplified.
 
 ---
 
 ## Next Step
 
-Define intersections and connections for the 4-bead board from the physical model, then implement AI self-play evaluation.
+Implement capture mechanics that update `captures`, then evaluate Board4 via AI self-play.
 
-If needed, expand testing to 5-bead and 7-bead using the same engine.
+If needed, expand to 5×5 / 6×6 through new board configs using the same engine.
 
 ---
 

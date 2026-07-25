@@ -21,6 +21,11 @@ When approaching the target size:
 - If uncertain whether information belongs in this document, ask before adding it.
 
 ---
+## Rule
+
+Board Protection: Never remove or replace an existing verified board variant (e.g., Board37.ts) when implementing or testing experimental variants (4x4, 5x5). Add new variants alongside existing ones.
+
+Capture Rules: Jumps are NOT mandatory. Multi-jumps (chaining) ARE allowed. Once a chain begins, the player may voluntarily stop after any single capture; chaining is never forced mid-turn.
 
 ---
 

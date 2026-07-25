@@ -28,11 +28,11 @@ SmartBeads/
 
 ### src/models/GameState.ts
 
-Authoritative board model: intersections, connections, game state, and board cloning for independent games.
+Authoritative board model: intersections, connections, optional center nodes / maxPlies, captures, and board cloning.
 
 ### src/boards/
 
-Physical board definitions (`BoardDefinition`). Add new sizes here.
+BoardDefinition variants (e.g. Board4 = 4×4 orthogonal grid). Add new sizes here via config data only.
 
 ### src/config/
 
