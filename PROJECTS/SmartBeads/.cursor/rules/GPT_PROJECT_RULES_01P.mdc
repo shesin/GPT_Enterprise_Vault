@@ -1,7 +1,10 @@
 ---
-description: SmartBeads permanent engineering rules — always required for any implementation task
+description: 
 alwaysApply: true
 ---
+
+# SmartBeads Project Rules
+# Short, always-loaded rules — Cursor reads this file every message
 
 ## Purpose
 
@@ -36,7 +39,6 @@ Always distinguish between:
 - Gameplay / UX Evaluation (subjective observations requiring human or explicit usability review)
 
 Automated verification must never imply gameplay quality, usability, balance, or player enjoyment unless those aspects were explicitly evaluated.
-
 
 ---
 ## Rule - Board Fidelity
@@ -81,10 +83,11 @@ Group related verification into a single command block instead of issuing multip
 
 ## Rule - Project Documentation Set
 
-The short-rule and reasoning layers consist of exactly these three files:
+The short-rule and reasoning layers consist of exactly these four files:
 
 - GPT_PROJECT_RULES_01P.md (this file — short, always loaded by Cursor)
 - VISION_05P.md (long — all reasoning, philosophy, and project-specific decisions that don't fit the short-rule format)
 - GPT_PROJECT_STATUS_01P.md (current phase, milestones, numeric defaults)
+- PROJECT_MAP_05P.md (repository structure and file map)
 
 Agent behaviour (roles, approval tiers, workflow, safety, verification) lives in AGENT_RULE_05P.md, not here.

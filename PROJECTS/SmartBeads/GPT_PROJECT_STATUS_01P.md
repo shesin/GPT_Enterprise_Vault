@@ -49,11 +49,21 @@ Evaluate Board4 using AI self-play and developer playtesting with:
   - countPieces(playerId) utility
 - SelfPlayRunner simulation module:
   - automated game execution
-  - random legal move selection
+  - random legal move selection (`executeAiRandomMove`)
   - alternating starting players
   - safety guards & GameResult metric tracking
+  - machine-readable JSON batch reporting (`generateBatchReport` / `npm run sim:board4`)
   - verified 100-game Board4 self-play run
-- HumanVsAiRunner playtest CLI interface for Board4 manual playtesting.
+- Playtest interfaces for Board4:
+  - HumanVsAiRunner CLI interface (`npm run play:board4`).
+  - Browser SVG web playtest GUI (`npm run web:board4`).
+
+---
+
+## Open Items
+
+- Web playtest GUI (`npm run web:board4`) does not currently announce the winner/loser/draw in its end-of-game UI. The `gameOver` banner element exists but this behavior has not been verified against real gameplay.
+- Ply-limit tie-breaker center-node-control logic (`SmartBeadsEngine.evaluateWinner`) needs verification against real gameplay — currently only exercised by automated self-play, not confirmed against a human-played scenario that actually reaches the ply limit with a center-node tiebreak.
 
 ---
 

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBeads Board4 Web Playtest</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .panel {
+      background: #fff;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    button, select {
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: #6c757d;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-around;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    .banner {
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .banner.game-over {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    svg#board {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    .instruction {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>SmartBeads Board4 Web Playtest</h1>
+
+  <div class="panel">
+    <div>
+      <label for="colorSelect"><strong>Your Color:</strong> </label>
+      <select id="colorSelect">
+        <option value="RED" selected>RED (Moves First)</option>
+        <option value="BLUE">BLUE (Moves Second)</option>
+      </select>
+      <button id="restartBtn">New Game</button>
+    </div>
+
+    <div class="status-row">
+      <div id="turnStatus">Turn: 1 (RED)</div>
+      <div id="pieceStatus">Pieces - RED: 4 | BLUE: 4</div>
+      <div id="captureStatus">Captures - RED: 0 | BLUE: 0</div>
+    </div>
+
+    <div class="controls">
+      <button id="endTurnBtn" class="secondary" disabled>End Turn Voluntarily</button>
+    </div>
+
+    <div id="gameBanner" class="banner" style="display: none;"></div>
+    <div id="instructionText" class="instruction">Click an owned piece to highlight legal moves, then click a target destination.</div>
+  </div>
+
+  <svg id="board" width="400" height="400" viewBox="0 0 400 400"></svg>
+
+  <script type="module" src="/PROJECTS/SmartBeads/src/playtest/web/main.ts"></script>
+</body>
+</html>

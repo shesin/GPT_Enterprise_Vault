@@ -243,7 +243,11 @@ export function generateBatchReport(
   };
 }
 
-if (require.main === module) {
+// `require` does not exist in browser/ESM contexts (e.g. when this module is
+// imported by the Vite web playtest). `typeof require` is safe to evaluate on
+// an undeclared identifier, unlike referencing `require.main` directly, which
+// would throw an uncaught ReferenceError and abort the entire module graph.
+if (typeof require !== 'undefined' && require.main === module) {
   const report = generateBatchReport('4', 100);
   console.log(JSON.stringify(report, null, 2));
 }

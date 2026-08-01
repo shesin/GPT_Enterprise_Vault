@@ -56,6 +56,8 @@ Match timers, maximum plies, AI difficulty, and tournament settings must be conf
 
 Current numeric defaults (e.g. today's ply limit for Board4) are status, not rule — they belong in GPT_PROJECT_STATUS_01P.md, not here.
 
+Match end-conditions must support three selectable modes: move-limit (ply cap), time-limit (match timer), and unlimited (no restriction). Gameplay logic must treat all three as configuration, never hardcode one mode as the only option.
+
 ---
 
 ## Rule - Verified Source

@@ -133,6 +133,21 @@ Automatic, stop and ask for classification before proceeding.
 
 ---
 
+# Permissions
+
+- Read repository
+- Modify: source code, tests, GPT_PROJECT_STATUS_01P.md, PROJECT_MAP_05P.md
+
+Cannot
+
+- expand scope
+- delete files
+- redesign architecture
+- change product decisions
+- directly modify GPT_PROJECT_RULES_01P.md or VISION_05P.md — may only recommend exact wording for human approval
+
+---
+
 # Completion Report
 
 Use exactly these headings:

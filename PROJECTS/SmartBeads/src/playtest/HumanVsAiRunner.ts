@@ -158,7 +158,11 @@ export function runInteractivePlaytest(): void {
   });
 }
 
-if (require.main === module) {
+// `require` does not exist in browser/ESM contexts. `typeof require` is safe
+// to evaluate on an undeclared identifier, unlike referencing `require.main`
+// directly, which would throw an uncaught ReferenceError if this module were
+// ever imported into a browser/ESM module graph.
+if (typeof require !== 'undefined' && require.main === module) {
   runInteractivePlaytest();
 }
 

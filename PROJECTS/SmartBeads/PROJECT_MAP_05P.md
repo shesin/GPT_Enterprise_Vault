@@ -5,6 +5,7 @@
 ```text
 SmartBeads/
 │
+├── index.html                         # Entry HTML for browser playtest GUI (npm run web:board4)
 ├── src/                               # SmartBeads source code
 │   ├── boards/                        # Physical BoardDefinition variants
 │   │   ├── Board4.ts
@@ -17,8 +18,10 @@ SmartBeads/
 │   │   ├── SmartBeadsEngine.ts        # Main gameplay engine and game flow
 │   │   └── __tests__/
 │   │       └── SmartBeadsEngine.test.ts
-│   ├── playtest/                      # Developer playtest interface
-│   │   ├── HumanVsAiRunner.ts
+│   ├── playtest/                      # Developer playtest interfaces
+│   │   ├── HumanVsAiRunner.ts         # CLI playtest interface
+│   │   ├── web/
+│   │   │   └── main.ts                # Browser SVG playtest GUI
 │   │   └── __tests__/
 │   │       └── HumanVsAiRunner.test.ts
 │   ├── simulation/                    # Automated self-play simulation runner
@@ -34,6 +37,10 @@ SmartBeads/
 ```
 
 ## File Responsibilities
+
+### index.html & src/playtest/web/main.ts
+
+Minimal browser-based playtest GUI rendered via Vite SVG and TypeScript controller (`npm run web:board4`).
 
 ### src/models/GameState.ts
 
@@ -55,7 +62,7 @@ Automated self-play execution and game metrics collection (`SelfPlayRunner.ts`).
 
 ### src/playtest/
 
-Interactive CLI runner for developer playtesting and engine validation (`HumanVsAiRunner.ts`).
+Interactive CLI runner (`HumanVsAiRunner.ts`) and web GUI runner (`web/main.ts`) for developer playtesting and engine validation.
 
 ### src/core/SmartBeadsEngine.ts
 
