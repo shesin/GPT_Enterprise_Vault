@@ -56,14 +56,15 @@ Evaluate Board4 using AI self-play and developer playtesting with:
   - verified 100-game Board4 self-play run
 - Playtest interfaces for Board4:
   - HumanVsAiRunner CLI interface (`npm run play:board4`).
-  - Browser SVG web playtest GUI (`npm run web:board4`).
+  - Browser SVG web playtest GUI (`npm run web:board4`) — CONFIRMED loading and rendering: directly observed via headless-browser console log and DOM dump showing the SVG board rendering all 16 nodes/connections with correct RED/BLUE starting piece placement and no console errors. Interactive click-to-move gameplay (piece selection, capture chains, AI turn execution) has NOT yet been directly observed end-to-end.
 
 ---
 
 ## Open Items
 
-- Web playtest GUI (`npm run web:board4`) does not currently announce the winner/loser/draw in its end-of-game UI. The `gameOver` banner element exists but this behavior has not been verified against real gameplay.
+- Web GUI end-of-game display: the `gameOver` banner element exists in the markup but announcing the winner/loser/draw at game end has not been directly observed working.
 - Ply-limit tie-breaker center-node-control logic (`SmartBeadsEngine.evaluateWinner`) needs verification against real gameplay — currently only exercised by automated self-play, not confirmed against a human-played scenario that actually reaches the ply limit with a center-node tiebreak.
+- AI opponent strength is undecided: the current playtest/self-play AI (`executeAiRandomMove`) is random-legal-move-only by design, intended for engine validation and balance analysis, not competitive strength. Whether a stronger AI (e.g. heuristic or minimax) is needed for meaningful human playtesting is an open question, not yet decided.
 
 ---
 
