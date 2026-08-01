@@ -1,9 +1,11 @@
 import { BoardVariant, resolveBoard } from '../config/BoardConfig';
 import {
   cloneBoardDefinition,
+  findJumpPath,
   getConnectedIds,
   GameState,
   hasReachedPlyLimit,
+  JumpPath,
   Move,
   Player,
   requireIntersection,
@@ -11,11 +13,18 @@ import {
 
 /**
  * Project gameplay engine.
- * Board geometry, centers, and ply limits come from BoardDefinition — not hard-coded sizes.
+ * Board geometry, jump routes, centers, and ply limits come from BoardDefinition.
+ *
+ * Capture rules (project):
+ * - Jumps are optional (slides remain legal when not mid-chain).
+ * - Multi-jump chaining is allowed via sequential Move applications.
+ * - After a capture, further jumps from the same bead are optional; call endTurn() to stop.
  */
 export class SmartBeadsEngine {
   private readonly variant: BoardVariant;
   private currentState: GameState;
+  /** When set, the current player must continue or end a capture chain with this bead. */
+  private chainPieceId: number | null = null;
 
   constructor(variant: BoardVariant) {
     this.variant = variant;
@@ -30,13 +39,30 @@ export class SmartBeadsEngine {
     return this.currentState;
   }
 
+  /** Counts remaining pieces on the board for the specified player. */
+  countPieces(playerId: Player): number {
+    return this.currentState.board.intersections.filter(
+      (point) => point.occupant === playerId,
+    ).length;
+  }
+
+  /** Bead id that must continue a multi-jump, if any. */
+  getChainPieceId(): number | null {
+    return this.chainPieceId;
+  }
+
   /**
-   * Legal non-capturing slides for the current player:
-   * move a bead along a connection onto an empty intersection.
+   * Legal moves for the current player.
+   * - Normal turn: optional slides and optional jumps.
+   * - Mid multi-jump: only continuing jumps from the chaining bead.
    */
   getLegalMoves(): Move[] {
     if (this.currentState.gameOver) {
       return [];
+    }
+
+    if (this.chainPieceId !== null) {
+      return this.getJumpMovesFrom(this.chainPieceId);
     }
 
     const { board, currentPlayer } = this.currentState;
@@ -53,6 +79,8 @@ export class SmartBeadsEngine {
           moves.push({ from: intersection.id, to });
         }
       }
+
+      moves.push(...this.getJumpMovesFrom(intersection.id));
     }
 
     return moves;
@@ -71,20 +99,88 @@ export class SmartBeadsEngine {
     }
 
     const board = this.currentState.board;
+    const jump = this.resolveLegalJump(move);
     const fromPoint = requireIntersection(board, move.from);
     const toPoint = requireIntersection(board, move.to);
+    const mover = fromPoint.occupant!;
 
-    toPoint.occupant = fromPoint.occupant;
+    if (jump) {
+      requireIntersection(board, jump.over).occupant = undefined;
+      this.currentState.captures[mover] += 1;
+    }
+
+    toPoint.occupant = mover;
     fromPoint.occupant = undefined;
     this.currentState.moveCount += 1;
 
     if (hasReachedPlyLimit(board.maxPlies, this.currentState.moveCount)) {
+      this.chainPieceId = null;
       this.currentState.gameOver = true;
       this.evaluateWinner();
       return;
     }
 
+    if (jump && this.getJumpMovesFrom(move.to).length > 0) {
+      this.chainPieceId = move.to;
+      return;
+    }
+
+    this.chainPieceId = null;
     this.currentState.currentPlayer = this.opponentOf(this.currentState.currentPlayer);
+  }
+
+  /**
+   * Voluntarily end a multi-jump after one or more captures.
+   * Illegal when not mid-chain.
+   */
+  endTurn(): void {
+    if (this.currentState.gameOver) {
+      throw new Error('Game is already over.');
+    }
+    if (this.chainPieceId === null) {
+      throw new Error('Cannot end turn: no capture chain in progress.');
+    }
+
+    this.chainPieceId = null;
+    this.currentState.currentPlayer = this.opponentOf(this.currentState.currentPlayer);
+  }
+
+  private getJumpMovesFrom(pieceId: number): Move[] {
+    const { board, currentPlayer } = this.currentState;
+    const piece = requireIntersection(board, pieceId);
+    if (piece.occupant !== currentPlayer) {
+      return [];
+    }
+
+    const moves: Move[] = [];
+    for (const path of board.jumpPaths ?? []) {
+      if (path.from !== pieceId) {
+        continue;
+      }
+      if (this.isJumpCurrentlyLegal(path, currentPlayer)) {
+        moves.push({ from: path.from, to: path.to });
+      }
+    }
+    return moves;
+  }
+
+  private isJumpCurrentlyLegal(path: JumpPath, currentPlayer: Player): boolean {
+    const board = this.currentState.board;
+    const over = requireIntersection(board, path.over);
+    const landing = requireIntersection(board, path.to);
+    const opponent = this.opponentOf(currentPlayer);
+    return over.occupant === opponent && landing.occupant === undefined;
+  }
+
+  private resolveLegalJump(move: Move): JumpPath | undefined {
+    const path = findJumpPath(this.currentState.board, move.from, move.to);
+    if (!path) {
+      return undefined;
+    }
+    if (!this.isJumpCurrentlyLegal(path, this.currentState.currentPlayer)) {
+      return undefined;
+    }
+    return path;
   }
 
   private evaluateWinner(): void {

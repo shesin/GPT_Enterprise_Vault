@@ -11,6 +11,16 @@ export interface Connection {
 }
 
 /**
+ * Straight-line capture geometry on the board graph.
+ * Occupancy is checked at runtime; this only defines legal jump routes.
+ */
+export interface JumpPath {
+    from: number;
+    over: number;
+    to: number;
+}
+
+/**
  * Board geometry + optional match rules.
  * Larger grids (5x5, 6x6) add new BoardDefinition variants; the engine stays unchanged.
  */
@@ -18,6 +28,8 @@ export interface BoardDefinition {
     name: string;
     intersections: Intersection[];
     connections: Connection[];
+    /** Optional capture routes (from → over opponent → empty to). */
+    jumpPaths?: JumpPath[];
     /** Nodes used for center-control tie-break when captures are equal. */
     centerNodeIds?: number[];
     /**
@@ -33,6 +45,9 @@ export function cloneBoardDefinition(board: BoardDefinition): BoardDefinition {
         name: board.name,
         intersections: board.intersections.map((intersection) => ({ ...intersection })),
         connections: board.connections.map((connection) => ({ ...connection })),
+        jumpPaths: board.jumpPaths
+            ? board.jumpPaths.map((path) => ({ ...path }))
+            : undefined,
         centerNodeIds: board.centerNodeIds ? [...board.centerNodeIds] : undefined,
         maxPlies: board.maxPlies,
     };
@@ -47,7 +62,7 @@ export interface GameState {
     gameOver: boolean;
 }
 
-/** Slide along a board connection from one intersection to another. */
+/** Slide or single capture hop along a board route. Multi-jump = sequential Moves. */
 export interface Move {
     from: number;
     to: number;
@@ -73,6 +88,15 @@ export function requireIntersection(board: BoardDefinition, id: number): Interse
         throw new Error(`Unknown intersection id: ${id}`);
     }
     return point;
+}
+
+/** Geometry-only jump route for a from→to hop, if the board defines one. */
+export function findJumpPath(
+    board: BoardDefinition,
+    from: number,
+    to: number,
+): JumpPath | undefined {
+    return board.jumpPaths?.find((path) => path.from === from && path.to === to);
 }
 
 /** True when a positive maxPlies is configured and the limit has been reached. */

@@ -2,11 +2,12 @@ import { SmartBeadsEngine } from '../SmartBeadsEngine';
 import { listBoardVariants, resolveBoard } from '../../config/BoardConfig';
 import { Board4 } from '../../boards/Board4';
 import { Board5 } from '../../boards/Board5';
+import { Board6 } from '../../boards/Board6';
 import { Board7 } from '../../boards/Board7';
 
 describe('SmartBeadsEngine', () => {
   it('lists the configured board variants', () => {
-    expect(listBoardVariants()).toEqual(['4', '5', '7']);
+    expect(listBoardVariants()).toEqual(['4', '5', '6', '7']);
   });
 
   it('defines Board4 as a 4x4 grid with RED on row 1 and BLUE on row 4', () => {
@@ -30,6 +31,7 @@ describe('SmartBeadsEngine', () => {
   it.each([
     ['4', Board4],
     ['5', Board5],
+    ['6', Board6],
     ['7', Board7],
   ] as const)('initializes variant %s from the board registry', (variant, expectedBoard) => {
     const engine = new SmartBeadsEngine(variant);
@@ -41,6 +43,31 @@ describe('SmartBeadsEngine', () => {
     expect(state.moveCount).toBe(0);
     expect(state.captures).toEqual({ RED: 0, BLUE: 0 });
     expect(state.gameOver).toBe(false);
+  });
+
+  it('counts remaining pieces for each player accurately', () => {
+    const engine = new SmartBeadsEngine('4');
+
+    // Initial state on Board4: 4 RED pieces and 4 BLUE pieces
+    expect(engine.countPieces('RED')).toBe(4);
+    expect(engine.countPieces('BLUE')).toBe(4);
+
+    // Set up a capture scenario
+    const state = engine.getState();
+    for (const point of state.board.intersections) {
+      point.occupant = undefined;
+    }
+    state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
+    state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
+
+    expect(engine.countPieces('RED')).toBe(1);
+    expect(engine.countPieces('BLUE')).toBe(1);
+
+    // RED captures BLUE at 4 landing on 8
+    engine.applyMove({ from: 0, to: 8 });
+
+    expect(engine.countPieces('RED')).toBe(1);
+    expect(engine.countPieces('BLUE')).toBe(0);
   });
 
   it('gives each game an independent board copy', () => {
@@ -165,5 +192,110 @@ describe('SmartBeadsEngine', () => {
 
     // Centers after move: 5 BLUE, 6 BLUE, 9 RED → BLUE leads 2–1
     expect(state.winner).toBe('BLUE');
+  });
+
+  it('defines orthogonal jumpPaths on Board4', () => {
+    expect(Board4.jumpPaths?.length).toBeGreaterThan(0);
+    expect(Board4.jumpPaths).toEqual(
+      expect.arrayContaining([
+        { from: 0, over: 4, to: 8 },
+        { from: 8, over: 4, to: 0 },
+        { from: 1, over: 2, to: 3 },
+      ]),
+    );
+  });
+
+  it('includes optional capture jumps alongside slides', () => {
+    const engine = new SmartBeadsEngine('4');
+    const state = engine.getState();
+
+    for (const point of state.board.intersections) {
+      point.occupant = undefined;
+    }
+    state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
+    state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
+
+    const moves = engine.getLegalMoves();
+
+    expect(moves).toEqual(
+      expect.arrayContaining([
+        { from: 0, to: 1 },
+        { from: 0, to: 8 },
+      ]),
+    );
+  });
+
+  it('applies a capture jump, removes the jumped bead, and updates captures', () => {
+    const engine = new SmartBeadsEngine('4');
+    const state = engine.getState();
+
+    for (const point of state.board.intersections) {
+      point.occupant = undefined;
+    }
+    state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
+    state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
+
+    engine.applyMove({ from: 0, to: 8 });
+
+    expect(state.board.intersections.find((point) => point.id === 0)?.occupant).toBeUndefined();
+    expect(state.board.intersections.find((point) => point.id === 4)?.occupant).toBeUndefined();
+    expect(state.board.intersections.find((point) => point.id === 8)?.occupant).toBe('RED');
+    expect(state.captures.RED).toBe(1);
+    expect(state.currentPlayer).toBe('BLUE');
+    expect(engine.getChainPieceId()).toBeNull();
+  });
+
+  it('keeps the turn for multi-jump continuation and allows voluntary endTurn', () => {
+    const engine = new SmartBeadsEngine('4');
+    const state = engine.getState();
+
+    for (const point of state.board.intersections) {
+      point.occupant = undefined;
+    }
+    // RED at 0 can jump over BLUE at 4 to 8, then over BLUE at 9 to 10.
+    state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
+    state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
+    state.board.intersections.find((point) => point.id === 9)!.occupant = 'BLUE';
+
+    engine.applyMove({ from: 0, to: 8 });
+
+    expect(state.captures.RED).toBe(1);
+    expect(state.currentPlayer).toBe('RED');
+    expect(engine.getChainPieceId()).toBe(8);
+    expect(engine.getLegalMoves()).toEqual([{ from: 8, to: 10 }]);
+
+    engine.endTurn();
+
+    expect(engine.getChainPieceId()).toBeNull();
+    expect(state.currentPlayer).toBe('BLUE');
+    expect(state.captures.RED).toBe(1);
+    expect(state.board.intersections.find((point) => point.id === 9)?.occupant).toBe('BLUE');
+  });
+
+  it('completes a multi-jump chain when the player continues capturing', () => {
+    const engine = new SmartBeadsEngine('4');
+    const state = engine.getState();
+
+    for (const point of state.board.intersections) {
+      point.occupant = undefined;
+    }
+    state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
+    state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
+    state.board.intersections.find((point) => point.id === 9)!.occupant = 'BLUE';
+
+    engine.applyMove({ from: 0, to: 8 });
+    engine.applyMove({ from: 8, to: 10 });
+
+    expect(state.captures.RED).toBe(2);
+    expect(state.board.intersections.find((point) => point.id === 4)?.occupant).toBeUndefined();
+    expect(state.board.intersections.find((point) => point.id === 9)?.occupant).toBeUndefined();
+    expect(state.board.intersections.find((point) => point.id === 10)?.occupant).toBe('RED');
+    expect(engine.getChainPieceId()).toBeNull();
+    expect(state.currentPlayer).toBe('BLUE');
+  });
+
+  it('rejects endTurn when no capture chain is in progress', () => {
+    const engine = new SmartBeadsEngine('4');
+    expect(() => engine.endTurn()).toThrow(/no capture chain/);
   });
 });

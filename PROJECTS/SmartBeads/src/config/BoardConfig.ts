@@ -1,6 +1,7 @@
 import { BoardDefinition } from '../models/GameState';
 import { Board4 } from '../boards/Board4';
 import { Board5 } from '../boards/Board5';
+import { Board6 } from '../boards/Board6';
 import { Board7 } from '../boards/Board7';
 
 /**
@@ -12,11 +13,12 @@ import { Board7 } from '../boards/Board7';
  * 2. Registering it here
  * No engine changes required.
  */
-export type BoardVariant = '4' | '5' | '7';
+export type BoardVariant = '4' | '5' | '6' | '7';
 
 const boardVariants: Record<BoardVariant, BoardDefinition> = {
   '4': Board4,
   '5': Board5,
+  '6': Board6,
   '7': Board7,
 };
 

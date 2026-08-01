@@ -9,6 +9,7 @@ SmartBeads/
 │   ├── boards/                        # Physical BoardDefinition variants
 │   │   ├── Board4.ts
 │   │   ├── Board5.ts
+│   │   ├── Board6.ts
 │   │   └── Board7.ts
 │   ├── config/                        # Variant selection only
 │   │   └── BoardConfig.ts             # Resolves BoardVariant → BoardDefinition
@@ -16,6 +17,14 @@ SmartBeads/
 │   │   ├── SmartBeadsEngine.ts        # Main gameplay engine and game flow
 │   │   └── __tests__/
 │   │       └── SmartBeadsEngine.test.ts
+│   ├── playtest/                      # Developer playtest interface
+│   │   ├── HumanVsAiRunner.ts
+│   │   └── __tests__/
+│   │       └── HumanVsAiRunner.test.ts
+│   ├── simulation/                    # Automated self-play simulation runner
+│   │   ├── SelfPlayRunner.ts
+│   │   └── __tests__/
+│   │       └── SelfPlayRunner.test.ts
 │   └── models/
 │       └── GameState.ts               # BoardDefinition + GameState
 │
@@ -28,21 +37,29 @@ SmartBeads/
 
 ### src/models/GameState.ts
 
-Authoritative board model: intersections, connections, optional center nodes / maxPlies, captures, and board cloning.
+Authoritative board model: intersections, connections, optional jumpPaths / center nodes / maxPlies, captures, Move schema, and board cloning.
 
 ### src/boards/
 
-BoardDefinition variants (e.g. Board4 = 4×4 orthogonal grid). Add new sizes here via config data only.
+BoardDefinition variants (e.g. Board4 = 4×4 orthogonal grid with jumpPaths). Add new sizes here via config data only.
 
 ### src/config/
 
 Chooses board variants only. Does not redefine board geometry.
 
-* **BoardConfig.ts** — maps `BoardVariant` (`4` / `5` / `7`) to a `BoardDefinition`.
+* **BoardConfig.ts** — maps `BoardVariant` (`4` / `5` / `6` / `7`) to a `BoardDefinition`.
+
+### src/simulation/
+
+Automated self-play execution and game metrics collection (`SelfPlayRunner.ts`).
+
+### src/playtest/
+
+Interactive CLI runner for developer playtesting and engine validation (`HumanVsAiRunner.ts`).
 
 ### src/core/SmartBeadsEngine.ts
 
-Coordinates gameplay for any registered board variant. New variants require config registration only.
+Coordinates gameplay for any registered board variant: slides, optional captures, multi-jump chains, voluntary endTurn, and ply limits.
 
 ### src/core/__tests__/
 
