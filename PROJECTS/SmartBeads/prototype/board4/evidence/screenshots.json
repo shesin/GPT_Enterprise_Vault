@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-08-06T06:36:42.767Z",
+  "ok": true,
+  "chrome": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "results": [
+    {
+      "name": "01-initial-board",
+      "shot": "initial",
+      "path": "d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\01-initial-board.png",
+      "exitCode": 0,
+      "exists": true,
+      "bytes": 160320,
+      "stderrTail": "160320 bytes written to file d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\01-initial-board.png\r\n"
+    },
+    {
+      "name": "02-multi-jump",
+      "shot": "multijump",
+      "path": "d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\02-multi-jump.png",
+      "exitCode": 0,
+      "exists": true,
+      "bytes": 173988,
+      "stderrTail": "173988 bytes written to file d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\02-multi-jump.png\r\n"
+    },
+    {
+      "name": "03-finish-multi-jump",
+      "shot": "finish",
+      "path": "d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\03-finish-multi-jump.png",
+      "exitCode": 0,
+      "exists": true,
+      "bytes": 173988,
+      "stderrTail": "173988 bytes written to file d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\03-finish-multi-jump.png\r\n"
+    },
+    {
+      "name": "04-game-over",
+      "shot": "gameover",
+      "path": "d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\04-game-over.png",
+      "exitCode": 0,
+      "exists": true,
+      "bytes": 153871,
+      "stderrTail": "153871 bytes written to file d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\04-game-over.png\r\n"
+    },
+    {
+      "name": "05-40-ply-result",
+      "shot": "ply40",
+      "path": "d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\05-40-ply-result.png",
+      "exitCode": 0,
+      "exists": true,
+      "bytes": 155280,
+      "stderrTail": "155280 bytes written to file d:\\Business Idea\\Gpt_Enterprise_Vault\\PROJECTS\\SmartBeads\\prototype\\board4\\evidence\\05-40-ply-result.png\r\n"
+    }
+  ]
+}

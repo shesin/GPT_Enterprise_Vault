@@ -1,0 +1,297 @@
+{
+  "source": "ai-vs-ai",
+  "gameIndex": 1,
+  "firstPlayer": "BLUE",
+  "difficulty": "medium",
+  "final": {
+    "winner": "RED",
+    "endReason": "ply_limit",
+    "plyCount": 40,
+    "captures": {
+      "RED": 0,
+      "BLUE": 0
+    }
+  },
+  "moveHistory": [
+    {
+      "player": "BLUE",
+      "from": 13,
+      "to": 10,
+      "captured": null,
+      "ply": 1
+    },
+    {
+      "player": "RED",
+      "from": 2,
+      "to": 5,
+      "captured": null,
+      "ply": 2
+    },
+    {
+      "player": "BLUE",
+      "from": 12,
+      "to": 8,
+      "captured": null,
+      "ply": 3
+    },
+    {
+      "player": "RED",
+      "from": 3,
+      "to": 2,
+      "captured": null,
+      "ply": 4
+    },
+    {
+      "player": "BLUE",
+      "from": 14,
+      "to": 11,
+      "captured": null,
+      "ply": 5
+    },
+    {
+      "player": "RED",
+      "from": 1,
+      "to": 4,
+      "captured": null,
+      "ply": 6
+    },
+    {
+      "player": "BLUE",
+      "from": 8,
+      "to": 12,
+      "captured": null,
+      "ply": 7
+    },
+    {
+      "player": "RED",
+      "from": 2,
+      "to": 3,
+      "captured": null,
+      "ply": 8
+    },
+    {
+      "player": "BLUE",
+      "from": 12,
+      "to": 13,
+      "captured": null,
+      "ply": 9
+    },
+    {
+      "player": "RED",
+      "from": 4,
+      "to": 8,
+      "captured": null,
+      "ply": 10
+    },
+    {
+      "player": "BLUE",
+      "from": 13,
+      "to": 12,
+      "captured": null,
+      "ply": 11
+    },
+    {
+      "player": "RED",
+      "from": 8,
+      "to": 4,
+      "captured": null,
+      "ply": 12
+    },
+    {
+      "player": "BLUE",
+      "from": 12,
+      "to": 13,
+      "captured": null,
+      "ply": 13
+    },
+    {
+      "player": "RED",
+      "from": 4,
+      "to": 8,
+      "captured": null,
+      "ply": 14
+    },
+    {
+      "player": "BLUE",
+      "from": 13,
+      "to": 14,
+      "captured": null,
+      "ply": 15
+    },
+    {
+      "player": "RED",
+      "from": 8,
+      "to": 12,
+      "captured": null,
+      "ply": 16
+    },
+    {
+      "player": "BLUE",
+      "from": 10,
+      "to": 7,
+      "captured": null,
+      "ply": 17
+    },
+    {
+      "player": "RED",
+      "from": 0,
+      "to": 4,
+      "captured": null,
+      "ply": 18
+    },
+    {
+      "player": "BLUE",
+      "from": 14,
+      "to": 10,
+      "captured": null,
+      "ply": 19
+    },
+    {
+      "player": "RED",
+      "from": 4,
+      "to": 0,
+      "captured": null,
+      "ply": 20
+    },
+    {
+      "player": "BLUE",
+      "from": 10,
+      "to": 14,
+      "captured": null,
+      "ply": 21
+    },
+    {
+      "player": "RED",
+      "from": 0,
+      "to": 4,
+      "captured": null,
+      "ply": 22
+    },
+    {
+      "player": "BLUE",
+      "from": 14,
+      "to": 10,
+      "captured": null,
+      "ply": 23
+    },
+    {
+      "player": "RED",
+      "from": 5,
+      "to": 8,
+      "captured": null,
+      "ply": 24
+    },
+    {
+      "player": "BLUE",
+      "from": 15,
+      "to": 14,
+      "captured": null,
+      "ply": 25
+    },
+    {
+      "player": "RED",
+      "from": 8,
+      "to": 13,
+      "captured": null,
+      "ply": 26
+    },
+    {
+      "player": "BLUE",
+      "from": 14,
+      "to": 15,
+      "captured": null,
+      "ply": 27
+    },
+    {
+      "player": "RED",
+      "from": 4,
+      "to": 8,
+      "captured": null,
+      "ply": 28
+    },
+    {
+      "player": "BLUE",
+      "from": 10,
+      "to": 14,
+      "captured": null,
+      "ply": 29
+    },
+    {
+      "player": "RED",
+      "from": 8,
+      "to": 5,
+      "captured": null,
+      "ply": 30
+    },
+    {
+      "player": "BLUE",
+      "from": 14,
+      "to": 10,
+      "captured": null,
+      "ply": 31
+    },
+    {
+      "player": "RED",
+      "from": 5,
+      "to": 8,
+      "captured": null,
+      "ply": 32
+    },
+    {
+      "player": "BLUE",
+      "from": 10,
+      "to": 14,
+      "captured": null,
+      "ply": 33
+    },
+    {
+      "player": "RED",
+      "from": 8,
+      "to": 5,
+      "captured": null,
+      "ply": 34
+    },
+    {
+      "player": "BLUE",
+      "from": 14,
+      "to": 10,
+      "captured": null,
+      "ply": 35
+    },
+    {
+      "player": "RED",
+      "from": 5,
+      "to": 4,
+      "captured": null,
+      "ply": 36
+    },
+    {
+      "player": "BLUE",
+      "from": 10,
+      "to": 5,
+      "captured": null,
+      "ply": 37
+    },
+    {
+      "player": "RED",
+      "from": 12,
+      "to": 9,
+      "captured": null,
+      "ply": 38
+    },
+    {
+      "player": "BLUE",
+      "from": 5,
+      "to": 10,
+      "captured": null,
+      "ply": 39
+    },
+    {
+      "player": "RED",
+      "from": 3,
+      "to": 6,
+      "captured": null,
+      "ply": 40
+    }
+  ]
+}

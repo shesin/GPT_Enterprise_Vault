@@ -1,0 +1,1378 @@
+{
+  "generatedAt": "2026-08-06T06:36:34.220Z",
+  "playthrough": {
+    "title": "Human vs AI recorded playthrough",
+    "firstPlayer": "RED",
+    "difficulty": "medium",
+    "policy": "prefer_captures_then_finish_optional",
+    "events": [
+      {
+        "type": "start",
+        "state": {
+          "occupants": [
+            "RED",
+            "RED",
+            "RED",
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            "BLUE"
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 0,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        }
+      },
+      {
+        "actor": "HUMAN",
+        "action": {
+          "type": "move",
+          "from": 0,
+          "to": 4,
+          "isJump": false,
+          "over": null
+        },
+        "before": {
+          "occupants": [
+            "RED",
+            "RED",
+            "RED",
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            "BLUE"
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 0,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            "RED",
+            "RED",
+            "RED",
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            "BLUE"
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 1,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "RED",
+          "from": 0,
+          "to": 4,
+          "captured": null,
+          "ply": 1
+        }
+      },
+      {
+        "actor": "AI",
+        "action": {
+          "type": "move",
+          "from": 13,
+          "to": 10,
+          "isJump": false
+        },
+        "applied": true,
+        "before": {
+          "occupants": [
+            null,
+            "RED",
+            "RED",
+            "RED",
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            "BLUE"
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 1,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            "RED",
+            "RED",
+            "RED",
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            "BLUE"
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 2,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "BLUE",
+          "from": 13,
+          "to": 10,
+          "captured": null,
+          "ply": 2
+        }
+      },
+      {
+        "actor": "HUMAN",
+        "action": {
+          "type": "move",
+          "from": 1,
+          "to": 6,
+          "isJump": false,
+          "over": null
+        },
+        "before": {
+          "occupants": [
+            null,
+            "RED",
+            "RED",
+            "RED",
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            "BLUE"
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 2,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            null,
+            "RED",
+            "RED",
+            "RED",
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            "BLUE"
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 3,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "RED",
+          "from": 1,
+          "to": 6,
+          "captured": null,
+          "ply": 3
+        }
+      },
+      {
+        "actor": "AI",
+        "action": {
+          "type": "move",
+          "from": 15,
+          "to": 11,
+          "isJump": false
+        },
+        "applied": true,
+        "before": {
+          "occupants": [
+            null,
+            null,
+            "RED",
+            "RED",
+            "RED",
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            "BLUE"
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 3,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            null,
+            "RED",
+            "RED",
+            "RED",
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 4,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "BLUE",
+          "from": 15,
+          "to": 11,
+          "captured": null,
+          "ply": 4
+        }
+      },
+      {
+        "actor": "HUMAN",
+        "action": {
+          "type": "move",
+          "from": 4,
+          "to": 0,
+          "isJump": false,
+          "over": null
+        },
+        "before": {
+          "occupants": [
+            null,
+            null,
+            "RED",
+            "RED",
+            "RED",
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 4,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            "RED",
+            null,
+            "RED",
+            "RED",
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 5,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "RED",
+          "from": 4,
+          "to": 0,
+          "captured": null,
+          "ply": 5
+        }
+      },
+      {
+        "actor": "AI",
+        "action": {
+          "type": "move",
+          "from": 11,
+          "to": 1,
+          "isJump": true
+        },
+        "applied": true,
+        "before": {
+          "occupants": [
+            "RED",
+            null,
+            "RED",
+            "RED",
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 5,
+          "captures": {
+            "RED": 0,
+            "BLUE": 0
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            "RED",
+            "BLUE",
+            "RED",
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 6,
+          "captures": {
+            "RED": 0,
+            "BLUE": 1
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "BLUE",
+          "from": 11,
+          "to": 1,
+          "captured": "RED",
+          "ply": 6
+        }
+      },
+      {
+        "actor": "HUMAN",
+        "action": {
+          "type": "move",
+          "from": 3,
+          "to": 6,
+          "isJump": false,
+          "over": null
+        },
+        "before": {
+          "occupants": [
+            "RED",
+            "BLUE",
+            "RED",
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 6,
+          "captures": {
+            "RED": 0,
+            "BLUE": 1
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            "RED",
+            "BLUE",
+            "RED",
+            null,
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 7,
+          "captures": {
+            "RED": 0,
+            "BLUE": 1
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "RED",
+          "from": 3,
+          "to": 6,
+          "captured": null,
+          "ply": 7
+        }
+      },
+      {
+        "actor": "AI",
+        "action": {
+          "type": "move",
+          "from": 1,
+          "to": 3,
+          "isJump": true
+        },
+        "applied": true,
+        "before": {
+          "occupants": [
+            "RED",
+            "BLUE",
+            "RED",
+            null,
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 7,
+          "captures": {
+            "RED": 0,
+            "BLUE": 1
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            "RED",
+            null,
+            null,
+            "BLUE",
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 8,
+          "captures": {
+            "RED": 0,
+            "BLUE": 2
+          },
+          "chainPieceId": 3,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "BLUE",
+          "from": 1,
+          "to": 3,
+          "captured": "RED",
+          "ply": 8
+        }
+      },
+      {
+        "actor": "AI",
+        "action": {
+          "type": "move",
+          "from": 3,
+          "to": 9,
+          "isJump": true
+        },
+        "applied": true,
+        "before": {
+          "occupants": [
+            "RED",
+            null,
+            null,
+            "BLUE",
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 8,
+          "captures": {
+            "RED": 0,
+            "BLUE": 2
+          },
+          "chainPieceId": 3,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 9,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "BLUE",
+          "from": 3,
+          "to": 9,
+          "captured": "RED",
+          "ply": 9
+        }
+      },
+      {
+        "actor": "HUMAN",
+        "action": {
+          "type": "move",
+          "from": 0,
+          "to": 1,
+          "isJump": false,
+          "over": null
+        },
+        "before": {
+          "occupants": [
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 9,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 10,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "RED",
+          "from": 0,
+          "to": 1,
+          "captured": null,
+          "ply": 10
+        }
+      },
+      {
+        "actor": "AI",
+        "action": {
+          "type": "move",
+          "from": 12,
+          "to": 8,
+          "isJump": false
+        },
+        "applied": true,
+        "before": {
+          "occupants": [
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            null,
+            "BLUE",
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 10,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 11,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "BLUE",
+          "from": 12,
+          "to": 8,
+          "captured": null,
+          "ply": 11
+        }
+      },
+      {
+        "actor": "HUMAN",
+        "action": {
+          "type": "move",
+          "from": 1,
+          "to": 2,
+          "isJump": false,
+          "over": null
+        },
+        "before": {
+          "occupants": [
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 11,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 12,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "RED",
+          "from": 1,
+          "to": 2,
+          "captured": null,
+          "ply": 12
+        }
+      },
+      {
+        "actor": "AI",
+        "action": {
+          "type": "move",
+          "from": 14,
+          "to": 11,
+          "isJump": false
+        },
+        "applied": true,
+        "before": {
+          "occupants": [
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            "BLUE",
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 12,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 13,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "BLUE",
+          "from": 14,
+          "to": 11,
+          "captured": null,
+          "ply": 13
+        }
+      },
+      {
+        "actor": "HUMAN",
+        "action": {
+          "type": "move",
+          "from": 2,
+          "to": 7,
+          "isJump": false,
+          "over": null
+        },
+        "before": {
+          "occupants": [
+            null,
+            null,
+            "RED",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 13,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "RED",
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 14,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "RED",
+          "from": 2,
+          "to": 7,
+          "captured": null,
+          "ply": 14
+        }
+      },
+      {
+        "actor": "AI",
+        "action": {
+          "type": "move",
+          "from": 11,
+          "to": 3,
+          "isJump": true
+        },
+        "applied": true,
+        "before": {
+          "occupants": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "RED",
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            null
+          ],
+          "currentPlayer": "BLUE",
+          "firstPlayer": "RED",
+          "plyCount": 14,
+          "captures": {
+            "RED": 0,
+            "BLUE": 3
+          },
+          "chainPieceId": null,
+          "gameOver": false,
+          "winner": null,
+          "endReason": null,
+          "positionKey": null
+        },
+        "after": {
+          "occupants": [
+            null,
+            null,
+            null,
+            "BLUE",
+            null,
+            null,
+            null,
+            null,
+            "BLUE",
+            "BLUE",
+            "BLUE",
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "currentPlayer": "RED",
+          "firstPlayer": "RED",
+          "plyCount": 15,
+          "captures": {
+            "RED": 0,
+            "BLUE": 4
+          },
+          "chainPieceId": null,
+          "gameOver": true,
+          "winner": "BLUE",
+          "endReason": "elimination",
+          "positionKey": null
+        },
+        "historyEntry": {
+          "player": "BLUE",
+          "from": 11,
+          "to": 3,
+          "captured": "RED",
+          "ply": 15
+        }
+      }
+    ],
+    "final": {
+      "winner": "BLUE",
+      "endReason": "elimination",
+      "plyCount": 15,
+      "captures": {
+        "RED": 0,
+        "BLUE": 4
+      },
+      "moveHistory": [
+        {
+          "player": "RED",
+          "from": 0,
+          "to": 4,
+          "captured": null,
+          "ply": 1
+        },
+        {
+          "player": "BLUE",
+          "from": 13,
+          "to": 10,
+          "captured": null,
+          "ply": 2
+        },
+        {
+          "player": "RED",
+          "from": 1,
+          "to": 6,
+          "captured": null,
+          "ply": 3
+        },
+        {
+          "player": "BLUE",
+          "from": 15,
+          "to": 11,
+          "captured": null,
+          "ply": 4
+        },
+        {
+          "player": "RED",
+          "from": 4,
+          "to": 0,
+          "captured": null,
+          "ply": 5
+        },
+        {
+          "player": "BLUE",
+          "from": 11,
+          "to": 1,
+          "captured": "RED",
+          "ply": 6
+        },
+        {
+          "player": "RED",
+          "from": 3,
+          "to": 6,
+          "captured": null,
+          "ply": 7
+        },
+        {
+          "player": "BLUE",
+          "from": 1,
+          "to": 3,
+          "captured": "RED",
+          "ply": 8
+        },
+        {
+          "player": "BLUE",
+          "from": 3,
+          "to": 9,
+          "captured": "RED",
+          "ply": 9
+        },
+        {
+          "player": "RED",
+          "from": 0,
+          "to": 1,
+          "captured": null,
+          "ply": 10
+        },
+        {
+          "player": "BLUE",
+          "from": 12,
+          "to": 8,
+          "captured": null,
+          "ply": 11
+        },
+        {
+          "player": "RED",
+          "from": 1,
+          "to": 2,
+          "captured": null,
+          "ply": 12
+        },
+        {
+          "player": "BLUE",
+          "from": 14,
+          "to": 11,
+          "captured": null,
+          "ply": 13
+        },
+        {
+          "player": "RED",
+          "from": 2,
+          "to": 7,
+          "captured": null,
+          "ply": 14
+        },
+        {
+          "player": "BLUE",
+          "from": 11,
+          "to": 3,
+          "captured": "RED",
+          "ply": 15
+        }
+      ],
+      "terminated": true
+    }
+  }
+}

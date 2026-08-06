@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBeads Board4 — Gameplay Lab</title>
+  <style>
+    :root {
+      --bg: #1a2332;
+      --panel: #243044;
+      --text: #e8eef7;
+      --muted: #9aa8bc;
+      --red: #e63946;
+      --blue: #457b9d;
+      --accent: #2a9d8f;
+      --warn: #f4a261;
+      --finish: #22c55e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: radial-gradient(ellipse at top, #2b3a52 0%, var(--bg) 55%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .subtitle {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .panel {
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 14px 18px;
+      width: min(520px, 100%);
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      font-size: 0.92rem;
+    }
+    .status-grid .full { grid-column: 1 / -1; }
+    .label { color: var(--muted); }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: #334155;
+    }
+    .badge.red { background: rgba(230,57,70,0.25); color: #ff8a90; }
+    .badge.blue { background: rgba(69,123,157,0.35); color: #a8d4f0; }
+    .badge.over { background: rgba(34,197,94,0.2); color: #86efac; }
+    .badge.draw { background: rgba(244,162,97,0.25); color: #fdba74; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+    button, select {
+      font-size: 0.95rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #334155;
+      color: var(--text);
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { filter: brightness(1.1); }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    button.primary { background: var(--accent); border-color: transparent; color: #042f2e; font-weight: 700; }
+    #finishBtn {
+      display: none;
+      width: 100%;
+      margin-top: 12px;
+      padding: 16px 18px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: #052e16;
+      background: linear-gradient(180deg, #4ade80, var(--finish));
+      border: 2px solid #bbf7d0;
+      border-radius: 12px;
+      box-shadow:
+        0 0 12px rgba(34,197,94,0.55),
+        0 0 28px rgba(34,197,94,0.35),
+        0 4px 0 #15803d;
+      animation: finishPulse 1.4s ease-in-out infinite;
+    }
+    #finishBtn.visible { display: block; }
+    @keyframes finishPulse {
+      0%, 100% { box-shadow: 0 0 12px rgba(34,197,94,0.55), 0 0 28px rgba(34,197,94,0.35), 0 4px 0 #15803d; }
+      50% { box-shadow: 0 0 20px rgba(34,197,94,0.85), 0 0 40px rgba(34,197,94,0.55), 0 4px 0 #15803d; }
+    }
+    #board {
+      background: #0f172a;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      cursor: pointer;
+      max-width: 100%;
+      height: auto;
+    }
+    .instruction {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    #debugPanel {
+      display: none;
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: #0f172a;
+      border-radius: 8px;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      white-space: pre-wrap;
+    }
+    #debugPanel.on { display: block; }
+  </style>
+</head>
+<body>
+  <h1>SmartBeads Board4</h1>
+  <p class="subtitle">Gameplay laboratory — Human Red vs AI Blue</p>
+
+  <div class="panel">
+    <div class="status-grid">
+      <div class="full"><span class="label">Status:</span> <span id="statusBadge" class="badge">Ready</span></div>
+      <div><span class="label">Turn timer:</span> <span id="turnTimer">0.0s</span></div>
+      <div><span class="label">Turn:</span> <span id="turnInfo">—</span></div>
+      <div><span class="label">Remaining plies:</span> <span id="remainingPlies">40</span></div>
+      <div><span class="label">Total plies:</span> <span id="totalPlies">0</span></div>
+      <div><span class="label">Beads:</span> <span id="beadsInfo">R4 / B4</span></div>
+      <div><span class="label">Captures:</span> <span id="capturesInfo">R0 / B0</span></div>
+      <div class="full">
+        <label class="label" for="difficultySelect">AI difficulty:</label>
+        <select id="difficultySelect">
+          <option value="easy">Easy (depth 1)</option>
+          <option value="medium" selected>Medium (depth 3)</option>
+          <option value="hard">Hard (depth 4)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="newGameBtn" class="primary">New Game</button>
+    </div>
+
+    <button id="finishBtn" type="button">Finish Multi-Jump</button>
+    <div id="instructionText" class="instruction">Starting…</div>
+    <div id="debugPanel"></div>
+  </div>
+
+  <canvas id="board" width="440" height="440" aria-label="Board4 canvas"></canvas>
+
+  <script>
+(function () {
+  'use strict';
+
+  /* ================================================================
+   * 1. CONFIGURATION
+   * ================================================================ */
+  const DEBUG = true;
+  const MAX_PLIES = 40;
+  const BOARD_SIZE = 4;
+  const NODE_COUNT = 16;
+  const CENTER_NODES = [5, 6, 9, 10];
+  const HUMAN = 'RED';
+  const AI = 'BLUE';
+  const AI_DEPTH = { easy: 1, medium: 3, hard: 4 };
+  const CANVAS_PAD = 50;
+  const NODE_SPACING = 110;
+  const BEAD_RADIUS = 22;
+  const AI_THINK_MS = 280;
+
+  /* ================================================================
+   * 2. GAME STATE
+   * ================================================================ */
+  /** @type {ReturnType<typeof createInitialState>} */
+  let game = null;
+  let uiSelectedId = null;
+  let isAiThinking = false;
+  let gamesStarted = 0;
+  let nextFirstPlayer = HUMAN;
+  let timerHandle = null;
+  let lastDebug = { evaluation: 0, legalMoveCount: 0, searchDepth: 0, turnNumber: 0 };
+
+  function createInitialState(firstPlayer, difficulty) {
+    const occupants = new Array(NODE_COUNT).fill(null);
+    for (let c = 0; c < BOARD_SIZE; c++) occupants[c] = HUMAN;
+    for (let c = 0; c < BOARD_SIZE; c++) occupants[(BOARD_SIZE - 1) * BOARD_SIZE + c] = AI;
+
+    return {
+      occupants,
+      currentPlayer: firstPlayer,
+      firstPlayer,
+      plyCount: 0,
+      captures: { RED: 0, BLUE: 0 },
+      chainPieceId: null,
+      gameOver: false,
+      winner: null,
+      endReason: null,
+      moveHistory: [],
+      positionCounts: Object.create(null),
+      difficulty: difficulty || 'medium',
+      turnStartedAt: Date.now(),
+    };
+  }
+
+  /* ================================================================
+   * 3. BOARD DEFINITION
+   * ================================================================ */
+  const CONNECTIONS = buildConnections();
+  const JUMP_PATHS = buildJumpPaths();
+  const ADJACENCY = buildAdjacency(CONNECTIONS);
+
+  function rc(id) {
+    return { row: Math.floor(id / BOARD_SIZE), col: id % BOARD_SIZE };
+  }
+
+  function idAt(row, col) {
+    return row * BOARD_SIZE + col;
+  }
+
+  function inBounds(row, col) {
+    return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+  }
+
+  function buildConnections() {
+    const dirs = [
+      [0, 1], [0, -1], [1, 0], [-1, 0],
+      [1, 1], [1, -1], [-1, 1], [-1, -1],
+    ];
+    const seen = new Set();
+    const list = [];
+    for (let id = 0; id < NODE_COUNT; id++) {
+      const { row, col } = rc(id);
+      for (const [dr, dc] of dirs) {
+        const nr = row + dr;
+        const nc = col + dc;
+        if (!inBounds(nr, nc)) continue;
+        const to = idAt(nr, nc);
+        const a = Math.min(id, to);
+        const b = Math.max(id, to);
+        const key = a + ':' + b;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        list.push({ from: a, to: b });
+      }
+    }
+    return list;
+  }
+
+  function buildAdjacency(connections) {
+    const map = Array.from({ length: NODE_COUNT }, () => []);
+    for (const { from, to } of connections) {
+      map[from].push(to);
+      map[to].push(from);
+    }
+    return map;
+  }
+
+  function buildJumpPaths() {
+    const dirs = [
+      [0, 1], [0, -1], [1, 0], [-1, 0],
+      [1, 1], [1, -1], [-1, 1], [-1, -1],
+    ];
+    const paths = [];
+    for (let id = 0; id < NODE_COUNT; id++) {
+      const { row, col } = rc(id);
+      for (const [dr, dc] of dirs) {
+        const orow = row + dr;
+        const ocol = col + dc;
+        const trow = row + 2 * dr;
+        const tcol = col + 2 * dc;
+        if (!inBounds(orow, ocol) || !inBounds(trow, tcol)) continue;
+        paths.push({
+          from: id,
+          over: idAt(orow, ocol),
+          to: idAt(trow, tcol),
+        });
+      }
+    }
+    return paths;
+  }
+
+  /* ================================================================
+   * 4. MOVE GENERATION
+   * ================================================================ */
+  function opponent(player) {
+    return player === 'RED' ? 'BLUE' : 'RED';
+  }
+
+  function countPieces(occupants, player) {
+    let n = 0;
+    for (let i = 0; i < occupants.length; i++) {
+      if (occupants[i] === player) n++;
+    }
+    return n;
+  }
+
+  function getJumpMovesFrom(occupants, player, pieceId) {
+    if (occupants[pieceId] !== player) return [];
+    const opp = opponent(player);
+    const moves = [];
+    for (const path of JUMP_PATHS) {
+      if (path.from !== pieceId) continue;
+      if (occupants[path.over] === opp && occupants[path.to] === null) {
+        moves.push({ from: path.from, to: path.to, over: path.over, isJump: true });
+      }
+    }
+    return moves;
+  }
+
+  function getLegalMoves(state) {
+    if (state.gameOver) return [];
+    const { occupants, currentPlayer, chainPieceId } = state;
+
+    if (chainPieceId !== null) {
+      return getJumpMovesFrom(occupants, currentPlayer, chainPieceId);
+    }
+
+    const moves = [];
+    for (let id = 0; id < NODE_COUNT; id++) {
+      if (occupants[id] !== currentPlayer) continue;
+
+      for (const to of ADJACENCY[id]) {
+        if (occupants[to] === null) {
+          moves.push({ from: id, to, over: null, isJump: false });
+        }
+      }
+      moves.push(...getJumpMovesFrom(occupants, currentPlayer, id));
+    }
+    return moves;
+  }
+
+  function canFinishMultiJump(state) {
+    return !state.gameOver && state.chainPieceId !== null;
+  }
+
+  /* ================================================================
+   * 5. GAME ENGINE
+   * ================================================================ */
+  function cloneOccupants(occupants) {
+    return occupants.slice();
+  }
+
+  function positionKey(state) {
+    let s = state.occupants.map((o) => (o === 'RED' ? 'R' : o === 'BLUE' ? 'B' : '.')).join('');
+    s += '|' + state.currentPlayer;
+    s += '|' + (state.chainPieceId === null ? '-' : String(state.chainPieceId));
+    return s;
+  }
+
+  function recordPosition(state) {
+    const key = positionKey(state);
+    state.positionCounts[key] = (state.positionCounts[key] || 0) + 1;
+    return state.positionCounts[key];
+  }
+
+  function centerControl(occupants, player) {
+    let n = 0;
+    for (const id of CENTER_NODES) {
+      if (occupants[id] === player) n++;
+    }
+    return n;
+  }
+
+  function resolvePlyLimitWinner(state) {
+    const { captures, occupants } = state;
+    if (captures.RED !== captures.BLUE) {
+      return captures.RED > captures.BLUE ? 'RED' : 'BLUE';
+    }
+    const rcCtrl = centerControl(occupants, 'RED');
+    const bcCtrl = centerControl(occupants, 'BLUE');
+    if (rcCtrl !== bcCtrl) {
+      return rcCtrl > bcCtrl ? 'RED' : 'BLUE';
+    }
+    return 'DRAW';
+  }
+
+  function endGame(state, winner, reason) {
+    state.gameOver = true;
+    state.winner = winner;
+    state.endReason = reason;
+    state.chainPieceId = null;
+  }
+
+  function checkImmediateAndTerminal(state) {
+    const redCount = countPieces(state.occupants, 'RED');
+    const blueCount = countPieces(state.occupants, 'BLUE');
+
+    // 1. Immediate win — opponent eliminated
+    if (redCount === 0) {
+      endGame(state, 'BLUE', 'elimination');
+      return true;
+    }
+    if (blueCount === 0) {
+      endGame(state, 'RED', 'elimination');
+      return true;
+    }
+
+    // 2. Immediate loss — no legal moves (stalemate), only when not mid multi-jump
+    if (state.chainPieceId === null) {
+      const legal = getLegalMoves(state);
+      if (legal.length === 0) {
+        endGame(state, opponent(state.currentPlayer), 'stalemate');
+        return true;
+      }
+    }
+
+    // 3. Three-fold repetition
+    const seen = recordPosition(state);
+    if (seen >= 3) {
+      endGame(state, 'DRAW', 'repetition');
+      return true;
+    }
+
+    // 4. Ply limit (also handled directly in applyMove)
+    if (state.plyCount >= MAX_PLIES) {
+      endGame(state, resolvePlyLimitWinner(state), 'ply_limit');
+      return true;
+    }
+
+    return false;
+  }
+
+  function findJumpOver(from, to) {
+    for (const path of JUMP_PATHS) {
+      if (path.from === from && path.to === to) return path.over;
+    }
+    return null;
+  }
+
+  /**
+   * Apply a legal move. Returns true on success.
+   * @param {object} state
+   * @param {{from:number,to:number,isJump?:boolean,over?:number|null}} move
+   */
+  function applyMove(state, move) {
+    if (state.gameOver) return false;
+    const legal = getLegalMoves(state);
+    const match = legal.find((m) => m.from === move.from && m.to === move.to);
+    if (!match) return false;
+
+    const player = state.currentPlayer;
+    const over = match.over != null ? match.over : findJumpOver(move.from, move.to);
+    const isJump = !!match.isJump;
+
+    state.occupants[move.to] = player;
+    state.occupants[move.from] = null;
+
+    let captured = null;
+    if (isJump && over != null) {
+      captured = state.occupants[over];
+      state.occupants[over] = null;
+      state.captures[player] += 1;
+    }
+
+    state.plyCount += 1;
+    state.moveHistory.push({
+      player,
+      from: move.from,
+      to: move.to,
+      captured,
+      ply: state.plyCount,
+    });
+
+    if (state.plyCount >= MAX_PLIES) {
+      endGame(state, resolvePlyLimitWinner(state), 'ply_limit');
+      return true;
+    }
+
+    if (isJump) {
+      const cont = getJumpMovesFrom(state.occupants, player, move.to);
+      if (cont.length > 0) {
+        state.chainPieceId = move.to;
+        checkImmediateAndTerminal(state);
+        return true;
+      }
+    }
+
+    state.chainPieceId = null;
+    state.currentPlayer = opponent(player);
+    state.turnStartedAt = Date.now();
+    checkImmediateAndTerminal(state);
+    return true;
+  }
+
+  /** Voluntary end of multi-jump after at least one capture in the chain. */
+  function finishMultiJump(state) {
+    if (!canFinishMultiJump(state)) return false;
+    state.chainPieceId = null;
+    state.currentPlayer = opponent(state.currentPlayer);
+    state.turnStartedAt = Date.now();
+    checkImmediateAndTerminal(state);
+    return true;
+  }
+
+  function cloneState(state) {
+    return {
+      occupants: cloneOccupants(state.occupants),
+      currentPlayer: state.currentPlayer,
+      firstPlayer: state.firstPlayer,
+      plyCount: state.plyCount,
+      captures: { RED: state.captures.RED, BLUE: state.captures.BLUE },
+      chainPieceId: state.chainPieceId,
+      gameOver: state.gameOver,
+      winner: state.winner,
+      endReason: state.endReason,
+      moveHistory: state.moveHistory.slice(),
+      positionCounts: Object.assign(Object.create(null), state.positionCounts),
+      difficulty: state.difficulty,
+      turnStartedAt: state.turnStartedAt,
+    };
+  }
+
+  /* ================================================================
+   * 6. AI
+   * ================================================================ */
+  /**
+   * Deterministic evaluation from RED's perspective.
+   * Never uses randomness.
+   */
+  function evaluate(state) {
+    if (state.gameOver) {
+      if (state.winner === 'RED') return 100000 - state.plyCount;
+      if (state.winner === 'BLUE') return -100000 + state.plyCount;
+      return 0;
+    }
+    const redP = countPieces(state.occupants, 'RED');
+    const blueP = countPieces(state.occupants, 'BLUE');
+    const material = (redP - blueP) * 120;
+    const caps = (state.captures.RED - state.captures.BLUE) * 80;
+    const center =
+      (centerControl(state.occupants, 'RED') - centerControl(state.occupants, 'BLUE')) * 15;
+    // Prefer advancing toward opponent side (small positional term).
+    let advance = 0;
+    for (let id = 0; id < NODE_COUNT; id++) {
+      const row = Math.floor(id / BOARD_SIZE);
+      if (state.occupants[id] === 'RED') advance += row;
+      if (state.occupants[id] === 'BLUE') advance -= (BOARD_SIZE - 1 - row);
+    }
+    return material + caps + center + advance;
+  }
+
+  function listAiActions(state) {
+    const moves = getLegalMoves(state);
+    const actions = moves.map((m) => ({ type: 'move', move: m }));
+    if (canFinishMultiJump(state)) {
+      actions.push({ type: 'finish' });
+    }
+    return actions;
+  }
+
+  function applyAction(state, action) {
+    const next = cloneState(state);
+    if (action.type === 'finish') {
+      finishMultiJump(next);
+    } else {
+      applyMove(next, action.move);
+    }
+    return next;
+  }
+
+  function pickRandom(items) {
+    return items[Math.floor(Math.random() * items.length)];
+  }
+
+  function pickAmongBest(scored) {
+    if (scored.length === 0) return null;
+    let best = scored[0].score;
+    for (let i = 1; i < scored.length; i++) {
+      if (scored[i].score > best) best = scored[i].score;
+    }
+    const ties = scored.filter((s) => s.score === best);
+    return pickRandom(ties).action;
+  }
+
+  function minimax(state, depth, maximizing) {
+    if (state.gameOver || depth === 0) {
+      return evaluate(state);
+    }
+    const actions = listAiActions(state);
+    if (actions.length === 0) {
+      return evaluate(state);
+    }
+
+    if (maximizing) {
+      let best = -Infinity;
+      for (const action of actions) {
+        const child = applyAction(state, action);
+        const score = minimax(child, depth - 1, child.currentPlayer === 'RED');
+        if (score > best) best = score;
+      }
+      return best;
+    }
+
+    let best = Infinity;
+    for (const action of actions) {
+      const child = applyAction(state, action);
+      const score = minimax(child, depth - 1, child.currentPlayer === 'RED');
+      if (score < best) best = score;
+    }
+    return best;
+  }
+
+  function alphabeta(state, depth, alpha, beta, maximizing) {
+    if (state.gameOver || depth === 0) {
+      return evaluate(state);
+    }
+    const actions = listAiActions(state);
+    if (actions.length === 0) {
+      return evaluate(state);
+    }
+
+    if (maximizing) {
+      let value = -Infinity;
+      for (const action of actions) {
+        const child = applyAction(state, action);
+        value = Math.max(value, alphabeta(child, depth - 1, alpha, beta, child.currentPlayer === 'RED'));
+        alpha = Math.max(alpha, value);
+        if (alpha >= beta) break;
+      }
+      return value;
+    }
+
+    let value = Infinity;
+    for (const action of actions) {
+      const child = applyAction(state, action);
+      value = Math.min(value, alphabeta(child, depth - 1, alpha, beta, child.currentPlayer === 'RED'));
+      beta = Math.min(beta, value);
+      if (alpha >= beta) break;
+    }
+    return value;
+  }
+
+  function chooseAiAction(state) {
+    const difficulty = state.difficulty || 'medium';
+    const depth = AI_DEPTH[difficulty] || 3;
+    const actions = listAiActions(state);
+    lastDebug.searchDepth = depth;
+    lastDebug.evaluation = evaluate(state);
+    lastDebug.legalMoveCount = getLegalMoves(state).length;
+    lastDebug.turnNumber = state.plyCount + 1;
+
+    if (actions.length === 0) return null;
+
+    if (difficulty === 'easy') {
+      const captures = actions.filter((a) => a.type === 'move' && a.move.isJump);
+      if (captures.length > 0) {
+        return pickRandom(captures);
+      }
+      // Prefer continuing over finishing when both exist? Spec: prefer captures; otherwise random legal.
+      return pickRandom(actions);
+    }
+
+    const scored = [];
+    for (const action of actions) {
+      const child = applyAction(state, action);
+      let score;
+      if (difficulty === 'hard') {
+        score = alphabeta(child, depth - 1, -Infinity, Infinity, child.currentPlayer === 'RED');
+      } else {
+        score = minimax(child, depth - 1, child.currentPlayer === 'RED');
+      }
+      // AI is BLUE: prefer lower RED-perspective scores
+      const aiScore = state.currentPlayer === 'BLUE' ? -score : score;
+      scored.push({ action, score: aiScore });
+    }
+
+    return pickAmongBest(scored);
+  }
+
+  function playAiTurnStep(state) {
+    const action = chooseAiAction(state);
+    if (!action) return false;
+    if (action.type === 'finish') return finishMultiJump(state);
+    return applyMove(state, action.move);
+  }
+
+  /* ================================================================
+   * 9. UTILITIES + LAB EXPORT (headless verification can stop here)
+   * ================================================================ */
+  const Board4Lab = {
+    DEBUG,
+    MAX_PLIES,
+    CENTER_NODES,
+    HUMAN,
+    AI,
+    CONNECTIONS,
+    JUMP_PATHS,
+    createInitialState,
+    getLegalMoves,
+    applyMove,
+    finishMultiJump,
+    canFinishMultiJump,
+    evaluate,
+    chooseAiAction,
+    playAiTurnStep,
+    cloneState,
+    countPieces,
+    centerControl,
+    opponent,
+    positionKey,
+    checkImmediateAndTerminal,
+    resolvePlyLimitWinner,
+    recordPosition,
+    listAiActions,
+  };
+
+  globalThis.Board4Lab = Board4Lab;
+
+  const __HEADLESS__ = globalThis.__BOARD4_LAB_HEADLESS__ === true;
+  if (__HEADLESS__) {
+    return;
+  }
+
+  /* ================================================================
+   * 7. RENDERING
+   * ================================================================ */
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+
+  function nodeXY(id) {
+    const { row, col } = rc(id);
+    return {
+      x: CANVAS_PAD + col * NODE_SPACING,
+      y: CANVAS_PAD + row * NODE_SPACING,
+    };
+  }
+
+  function drawBoard(state, selectedId, legalMoves) {
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Board atmosphere
+    const grad = ctx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, '#1e293b');
+    grad.addColorStop(1, '#0f172a');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Connections
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    for (const { from, to } of CONNECTIONS) {
+      const a = nodeXY(from);
+      const b = nodeXY(to);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+
+    // Center highlight
+    ctx.fillStyle = 'rgba(42,157,143,0.12)';
+    for (const id of CENTER_NODES) {
+      const p = nodeXY(id);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 28, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const activeSource = state.chainPieceId !== null ? state.chainPieceId : selectedId;
+    const targets = new Set();
+    if (activeSource !== null) {
+      for (const m of legalMoves) {
+        if (m.from === activeSource) targets.add(m.to);
+      }
+    }
+
+    const selectable = new Set();
+    if (!state.gameOver && state.currentPlayer === HUMAN && state.chainPieceId === null) {
+      for (const m of legalMoves) selectable.add(m.from);
+    }
+    if (state.chainPieceId !== null && state.currentPlayer === HUMAN) {
+      selectable.add(state.chainPieceId);
+    }
+
+    for (let id = 0; id < NODE_COUNT; id++) {
+      const p = nodeXY(id);
+
+      // Node base
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 14, 0, Math.PI * 2);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fill();
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      if (selectable.has(id) && state.occupants[id]) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 30, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(250,204,21,0.55)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+
+      if (activeSource === id) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 32, 0, Math.PI * 2);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+
+      if (targets.has(id)) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 26, 0, Math.PI * 2);
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      const occ = state.occupants[id];
+      if (occ) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, BEAD_RADIUS, 0, Math.PI * 2);
+        ctx.fillStyle = occ === 'RED' ? '#e63946' : '#1d4e89';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = occ ? '#ffffff' : '#64748b';
+      ctx.font = 'bold 12px Segoe UI, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(id), p.x, p.y);
+    }
+  }
+
+  /* ================================================================
+   * 8. UI CONTROLLER
+   * ================================================================ */
+  const els = {
+    statusBadge: document.getElementById('statusBadge'),
+    turnTimer: document.getElementById('turnTimer'),
+    turnInfo: document.getElementById('turnInfo'),
+    remainingPlies: document.getElementById('remainingPlies'),
+    totalPlies: document.getElementById('totalPlies'),
+    beadsInfo: document.getElementById('beadsInfo'),
+    capturesInfo: document.getElementById('capturesInfo'),
+    difficultySelect: document.getElementById('difficultySelect'),
+    newGameBtn: document.getElementById('newGameBtn'),
+    finishBtn: document.getElementById('finishBtn'),
+    instructionText: document.getElementById('instructionText'),
+    debugPanel: document.getElementById('debugPanel'),
+  };
+
+  function updateUI() {
+    if (!game) return;
+    const legal = getLegalMoves(game);
+    lastDebug.legalMoveCount = legal.length;
+    lastDebug.evaluation = evaluate(game);
+    lastDebug.turnNumber = game.plyCount + (game.gameOver ? 0 : 1);
+
+    const redN = countPieces(game.occupants, 'RED');
+    const blueN = countPieces(game.occupants, 'BLUE');
+
+    els.totalPlies.textContent = String(game.plyCount);
+    els.remainingPlies.textContent = String(Math.max(0, MAX_PLIES - game.plyCount));
+    els.beadsInfo.textContent = 'R' + redN + ' / B' + blueN;
+    els.capturesInfo.textContent = 'R' + game.captures.RED + ' / B' + game.captures.BLUE;
+    els.turnInfo.textContent = game.gameOver
+      ? '—'
+      : game.currentPlayer + (game.chainPieceId !== null ? ' (multi-jump)' : '');
+
+    const badge = els.statusBadge;
+    badge.className = 'badge';
+    if (game.gameOver) {
+      if (game.winner === 'DRAW') {
+        badge.textContent = 'Draw (' + game.endReason + ')';
+        badge.classList.add('draw');
+      } else {
+        badge.textContent = game.winner + ' wins (' + game.endReason + ')';
+        badge.classList.add('over');
+      }
+    } else if (isAiThinking || game.currentPlayer === AI) {
+      badge.textContent = 'AI thinking…';
+      badge.classList.add('blue');
+    } else {
+      badge.textContent = 'Your turn';
+      badge.classList.add('red');
+    }
+
+    const showFinish =
+      !game.gameOver &&
+      game.currentPlayer === HUMAN &&
+      canFinishMultiJump(game) &&
+      !isAiThinking;
+    els.finishBtn.classList.toggle('visible', showFinish);
+    els.finishBtn.disabled = !showFinish;
+
+    if (game.gameOver) {
+      els.instructionText.textContent =
+        'Game over. Winner: ' +
+        game.winner +
+        ' via ' +
+        game.endReason +
+        '. Click New Game.';
+    } else if (isAiThinking) {
+      els.instructionText.textContent = 'AI (Blue) is moving…';
+    } else if (game.chainPieceId !== null && game.currentPlayer === HUMAN) {
+      els.instructionText.textContent =
+        'Multi-jump active on bead ' +
+        game.chainPieceId +
+        '. Continue jumping or press Finish Multi-Jump.';
+    } else if (uiSelectedId !== null) {
+      els.instructionText.textContent =
+        'Bead ' + uiSelectedId + ' selected. Click a green target.';
+    } else if (game.currentPlayer === HUMAN) {
+      els.instructionText.textContent =
+        'Your turn (Red). First player this game: ' + game.firstPlayer + '.';
+    } else {
+      els.instructionText.textContent = 'Waiting for AI…';
+    }
+
+    if (DEBUG) {
+      els.debugPanel.classList.add('on');
+      els.debugPanel.textContent =
+        'eval=' +
+        lastDebug.evaluation +
+        '  legalMoves=' +
+        lastDebug.legalMoveCount +
+        '  searchDepth=' +
+        lastDebug.searchDepth +
+        '  turnNumber=' +
+        lastDebug.turnNumber +
+        '  firstPlayer=' +
+        game.firstPlayer +
+        '  chain=' +
+        game.chainPieceId;
+    } else {
+      els.debugPanel.classList.remove('on');
+    }
+
+    drawBoard(game, uiSelectedId, legal);
+  }
+
+  function tickTimer() {
+    if (!game || game.gameOver) {
+      els.turnTimer.textContent = '—';
+      return;
+    }
+    const sec = (Date.now() - game.turnStartedAt) / 1000;
+    els.turnTimer.textContent = sec.toFixed(1) + 's';
+  }
+
+  function afterHumanAction() {
+    uiSelectedId = null;
+    updateUI();
+    if (!game.gameOver && game.currentPlayer === AI) {
+      scheduleAi();
+    }
+  }
+
+  function scheduleAi() {
+    if (!game || game.gameOver || game.currentPlayer !== AI) return;
+    isAiThinking = true;
+    updateUI();
+    setTimeout(function aiStep() {
+      if (!game || game.gameOver || game.currentPlayer !== AI) {
+        isAiThinking = false;
+        updateUI();
+        return;
+      }
+      playAiTurnStep(game);
+      if (!game.gameOver && game.currentPlayer === AI) {
+        // Still AI turn (multi-jump continuation / voluntary continue)
+        setTimeout(aiStep, AI_THINK_MS);
+      } else {
+        isAiThinking = false;
+        updateUI();
+      }
+    }, AI_THINK_MS);
+  }
+
+  function hitTestNode(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+    let best = null;
+    let bestDist = BEAD_RADIUS + 8;
+    for (let id = 0; id < NODE_COUNT; id++) {
+      const p = nodeXY(id);
+      const d = Math.hypot(p.x - x, p.y - y);
+      if (d <= bestDist) {
+        bestDist = d;
+        best = id;
+      }
+    }
+    return best;
+  }
+
+  function onCanvasClick(ev) {
+    if (!game || game.gameOver || isAiThinking || game.currentPlayer !== HUMAN) return;
+    const id = hitTestNode(ev.clientX, ev.clientY);
+    if (id === null) return;
+
+    const legal = getLegalMoves(game);
+
+    if (game.chainPieceId !== null) {
+      const move = legal.find((m) => m.from === game.chainPieceId && m.to === id);
+      if (move) {
+        applyMove(game, move);
+        afterHumanAction();
+      }
+      return;
+    }
+
+    if (uiSelectedId !== null) {
+      const move = legal.find((m) => m.from === uiSelectedId && m.to === id);
+      if (move) {
+        applyMove(game, move);
+        afterHumanAction();
+        return;
+      }
+    }
+
+    if (game.occupants[id] === HUMAN && legal.some((m) => m.from === id)) {
+      uiSelectedId = id;
+    } else {
+      uiSelectedId = null;
+    }
+    updateUI();
+  }
+
+  function startNewGame() {
+    const difficulty = els.difficultySelect.value;
+    const first = nextFirstPlayer;
+    nextFirstPlayer = opponent(first);
+    gamesStarted += 1;
+    game = createInitialState(first, difficulty);
+    uiSelectedId = null;
+    isAiThinking = false;
+    recordPosition(game);
+    // Initial position counted once; if no moves stalemate (shouldn't happen)
+    if (getLegalMoves(game).length === 0) {
+      endGame(game, opponent(game.currentPlayer), 'stalemate');
+    }
+    updateUI();
+    if (!game.gameOver && game.currentPlayer === AI) {
+      scheduleAi();
+    }
+  }
+
+  els.newGameBtn.addEventListener('click', startNewGame);
+  els.finishBtn.addEventListener('click', function () {
+    if (!game || game.gameOver || isAiThinking || game.currentPlayer !== HUMAN) return;
+    if (finishMultiJump(game)) afterHumanAction();
+  });
+  els.difficultySelect.addEventListener('change', function () {
+    if (game && !game.gameOver) game.difficulty = els.difficultySelect.value;
+  });
+  canvas.addEventListener('click', onCanvasClick);
+
+  timerHandle = setInterval(tickTimer, 100);
+
+  /**
+   * Evidence-only UI scenarios (?shot=...). Does not change gameplay rules.
+   * Used by the verification harness to capture screenshots.
+   */
+  function runEvidenceShot(shot) {
+    isAiThinking = false;
+    uiSelectedId = null;
+    els.difficultySelect.value = 'medium';
+
+    if (shot === 'initial') {
+      game = createInitialState(HUMAN, 'medium');
+      recordPosition(game);
+      updateUI();
+      return;
+    }
+
+    if (shot === 'multijump' || shot === 'finish') {
+      game = createInitialState(HUMAN, 'medium');
+      game.occupants = new Array(NODE_COUNT).fill(null);
+      game.occupants[8] = HUMAN;
+      game.occupants[9] = AI;
+      game.occupants[6] = AI;
+      game.occupants[12] = AI;
+      game.occupants[15] = AI;
+      game.currentPlayer = HUMAN;
+      game.chainPieceId = null;
+      game.captures = { RED: 0, BLUE: 0 };
+      game.plyCount = 2;
+      game.moveHistory = [];
+      game.positionCounts = Object.create(null);
+      const jump = getLegalMoves(game).find((m) => m.from === 8 && m.to === 10 && m.isJump);
+      if (jump) applyMove(game, jump);
+      // After 8→10 over 9, chain should continue via 10→2 over 6
+      updateUI();
+      return;
+    }
+
+    if (shot === 'gameover') {
+      game = createInitialState(HUMAN, 'medium');
+      game.occupants = new Array(NODE_COUNT).fill(null);
+      game.occupants[0] = HUMAN;
+      game.captures = { RED: 4, BLUE: 0 };
+      game.plyCount = 12;
+      endGame(game, 'RED', 'elimination');
+      updateUI();
+      return;
+    }
+
+    if (shot === 'ply40') {
+      game = createInitialState(HUMAN, 'medium');
+      game.plyCount = 40;
+      game.captures = { RED: 2, BLUE: 2 };
+      // Equal captures; put Red on more centers for visible tie-break win
+      game.occupants = new Array(NODE_COUNT).fill(null);
+      game.occupants[5] = HUMAN;
+      game.occupants[6] = HUMAN;
+      game.occupants[12] = AI;
+      game.occupants[15] = AI;
+      endGame(game, resolvePlyLimitWinner(game), 'ply_limit');
+      updateUI();
+      return;
+    }
+
+    startNewGame();
+  }
+
+  Board4Lab.runEvidenceShot = runEvidenceShot;
+  Board4Lab.getLiveGame = function () { return game; };
+  Board4Lab.refreshUI = updateUI;
+
+  const evidenceShot = new URLSearchParams(window.location.search).get('shot');
+  if (evidenceShot) {
+    runEvidenceShot(evidenceShot);
+  } else {
+    startNewGame();
+  }
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+{
+  "generatedAt": "2026-08-06T06:36:34.232Z",
+  "total": 19,
+  "passed": 19,
+  "failed": [],
+  "all": [
+    {
+      "id": "A01_lab_loaded",
+      "pass": true,
+      "detail": "Board4Lab API present"
+    },
+    {
+      "id": "A02_ai_count_20",
+      "pass": true,
+      "detail": "aiLogs.length=20"
+    },
+    {
+      "id": "A03_ai_all_terminated",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "id": "A04_ai_valid_winners",
+      "pass": true,
+      "detail": [
+        {
+          "i": 0,
+          "w": "RED"
+        },
+        {
+          "i": 1,
+          "w": "RED"
+        },
+        {
+          "i": 2,
+          "w": "BLUE"
+        },
+        {
+          "i": 3,
+          "w": "BLUE"
+        },
+        {
+          "i": 4,
+          "w": "BLUE"
+        },
+        {
+          "i": 5,
+          "w": "DRAW"
+        },
+        {
+          "i": 6,
+          "w": "BLUE"
+        },
+        {
+          "i": 7,
+          "w": "RED"
+        },
+        {
+          "i": 8,
+          "w": "BLUE"
+        },
+        {
+          "i": 9,
+          "w": "RED"
+        },
+        {
+          "i": 10,
+          "w": "RED"
+        },
+        {
+          "i": 11,
+          "w": "DRAW"
+        },
+        {
+          "i": 12,
+          "w": "BLUE"
+        },
+        {
+          "i": 13,
+          "w": "BLUE"
+        },
+        {
+          "i": 14,
+          "w": "DRAW"
+        },
+        {
+          "i": 15,
+          "w": "RED"
+        },
+        {
+          "i": 16,
+          "w": "BLUE"
+        },
+        {
+          "i": 17,
+          "w": "DRAW"
+        },
+        {
+          "i": 18,
+          "w": "RED"
+        },
+        {
+          "i": 19,
+          "w": "RED"
+        }
+      ]
+    },
+    {
+      "id": "A05_ai_end_reasons",
+      "pass": true,
+      "detail": [
+        {
+          "i": 0,
+          "r": "elimination"
+        },
+        {
+          "i": 1,
+          "r": "ply_limit"
+        },
+        {
+          "i": 2,
+          "r": "ply_limit"
+        },
+        {
+          "i": 3,
+          "r": "elimination"
+        },
+        {
+          "i": 4,
+          "r": "ply_limit"
+        },
+        {
+          "i": 5,
+          "r": "repetition"
+        },
+        {
+          "i": 6,
+          "r": "elimination"
+        },
+        {
+          "i": 7,
+          "r": "ply_limit"
+        },
+        {
+          "i": 8,
+          "r": "ply_limit"
+        },
+        {
+          "i": 9,
+          "r": "elimination"
+        },
+        {
+          "i": 10,
+          "r": "ply_limit"
+        },
+        {
+          "i": 11,
+          "r": "repetition"
+        },
+        {
+          "i": 12,
+          "r": "elimination"
+        },
+        {
+          "i": 13,
+          "r": "ply_limit"
+        },
+        {
+          "i": 14,
+          "r": "repetition"
+        },
+        {
+          "i": 15,
+          "r": "elimination"
+        },
+        {
+          "i": 16,
+          "r": "ply_limit"
+        },
+        {
+          "i": 17,
+          "r": "repetition"
+        },
+        {
+          "i": 18,
+          "r": "elimination"
+        },
+        {
+          "i": 19,
+          "r": "ply_limit"
+        }
+      ]
+    },
+    {
+      "id": "A06_alternating_first",
+      "pass": true,
+      "detail": [
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE",
+        "RED",
+        "BLUE"
+      ]
+    },
+    {
+      "id": "A07_diagonals",
+      "pass": true,
+      "detail": "connectionCount=42"
+    },
+    {
+      "id": "A08_human_terminated",
+      "pass": true,
+      "detail": {
+        "winner": "BLUE",
+        "endReason": "elimination",
+        "plyCount": 15,
+        "captures": {
+          "RED": 0,
+          "BLUE": 4
+        },
+        "moveHistory": [
+          {
+            "player": "RED",
+            "from": 0,
+            "to": 4,
+            "captured": null,
+            "ply": 1
+          },
+          {
+            "player": "BLUE",
+            "from": 13,
+            "to": 10,
+            "captured": null,
+            "ply": 2
+          },
+          {
+            "player": "RED",
+            "from": 1,
+            "to": 6,
+            "captured": null,
+            "ply": 3
+          },
+          {
+            "player": "BLUE",
+            "from": 15,
+            "to": 11,
+            "captured": null,
+            "ply": 4
+          },
+          {
+            "player": "RED",
+            "from": 4,
+            "to": 0,
+            "captured": null,
+            "ply": 5
+          },
+          {
+            "player": "BLUE",
+            "from": 11,
+            "to": 1,
+            "captured": "RED",
+            "ply": 6
+          },
+          {
+            "player": "RED",
+            "from": 3,
+            "to": 6,
+            "captured": null,
+            "ply": 7
+          },
+          {
+            "player": "BLUE",
+            "from": 1,
+            "to": 3,
+            "captured": "RED",
+            "ply": 8
+          },
+          {
+            "player": "BLUE",
+            "from": 3,
+            "to": 9,
+            "captured": "RED",
+            "ply": 9
+          },
+          {
+            "player": "RED",
+            "from": 0,
+            "to": 1,
+            "captured": null,
+            "ply": 10
+          },
+          {
+            "player": "BLUE",
+            "from": 12,
+            "to": 8,
+            "captured": null,
+            "ply": 11
+          },
+          {
+            "player": "RED",
+            "from": 1,
+            "to": 2,
+            "captured": null,
+            "ply": 12
+          },
+          {
+            "player": "BLUE",
+            "from": 14,
+            "to": 11,
+            "captured": null,
+            "ply": 13
+          },
+          {
+            "player": "RED",
+            "from": 2,
+            "to": 7,
+            "captured": null,
+            "ply": 14
+          },
+          {
+            "player": "BLUE",
+            "from": 11,
+            "to": 3,
+            "captured": "RED",
+            "ply": 15
+          }
+        ],
+        "terminated": true
+      }
+    },
+    {
+      "id": "A09_human_has_history",
+      "pass": true,
+      "detail": "historyLen=15"
+    },
+    {
+      "id": "A10_history_shape",
+      "pass": true,
+      "detail": [
+        {
+          "player": "RED",
+          "from": 0,
+          "to": 4,
+          "captured": null,
+          "ply": 1
+        },
+        {
+          "player": "BLUE",
+          "from": 13,
+          "to": 10,
+          "captured": null,
+          "ply": 2
+        },
+        {
+          "player": "RED",
+          "from": 1,
+          "to": 6,
+          "captured": null,
+          "ply": 3
+        }
+      ]
+    },
+    {
+      "id": "A11_repetition",
+      "pass": true,
+      "detail": {
+        "winner": "DRAW",
+        "endReason": "repetition"
+      }
+    },
+    {
+      "id": "A12_elimination",
+      "pass": true,
+      "detail": {
+        "winner": "RED",
+        "endReason": "elimination"
+      }
+    },
+    {
+      "id": "A13_stalemate",
+      "pass": true,
+      "detail": {
+        "winner": "BLUE",
+        "endReason": "stalemate"
+      }
+    },
+    {
+      "id": "A14_tiebreak_center",
+      "pass": true,
+      "detail": "RED"
+    },
+    {
+      "id": "A15_tiebreak_captures",
+      "pass": true,
+      "detail": "RED"
+    },
+    {
+      "id": "A16_multijump",
+      "pass": true,
+      "detail": {
+        "jumpFound": true,
+        "chainPieceId": 10,
+        "canFinish": true,
+        "legal": [
+          {
+            "from": 10,
+            "to": 2,
+            "over": 6,
+            "isJump": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "A17_finish",
+      "pass": true,
+      "detail": {
+        "chainPieceId": null,
+        "currentPlayer": "BLUE"
+      }
+    },
+    {
+      "id": "A18_eval_deterministic",
+      "pass": true,
+      "detail": {
+        "e1": 0,
+        "e2": 0
+      }
+    },
+    {
+      "id": "A19_ply40_observed",
+      "pass": true,
+      "detail": {
+        "count": 9,
+        "indices": [
+          1,
+          2,
+          4,
+          7,
+          8,
+          10,
+          13,
+          16,
+          19
+        ]
+      }
+    }
+  ]
+}

@@ -114,6 +114,15 @@ Never invent repository facts.
 
 ---
 
+# Prototype-First Inquiry
+
+Before recommending a process, workflow, or tooling change for a task — especially for gameplay rules, UX, or anything not yet locked in as a decision — ask whether a faster, informal way to explore or validate the idea already exists or would help, before defaulting to the full repository/documentation/gatekeeper workflow.
+
+Do not assume the heaviest available process is the only path. Cheap, disposable exploration (e.g. a single throwaway file, a quick sketch, a manual test) that produces real evidence should be surfaced and encouraged before formal implementation begins.
+
+If unsure whether the human already has an informal method for this, ask before prescribing process.
+
+---
 # Decision Escalation
 
 If multiple technically valid solutions exist and the choice affects future architecture or maintainability:

@@ -1,93 +1,56 @@
 ---
-description: 
+description: SmartBeads Project Rules
 alwaysApply: true
 ---
 
-# SmartBeads Project Rules
-# Short, always-loaded rules — Cursor reads this file every message
-
 ## Purpose
-
-This document contains only the permanent, actionable engineering rules Cursor and the Architect must check before making or approving an implementation decision.
-
-State the rule, not the reasoning. Reasoning and long-term philosophy belong in VISION_05P.md — if you find yourself explaining *why*, that sentence belongs there, not here.
-
-Do not add project status, temporary implementation details, current numeric defaults, or historical decisions here.
-
-Target: 01P (~1 page)
-
-When approaching the target size:
-- Consolidate existing rules.
-- Remove obsolete or superseded rules.
-- If uncertain whether something belongs here, ask before adding it.
+Permanent, actionable engineering rules only. State the rule, not the reasoning — reasoning lives in VISION_05P.md. No status, no temporary details, no numeric defaults here.
+Target: ~1 page (01P).
 
 ---
 
+## Rule - Prototype Classification
+Design/UX prototypes live outside the production tree (e.g. prototype/), may skip full architectural review, and must never share code with the production engine. They do not need to honor Configurable Parameters, Board Fidelity abstraction, or engine reuse — but gameplay rules (e.g. Capture Optionality) still apply if the prototype is used for human testing.
+
+---
 ## Rule - Evidence Before Conclusion
-
-Every conclusion, recommendation, or implementation decision must be supported by repository inspection, execution results, or other verifiable evidence.
-
-Do not infer project state from previous conversations, documentation, or assumptions when current repository evidence is available.
+Every conclusion, recommendation, or implementation decision must be supported by repository inspection, execution results, or other verifiable evidence. Do not infer project state from previous conversations or documentation when current repository evidence is available.
 
 ---
-
 ## Rule - Verification Scope
-
-Always distinguish between:
-
-- Technical Verification (objectively verified by repository inspection, automated tests, execution, or runtime evidence)
-- Gameplay / UX Evaluation (subjective observations requiring human or explicit usability review)
-
-Automated verification must never imply gameplay quality, usability, balance, or player enjoyment unless those aspects were explicitly evaluated.
+Distinguish Technical Verification (repository/tests/execution) from Gameplay/UX Evaluation (subjective, requires human review). Automated verification never implies gameplay quality, balance, or enjoyment unless explicitly evaluated.
 
 ---
 ## Rule - Board Fidelity
-
-Model the board using its real intersections and legal connections. Never substitute an arbitrary square grid, even where it would be simpler to code.
+Model the board using its real intersections and legal connections, including diagonals where the physical board has them. Never substitute an arbitrary square grid.
 
 ---
-
 ## Rule - Capture Optionality
-
-Capturing is optional. During a capture sequence, a player — human or AI — may continue with any legal consecutive capture, or voluntarily end the sequence after completing a legal jump. This applies to every board variant and every player type.
-
-A specific AI's decision policy for continue-vs-stop (e.g. a random opponent's internal probability) is an implementation detail of that AI only. It must never be promoted to a gameplay rule here.
+Capturing is optional. During a capture sequence, a player — human or AI — may continue with any legal consecutive capture, or voluntarily end the sequence after completing a legal jump. Applies to every board variant and player type. An AI's internal continue-vs-stop policy is an implementation detail, never a gameplay rule.
 
 ---
+## Rule - Match Termination & Victory
+Three configurable end modes (move/time/unlimited), never hardcoded. On limit, resolve via hierarchy in VISION_05P.md. Draw is legitimate.
+---
+## Rule - Resignation
+Not yet decided. Do not implement until an explicit decision is recorded here.
 
+---
 ## Rule - Configurable Parameters
-
-Match timers, maximum plies, AI difficulty, and tournament settings must be configuration values. Gameplay logic must never hardcode them, and changing a value must never require changing gameplay logic.
-
-Current numeric defaults (e.g. today's ply limit for Board4) are status, not rule — they belong in GPT_PROJECT_STATUS_01P.md, not here.
+Match timers, ply limits, AI difficulty, and tournament settings are configuration values, never hardcoded gameplay logic.
 
 ---
-
 ## Rule - Verified Source
-
-The latest verified repository files are the single source of truth. Verify current state before changing anything, and verify the result immediately after. Never regenerate documentation or claims from memory or a prior conversation.
+Latest verified repository files are the single source of truth. Verify before changing, verify after. Never regenerate documentation from memory.
 
 ---
-
 ## Rule - Reuse Before Build
-
-Reuse and extend existing engine components — board layouts, movement graphs, jump paths, AI logic — across variants. Do not introduce a new abstraction, file, or class unless repository inspection shows a demonstrated need.
+Reuse and extend existing engine components across variants. No new abstraction, file, or class without repository evidence of demonstrated need.
 
 ---
-
 ## Rule - Verification Commands
-
-Group related verification into a single command block instead of issuing multiple fragmented commands.
+Group related verification into a single command block.
 
 ---
-
 ## Rule - Project Documentation Set
-
-The short-rule and reasoning layers consist of exactly these four files:
-
-- GPT_PROJECT_RULES_01P.md (this file — short, always loaded by Cursor)
-- VISION_05P.md (long — all reasoning, philosophy, and project-specific decisions that don't fit the short-rule format)
-- GPT_PROJECT_STATUS_01P.md (current phase, milestones, numeric defaults)
-- PROJECT_MAP_05P.md (repository structure and file map)
-
-Agent behaviour (roles, approval tiers, workflow, safety, verification) lives in AGENT_RULE_05P.md, not here.
+Exactly four files: this one, VISION_05P.md, GPT_PROJECT_STATUS_01P.md, PROJECT_MAP_05P.md. Agent behavior lives in AGENT_RULE_05P.md, not here.
