@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6-Beads Strategy Game (4x4 Alquerque Board)</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-red: #ef4444;
+      --accent-blue: #3b82f6;
+      --gold: #f59e0b;
+      --emerald: #10b981;
+      --text-light: #f8fafc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-light); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
+    .game-container { background: var(--card-bg); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); padding: 20px; max-width: 480px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+    h1 { font-size: 1.8rem; margin-bottom: 4px; color: var(--gold); letter-spacing: 0.5px; }
+    p.subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 12px; }
+
+    .setting-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.8rem; text-align: left; }
+    .setting-item { display: flex; flex-direction: column; gap: 2px; }
+    .setting-item label { color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; }
+    select { background: #1e293b; color: var(--gold); border: 1px solid var(--gold); padding: 5px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+
+    .countdown-banner { background: #0f172a; border: 2px solid var(--gold); border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-around; align-items: center; }
+    .count-box { text-align: center; }
+    .count-box .label { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; }
+    .count-box .val { font-size: 1.25rem; font-weight: 800; color: var(--gold); }
+
+    .scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .player-card { background: #0f172a; padding: 10px; border-radius: 12px; border-top: 4px solid #64748b; text-align: left; }
+    .player-card.red { border-color: var(--accent-red); }
+    .player-card.blue { border-color: var(--accent-blue); }
+    
+    .player-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+    .stat-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #cbd5e1; margin-top: 2px; }
+    .stat-val { font-weight: 700; }
+
+    canvas { background: #0f172a; border-radius: 12px; border: 2px solid #334155; margin-bottom: 12px; cursor: pointer; touch-action: none; }
+
+    .status-badge { display: block; padding: 8px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; background: #334155; color: var(--gold); transition: all 0.2s; }
+
+    .controls { display: flex; gap: 10px; }
+    button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; background: var(--gold); color: #0f172a; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-finish { background: var(--emerald); color: #ffffff; display: none; animation: pulse 1.5s infinite; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 100; }
+    .modal-content { background: var(--card-bg); padding: 24px; border-radius: 16px; max-width: 360px; width: 90%; text-align: center; border: 2px solid var(--gold); }
+    .modal-title { font-size: 1.6rem; color: var(--gold); margin-bottom: 10px; font-weight: 800; }
+    .modal-body { font-size: 0.95rem; margin-bottom: 18px; line-height: 1.4; color: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+<div class="game-container">
+  <h1>6 BEADS STRATEGY (4x4)</h1>
+  <p class="subtitle">Tactical Board Game</p>
+
+  <div class="setting-grid">
+    <div class="setting-item">
+      <label for="ai-difficulty">AI Level</label>
+      <select id="ai-difficulty">
+        <option value="1">Easy (Depth 1)</option>
+        <option value="3" selected>Medium (Depth 3)</option>
+        <option value="4">Hard (Depth 4)</option>
+      </select>
+    </div>
+
+    <div class="setting-item">
+      <label for="turn-time-select">Turn Timer</label>
+      <select id="turn-time-select" onchange="resetGame()">
+        <option value="60" selected>1 Min</option>
+        <option value="120">2 Min</option>
+        <option value="180">3 Min</option>
+        <option value="0">Off (No Limit)</option>
+      </select>
+    </div>
+
+    <div class="setting-item">
+      <label for="max-ply-select">Max Plies</label>
+      <select id="max-ply-select" onchange="resetGame()">
+        <option value="10">10 Plies</option>
+        <option value="20">20 Plies</option>
+        <option value="30">30 Plies</option>
+        <option value="40" selected>40 Plies</option>
+        <option value="0">Unlimited</option>
+      </select>
+    </div>
+
+    <div class="setting-item">
+      <label for="hints-select">Next Move Hints</label>
+      <select id="hints-select" onchange="drawBoard()">
+        <option value="on" selected>ON (Show Targets)</option>
+        <option value="off">OFF (Hide Targets)</option>
+      </select>
+    </div>
+
+    <div class="setting-item" style="grid-column: span 2;">
+      <label for="center-mode-select">Center Tiebreaker Mode</label>
+      <select id="center-mode-select" onchange="resetGame()">
+        <option value="end" selected>End Game Snapshot (Count at Finish)</option>
+        <option value="cumulative">Cumulative (+1 Pt/Turn in Center)</option>
+        <option value="none">Off (Standard Draw)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="countdown-banner">
+    <div class="count-box">
+      <div class="label">Turn Timer</div>
+      <div class="val" id="turn-timer" style="color: #ef4444;">01:00</div>
+    </div>
+    <div class="count-box">
+      <div class="label">Moves Left</div>
+      <div class="val" id="moves-left">40</div>
+    </div>
+    <div class="count-box">
+      <div class="label">Total Plies</div>
+      <div class="val" id="ply-counter" style="color: #cbd5e1;">0 / 40</div>
+    </div>
+  </div>
+
+  <div class="scoreboard">
+    <div class="player-card red">
+      <div class="player-name" style="color: var(--accent-red);">🔴 Player (Red)</div>
+      <div class="stat-row"><span>Beads Left:</span><span class="stat-val" id="red-beads">6</span></div>
+      <div class="stat-row"><span>Captures:</span><span class="stat-val" id="red-captures">0</span></div>
+      <div class="stat-row" id="red-center-row" style="display:none;"><span>Center Pts:</span><span class="stat-val" id="red-center-pts">0</span></div>
+    </div>
+
+    <div class="player-card blue">
+      <div class="player-name" style="color: var(--accent-blue);">🔵 AI (Blue)</div>
+      <div class="stat-row"><span>Beads Left:</span><span class="stat-val" id="blue-beads">6</span></div>
+      <div class="stat-row"><span>Captures:</span><span class="stat-val" id="blue-captures">0</span></div>
+      <div class="stat-row" id="blue-center-row" style="display:none;"><span>Center Pts:</span><span class="stat-val" id="blue-center-pts">0</span></div>
+    </div>
+  </div>
+
+  <div class="status-badge" id="status-badge">Your Turn — Select a Red Bead</div>
+
+  <canvas id="board" width="360" height="360"></canvas>
+
+  <div class="controls">
+    <button id="finish-btn" class="btn-finish" onclick="manualFinishTurn()">Finish Multi-Jump</button>
+    <button onclick="resetGame()">Restart Game</button>
+  </div>
+</div>
+
+<div class="modal" id="win-modal">
+  <div class="modal-content">
+    <div class="modal-title" id="modal-winner">Game Over</div>
+    <div class="modal-body" id="modal-desc">Details...</div>
+    <button onclick="closeModal()">Play Again</button>
+  </div>
+</div>
+
+<script>
+  // ==========================================
+  // 1. CONFIGURATION & STATE MACHINE
+  // ==========================================
+  const CONFIG = {
+    CANVAS_SIZE: 360,
+    P1: 1, // Red / Human
+    P2: 2, // Blue / AI
+    CENTER_NODES: [5, 6, 9, 10],
+    SPACING: 80,
+    OFFSET: 60
+  };
+
+  const STATE = {
+    IDLE: 'IDLE',
+    SELECTED: 'SELECTED',
+    CHAIN_JUMPING: 'CHAIN_JUMPING',
+    GAME_OVER: 'GAME_OVER'
+  };
+
+  let currentState = STATE.IDLE;
+  let board = [];
+  let currentTurn = CONFIG.P1;
+  let startingPlayer = CONFIG.P1;
+  
+  let turnTimeLimit = 60;
+  let maxPlyLimit = 40;
+  let centerMode = 'end';
+
+  let plyCount = 0;
+  let redPlyCount = 0;
+  let bluePlyCount = 0;
+
+  let redCenterPoints = 0;
+  let blueCenterPoints = 0;
+
+  let selectedNode = null;
+  let validMoves = [];
+  let positionHistory = {};
+
+  let timerInterval = null;
+  let aiTimeout = null;
+  let timeRemaining = turnTimeLimit;
+
+  // Board Node Positions (4x4)
+  const POSITIONS = [];
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      POSITIONS.push({ x: CONFIG.OFFSET + c * CONFIG.SPACING, y: CONFIG.OFFSET + r * CONFIG.SPACING });
+    }
+  }
+
+  // Graph Adjacency & Diagonals
+  const DIAGONAL_RAYS = [
+    [0, 5, 10, 15], [3, 6, 9, 12],
+    [1, 6, 11], [4, 9, 14], [2, 5, 8], [7, 10, 13]
+  ];
+
+  function buildGraph() {
+    const adj = {};
+    for (let i = 0; i < 16; i++) adj[i] = [];
+
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        const u = r * 4 + c;
+        if (c < 3) { const v = r * 4 + (c + 1); adj[u].push(v); adj[v].push(u); }
+        if (r < 3) { const v = (r + 1) * 4 + c; adj[u].push(v); adj[v].push(u); }
+      }
+    }
+
+    DIAGONAL_RAYS.forEach(ray => {
+      for (let i = 0; i < ray.length - 1; i++) {
+        const u = ray[i], v = ray[i + 1];
+        if (!adj[u].includes(v)) adj[u].push(v);
+        if (!adj[v].includes(u)) adj[v].push(u);
+      }
+    });
+
+    return adj;
+  }
+
+  const ADJACENCY = buildGraph();
+
+  function generateValidJumps() {
+    const jumps = [];
+    for (let from = 0; from < 16; from++) {
+      ADJACENCY[from].forEach(over => {
+        const r1 = Math.floor(from / 4), c1 = from % 4;
+        const r2 = Math.floor(over / 4), c2 = over % 4;
+        const dr = r2 - r1, dc = c2 - c1;
+
+        const tr = r2 + dr, tc = c2 + dc;
+        if (tr >= 0 && tr < 4 && tc >= 0 && tc < 4) {
+          const to = tr * 4 + tc;
+          if (ADJACENCY[over].includes(to)) {
+            jumps.push([from, over, to]);
+          }
+        }
+      });
+    }
+    return jumps;
+  }
+
+  const JUMPS = generateValidJumps();
+
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+
+  function init() {
+    canvas.addEventListener('click', handleCanvasClick);
+    resetGame();
+  }
+
+  function resetGame() {
+    clearInterval(timerInterval);
+    if (aiTimeout) clearTimeout(aiTimeout);
+
+    document.getElementById('win-modal').style.display = 'none';
+
+    turnTimeLimit = parseInt(document.getElementById('turn-time-select').value, 10);
+    maxPlyLimit = parseInt(document.getElementById('max-ply-select').value, 10);
+    centerMode = document.getElementById('center-mode-select').value;
+
+    board = [
+      CONFIG.P1, CONFIG.P1, CONFIG.P1, CONFIG.P1,
+      CONFIG.P1, 0,         0,         CONFIG.P1,
+      CONFIG.P2, 0,         0,         CONFIG.P2,
+      CONFIG.P2, CONFIG.P2, CONFIG.P2, CONFIG.P2
+    ];
+    
+    currentTurn = startingPlayer;
+    startingPlayer = startingPlayer === CONFIG.P1 ? CONFIG.P2 : CONFIG.P1;
+
+    plyCount = 0;
+    redPlyCount = 0;
+    bluePlyCount = 0;
+    redCenterPoints = 0;
+    blueCenterPoints = 0;
+
+    selectedNode = null;
+    validMoves = [];
+    positionHistory = {};
+    currentState = STATE.IDLE;
+
+    recordPositionState();
+    updateUI();
+    drawBoard();
+    startTurnTimer();
+
+    if (currentTurn === CONFIG.P2) {
+      aiTimeout = setTimeout(makeAIMove, 500);
+    }
+  }
+
+  // ==========================================
+  // 2. TURN TIMER SYSTEM (STRICT EXPIRATION)
+  // ==========================================
+  function startTurnTimer() {
+    clearInterval(timerInterval);
+    if (turnTimeLimit === 0) {
+      document.getElementById('turn-timer').innerText = "OFF";
+      document.getElementById('turn-timer').style.color = "#cbd5e1";
+      return;
+    }
+
+    timeRemaining = turnTimeLimit;
+    updateTimerDisplay();
+
+    timerInterval = setInterval(() => {
+      if (currentState === STATE.GAME_OVER) {
+        clearInterval(timerInterval);
+        return;
+      }
+
+      timeRemaining--;
+      updateTimerDisplay();
+
+      // TIMER EXPIRATION: END GAME IMMEDIATELY
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        const playerText = currentTurn === CONFIG.P1 ? "You" : "AI";
+        evaluateScoreAndEnd(`${playerText} ran out of turn time! Match evaluated.`);
+      }
+    }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    if (turnTimeLimit === 0) return;
+    const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+    const seconds = (timeRemaining % 60).toString().padStart(2, '0');
+    const timerEl = document.getElementById('turn-timer');
+    if (timerEl) {
+      timerEl.innerText = `${minutes}:${seconds}`;
+      timerEl.style.color = timeRemaining <= 15 ? '#ef4444' : '#f59e0b';
+    }
+  }
+
+  function recordPositionState() {
+    const key = board.join('') + '_' + currentTurn;
+    positionHistory[key] = (positionHistory[key] || 0) + 1;
+    return positionHistory[key];
+  }
+
+  function updateUI() {
+    const redPieces = board.filter(p => p === CONFIG.P1).length;
+    const bluePieces = board.filter(p => p === CONFIG.P2).length;
+    
+    document.getElementById('red-beads').innerText = redPieces;
+    document.getElementById('blue-beads').innerText = bluePieces;
+
+    document.getElementById('red-captures').innerText = 6 - bluePieces;
+    document.getElementById('blue-captures').innerText = 6 - redPieces;
+
+    if (maxPlyLimit > 0) {
+      document.getElementById('moves-left').innerText = Math.max(0, maxPlyLimit - plyCount);
+      document.getElementById('ply-counter').innerText = `${plyCount} / ${maxPlyLimit}`;
+    } else {
+      document.getElementById('moves-left').innerText = "∞";
+      document.getElementById('ply-counter').innerText = `${plyCount}`;
+    }
+
+    const showCumulative = (centerMode === 'cumulative');
+    document.getElementById('red-center-row').style.display = showCumulative ? 'flex' : 'none';
+    document.getElementById('blue-center-row').style.display = showCumulative ? 'flex' : 'none';
+    document.getElementById('red-center-pts').innerText = redCenterPoints;
+    document.getElementById('blue-center-pts').innerText = blueCenterPoints;
+
+    const finishBtn = document.getElementById('finish-btn');
+    finishBtn.style.display = (currentState === STATE.CHAIN_JUMPING && currentTurn === CONFIG.P1) ? 'block' : 'none';
+
+    const badge = document.getElementById('status-badge');
+    if (currentState !== STATE.GAME_OVER) {
+      if (currentTurn === CONFIG.P1) {
+        if (currentState === STATE.CHAIN_JUMPING) {
+          badge.innerText = "Multi-Jump Available! Tap next jump or click Finish.";
+          badge.style.background = "#10b98122";
+          badge.style.color = "#10b981";
+        } else if (currentState === STATE.SELECTED) {
+          badge.innerText = "Tap a highlighted target or empty space to move!";
+          badge.style.background = "#ef444422";
+          badge.style.color = "#ef4444";
+        } else {
+          badge.innerText = "Your Turn — Select a Red Bead";
+          badge.style.background = "#ef444422";
+          badge.style.color = "#ef4444";
+        }
+      } else {
+        badge.innerText = "AI Thinking (Blue)...";
+        badge.style.background = "#3b82f622";
+        badge.style.color = "#3b82f6";
+      }
+    }
+  }
+
+  // ==========================================
+  // 3. BOARD RENDERING (HINT TOGGLE SUPPORT)
+  // ==========================================
+  function drawBoard() {
+    ctx.clearRect(0, 0, CONFIG.CANVAS_SIZE, CONFIG.CANVAS_SIZE);
+    
+    // 1. Draw Lines
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 3;
+    for (let u = 0; u < 16; u++) {
+      ADJACENCY[u].forEach(v => {
+        if (u < v) {
+          ctx.beginPath();
+          ctx.moveTo(POSITIONS[u].x, POSITIONS[u].y);
+          ctx.lineTo(POSITIONS[v].x, POSITIONS[v].y);
+          ctx.stroke();
+        }
+      });
+    }
+
+    // 2. Draw Nodes
+    POSITIONS.forEach((pos, idx) => {
+      const isCenter = CONFIG.CENTER_NODES.includes(idx);
+      ctx.fillStyle = isCenter ? '#334155' : '#1e293b';
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = isCenter ? '#f59e0b' : '#64748b';
+      ctx.lineWidth = isCenter ? 3 : 2;
+      ctx.stroke();
+    });
+
+    // 3. Movable Bead Indicators (If hints enabled)
+    const showHints = document.getElementById('hints-select').value === 'on';
+    if (showHints && currentState !== STATE.GAME_OVER && currentTurn === CONFIG.P1 && currentState !== STATE.CHAIN_JUMPING) {
+      POSITIONS.forEach((pos, idx) => {
+        if (board[idx] === CONFIG.P1 && getMovesForNode(board, idx, CONFIG.P1).length > 0) {
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, 19, 0, Math.PI * 2);
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      });
+    }
+
+    // 4. Draw Beads
+    POSITIONS.forEach((pos, idx) => {
+      const val = board[idx];
+      if (val !== 0) {
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+        ctx.fillStyle = val === CONFIG.P1 ? '#ef4444' : '#3b82f6';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(pos.x - 3, pos.y - 3, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fill();
+      }
+    });
+
+    // 5. Draw Selected Ring & Move Target Indicators
+    if (selectedNode !== null) {
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(POSITIONS[selectedNode].x, POSITIONS[selectedNode].y, 18, 0, Math.PI * 2);
+      ctx.stroke();
+
+      if (showHints) {
+        validMoves.forEach(m => {
+          const targetPos = POSITIONS[m.to];
+          ctx.beginPath();
+          ctx.arc(targetPos.x, targetPos.y, 18, 0, Math.PI * 2);
+          
+          if (m.captured !== null) {
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.4)';
+            ctx.fill();
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(targetPos.x, targetPos.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fill();
+          } else {
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
+            ctx.fill();
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(targetPos.x, targetPos.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#10b981';
+            ctx.fill();
+          }
+        });
+      }
+    }
+  }
+
+  function handleCanvasClick(e) {
+    if (currentState === STATE.GAME_OVER || currentTurn !== CONFIG.P1) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const clickedIdx = POSITIONS.findIndex(pos => Math.hypot(pos.x - clickX, pos.y - clickY) <= 25);
+    if (clickedIdx === -1) return;
+
+    if (currentState === STATE.CHAIN_JUMPING) {
+      if (board[clickedIdx] === 0) {
+        const move = validMoves.find(m => m.to === clickedIdx);
+        if (move) executeMove(move);
+      }
+      return;
+    }
+
+    if (board[clickedIdx] === CONFIG.P1) {
+      selectedNode = clickedIdx;
+      validMoves = getMovesForNode(board, clickedIdx, CONFIG.P1);
+      currentState = STATE.SELECTED;
+      updateUI();
+      drawBoard();
+      return;
+    }
+
+    if (currentState === STATE.SELECTED && board[clickedIdx] === 0) {
+      const move = validMoves.find(m => m.to === clickedIdx);
+      if (move) {
+        executeMove(move);
+        return;
+      }
+    }
+
+    selectedNode = null;
+    validMoves = [];
+    currentState = STATE.IDLE;
+    updateUI();
+    drawBoard();
+  }
+
+  function getMovesForNode(currBoard, node, player) {
+    const moves = [];
+    ADJACENCY[node].forEach(neighbor => {
+      if (currBoard[neighbor] === 0) {
+        moves.push({ from: node, to: neighbor, captured: null });
+      }
+    });
+    JUMPS.forEach(([from, over, to]) => {
+      if (from === node && currBoard[over] !== 0 && currBoard[over] !== player && currBoard[to] === 0) {
+        moves.push({ from: node, to: to, captured: over });
+      }
+    });
+    return moves;
+  }
+
+  function getAllLegalMoves(currBoard, player) {
+    let moves = [];
+    for (let i = 0; i < 16; i++) {
+      if (currBoard[i] === player) {
+        moves = moves.concat(getMovesForNode(currBoard, i, player));
+      }
+    }
+    return moves;
+  }
+
+  function executeMove(move) {
+    board[move.to] = board[move.from];
+    board[move.from] = 0;
+
+    let wasCapture = false;
+    if (move.captured !== null) {
+      board[move.captured] = 0;
+      wasCapture = true;
+    }
+
+    if (currentState !== STATE.CHAIN_JUMPING) {
+      if (currentTurn === CONFIG.P1) redPlyCount++;
+      else bluePlyCount++;
+      plyCount = redPlyCount + bluePlyCount;
+    }
+
+    if (centerMode === 'cumulative') {
+      CONFIG.CENTER_NODES.forEach(idx => {
+        if (board[idx] === CONFIG.P1) redCenterPoints++;
+        if (board[idx] === CONFIG.P2) blueCenterPoints++;
+      });
+    }
+
+    if (wasCapture) {
+      const followUpJumps = getMovesForNode(board, move.to, currentTurn).filter(m => m.captured !== null);
+      if (followUpJumps.length > 0) {
+        currentState = STATE.CHAIN_JUMPING;
+        selectedNode = move.to;
+        validMoves = followUpJumps;
+        updateUI();
+        drawBoard();
+
+        if (currentTurn === CONFIG.P2) {
+          aiTimeout = setTimeout(() => {
+            const chosenJump = followUpJumps[Math.floor(Math.random() * followUpJumps.length)];
+            executeMove(chosenJump);
+          }, 400);
+        }
+        return;
+      }
+    }
+
+    completeTurn();
+  }
+
+  function manualFinishTurn() {
+    if (currentState === STATE.CHAIN_JUMPING && currentTurn === CONFIG.P1) {
+      completeTurn();
+    }
+  }
+
+  function completeTurn() {
+    currentState = STATE.IDLE;
+    selectedNode = null;
+    validMoves = [];
+
+    const repetitions = recordPositionState();
+    if (repetitions >= 3) {
+      endGame(0, "Game drawn! 3-Fold Repetition detected.");
+      return;
+    }
+
+    updateUI();
+    drawBoard();
+
+    if (checkEndCondition()) return;
+
+    currentTurn = currentTurn === CONFIG.P1 ? CONFIG.P2 : CONFIG.P1;
+    updateUI();
+    startTurnTimer();
+
+    if (currentTurn === CONFIG.P1) {
+      if (getAllLegalMoves(board, CONFIG.P1).length === 0) {
+        endGame(CONFIG.P2, "You have no legal moves remaining! AI wins by stalemate.");
+        return;
+      }
+    } else {
+      aiTimeout = setTimeout(makeAIMove, 450);
+    }
+  }
+
+  function makeAIMove() {
+    const move = selectAIMove();
+    if (move) {
+      executeMove(move);
+    } else {
+      endGame(CONFIG.P1, "AI has no legal moves remaining! You win by stalemate!");
+    }
+  }
+
+  function selectAIMove() {
+    const legalMoves = getAllLegalMoves(board, CONFIG.P2);
+    if (legalMoves.length === 0) return null;
+
+    const depth = parseInt(document.getElementById('ai-difficulty').value, 10);
+    
+    if (depth === 1) {
+      const captureMoves = legalMoves.filter(m => m.captured !== null);
+      return captureMoves.length > 0 ? captureMoves[Math.floor(Math.random() * captureMoves.length)] : legalMoves[Math.floor(Math.random() * legalMoves.length)];
+    }
+
+    let bestScore = -Infinity;
+    let bestMoves = [];
+
+    legalMoves.forEach(move => {
+      const nextBoard = [...board];
+      nextBoard[move.to] = nextBoard[move.from];
+      nextBoard[move.from] = 0;
+      if (move.captured !== null) nextBoard[move.captured] = 0;
+
+      const score = minimax(nextBoard, depth - 1, false, -Infinity, Infinity);
+      
+      if (score > bestScore) {
+        bestScore = score;
+        bestMoves = [move];
+      } else if (score === bestScore) {
+        bestMoves.push(move);
+      }
+    });
+
+    return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+  }
+
+  function minimax(currBoard, depth, isMaximizing, alpha, beta) {
+    if (depth === 0) return evaluateBoard(currBoard);
+
+    if (isMaximizing) {
+      let maxEval = -Infinity;
+      const moves = getAllLegalMoves(currBoard, CONFIG.P2);
+      if (moves.length === 0) return -100;
+      for (const move of moves) {
+        const tempBoard = [...currBoard];
+        tempBoard[move.to] = tempBoard[move.from];
+        tempBoard[move.from] = 0;
+        if (move.captured !== null) tempBoard[move.captured] = 0;
+
+        const evalVal = minimax(tempBoard, depth - 1, false, alpha, beta);
+        maxEval = Math.max(maxEval, evalVal);
+        alpha = Math.max(alpha, evalVal);
+        if (beta <= alpha) break;
+      }
+      return maxEval;
+    } else {
+      let minEval = Infinity;
+      const moves = getAllLegalMoves(currBoard, CONFIG.P1);
+      if (moves.length === 0) return 100;
+      for (const move of moves) {
+        const tempBoard = [...currBoard];
+        tempBoard[move.to] = tempBoard[move.from];
+        tempBoard[move.from] = 0;
+        if (move.captured !== null) tempBoard[move.captured] = 0;
+
+        const evalVal = minimax(tempBoard, depth - 1, true, alpha, beta);
+        minEval = Math.min(minEval, evalVal);
+        beta = Math.min(beta, evalVal);
+        if (beta <= alpha) break;
+      }
+      return minEval;
+    }
+  }
+
+  function evaluateBoard(b) {
+    const p1Pieces = b.filter(x => x === CONFIG.P1).length;
+    const p2Pieces = b.filter(x => x === CONFIG.P2).length;
+
+    let score = (p2Pieces - p1Pieces) * 25;
+
+    CONFIG.CENTER_NODES.forEach(c => {
+      if (b[c] === CONFIG.P2) score += 3;
+      if (b[c] === CONFIG.P1) score -= 3;
+    });
+
+    score += (Math.random() * 2 - 1);
+    return score;
+  }
+
+  // ==========================================
+  // 4. WINNER EVALUATION SEQUENCE
+  // ==========================================
+  function checkEndCondition() {
+    const redPieces = board.filter(p => p === CONFIG.P1).length;
+    const bluePieces = board.filter(p => p === CONFIG.P2).length;
+
+    if (redPieces === 0) {
+      endGame(CONFIG.P2, "AI eliminated all your beads!");
+      return true;
+    }
+    if (bluePieces === 0) {
+      endGame(CONFIG.P1, "You eliminated all AI beads!");
+      return true;
+    }
+
+    if (maxPlyLimit > 0 && plyCount >= maxPlyLimit) {
+      evaluateScoreAndEnd(`Max ply limit of ${maxPlyLimit} reached!`);
+      return true;
+    }
+
+    return false;
+  }
+
+  function evaluateScoreAndEnd(prefixReason) {
+    const redPieces = board.filter(p => p === CONFIG.P1).length;
+    const bluePieces = board.filter(p => p === CONFIG.P2).length;
+
+    const redCaptures = 6 - bluePieces;
+    const blueCaptures = 6 - redPieces;
+
+    // RULE 1: Capture Majority
+    if (redCaptures > blueCaptures) {
+      endGame(CONFIG.P1, `${prefixReason} You won on captures (${redCaptures} vs ${blueCaptures}).`);
+      return;
+    }
+    if (blueCaptures > redCaptures) {
+      endGame(CONFIG.P2, `${prefixReason} AI won on captures (${blueCaptures} vs ${redCaptures}).`);
+      return;
+    }
+
+    // RULE 2: Equal Captures -> Check Center Control Tiebreaker Mode
+    if (centerMode === 'end') {
+      let redCenter = 0;
+      let blueCenter = 0;
+      CONFIG.CENTER_NODES.forEach(idx => {
+        if (board[idx] === CONFIG.P1) redCenter++;
+        if (board[idx] === CONFIG.P2) blueCenter++;
+      });
+
+      if (redCenter > blueCenter) {
+        endGame(CONFIG.P1, `${prefixReason} Equal captures (${redCaptures}), but you won with more center beads held (${redCenter} vs ${blueCenter}).`);
+      } else if (blueCenter > redCenter) {
+        endGame(CONFIG.P2, `${prefixReason} Equal captures (${blueCaptures}), but AI won with more center beads held (${blueCenter} vs ${redCenter}).`);
+      } else {
+        endGame(0, `${prefixReason} Game drawn! Equal captures (${redCaptures}) and equal center beads (${redCenter}).`);
+      }
+    } else if (centerMode === 'cumulative') {
+      if (redCenterPoints > blueCenterPoints) {
+        endGame(CONFIG.P1, `${prefixReason} Equal captures (${redCaptures}), but you won on cumulative center points (${redCenterPoints} vs ${blueCenterPoints} pts).`);
+      } else if (blueCenterPoints > redCenterPoints) {
+        endGame(CONFIG.P2, `${prefixReason} Equal captures (${blueCaptures}), but AI won on cumulative center points (${blueCenterPoints} vs ${redCenterPoints} pts).`);
+      } else {
+        endGame(0, `${prefixReason} Game drawn! Equal captures (${redCaptures}) and equal cumulative points (${redCenterPoints} pts).`);
+      }
+    } else {
+      endGame(0, `${prefixReason} Game drawn! Equal captures (${redCaptures} vs ${blueCaptures}).`);
+    }
+  }
+
+  function endGame(winner, reason) {
+    clearInterval(timerInterval);
+    if (aiTimeout) clearTimeout(aiTimeout);
+
+    currentState = STATE.GAME_OVER;
+    const modal = document.getElementById('win-modal');
+    const title = document.getElementById('modal-winner');
+    const desc = document.getElementById('modal-desc');
+
+    if (winner === CONFIG.P1) {
+      title.innerText = "🏆 You Won!";
+      title.style.color = "#ef4444";
+    } else if (winner === CONFIG.P2) {
+      title.innerText = "🤖 AI Won!";
+      title.style.color = "#3b82f6";
+    } else {
+      title.innerText = "🤝 Draw Game!";
+      title.style.color = "#f59e0b";
+    }
+
+    desc.innerText = reason;
+    modal.style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById('win-modal').style.display = "none";
+    resetGame();
+  }
+
+  window.onload = init;
+</script>
+</body>
+</html>
