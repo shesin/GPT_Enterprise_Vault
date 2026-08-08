@@ -62,4 +62,32 @@ When a match limit is reached, the winner is decided by this strict hierarchy:
 *   **Canvas Size:** 360x360.
 *   **Visual Elements:**
     *   **Board Lines:** Drawn using the Adjacency List.
-    *   **Beads:** Drawn as circles with radial gradients (Red/Dark Red, Blue/Dark Blue) to look like 3D glass mar
+    *   **Beads:** Drawn as circles with radial gradients (Red/Dark Red, Blue/Dark Blue) to look like 3D glass marbles.
+    *   **Center Nodes:** Highlighted with gold rings and darker backgrounds.
+    *   **Last Move Trail:** A dashed gold line and ghost ring showing where the last piece moved from.
+    *   **Valid Move Hints:** Dashed gold rings around beads that have legal moves (Human turn only).
+    *   **Target Highlights:** When a bead is selected, valid empty targets glow green; valid capture targets glow orange.
+*   **HTML Layout:** Includes a Header, Settings Grid, Countdown Banner, Scoreboard (tracking beads, captures, center plies, and Shot Clocks), Status Badge (flashes red at <= 3s), and a Game Over Modal.
+
+## 8. Audio Architecture
+*   **Background Music (BGM):**
+    *   External MP3 player UI fixed to the bottom left.
+    *   Uses an `<audio>` tag and a `<select>` dropdown populated with URLs from `soundimage.org`.
+*   **Sound Effects (SFX):**
+    *   Generated purely via JavaScript `Web Audio API` (Oscillators).
+    *   `select`: High C5 sine beep.
+    *   `move`: Warm triangle thock.
+    *   `center_step`: Double sine chime.
+    *   `capture`: Two-tone ascending sine.
+    *   `win`: 4-note ascending major arpeggio.
+    *   `lose`: 4-note descending minor sawtooth.
+
+## 9. State Management Variables
+To rebuild this, the engine must track:
+*   `board`: Array[16]
+*   `currentTurn`: 1 (Red) or 2 (Blue)
+*   `currentState`: IDLE, SELECTED, CHAIN_JUMPING, GAME_OVER
+*   `moveCount`: Integer
+*   `redCenterPoints` / `blueCenterPoints`: Integers
+*   `positionHistory`: Dictionary/Object mapping `boardString_turn` to occurrence count.
+*   `matchTimeRemaining`, `p1TimeRemaining`, `p2TimeRemaining`, `turnTimeRemaining`: Integers (seconds)
