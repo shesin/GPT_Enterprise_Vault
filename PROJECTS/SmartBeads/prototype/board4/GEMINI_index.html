@@ -3,151 +3,120 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>6-Beads Strategy Game (4x4 Alquerque Board)</title>
+  <title>4-Beads Strategy Game (SmartBeads)</title>
   <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --accent-red: #ef4444;
-      --accent-blue: #3b82f6;
-      --gold: #f59e0b;
-      --emerald: #10b981;
-      --text-light: #f8fafc;
-    }
-
+    :root { --bg-color: #0f172a; --card-bg: #1e293b; --accent-red: #ef4444; --accent-blue: #3b82f6; --gold: #f59e0b; --emerald: #10b981; --text-light: #f8fafc; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-light); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
-
+    body { background-color: var(--bg-color); color: var(--text-light); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; padding-bottom: 60px; }
     .game-container { background: var(--card-bg); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); padding: 18px; max-width: 480px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-    
     .header-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
     h1 { font-size: 1.5rem; color: var(--gold); letter-spacing: 0.5px; }
-    .audio-btn { background: #334155; border: 1px solid var(--gold); color: var(--gold); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .audio-btn:hover { background: var(--gold); color: #0f172a; }
-
-    p.subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 12px; text-align: left; }
-
+    .audio-btn { background: #334155; border: 1px solid var(--gold); color: var(--gold); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .setting-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.8rem; text-align: left; }
     .setting-item { display: flex; flex-direction: column; gap: 2px; }
     .setting-item label { color: #94a3b8; font-size: 0.72rem; text-transform: uppercase; font-weight: 700; }
     select { background: #1e293b; color: var(--gold); border: 1px solid var(--gold); padding: 5px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; }
-
-    .countdown-banner { background: #0f172a; border: 2px solid var(--gold); border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-space: around; align-items: center; }
+    .countdown-banner { background: #0f172a; border: 2px solid var(--gold); border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-around; align-items: center; }
     .count-box { text-align: center; }
-    .count-box .label { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; }
+    .count-box .label { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; }
     .count-box .val { font-size: 1.25rem; font-weight: 800; color: var(--gold); }
-
     .scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .player-card { background: #0f172a; padding: 10px; border-radius: 12px; border-top: 4px solid #64748b; text-align: left; }
     .player-card.red { border-color: var(--accent-red); }
     .player-card.blue { border-color: var(--accent-blue); }
-    
-    .player-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+    .player-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .chess-clock { font-family: monospace; background: #1e293b; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: #cbd5e1; }
+    .chess-clock.active { color: var(--gold); background: #334155; font-weight: bold; }
     .stat-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #cbd5e1; margin-top: 2px; }
     .stat-val { font-weight: 700; }
-
     canvas { background: #0f172a; border-radius: 12px; border: 2px solid #334155; margin-bottom: 12px; cursor: pointer; touch-action: none; }
-
     .status-badge { display: block; padding: 8px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; background: #334155; color: var(--gold); transition: all 0.2s; }
-
+    .status-badge.danger { background: #7f1d1d; color: #fca5a5; animation: pulse 1s infinite; }
     .controls { display: flex; gap: 10px; }
-    button.main-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; background: var(--gold); color: #0f172a; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
-    button.main-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-finish { background: var(--emerald); color: #ffffff; display: none; animation: pulse 1.5s infinite; }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-
+    button.main-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; background: var(--gold); color: #0f172a; cursor: pointer; }
+    .btn-finish { background: var(--emerald); color: #ffffff; display: none; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 100; }
     .modal-content { background: var(--card-bg); padding: 24px; border-radius: 16px; max-width: 360px; width: 90%; text-align: center; border: 2px solid var(--gold); }
     .modal-title { font-size: 1.6rem; color: var(--gold); margin-bottom: 10px; font-weight: 800; }
-    .modal-body { font-size: 0.95rem; margin-bottom: 18px; line-height: 1.4; color: #cbd5e1; }
+    .modal-body { font-size: 0.95rem; margin-bottom: 18px; color: #cbd5e1; }
   </style>
 </head>
 <body>
 
 <div class="game-container">
   <div class="header-bar">
-    <h1>6 BEADS STRATEGY</h1>
-    <button class="audio-btn" id="audio-toggle" type="button" onclick="toggleAudio()">🔊 Sound: ON</button>
+    <h1>4 BEADS STRATEGY</h1>
+    <button class="audio-btn" id="audio-toggle" type="button" onclick="toggleSFX()">🔊 SFX: ON</button>
   </div>
-  <p class="subtitle">4x4 Alquerque Tactical Board</p>
 
   <div class="setting-grid">
     <div class="setting-item">
-      <label for="ai-difficulty">AI Level</label>
+      <label>AI Level</label>
       <select id="ai-difficulty">
         <option value="1">Easy (Depth 1)</option>
-        <option value="3" selected>Medium (Depth 3)</option>
-        <option value="4">Hard (Depth 4)</option>
+        <option value="2" selected>Medium (Depth 2)</option>
+        <option value="3">Hard (Depth 3)</option>
+      </select>
+    </div>
+    <div class="setting-item">
+      <label>Turn Shot Clock</label>
+      <select id="turn-timer-select" onchange="resetGame()">
+        <option value="10">10 Sec (Blitz)</option>
+        <option value="15">15 Sec (Standard)</option>
+        <option value="20">20 Sec (Standard)</option>
+        <option value="0" selected>Off</option>
+      </select>
+    </div>
+    <div class="setting-item">
+      <label>Match Timer</label>
+      <select id="timer-mode-select" onchange="resetGame()">
+        <option value="global_60">1 Min</option>
+        <option value="global_120">2 Min</option>
+        <option value="global_180">3 Min</option>
+        <option value="off" selected>Off</option>
       </select>
     </div>
 
     <div class="setting-item">
-      <label for="match-time-select">Match Timer</label>
-      <select id="match-time-select" onchange="resetGame()">
-        <option value="60" selected>1 Min</option>
-        <option value="120">2 Min</option>
-        <option value="180">3 Min</option>
-        <option value="0">Off (No Limit)</option>
-      </select>
-    </div>
-
-    <div class="setting-item">
-      <label for="max-move-select">Max Moves Limit</label>
-      <select id="max-move-select" onchange="resetGame()">
-        <option value="20">20 Moves (Center Points ON)</option>
-        <option value="40" selected>40 Moves (Center Points ON)</option>
-        <option value="60">60 Moves (Center Points ON)</option>
-        <option value="0">Unlimited (Center Points OFF)</option>
-      </select>
-    </div>
-
-    <div class="setting-item">
-      <label for="center-tiebreaker-select">Center Rule Mode</label>
-      <select id="center-tiebreaker-select">
-        <option value="cumulative" selected>Cumulative Steps (Needs Move Limit)</option>
-        <option value="occupancy">End-Game Occupancy</option>
-        <option value="off">OFF (Pure Captures)</option>
+      <label>Center Rule</label>
+      <select id="center-rule-select" onchange="resetGame()">
+        <option value="cumulative">Cumulative</option>
+        <option value="endgame">End-Game</option>
+        <option value="off" selected>Off</option>
       </select>
     </div>
   </div>
 
-  <div class="countdown-banner">
-    <div class="count-box">
-      <div class="label">Match Timer</div>
-      <div class="val" id="match-timer" style="color: #ef4444;">01:00</div>
-    </div>
-    <div class="count-box">
-      <div class="label">Moves Left</div>
-      <div class="val" id="moves-left">40</div>
-    </div>
-    <div class="count-box">
-      <div class="label">Total Moves</div>
-      <div class="val" id="move-counter" style="color: #cbd5e1;">0 / 40</div>
-    </div>
+  <div class="countdown-banner" id="global-timer-banner">
+    <div class="count-box"><div class="label">Match Timer</div><div class="val" id="match-timer" style="color: #ef4444;">01:00</div></div>
+    <div class="count-box"><div class="label">Moves Left</div><div class="val" id="moves-left">40</div></div>
   </div>
 
   <div class="scoreboard">
     <div class="player-card red">
-      <div class="player-name" style="color: var(--accent-red);">🔴 Player (Red)</div>
-      <div class="stat-row"><span>Beads Left:</span><span class="stat-val" id="red-beads">6</span></div>
+      <div class="player-name" style="color: var(--accent-red);">
+        🔴 Red 
+        <span id="red-shot-clock" style="color:#fca5a5; font-weight:bold;"></span>
+        <span class="chess-clock" id="red-clock" style="display:none;">02:00</span>
+      </div>
+      <div class="stat-row"><span>Beads:</span><span class="stat-val" id="red-beads">4</span></div>
       <div class="stat-row"><span>Captures:</span><span class="stat-val" id="red-captures">0</span></div>
-      <div class="stat-row"><span>Center Steps:</span><span class="stat-val" id="red-center-steps" style="color: var(--gold);">0</span></div>
+      <div class="stat-row"><span>Center Pts:</span><span class="stat-val" id="red-center-steps" style="color: var(--gold);">0</span></div>
     </div>
-
     <div class="player-card blue">
-      <div class="player-name" style="color: var(--accent-blue);">🔵 AI (Blue)</div>
-      <div class="stat-row"><span>Beads Left:</span><span class="stat-val" id="blue-beads">6</span></div>
+      <div class="player-name" style="color: var(--accent-blue);">
+        🔵 Blue 
+        <span id="blue-shot-clock" style="color:#93c5fd; font-weight:bold;"></span>
+        <span class="chess-clock" id="blue-clock" style="display:none;">02:00</span>
+      </div>
+      <div class="stat-row"><span>Beads:</span><span class="stat-val" id="blue-beads">4</span></div>
       <div class="stat-row"><span>Captures:</span><span class="stat-val" id="blue-captures">0</span></div>
-      <div class="stat-row"><span>Center Steps:</span><span class="stat-val" id="blue-center-steps" style="color: var(--gold);">0</span></div>
+      <div class="stat-row"><span>Center Pts:</span><span class="stat-val" id="blue-center-steps" style="color: var(--gold);">0</span></div>
     </div>
   </div>
 
-  <div class="status-badge" id="status-badge">Your Turn — Select a Red Bead</div>
+  <div class="status-badge" id="status-badge">Your Turn (10s) — Select a Red Bead</div>
 
   <canvas id="board" width="360" height="360"></canvas>
 
@@ -165,34 +134,68 @@
   </div>
 </div>
 
-<script>
-  const CONFIG = {
-    CANVAS_SIZE: 360,
-    P1: 1, // Red / Human
-    P2: 2, // Blue / AI
-    CENTER_NODES: [5, 6, 9, 10],
-    SPACING: 80,
-    OFFSET: 60
-  };
+<!-- MP3 PLAYER -->
+<div id="bgm-panel" style="position:fixed;bottom:10px;left:10px;background:#222;color:#fff;padding:8px 12px;border-radius:8px;font-family:sans-serif;font-size:13px;z-index:9999;display:flex;align-items:center;gap:6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 1px solid #444;">
+  <select id="bgm-select" style="background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px;">
+    <option value="">-- pick a track --</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler.mp3">Bubble Gum Puzzler</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler-2.mp3">Bubble Gum Puzzler 2</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/07/Cool-Puzzler.mp3">Cool Puzzler</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/06/Sky-Puzzle.mp3">Sky Puzzle</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/06/Mind-Bender.mp3">Mind Bender</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams.mp3">Puzzle Dreams</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams-3.mp3">Puzzle Dreams 3</option>
+    <option value="http://soundimage.org/wp-content/uploads/2014/10/Mysterious-Puzzle.mp3">Mysterious Puzzle</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/03/8-Bit-Puzzler.mp3">8-Bit Puzzler</option>
+    <option value="http://soundimage.org/wp-content/uploads/2014/12/Puzzle-Game-5.mp3">Puzzle Game 5</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/09/Happy-Puzzler.mp3">Happy Puzzler</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/08/Puzzle-Action.mp3">Puzzle Action</option>
+    <option value="https://soundimage.org/wp-content/uploads/2021/11/Puzzle-Technica.mp3">Puzzle Technica</option>
+    <option value="https://soundimage.org/wp-content/uploads/2021/08/Cool-Puzzle-Groovin-2.mp3">Cool Puzzle Groovin' 2</option>
+    <option value="https://soundimage.org/wp-content/uploads/2021/08/Quirky-Quarks.mp3">Quirky Quarks</option>
+    <option value="http://soundimage.org/wp-content/uploads/2018/01/Drifting-Things.mp3">Drifting Things</option>
+    <option value="http://soundimage.org/wp-content/uploads/2018/01/Wind-Up-Things.mp3">Wind Up Things</option>
+    <option value="http://soundimage.org/wp-content/uploads/2018/07/Carnival-Games.mp3">Carnival Games</option>
+    <option value="http://soundimage.org/wp-content/uploads/2018/07/Far-Away-Puzzle-Places.mp3">Far Away Puzzle Places</option>
+    <option value="http://soundimage.org/wp-content/uploads/2017/09/Thought-Puzzles.mp3">Thought Puzzles</option>
+  </select>
+  <button id="bgm-play" style="background: #10b981; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer;">▶</button>
+  <button id="bgm-pause" style="background: #ef4444; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer;">⏸</button>
+  <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.3" style="vertical-align:middle; width: 60px;">
+</div>
+<audio id="bgm-audio" loop></audio>
 
-  const STATE = {
-    IDLE: 'IDLE',
-    SELECTED: 'SELECTED',
-    CHAIN_JUMPING: 'CHAIN_JUMPING',
-    GAME_OVER: 'GAME_OVER'
-  };
+<script>
+  // --- MP3 PLAYER LOGIC ---
+  const bgmAudio = document.getElementById('bgm-audio');
+  const bgmSelect = document.getElementById('bgm-select');
+  const bgmVol = document.getElementById('bgm-vol');
+  bgmAudio.volume = bgmVol.value;
+  bgmSelect.addEventListener('change', () => { if(bgmSelect.value) { bgmAudio.src = bgmSelect.value; bgmAudio.play().catch(e=>{}); }});
+  document.getElementById('bgm-play').addEventListener('click', () => { if(!bgmAudio.src && bgmSelect.value) bgmAudio.src = bgmSelect.value; bgmAudio.play(); });
+  document.getElementById('bgm-pause').addEventListener('click', () => bgmAudio.pause());
+  bgmVol.addEventListener('input', () => bgmAudio.volume = bgmVol.value);
+
+  // --- GAME CONFIG & STATE ---
+  const CONFIG = { CANVAS_SIZE: 360, P1: 1, P2: 2, CENTER_NODES: [5, 6, 9, 10], SPACING: 80, OFFSET: 60 };
+  const STATE = { IDLE: 'IDLE', SELECTED: 'SELECTED', CHAIN_JUMPING: 'CHAIN_JUMPING', GAME_OVER: 'GAME_OVER' };
 
   let currentState = STATE.IDLE;
   let board = [];
   let currentTurn = CONFIG.P1;
   let startingPlayer = CONFIG.P1;
   
-  let matchTimeLimit = 60;
+  let timerMode = 'global'; 
   let matchTimeRemaining = 60;
+  let p1TimeRemaining = 120;
+  let p2TimeRemaining = 120;
+  
+  let turnTimeLimit = 10;
+  let turnTimeRemaining = 10;
+  
   let maxMoveLimit = 40;
   let moveCount = 0;
-
-  // Center step points tracking
+  let centerRule = 'cumulative'; 
   let redCenterPoints = 0;
   let blueCenterPoints = 0;
 
@@ -200,151 +203,34 @@
   let validMoves = [];
   let lastMove = null;
   let positionHistory = {};
-
   let timerInterval = null;
   let aiTimeout = null;
 
-  // --- UPGRADED AUDIO ENGINE (Warm Lofi Dual-Oscillator Synth Pad) ---
+  // --- SOUND EFFECTS ---
   let audioCtx = null;
-  let soundEnabled = true;
-  let bgmInterval = null;
-
-  function initAudio() {
-    if (!audioCtx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      audioCtx = new AudioContext();
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-    startBGM();
-  }
-
-  function toggleAudio() {
-    soundEnabled = !soundEnabled;
-    const btn = document.getElementById('audio-toggle');
-    if (btn) btn.innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
-    if (soundEnabled) {
-      initAudio();
-    } else {
-      if (bgmInterval) {
-        clearInterval(bgmInterval);
-        bgmInterval = null;
-      }
-    }
-  }
-
+  let sfxEnabled = true;
+  function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+  function toggleSFX() { sfxEnabled = !sfxEnabled; document.getElementById('audio-toggle').innerText = sfxEnabled ? "🔊 SFX: ON" : "🔇 SFX: OFF"; if (sfxEnabled) initAudio(); }
   function playTone(freq, type, duration, vol = 0.2) {
-    if (!soundEnabled) return;
-    initAudio();
-    try {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    } catch(e) {}
+    if (!sfxEnabled) return; initAudio();
+    try { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(vol, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration); } catch(e) {}
   }
-
   function playSoundEffect(type) {
-    if (!soundEnabled) return;
-    if (type === 'select') {
-      playTone(523.25, 'sine', 0.1, 0.15); // C5 soft tap
-    } else if (type === 'move') {
-      playTone(220.00, 'triangle', 0.14, 0.25); // Warm thock
-    } else if (type === 'center_step') {
-      playTone(659.25, 'sine', 0.12, 0.2); // E5 chime
-      setTimeout(() => playTone(880.00, 'sine', 0.18, 0.2), 60); // A5 high chime
-    } else if (type === 'capture') {
-      playTone(440.00, 'sine', 0.1, 0.22);
-      setTimeout(() => playTone(587.33, 'sine', 0.18, 0.22), 70);
-    } else if (type === 'win') {
-      [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-        setTimeout(() => playTone(freq, 'triangle', 0.3, 0.25), idx * 100);
-      });
-    } else if (type === 'lose') {
-      [349.23, 329.63, 293.66, 261.63].forEach((freq, idx) => {
-        setTimeout(() => playTone(freq, 'sawtooth', 0.22, 0.15), idx * 110);
-      });
-    }
-  }
-
-  // Clear, Audible Lofi Chords (Cmaj7 -> Am7 -> Fmaj7 -> G6)
-  function startBGM() {
-    if (bgmInterval || !soundEnabled) return;
-
-    const progression = [
-      [130.81, 164.81, 196.00, 246.94], // C3, E3, G3, B3 (Cmaj7)
-      [110.00, 130.81, 164.81, 196.00], // A2, C3, E3, G3 (Am7)
-      [87.31,  130.81, 174.61, 220.00], // F2, C3, F3, A3 (Fmaj7)
-      [98.00,  146.83, 196.00, 246.94]  // G2, D3, G3, B3 (G6)
-    ];
-    let bar = 0;
-
-    bgmInterval = setInterval(() => {
-      if (!soundEnabled || !audioCtx || audioCtx.state === 'suspended') return;
-      const now = audioCtx.currentTime;
-      const chord = progression[bar];
-
-      chord.forEach((freq, noteIdx) => {
-        try {
-          const osc1 = audioCtx.createOscillator();
-          const osc2 = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          const filter = audioCtx.createBiquadFilter();
-
-          // Dual-oscillator warmth
-          osc1.type = 'triangle';
-          osc1.frequency.setValueAtTime(freq, now + noteIdx * 0.1);
-
-          osc2.type = 'sine';
-          osc2.frequency.setValueAtTime(freq * 2, now + noteIdx * 0.1); // High shimmer
-
-          filter.type = 'lowpass';
-          filter.frequency.setValueAtTime(800, now);
-
-          const startTime = now + noteIdx * 0.1;
-          gain.gain.setValueAtTime(0.001, startTime);
-          gain.gain.linearRampToValueAtTime(0.12, startTime + 0.25);
-          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 2.8);
-
-          osc1.connect(filter);
-          osc2.connect(filter);
-          filter.connect(gain);
-          gain.connect(audioCtx.destination);
-
-          osc1.start(startTime);
-          osc2.start(startTime);
-          osc1.stop(startTime + 2.9);
-          osc2.stop(startTime + 2.9);
-        } catch(e) {}
-      });
-
-      bar = (bar + 1) % progression.length;
-    }, 3200);
+    if (!sfxEnabled) return;
+    if (type === 'select') playTone(523.25, 'sine', 0.1, 0.2); 
+    else if (type === 'move') playTone(220.00, 'triangle', 0.14, 0.3); 
+    else if (type === 'center_step') { playTone(659.25, 'sine', 0.12, 0.3); setTimeout(() => playTone(880.00, 'sine', 0.18, 0.3), 60); } 
+    else if (type === 'capture') { playTone(440.00, 'sine', 0.1, 0.3); setTimeout(() => playTone(587.33, 'sine', 0.18, 0.3), 70); } 
+    else if (type === 'win') { [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => { setTimeout(() => playTone(freq, 'triangle', 0.3, 0.3), idx * 100); }); } 
+    else if (type === 'lose') { [349.23, 329.63, 293.66, 261.63].forEach((freq, idx) => { setTimeout(() => playTone(freq, 'sawtooth', 0.22, 0.2), idx * 110); }); }
   }
 
   // --- GRAPH SETUP ---
   const POSITIONS = [];
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      POSITIONS.push({ x: CONFIG.OFFSET + c * CONFIG.SPACING, y: CONFIG.OFFSET + r * CONFIG.SPACING });
-    }
-  }
-
-  const DIAGONAL_RAYS = [
-    [0, 5, 10, 15], [3, 6, 9, 12],
-    [1, 6, 11], [4, 9, 14], [2, 5, 8], [7, 10, 13]
-  ];
-
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) POSITIONS.push({ x: CONFIG.OFFSET + c * CONFIG.SPACING, y: CONFIG.OFFSET + r * CONFIG.SPACING });
+  const DIAGONAL_RAYS = [[0, 5, 10, 15], [3, 6, 9, 12], [1, 6, 11], [4, 9, 14], [2, 5, 8], [7, 10, 13]];
   function buildGraph() {
-    const adj = {};
-    for (let i = 0; i < 16; i++) adj[i] = [];
+    const adj = {}; for (let i = 0; i < 16; i++) adj[i] = [];
     for (let r = 0; r < 4; r++) {
       for (let c = 0; c < 4; c++) {
         const u = r * 4 + c;
@@ -352,131 +238,98 @@
         if (r < 3) { const v = (r + 1) * 4 + c; adj[u].push(v); adj[v].push(u); }
       }
     }
-    DIAGONAL_RAYS.forEach(ray => {
-      for (let i = 0; i < ray.length - 1; i++) {
-        const u = ray[i], v = ray[i + 1];
-        if (!adj[u].includes(v)) adj[u].push(v);
-        if (!adj[v].includes(u)) adj[v].push(u);
-      }
-    });
+    DIAGONAL_RAYS.forEach(ray => { for (let i = 0; i < ray.length - 1; i++) { const u = ray[i], v = ray[i + 1]; if (!adj[u].includes(v)) adj[u].push(v); if (!adj[v].includes(u)) adj[v].push(u); }});
     return adj;
   }
-
   const ADJACENCY = buildGraph();
-
   function generateValidJumps() {
     const jumps = [];
     for (let from = 0; from < 16; from++) {
       ADJACENCY[from].forEach(over => {
-        const r1 = Math.floor(from / 4), c1 = from % 4;
-        const r2 = Math.floor(over / 4), c2 = over % 4;
-        const dr = r2 - r1, dc = c2 - c1;
-
-        const tr = r2 + dr, tc = c2 + dc;
-        if (tr >= 0 && tr < 4 && tc >= 0 && tc < 4) {
-          const to = tr * 4 + tc;
-          if (ADJACENCY[over].includes(to)) {
-            jumps.push([from, over, to]);
-          }
-        }
+        const r1 = Math.floor(from / 4), c1 = from % 4, r2 = Math.floor(over / 4), c2 = over % 4;
+        const tr = r2 + (r2 - r1), tc = c2 + (c2 - c1);
+        if (tr >= 0 && tr < 4 && tc >= 0 && tc < 4) { const to = tr * 4 + tc; if (ADJACENCY[over].includes(to)) jumps.push([from, over, to]); }
       });
     }
     return jumps;
   }
-
   const JUMPS = generateValidJumps();
 
   const canvas = document.getElementById('board');
   const ctx = canvas.getContext('2d');
 
-  function init() {
-    document.body.addEventListener('click', initAudio, { once: true });
-    canvas.addEventListener('click', handleCanvasClick);
-    resetGame();
+  function init() { document.body.addEventListener('click', initAudio, { once: true }); canvas.addEventListener('click', handleCanvasClick); resetGame(); }
+
+  function resetTurnTimer() {
+    turnTimeLimit = parseInt(document.getElementById('turn-timer-select').value, 10);
+    turnTimeRemaining = turnTimeLimit;
   }
 
   function resetGame() {
     clearInterval(timerInterval);
     if (aiTimeout) clearTimeout(aiTimeout);
-
     document.getElementById('win-modal').style.display = 'none';
 
-    matchTimeLimit = parseInt(document.getElementById('match-time-select').value, 10);
-    maxMoveLimit = parseInt(document.getElementById('max-move-select').value, 10);
-
-    board = [
-      CONFIG.P1, CONFIG.P1, CONFIG.P1, CONFIG.P1,
-      CONFIG.P1, 0,         0,         CONFIG.P1,
-      CONFIG.P2, 0,         0,         CONFIG.P2,
-      CONFIG.P2, CONFIG.P2, CONFIG.P2, CONFIG.P2
-    ];
+    centerRule = document.getElementById('center-rule-select').value;
     
+    const timerSetting = document.getElementById('timer-mode-select').value;
+    if (timerSetting.startsWith('global')) { timerMode = 'global'; matchTimeRemaining = parseInt(timerSetting.split('_')[1], 10); }
+    else if (timerSetting.startsWith('chess')) { timerMode = 'chess'; p1TimeRemaining = 120; p2TimeRemaining = 120; }
+    else { timerMode = 'off'; }
+
+    board = [CONFIG.P1, CONFIG.P1, CONFIG.P1, CONFIG.P1, 0, 0, 0, 0, 0, 0, 0, 0, CONFIG.P2, CONFIG.P2, CONFIG.P2, CONFIG.P2];
     currentTurn = startingPlayer;
     startingPlayer = startingPlayer === CONFIG.P1 ? CONFIG.P2 : CONFIG.P1;
-
-    moveCount = 0;
-    redCenterPoints = 0;
-    blueCenterPoints = 0;
-
-    selectedNode = null;
-    validMoves = [];
-    lastMove = null;
-    positionHistory = {};
-    currentState = STATE.IDLE;
+    moveCount = 0; redCenterPoints = 0; blueCenterPoints = 0;
+    selectedNode = null; validMoves = []; lastMove = null; positionHistory = {}; currentState = STATE.IDLE;
 
     recordPositionState();
+    resetTurnTimer();
     updateUI();
     drawBoard();
-    startMatchTimer();
+    startTimers();
 
-    if (currentTurn === CONFIG.P2) {
-      aiTimeout = setTimeout(makeAIMove, 500);
-    }
+    if (currentTurn === CONFIG.P2) aiTimeout = setTimeout(makeAIMove, 500);
   }
 
-  function startMatchTimer() {
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function startTimers() {
     clearInterval(timerInterval);
-    if (matchTimeLimit === 0) {
-      document.getElementById('match-timer').innerText = "OFF";
-      document.getElementById('match-timer').style.color = "#cbd5e1";
-      return;
-    }
-
-    matchTimeRemaining = matchTimeLimit;
-    updateTimerDisplay();
-
+    
     timerInterval = setInterval(() => {
-      if (currentState === STATE.GAME_OVER) {
-        clearInterval(timerInterval);
-        return;
+      if (currentState === STATE.GAME_OVER) { clearInterval(timerInterval); return; }
+
+      // 1. SHOT CLOCK (Anti-Stall)
+      if (turnTimeLimit > 0) {
+        turnTimeRemaining--;
+        if (turnTimeRemaining <= 0) {
+          clearInterval(timerInterval);
+          if (currentTurn === CONFIG.P1) endGame(CONFIG.P2, `Time's up! You took more than ${turnTimeLimit}s to move (Forfeit)!`);
+          else endGame(CONFIG.P1, "AI timed out! You win by forfeit!");
+          return;
+        }
       }
 
-      matchTimeRemaining--;
-      updateTimerDisplay();
-
-      if (matchTimeRemaining <= 0) {
-        clearInterval(timerInterval);
-        evaluateScoreAndEnd("Match time expired!");
+      // 2. MATCH TIMERS
+      if (timerMode === 'global') {
+        matchTimeRemaining--;
+        if (matchTimeRemaining <= 0) evaluateScoreAndEnd("Match time expired!");
+      } else if (timerMode === 'chess') {
+        if (currentTurn === CONFIG.P1) p1TimeRemaining--;
+        else p2TimeRemaining--;
+        if (p1TimeRemaining <= 0) endGame(CONFIG.P2, "Red ran out of time (Chess Clock)!");
+        if (p2TimeRemaining <= 0) endGame(CONFIG.P1, "Blue ran out of time (Chess Clock)!");
       }
+      updateUI();
     }, 1000);
   }
 
-  function updateTimerDisplay() {
-    if (matchTimeLimit === 0) return;
-    const minutes = Math.floor(matchTimeRemaining / 60).toString().padStart(2, '0');
-    const seconds = (matchTimeRemaining % 60).toString().padStart(2, '0');
-    const timerEl = document.getElementById('match-timer');
-    if (timerEl) {
-      timerEl.innerText = `${minutes}:${seconds}`;
-      timerEl.style.color = matchTimeRemaining <= 15 ? '#ef4444' : '#f59e0b';
-    }
-  }
-
-  function recordPositionState() {
-    const key = board.join('') + '_' + currentTurn;
-    positionHistory[key] = (positionHistory[key] || 0) + 1;
-    return positionHistory[key];
-  }
+  function recordPositionState() { const key = board.join('') + '_' + currentTurn; positionHistory[key] = (positionHistory[key] || 0) + 1; return positionHistory[key]; }
 
   function updateUI() {
     const redPieces = board.filter(p => p === CONFIG.P1).length;
@@ -484,186 +337,142 @@
 
     document.getElementById('red-beads').innerText = redPieces;
     document.getElementById('blue-beads').innerText = bluePieces;
+    document.getElementById('red-captures').innerText = 4 - bluePieces;
+    document.getElementById('blue-captures').innerText = 4 - redPieces;
 
-    document.getElementById('red-captures').innerText = 6 - bluePieces;
-    document.getElementById('blue-captures').innerText = 6 - redPieces;
-
-    // Display Center Step Status
-    if (maxMoveLimit > 0) {
+    if (centerRule === 'cumulative') {
       document.getElementById('red-center-steps').innerText = redCenterPoints;
       document.getElementById('blue-center-steps').innerText = blueCenterPoints;
+    } else if (centerRule === 'endgame') {
+      document.getElementById('red-center-steps').innerText = "Wait for End";
+      document.getElementById('blue-center-steps').innerText = "Wait for End";
     } else {
-      document.getElementById('red-center-steps').innerText = "OFF (Unlimited)";
-      document.getElementById('blue-center-steps').innerText = "OFF (Unlimited)";
+      document.getElementById('red-center-steps').innerText = "OFF";
+      document.getElementById('blue-center-steps').innerText = "OFF";
     }
 
-    if (maxMoveLimit > 0) {
-      document.getElementById('moves-left').innerText = Math.max(0, maxMoveLimit - moveCount);
-      document.getElementById('move-counter').innerText = `${moveCount} / ${maxMoveLimit}`;
+    document.getElementById('moves-left').innerText = maxMoveLimit > 0 ? Math.max(0, maxMoveLimit - moveCount) : "∞";
+
+    const globalBanner = document.getElementById('global-timer-banner');
+    const rClock = document.getElementById('red-clock');
+    const bClock = document.getElementById('blue-clock');
+
+    if (timerMode === 'global') {
+      globalBanner.style.display = 'flex'; rClock.style.display = 'none'; bClock.style.display = 'none';
+      const tEl = document.getElementById('match-timer');
+      tEl.innerText = formatTime(matchTimeRemaining);
+      tEl.style.color = matchTimeRemaining <= 15 ? '#ef4444' : '#f59e0b';
+    } else if (timerMode === 'chess') {
+      globalBanner.style.display = 'none'; rClock.style.display = 'inline-block'; bClock.style.display = 'inline-block';
+      rClock.innerText = formatTime(p1TimeRemaining); bClock.innerText = formatTime(p2TimeRemaining);
+      rClock.className = `chess-clock ${currentTurn === CONFIG.P1 ? 'active' : ''}`;
+      bClock.className = `chess-clock ${currentTurn === CONFIG.P2 ? 'active' : ''}`;
     } else {
-      document.getElementById('moves-left').innerText = "∞";
-      document.getElementById('move-counter').innerText = `${moveCount}`;
+      globalBanner.style.display = 'flex'; document.getElementById('match-timer').innerText = "OFF"; document.getElementById('match-timer').style.color = "#cbd5e1";
+      rClock.style.display = 'none'; bClock.style.display = 'none';
+    }
+
+    // --- NEW: SHOT CLOCK UI ---
+    if (turnTimeLimit > 0) {
+      if (currentTurn === CONFIG.P1) {
+        document.getElementById('red-shot-clock').innerText = `⏳ ${turnTimeRemaining}s`;
+        document.getElementById('blue-shot-clock').innerText = "";
+      } else {
+        document.getElementById('blue-shot-clock').innerText = `⏳ ${turnTimeRemaining}s`;
+        document.getElementById('red-shot-clock').innerText = "";
+      }
+    } else {
+      document.getElementById('red-shot-clock').innerText = "";
+      document.getElementById('blue-shot-clock').innerText = "";
     }
 
     const finishBtn = document.getElementById('finish-btn');
     finishBtn.style.display = (currentState === STATE.CHAIN_JUMPING && currentTurn === CONFIG.P1) ? 'block' : 'none';
 
-    const badge = document.getElementById('status-badge');
+  const badge = document.getElementById('status-badge');
     if (currentState !== STATE.GAME_OVER) {
+      
+      // Keep the warning flash if time is running out (3 seconds or less)
+      if (turnTimeLimit > 0 && turnTimeRemaining <= 3) {
+        badge.className = "status-badge danger";
+      } else {
+        badge.className = "status-badge";
+      }
+
+      // Clean text messages without the redundant timer string
       if (currentTurn === CONFIG.P1) {
-        if (currentState === STATE.CHAIN_JUMPING) {
-          badge.innerText = "Multi-Jump Available! Tap next jump or click Finish.";
-          badge.style.background = "#10b98122";
-          badge.style.color = "#10b981";
-        } else if (currentState === STATE.SELECTED) {
-          badge.innerText = "Tap a highlighted target to move!";
-          badge.style.background = "#ef444422";
-          badge.style.color = "#ef4444";
-        } else {
-          badge.innerText = "Your Turn — Select a Red Bead";
-          badge.style.background = "#ef444422";
-          badge.style.color = "#ef4444";
+        if (currentState === STATE.CHAIN_JUMPING) { 
+          badge.innerText = "Multi-Jump! Tap next jump or Finish."; 
+          badge.style.background = "#10b98122"; 
+          badge.style.color = "#10b981"; 
+        } 
+        else if (currentState === STATE.SELECTED) { 
+          badge.innerText = "Tap a highlighted target to move!"; 
+          badge.style.background = "#ef444422"; 
+          badge.style.color = "#ef4444"; 
+        } 
+        else { 
+          badge.innerText = "Your Turn — Select a Red Bead"; 
+          badge.style.background = "#ef444422"; 
+          badge.style.color = "#ef4444"; 
         }
       } else {
-        badge.innerText = "AI Thinking (Blue)...";
-        badge.style.background = "#3b82f622";
+        badge.innerText = "AI Thinking (Blue)..."; 
+        badge.style.background = "#3b82f622"; 
         badge.style.color = "#3b82f6";
       }
     }
-  }
+  } // <-- This bracket ends the updateUI() function
 
-  // --- RENDERING & PERSISTENT LAST MOVE TRAIL ---
   function drawBoard() {
     ctx.clearRect(0, 0, CONFIG.CANVAS_SIZE, CONFIG.CANVAS_SIZE);
-    
-    // Board Lines
-    ctx.strokeStyle = '#475569';
-    ctx.lineWidth = 3;
-    for (let u = 0; u < 16; u++) {
-      ADJACENCY[u].forEach(v => {
-        if (u < v) {
-          ctx.beginPath();
-          ctx.moveTo(POSITIONS[u].x, POSITIONS[u].y);
-          ctx.lineTo(POSITIONS[v].x, POSITIONS[v].y);
-          ctx.stroke();
-        }
-      });
-    }
+    ctx.strokeStyle = '#475569'; ctx.lineWidth = 3;
+    for (let u = 0; u < 16; u++) { ADJACENCY[u].forEach(v => { if (u < v) { ctx.beginPath(); ctx.moveTo(POSITIONS[u].x, POSITIONS[u].y); ctx.lineTo(POSITIONS[v].x, POSITIONS[v].y); ctx.stroke(); }}); }
 
-    // PERSISTENT LAST MOVE TRAIL
     if (lastMove && lastMove.from !== undefined && lastMove.to !== undefined) {
-      const p1 = POSITIONS[lastMove.from];
-      const p2 = POSITIONS[lastMove.to];
-
-      // Trail Line
-      ctx.beginPath();
-      ctx.moveTo(p1.x, p1.y);
-      ctx.lineTo(p2.x, p2.y);
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.75)';
-      ctx.lineWidth = 5;
-      ctx.setLineDash([6, 6]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Ghost Origin Ring
-      ctx.beginPath();
-      ctx.arc(p1.x, p1.y, 14, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
+      const p1 = POSITIONS[lastMove.from], p2 = POSITIONS[lastMove.to];
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.strokeStyle = 'rgba(245, 158, 11, 0.75)'; ctx.lineWidth = 5; ctx.setLineDash([6, 6]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(p1.x, p1.y, 14, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)'; ctx.lineWidth = 2.5; ctx.stroke();
     }
 
-    // Nodes
     POSITIONS.forEach((pos, idx) => {
       const isCenter = CONFIG.CENTER_NODES.includes(idx);
       ctx.fillStyle = isCenter ? '#1e293b' : '#0f172a';
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = isCenter ? '#f59e0b' : '#64748b';
-      ctx.lineWidth = isCenter ? 3 : 2;
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = isCenter ? '#f59e0b' : '#64748b'; ctx.lineWidth = isCenter ? 3 : 2; ctx.stroke();
     });
 
-    // Valid Hints Ring
     if (currentState !== STATE.GAME_OVER && currentTurn === CONFIG.P1 && currentState !== STATE.CHAIN_JUMPING) {
       POSITIONS.forEach((pos, idx) => {
         if (board[idx] === CONFIG.P1 && getMovesForNode(board, idx, CONFIG.P1).length > 0) {
-          ctx.beginPath();
-          ctx.arc(pos.x, pos.y, 19, 0, Math.PI * 2);
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = 3;
-          ctx.setLineDash([4, 4]);
-          ctx.stroke();
-          ctx.setLineDash([]);
+          ctx.beginPath(); ctx.arc(pos.x, pos.y, 19, 0, Math.PI * 2); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
         }
       });
     }
 
-    // 3D Glass Marbles
     POSITIONS.forEach((pos, idx) => {
       const val = board[idx];
       if (val !== 0) {
-        const radius = 13;
-        const grad = ctx.createRadialGradient(pos.x - 4, pos.y - 4, 2, pos.x, pos.y, radius);
-        
-        if (val === CONFIG.P1) {
-          grad.addColorStop(0, '#fca5a5');
-          grad.addColorStop(0.3, '#ef4444');
-          grad.addColorStop(1, '#991b1b');
-        } else {
-          grad.addColorStop(0, '#93c5fd');
-          grad.addColorStop(0.3, '#3b82f6');
-          grad.addColorStop(1, '#1e40af');
-        }
-
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        const radius = 13; const grad = ctx.createRadialGradient(pos.x - 4, pos.y - 4, 2, pos.x, pos.y, radius);
+        if (val === CONFIG.P1) { grad.addColorStop(0, '#fca5a5'); grad.addColorStop(0.3, '#ef4444'); grad.addColorStop(1, '#991b1b'); } 
+        else { grad.addColorStop(0, '#93c5fd'); grad.addColorStop(0.3, '#3b82f6'); grad.addColorStop(1, '#1e40af'); }
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2); ctx.fillStyle = grad; ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
       }
     });
 
-    // Destination Highlight Ring on Last Move
     if (lastMove && lastMove.to !== undefined) {
       const p2 = POSITIONS[lastMove.to];
-      ctx.beginPath();
-      ctx.arc(p2.x, p2.y, 17, 0, Math.PI * 2);
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 3;
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(p2.x, p2.y, 17, 0, Math.PI * 2); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3; ctx.stroke();
     }
 
-    // Selection & Target overlays
     if (selectedNode !== null) {
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(POSITIONS[selectedNode].x, POSITIONS[selectedNode].y, 18, 0, Math.PI * 2);
-      ctx.stroke();
-
+      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(POSITIONS[selectedNode].x, POSITIONS[selectedNode].y, 18, 0, Math.PI * 2); ctx.stroke();
       validMoves.forEach(m => {
         const targetPos = POSITIONS[m.to];
-        ctx.beginPath();
-        ctx.arc(targetPos.x, targetPos.y, 18, 0, Math.PI * 2);
-        
-        if (m.captured !== null) {
-          ctx.fillStyle = 'rgba(245, 158, 11, 0.45)';
-          ctx.fill();
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = 3;
-          ctx.stroke();
-        } else {
-          ctx.fillStyle = 'rgba(16, 185, 129, 0.45)';
-          ctx.fill();
-          ctx.strokeStyle = '#10b981';
-          ctx.lineWidth = 3;
-          ctx.stroke();
-        }
+        ctx.beginPath(); ctx.arc(targetPos.x, targetPos.y, 18, 0, Math.PI * 2);
+        if (m.captured !== null) { ctx.fillStyle = 'rgba(245, 158, 11, 0.45)'; ctx.fill(); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3; ctx.stroke(); } 
+        else { ctx.fillStyle = 'rgba(16, 185, 129, 0.45)'; ctx.fill(); ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.stroke(); }
       });
     }
   }
@@ -671,338 +480,199 @@
   function handleCanvasClick(e) {
     if (currentState === STATE.GAME_OVER || currentTurn !== CONFIG.P1) return;
     initAudio();
-
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-
+    const rect = canvas.getBoundingClientRect(); const clickX = e.clientX - rect.left; const clickY = e.clientY - rect.top;
     const clickedIdx = POSITIONS.findIndex(pos => Math.hypot(pos.x - clickX, pos.y - clickY) <= 25);
     if (clickedIdx === -1) return;
 
     if (currentState === STATE.CHAIN_JUMPING) {
-      if (board[clickedIdx] === 0) {
-        const move = validMoves.find(m => m.to === clickedIdx);
-        if (move) executeMove(move);
-      }
+      if (board[clickedIdx] === 0) { const move = validMoves.find(m => m.to === clickedIdx); if (move) executeMove(move); }
       return;
     }
 
     if (board[clickedIdx] === CONFIG.P1) {
-      playSoundEffect('select');
-      selectedNode = clickedIdx;
-      validMoves = getMovesForNode(board, clickedIdx, CONFIG.P1);
-      currentState = STATE.SELECTED;
-      updateUI();
-      drawBoard();
-      return;
+      playSoundEffect('select'); selectedNode = clickedIdx; validMoves = getMovesForNode(board, clickedIdx, CONFIG.P1); currentState = STATE.SELECTED; updateUI(); drawBoard(); return;
     }
 
     if (currentState === STATE.SELECTED && board[clickedIdx] === 0) {
-      const move = validMoves.find(m => m.to === clickedIdx);
-      if (move) {
-        executeMove(move);
-        return;
-      }
+      const move = validMoves.find(m => m.to === clickedIdx); if (move) { executeMove(move); return; }
     }
 
-    selectedNode = null;
-    validMoves = [];
-    currentState = STATE.IDLE;
-    updateUI();
-    drawBoard();
+    selectedNode = null; validMoves = []; currentState = STATE.IDLE; updateUI(); drawBoard();
   }
 
   function getMovesForNode(currBoard, node, player) {
     const moves = [];
-    ADJACENCY[node].forEach(neighbor => {
-      if (currBoard[neighbor] === 0) {
-        moves.push({ from: node, to: neighbor, captured: null });
-      }
-    });
-    JUMPS.forEach(([from, over, to]) => {
-      if (from === node && currBoard[over] !== 0 && currBoard[over] !== player && currBoard[to] === 0) {
-        moves.push({ from: node, to: to, captured: over });
-      }
-    });
+    ADJACENCY[node].forEach(neighbor => { if (currBoard[neighbor] === 0) moves.push({ from: node, to: neighbor, captured: null }); });
+    JUMPS.forEach(([from, over, to]) => { if (from === node && currBoard[over] !== 0 && currBoard[over] !== player && currBoard[to] === 0) moves.push({ from: node, to: to, captured: over }); });
     return moves;
   }
 
   function getAllLegalMoves(currBoard, player) {
-    let moves = [];
-    for (let i = 0; i < 16; i++) {
-      if (currBoard[i] === player) {
-        moves = moves.concat(getMovesForNode(currBoard, i, player));
-      }
-    }
-    return moves;
+    let moves = []; for (let i = 0; i < 16; i++) { if (currBoard[i] === player) moves = moves.concat(getMovesForNode(currBoard, i, player)); } return moves;
   }
 
   function executeMove(move) {
-    board[move.to] = board[move.from];
-    board[move.from] = 0;
-    lastMove = { from: move.from, to: move.to };
-
-    // ANTI-STALL LOGIC: Center step points require active Move Limit (> 0)
-    let hitCenter = false;
-    if (CONFIG.CENTER_NODES.includes(move.to) && maxMoveLimit > 0) {
-      hitCenter = true;
-      if (currentTurn === CONFIG.P1) {
-        redCenterPoints++;
-      } else {
-        blueCenterPoints++;
-      }
-    }
-
-    let wasCapture = false;
-    if (move.captured !== null) {
-      board[move.captured] = 0;
-      wasCapture = true;
-      playSoundEffect('capture');
-    } else if (hitCenter) {
-      playSoundEffect('center_step');
-    } else {
-      playSoundEffect('move');
-    }
+    board[move.to] = board[move.from]; board[move.from] = 0; lastMove = { from: move.from, to: move.to };
+    let hitCenter = CONFIG.CENTER_NODES.includes(move.to); let wasCapture = false;
+    
+    if (move.captured !== null) { board[move.captured] = 0; wasCapture = true; playSoundEffect('capture'); } 
+    else if (hitCenter) { playSoundEffect('center_step'); } 
+    else { playSoundEffect('move'); }
 
     if (wasCapture) {
       const followUpJumps = getMovesForNode(board, move.to, currentTurn).filter(m => m.captured !== null);
       if (followUpJumps.length > 0) {
-        currentState = STATE.CHAIN_JUMPING;
-        selectedNode = move.to;
-        validMoves = followUpJumps;
-        updateUI();
-        drawBoard();
-
+        currentState = STATE.CHAIN_JUMPING; selectedNode = move.to; validMoves = followUpJumps; 
+        resetTurnTimer(); // Reset shot clock for the combo!
+        updateUI(); drawBoard();
         if (currentTurn === CONFIG.P2) {
           aiTimeout = setTimeout(() => {
-            const chosenJump = followUpJumps[Math.floor(Math.random() * followUpJumps.length)];
-            executeMove(chosenJump);
-          }, 400);
+            let bestJump = followUpJumps[0]; let maxFutureCaptures = -1;
+            for (let j of followUpJumps) {
+              const tempBoard = [...board]; tempBoard[j.to] = tempBoard[j.from]; tempBoard[j.from] = 0; tempBoard[j.captured] = 0;
+              const futureJumps = getMovesForNode(tempBoard, j.to, CONFIG.P2).filter(m => m.captured !== null).length;
+              if (futureJumps > maxFutureCaptures) { maxFutureCaptures = futureJumps; bestJump = j; }
+            }
+            executeMove(bestJump);
+          }, 600);
         }
         return;
       }
     }
-
     completeTurn();
   }
 
-  function manualFinishTurn() {
-    if (currentState === STATE.CHAIN_JUMPING && currentTurn === CONFIG.P1) {
-      completeTurn();
-    }
-  }
+  function manualFinishTurn() { if (currentState === STATE.CHAIN_JUMPING && currentTurn === CONFIG.P1) completeTurn(); }
 
   function completeTurn() {
-    currentState = STATE.IDLE;
-    selectedNode = null;
-    validMoves = [];
+    currentState = STATE.IDLE; selectedNode = null; validMoves = [];
 
-    moveCount++;
-    updateUI();
-    drawBoard();
+    if (centerRule === 'cumulative') {
+      CONFIG.CENTER_NODES.forEach(idx => { if (board[idx] === CONFIG.P1) redCenterPoints++; if (board[idx] === CONFIG.P2) blueCenterPoints++; });
+    }
+
+    moveCount++; 
+    resetTurnTimer(); // Reset shot clock for next player
+    updateUI(); drawBoard();
 
     const redPieces = board.filter(p => p === CONFIG.P1).length;
     const bluePieces = board.filter(p => p === CONFIG.P2).length;
 
-    if (redPieces === 0) {
-      endGame(CONFIG.P2, "AI eliminated all your beads!");
-      return;
-    }
-    if (bluePieces === 0) {
-      endGame(CONFIG.P1, "You eliminated all AI beads!");
-      return;
-    }
+    if (redPieces === 0) { endGame(CONFIG.P2, "AI eliminated all your beads!"); return; }
+    if (bluePieces === 0) { endGame(CONFIG.P1, "You eliminated all AI beads!"); return; }
+    if (maxMoveLimit > 0 && moveCount >= maxMoveLimit) { evaluateScoreAndEnd(`Max moves limit of ${maxMoveLimit} reached!`); return; }
+    if (recordPositionState() >= 3) { endGame(0, "Game drawn! 3-Fold Repetition detected."); return; }
 
-    if (maxMoveLimit > 0 && moveCount >= maxMoveLimit) {
-      evaluateScoreAndEnd(`Max moves limit of ${maxMoveLimit} reached!`);
-      return;
-    }
-
-    const repetitions = recordPositionState();
-    if (repetitions >= 3) {
-      endGame(0, "Game drawn! 3-Fold Repetition detected.");
-      return;
-    }
-
-    currentTurn = currentTurn === CONFIG.P1 ? CONFIG.P2 : CONFIG.P1;
-    updateUI();
-
-    const availableMoves = getAllLegalMoves(board, currentTurn);
-    if (availableMoves.length === 0) {
+    currentTurn = currentTurn === CONFIG.P1 ? CONFIG.P2 : CONFIG.P1; updateUI();
+    if (getAllLegalMoves(board, currentTurn).length === 0) {
       const winner = currentTurn === CONFIG.P1 ? CONFIG.P2 : CONFIG.P1;
       const loser = currentTurn === CONFIG.P1 ? "You have" : "AI has";
-      endGame(winner, `${loser} no legal moves! Game over by Stalemate.`);
-      return;
+      endGame(winner, `${loser} no legal moves! Game over by Stalemate.`); return;
     }
 
-    if (currentTurn === CONFIG.P2) {
-      aiTimeout = setTimeout(makeAIMove, 450);
-    }
+    if (currentTurn === CONFIG.P2) aiTimeout = setTimeout(makeAIMove, 450);
   }
 
-  function makeAIMove() {
-    const move = selectAIMove();
-    if (move) {
-      executeMove(move);
-    } else {
-      endGame(CONFIG.P1, "AI has no legal moves remaining! You win by stalemate!");
-    }
-  }
+  function makeAIMove() { const move = selectAIMove(); if (move) executeMove(move); else endGame(CONFIG.P1, "AI has no legal moves remaining! You win by stalemate!"); }
 
   function selectAIMove() {
-    const legalMoves = getAllLegalMoves(board, CONFIG.P2);
-    if (legalMoves.length === 0) return null;
-
+    const legalMoves = getAllLegalMoves(board, CONFIG.P2); if (legalMoves.length === 0) return null;
     const depth = parseInt(document.getElementById('ai-difficulty').value, 10);
-    
-    if (depth === 1) {
-      const captureMoves = legalMoves.filter(m => m.captured !== null);
-      return captureMoves.length > 0 ? captureMoves[Math.floor(Math.random() * captureMoves.length)] : legalMoves[Math.floor(Math.random() * legalMoves.length)];
-    }
+    if (depth === 1) { const captureMoves = legalMoves.filter(m => m.captured !== null); return captureMoves.length > 0 ? captureMoves[Math.floor(Math.random() * captureMoves.length)] : legalMoves[Math.floor(Math.random() * legalMoves.length)]; }
 
-    let bestScore = -Infinity;
-    let bestMoves = [];
-
+    let bestScore = -Infinity; let bestMoves = [];
     legalMoves.forEach(move => {
-      const nextBoard = [...board];
-      nextBoard[move.to] = nextBoard[move.from];
-      nextBoard[move.from] = 0;
-      if (move.captured !== null) nextBoard[move.captured] = 0;
-
+      const nextBoard = [...board]; nextBoard[move.to] = nextBoard[move.from]; nextBoard[move.from] = 0; if (move.captured !== null) nextBoard[move.captured] = 0;
       const score = minimax(nextBoard, depth - 1, false, -Infinity, Infinity);
-      
-      if (score > bestScore) {
-        bestScore = score;
-        bestMoves = [move];
-      } else if (score === bestScore) {
-        bestMoves.push(move);
-      }
+      if (score > bestScore) { bestScore = score; bestMoves = [move]; } else if (score === bestScore) { bestMoves.push(move); }
     });
-
     return bestMoves[Math.floor(Math.random() * bestMoves.length)];
   }
 
   function minimax(currBoard, depth, isMaximizing, alpha, beta) {
     if (depth === 0) return evaluateBoard(currBoard);
-
     if (isMaximizing) {
-      let maxEval = -Infinity;
-      const moves = getAllLegalMoves(currBoard, CONFIG.P2);
-      if (moves.length === 0) return -100;
+      let maxEval = -Infinity; const moves = getAllLegalMoves(currBoard, CONFIG.P2); if (moves.length === 0) return -100;
       for (const move of moves) {
-        const tempBoard = [...currBoard];
-        tempBoard[move.to] = tempBoard[move.from];
-        tempBoard[move.from] = 0;
-        if (move.captured !== null) tempBoard[move.captured] = 0;
-
+        const tempBoard = [...currBoard]; tempBoard[move.to] = tempBoard[move.from]; tempBoard[move.from] = 0; if (move.captured !== null) tempBoard[move.captured] = 0;
         const evalVal = minimax(tempBoard, depth - 1, false, alpha, beta);
-        maxEval = Math.max(maxEval, evalVal);
-        alpha = Math.max(alpha, evalVal);
-        if (beta <= alpha) break;
+        maxEval = Math.max(maxEval, evalVal); alpha = Math.max(alpha, evalVal); if (beta <= alpha) break;
       }
       return maxEval;
     } else {
-      let minEval = Infinity;
-      const moves = getAllLegalMoves(currBoard, CONFIG.P1);
-      if (moves.length === 0) return 100;
+      let minEval = Infinity; const moves = getAllLegalMoves(currBoard, CONFIG.P1); if (moves.length === 0) return 100;
       for (const move of moves) {
-        const tempBoard = [...currBoard];
-        tempBoard[move.to] = tempBoard[move.from];
-        tempBoard[move.from] = 0;
-        if (move.captured !== null) tempBoard[move.captured] = 0;
-
+        const tempBoard = [...currBoard]; tempBoard[move.to] = tempBoard[move.from]; tempBoard[move.from] = 0; if (move.captured !== null) tempBoard[move.captured] = 0;
         const evalVal = minimax(tempBoard, depth - 1, true, alpha, beta);
-        minEval = Math.min(minEval, evalVal);
-        beta = Math.min(beta, evalVal);
-        if (beta <= alpha) break;
+        minEval = Math.min(minEval, evalVal); beta = Math.min(beta, evalVal); if (beta <= alpha) break;
       }
       return minEval;
     }
   }
 
   function evaluateBoard(b) {
-    const p1Pieces = b.filter(x => x === CONFIG.P1).length;
-    const p2Pieces = b.filter(x => x === CONFIG.P2).length;
-    return (p2Pieces - p1Pieces) * 25 + (Math.random() * 2 - 1);
+    const p1Pieces = b.filter(x => x === CONFIG.P1).length; const p2Pieces = b.filter(x => x === CONFIG.P2).length;
+    let p1Center = 0; let p2Center = 0;
+    CONFIG.CENTER_NODES.forEach(idx => { if (b[idx] === CONFIG.P1) p1Center++; if (b[idx] === CONFIG.P2) p2Center++; });
+    return ((p2Pieces - p1Pieces) * 25) + ((p2Center - p1Center) * 5) + (Math.random() * 2 - 1);
   }
 
   function evaluateScoreAndEnd(prefixReason) {
     if (currentState === STATE.GAME_OVER) return;
-
-    const redPieces = board.filter(p => p === CONFIG.P1).length;
-    const bluePieces = board.filter(p => p === CONFIG.P2).length;
-
-    const redCaptures = 6 - bluePieces;
-    const blueCaptures = 6 - redPieces;
-
-    if (redCaptures > blueCaptures) {
-      endGame(CONFIG.P1, `${prefixReason} You won on captures (${redCaptures} vs ${blueCaptures})!`);
-      return;
-    } 
-    if (blueCaptures > redCaptures) {
-      endGame(CONFIG.P2, `${prefixReason} AI won on captures (${blueCaptures} vs ${redCaptures})!`);
-      return;
-    }
-
-    // CAPTURES TIED -> EVALUATE SELECTED TIEBREAKER
-    const tiebreakerSetting = document.getElementById('center-tiebreaker-select').value;
     
-    if (tiebreakerSetting === 'cumulative' && maxMoveLimit > 0) {
-      if (redCenterPoints > blueCenterPoints) {
-        endGame(CONFIG.P1, `${prefixReason} Captures tied (${redCaptures}-${blueCaptures})! You won on Cumulative Center Steps (${redCenterPoints} vs ${blueCenterPoints})!`);
-        return;
-      } else if (blueCenterPoints > redCenterPoints) {
-        endGame(CONFIG.P2, `${prefixReason} Captures tied (${blueCaptures}-${redCaptures})! AI won on Cumulative Center Steps (${blueCenterPoints} vs ${redCenterPoints})!`);
-        return;
-      }
-    } else if (tiebreakerSetting === 'occupancy' || (tiebreakerSetting === 'cumulative' && maxMoveLimit === 0)) {
-      const redCenterOccupancy = board.filter((p, idx) => p === CONFIG.P1 && CONFIG.CENTER_NODES.includes(idx)).length;
-      const blueCenterOccupancy = board.filter((p, idx) => p === CONFIG.P2 && CONFIG.CENTER_NODES.includes(idx)).length;
+    const redPieces = board.filter(p => p === CONFIG.P1).length; 
+    const bluePieces = board.filter(p => p === CONFIG.P2).length;
+    const redCaptures = 4 - bluePieces; 
+    const blueCaptures = 4 - redPieces;
 
-      if (redCenterOccupancy > blueCenterOccupancy) {
-        endGame(CONFIG.P1, `${prefixReason} Captures tied (${redCaptures}-${blueCaptures})! You won on End-Game Center Occupancy (${redCenterOccupancy} vs ${blueCenterOccupancy} nodes)!`);
-        return;
-      } else if (blueCenterOccupancy > redCenterOccupancy) {
-        endGame(CONFIG.P2, `${prefixReason} Captures tied (${blueCaptures}-${redCaptures})! AI won on End-Game Center Occupancy (${blueCenterOccupancy} vs ${redCenterOccupancy} nodes)!`);
-        return;
-      }
+    // 1. Check Captures First (Highest Priority)
+    if (redCaptures > blueCaptures) { 
+      endGame(CONFIG.P1, `${prefixReason} You won on captures (${redCaptures} vs ${blueCaptures})!`); 
+      return; 
+    } 
+    if (blueCaptures > redCaptures) { 
+      endGame(CONFIG.P2, `${prefixReason} AI won on captures (${blueCaptures} vs ${redCaptures})!`); 
+      return; 
     }
 
-    endGame(0, `${prefixReason} Game drawn! Equal captures (${redCaptures}-${blueCaptures}) and equal center metrics.`);
-  }
+    // 2. If Captures are tied, calculate End-Game center points (if needed)
+    if (centerRule === 'endgame') {
+      redCenterPoints = 0; blueCenterPoints = 0;
+      CONFIG.CENTER_NODES.forEach(idx => { 
+        if (board[idx] === CONFIG.P1) redCenterPoints++; 
+        if (board[idx] === CONFIG.P2) blueCenterPoints++; 
+      });
+    }
 
-  function endGame(winner, reason) {
-    clearInterval(timerInterval);
-    if (aiTimeout) clearTimeout(aiTimeout);
-
-    currentState = STATE.GAME_OVER;
-    const modal = document.getElementById('win-modal');
-    const title = document.getElementById('modal-winner');
-    const desc = document.getElementById('modal-desc');
-
-    if (winner === CONFIG.P1) {
-      title.innerText = "🏆 You Won!";
-      title.style.color = "#ef4444";
-      playSoundEffect('win');
-    } else if (winner === CONFIG.P2) {
-      title.innerText = "🤖 AI Won!";
-      title.style.color = "#3b82f6";
-      playSoundEffect('lose');
+    // 3. Evaluate Tiebreakers based on the selected Center Rule
+    if (centerRule !== 'off') {
+      // Center Rule is ON
+      if (redCenterPoints > blueCenterPoints) { 
+        endGame(CONFIG.P1, `${prefixReason} Captures tied! You won on Center Points (${redCenterPoints} vs ${blueCenterPoints})!`); 
+        return; 
+      } 
+      else if (blueCenterPoints > redCenterPoints) { 
+        endGame(CONFIG.P2, `${prefixReason} Captures tied! AI won on Center Points (${blueCenterPoints} vs ${redCenterPoints})!`); 
+        return; 
+      }
+      // If center points are ALSO tied:
+      endGame(0, `${prefixReason} Game drawn! Equal captures and equal center points.`);
     } else {
-      title.innerText = "🤝 Draw Game!";
-      title.style.color = "#f59e0b";
-      playSoundEffect('select');
+      // Center Rule is OFF (Only report captures)
+      endGame(0, `${prefixReason} Game drawn! Equal captures (${redCaptures} to ${blueCaptures}).`);
     }
-
-    desc.innerText = reason;
-    modal.style.display = "flex";
+  }
+  function endGame(winner, reason) {
+    clearInterval(timerInterval); if (aiTimeout) clearTimeout(aiTimeout);
+    currentState = STATE.GAME_OVER;
+    const modal = document.getElementById('win-modal'); const title = document.getElementById('modal-winner'); const desc = document.getElementById('modal-desc');
+    if (winner === CONFIG.P1) { title.innerText = "🏆 You Won!"; title.style.color = "#ef4444"; playSoundEffect('win'); } 
+    else if (winner === CONFIG.P2) { title.innerText = "🤖 AI Won!"; title.style.color = "#3b82f6"; playSoundEffect('lose'); } 
+    else { title.innerText = "🤝 Draw Game!"; title.style.color = "#f59e0b"; playSoundEffect('select'); }
+    desc.innerText = reason; modal.style.display = "flex";
   }
 
-  function closeModal() {
-    document.getElementById('win-modal').style.display = "none";
-    resetGame();
-  }
-
+  function closeModal() { document.getElementById('win-modal').style.display = "none"; resetGame(); }
   window.onload = init;
 </script>
 </body>
