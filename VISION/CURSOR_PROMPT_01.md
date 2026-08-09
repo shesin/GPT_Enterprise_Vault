@@ -38,7 +38,7 @@ Before implementation:
 
 Before modifying code:
 
-1. Read GPT_PROJECT_RULES_01P.md, GPT_PROJECT_STATUS_01P.md, and AGENT_RULE_05P.md.
+1. Read GPT_PROJECT_RULES_01P.md, GPT_PROJECT_STATUS_01P.md, AGENT_RULE_05P.md, and PROJECT_MAP_05P.md.
 2. Inspect the repository. Identify authoritative implementation, existing architecture, affected modules, existing tests.
 
 Never assume filenames, classes, methods, folder structure, or missing functionality. Always use repository evidence.
@@ -95,12 +95,18 @@ Never invent files, tests, build results, errors, or implementation status. Repo
 
 # Completion Report
 
-Use exactly these headings:
+Push to git before reporting. This report must describe what is already
+committed, not what you are about to commit.
+
+Report ONLY the Completion Report below — no code blocks, no full file
+contents, no explanation outside these headings. If code needs review, the
+Architect will retrieve it from the repository directly.
+
+Use exactly these headings, in this order:
 
 ## Files Modified
 ## Why Each Change Was Required
 ## Tests Executed & Status
-(Actual results only.)
 ## Architectural Impact
 ## Risks
 ## Project Decisions Affected

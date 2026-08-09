@@ -5,8 +5,7 @@
 ```text
 SmartBeads/
 │
-├── index.html                         # Entry HTML for browser playtest GUI (npm run web:board4)
-├── src/                               # SmartBeads source code
+├── src/                               # SmartBeads source code (production)
 │   ├── boards/                        # Physical BoardDefinition variants
 │   │   ├── Board4.ts
 │   │   ├── Board5.ts
@@ -31,16 +30,35 @@ SmartBeads/
 │   └── models/
 │       └── GameState.ts               # BoardDefinition + GameState
 │
+├── prototype/                         # Design/UX prototypes (outside production src/)
+│   └── board4/                        # Standalone HTML gameplay lab for Board4
+│
 ├── PROJECT_MAP_05P.md                 # Project structure and navigation
 ├── GPT_PROJECT_RULES_01P.md           # Permanent engineering and design principles
 └── GPT_PROJECT_STATUS_01P.md          # Current milestone and next step
 ```
 
+Repo-root `index.html` (outside this folder tree) is the Vite entry for the TypeScript engine playtest GUI (`npm run web:board4`). Do not confuse it with `prototype/board4/index.html`.
+
 ## File Responsibilities
 
-### index.html & src/playtest/web/main.ts
+### Repo-root index.html & src/playtest/web/main.ts
 
-Minimal browser-based playtest GUI rendered via Vite SVG and TypeScript controller (`npm run web:board4`).
+Minimal browser-based playtest GUI rendered via Vite SVG and TypeScript controller (`npm run web:board4`). Authoritative entry is the repository root `index.html`, not anything under `prototype/`.
+
+### prototype/board4/
+
+Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside `src/` per the Prototype Classification rule: may skip full architectural review, must not share code with the production engine, and is not part of the Vite TypeScript playtest path.
+
+- **GEMINI_INDEX_4.html** — Interactive HTML prototype, 4×4 board, 4 beads per side. Human-playable; used for early rule validation.
+- **GEMINI_INDEX_6.html** — Interactive HTML prototype, 4×4 board, 6 beads per side. Also has Human-vs-Human mode with chess-clock auto-conversion.
+- **GEMINI_LAB.html** — Batch-testing tool. Parametrized (bead count, board geometry, tiebreaker mode, move limit). Runs many AI-vs-AI games headless and outputs a comparison table across configs so results do not need to be copy-pasted from the console by hand.
+- **GEMINI_GAME_ARCHITECTURE_05P.md** — Describes the rules and mechanics implemented so far for both the 4-bead and 6-bead 4×4 variants (background reference; code is authoritative if they disagree).
+- **verify-gemini-lab.cjs** — Headless test script for GEMINI_LAB.html.
+- **WEB_RULES_05P.md** — Browser-verified, production-accepted rules for this prototype line.
+- **WEB_STATUS_05P.md** — Verification log for this prototype line.
+- **WEB_IN_PROGRESS_05P.md** — Implemented-but-unverified features for this prototype line.
+- **index.html**, **verify.cjs**, **collect-evidence.cjs**, **evidence/** — a separate, currently inactive prototype track (not the same as the GEMINI_INDEX files). Explicitly different from the repository-root `index.html` used by the TypeScript engine Vite playtest GUI; do not conflate the two.
 
 ### src/models/GameState.ts
 
