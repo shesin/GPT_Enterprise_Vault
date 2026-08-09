@@ -172,10 +172,57 @@ boardCenter[12] = 2; // blue off-center; equal remaining pieces → equal captur
 const r2 = Lab.resolveMaxMovesOutcome(boardCenter, geo4, 'endgame', 0, 0);
 check('L14_center_subreason', r2.winner === 'red' && r2.maxMovesSubReason === 'center', r2);
 
+// --- Explicit multi-jump batch fidelity ---
+// Red at 8; Blue at 9 and 6; landing 10 then 2 empty. Opening 8→10 over 9 must continue 10→2 over 6.
+check('L15_chain_helpers_exported', typeof Lab.executeTurnWithCaptureChain === 'function' && typeof Lab.getFollowUpJumps === 'function', {
+  executeTurnWithCaptureChain: typeof Lab.executeTurnWithCaptureChain,
+  getFollowUpJumps: typeof Lab.getFollowUpJumps,
+  selectAiChainContinuation: typeof Lab.selectAiChainContinuation,
+  applyBoardMove: typeof Lab.applyBoardMove,
+});
+
+const chainBoard = new Array(16).fill(0);
+chainBoard[8] = Lab.P1;
+chainBoard[9] = Lab.P2;
+chainBoard[6] = Lab.P2;
+const opening = { from: 8, to: 10, captured: 9 };
+const afterFirst = Lab.applyBoardMove(chainBoard, opening);
+const followUps = Lab.getFollowUpJumps(afterFirst, 10, Lab.P1, geo4);
+check('L16_followup_exists_after_first_capture', followUps.some((m) => m.to === 2 && m.captured === 6), followUps);
+
+const chainResult = Lab.executeTurnWithCaptureChain(chainBoard, opening, Lab.P1, geo4);
+check('L17_chain_two_hops', chainResult.hops.length === 2, chainResult.hops);
+check('L18_same_player_both_hops', chainResult.hops.every((h) => h.player === Lab.P1), chainResult.hops);
+check('L19_first_capture', chainResult.hops[0].from === 8 && chainResult.hops[0].to === 10 && chainResult.hops[0].captured === 9, chainResult.hops[0]);
+check('L20_followup_capture', chainResult.hops[1].from === 10 && chainResult.hops[1].to === 2 && chainResult.hops[1].captured === 6, chainResult.hops[1]);
+check('L21_both_enemies_removed', chainResult.board[9] === 0 && chainResult.board[6] === 0 && chainResult.board[2] === Lab.P1 && chainResult.board[8] === 0 && chainResult.board[10] === 0, chainResult.board);
+check('L22_no_further_followup', Lab.getFollowUpJumps(chainResult.board, 2, Lab.P1, geo4).length === 0, Lab.getFollowUpJumps(chainResult.board, 2, Lab.P1, geo4));
+
+// Interactive-equivalent stepwise path (mirrors executeMove AI continuation without DOM)
+let interactiveBoard = chainBoard.slice();
+interactiveBoard = Lab.applyBoardMove(interactiveBoard, opening);
+const interactiveFollowUps = Lab.getFollowUpJumps(interactiveBoard, 10, Lab.P1, geo4);
+const interactiveNext = Lab.selectAiChainContinuation(interactiveBoard, interactiveFollowUps, Lab.P1, geo4);
+interactiveBoard = Lab.applyBoardMove(interactiveBoard, interactiveNext);
+check('L23_interactive_vs_headless_board', JSON.stringify(interactiveBoard) === JSON.stringify(chainResult.board), {
+  interactive: interactiveBoard,
+  headless: chainResult.board,
+});
+check('L24_interactive_vs_headless_second_hop', interactiveNext.to === chainResult.hops[1].to && interactiveNext.captured === chainResult.hops[1].captured, {
+  interactiveNext,
+  headlessHop: chainResult.hops[1],
+});
+
+// Old shortcut would end turn after first hop with Blue still on 6 — prove chain did not stop early
+check('L25_intermediate_turn_not_ended_early', chainResult.hops.length > 1 && chainResult.board[6] === 0, {
+  hops: chainResult.hops.length,
+  blueOn6: chainResult.board[6],
+});
+
 const failed = assertions.filter((a) => !a.pass);
 const out = {
-  assertions,
-  failed,
+  assertions: assertions.map((a) => ({ id: a.id, result: a.pass ? 'PASS' : 'FAIL', detail: a.detail })),
+  failed: failed.map((a) => ({ id: a.id, detail: a.detail })),
   sanity: { s4, s6, stress, elapsedMs: elapsed },
   ok: failed.length === 0,
 };

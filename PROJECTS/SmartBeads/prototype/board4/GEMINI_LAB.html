@@ -765,30 +765,78 @@
     return moves;
   }
 
+  /** Pure board apply — shared by interactive AI chain selection and headless batch. */
+  function applyBoardMove(currBoard, move) {
+    const next = currBoard.slice();
+    next[move.to] = next[move.from];
+    next[move.from] = 0;
+    if (move.captured !== null) next[move.captured] = 0;
+    return next;
+  }
+
+  /** Same follow-up filter used by executeMove after a capture. */
+  function getFollowUpJumps(currBoard, node, player, geo) {
+    return getMovesForNode(currBoard, node, player, geo).filter((m) => m.captured !== null);
+  }
+
+  /**
+   * Interactive AI mid-chain policy (1-step lookahead for most future captures).
+   * Shared by executeMove P2 continuation and headless batch chains.
+   */
+  function selectAiChainContinuation(currBoard, followUpJumps, player, geo) {
+    let bestJump = followUpJumps[0];
+    let maxFutureCaptures = -1;
+    for (let i = 0; i < followUpJumps.length; i++) {
+      const j = followUpJumps[i];
+      const tempBoard = applyBoardMove(currBoard, j);
+      const futureJumps = getFollowUpJumps(tempBoard, j.to, player, geo).length;
+      if (futureJumps > maxFutureCaptures) {
+        maxFutureCaptures = futureJumps;
+        bestJump = j;
+      }
+    }
+    return bestJump;
+  }
+
+  /**
+   * Headless full-turn resolution matching interactive AI capture-chain rules:
+   * apply opening move; while follow-up jumps exist, AI continues (no voluntary stop);
+   * one completed turn when the chain ends (same timing as completeTurn).
+   */
+  function executeTurnWithCaptureChain(currBoard, openingMove, player, geo) {
+    const hops = [];
+    let b = currBoard.slice();
+    let move = openingMove;
+    for (;;) {
+      b = applyBoardMove(b, move);
+      hops.push({ from: move.from, to: move.to, captured: move.captured, player: player });
+      if (move.captured === null) break;
+      const followUps = getFollowUpJumps(b, move.to, player, geo);
+      if (followUps.length === 0) break;
+      move = selectAiChainContinuation(b, followUps, player, geo);
+    }
+    return { board: b, hops };
+  }
+
   function executeMove(move) {
-    board[move.to] = board[move.from]; board[move.from] = 0; lastMove = { from: move.from, to: move.to };
+    board = applyBoardMove(board, move);
+    lastMove = { from: move.from, to: move.to };
     const hitCenter = GEO.centerNodes.includes(move.to);
     let wasCapture = false;
 
-    if (move.captured !== null) { board[move.captured] = 0; wasCapture = true; playSoundEffect('capture'); }
+    if (move.captured !== null) { wasCapture = true; playSoundEffect('capture'); }
     else if (hitCenter) { playSoundEffect('center_step'); }
     else { playSoundEffect('move'); }
 
     if (wasCapture) {
-      const followUpJumps = getMovesForNode(board, move.to, currentTurn).filter((m) => m.captured !== null);
+      const followUpJumps = getFollowUpJumps(board, move.to, currentTurn, GEO);
       if (followUpJumps.length > 0) {
         currentState = STATE.CHAIN_JUMPING; selectedNode = move.to; validMoves = followUpJumps;
         resetTurnTimer();
         updateUI(); drawBoard();
         if (currentTurn === P2 && document.getElementById('game-mode-select').value === 'pve') {
           aiTimeout = setTimeout(() => {
-            let bestJump = followUpJumps[0]; let maxFutureCaptures = -1;
-            for (const j of followUpJumps) {
-              const tempBoard = board.slice();
-              tempBoard[j.to] = tempBoard[j.from]; tempBoard[j.from] = 0; tempBoard[j.captured] = 0;
-              const futureJumps = getMovesForNode(tempBoard, j.to, P2).filter((m) => m.captured !== null).length;
-              if (futureJumps > maxFutureCaptures) { maxFutureCaptures = futureJumps; bestJump = j; }
-            }
+            const bestJump = selectAiChainContinuation(board, followUpJumps, P2, GEO);
             executeMove(bestJump);
           }, 600);
         }
@@ -1019,11 +1067,10 @@
         });
       }
 
-      // Apply move; simple single-step (batch does not expand full multi-jump chains — same as both forks' batch)
-      simBoard[bestMove.to] = simBoard[bestMove.from];
-      simBoard[bestMove.from] = 0;
-      if (bestMove.captured !== null) simBoard[bestMove.captured] = 0;
-      simMoves++;
+      // Full turn: opening move + optional multi-jump chain (same rules as interactive AI)
+      const turnResult = executeTurnWithCaptureChain(simBoard, bestMove, simTurn, geo);
+      simBoard = turnResult.board;
+      simMoves++; // one completed turn (matches completeTurn), not one hop
 
       if (centerRuleMode === 'cumulative') {
         geo.centerNodes.forEach((idx) => {
@@ -1267,6 +1314,11 @@
     playHeadlessGame,
     resolveMaxMovesOutcome,
     getAllLegalMoves,
+    getMovesForNode,
+    getFollowUpJumps,
+    applyBoardMove,
+    selectAiChainContinuation,
+    executeTurnWithCaptureChain,
     P1, P2,
   };
 
