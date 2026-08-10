@@ -14,7 +14,7 @@ SmartBeads/
 │   ├── config/                        # Variant selection only
 │   │   └── BoardConfig.ts             # Resolves BoardVariant → BoardDefinition
 │   ├── core/
-│   │   ├── SmartBeadsEngine.ts        # Main gameplay engine and game flow
+│   │   ├── SmartBeadsEngine.ts        # Main gameplay engine and  game flow
 │   │   └── __tests__/
 │   │       └── SmartBeadsEngine.test.ts
 │   ├── playtest/                      # Developer playtest interfaces
@@ -50,8 +50,11 @@ Minimal browser-based playtest GUI rendered via Vite SVG and TypeScript controll
 
 Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside `src/` per the Prototype Classification rule: may skip full architectural review, must not share code with the production engine, and is not part of the Vite TypeScript playtest path.
 
-- **GEMINI_INDEX_4.html** — Interactive HTML prototype, 4×4 board, 4 beads per side. Human-playable; used for early rule validation.
-- **GEMINI_INDEX_6.html** — Interactive HTML prototype, 4×4 board, 6 beads per side. Also has Human-vs-Human mode with chess-clock auto-conversion.
+- **GEMINI_INDEX_4.html** — Interactive HTML prototype, 4×4 board, 4 beads per side. Human-playable; used for early rule validation. Keep as historical/reference playable (do not overwrite).
+- **GEMINI_INDEX_6.html** — Interactive HTML prototype, 4×4 board, 6 beads per side. Also has Human-vs-Human mode with chess-clock auto-conversion. Keep as historical/reference playable (do not overwrite).
+- **CURSOR_INDEX_4.html** — Cursor-improved playable Human-vs-AI (and PvP) game for 4-bead Board4. Same rules as Gemini Index 4; upgraded AI policy / UX shell.
+- **CURSOR_INDEX_6.html** — Cursor-improved playable Human-vs-AI (and PvP) game for 6-bead Board4. Same rules as Gemini Index 6; upgraded AI policy / UX shell.
+- **generate-cursor-index.cjs** / **verify-cursor-index.cjs** — Generator and smoke tests for the Cursor Index playables.
 - **GEMINI_LAB.html** — Batch-testing tool. Parametrized (bead count, board geometry, tiebreaker mode, move limit). Runs many AI-vs-AI games headless and outputs a comparison table across configs so results do not need to be copy-pasted from the console by hand.
 - **GEMINI_GAME_ARCHITECTURE_05P.md** — Describes the rules and mechanics implemented so far for both the 4-bead and 6-bead 4×4 variants (background reference; code is authoritative if they disagree).
 - **verify-gemini-lab.cjs** — Headless test script for GEMINI_LAB.html.
