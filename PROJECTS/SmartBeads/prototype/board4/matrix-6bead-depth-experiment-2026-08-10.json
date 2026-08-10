@@ -1,0 +1,389 @@
+{
+  "generatedAt": "2026-08-10T13:43:24.123Z",
+  "purpose": "6-bead depth vs structural repetition investigation",
+  "sampleSizePerConfig": 725,
+  "moveCap": 40,
+  "baselineSource": "matrix-run-2026-08-10.json newMatrix 6-bead depth-2",
+  "baseline": {
+    "cumulative": {
+      "beadsPerSide": 6,
+      "centerRule": "cumulative",
+      "games": 725,
+      "redWinPct": 0,
+      "blueWinPct": 0,
+      "drawPct": 100,
+      "decisivePct": 0,
+      "eliminationPct": 0,
+      "repetitionPct": 100,
+      "stalematePct": 0,
+      "maxMovesPct": 0,
+      "maxMovesCapturesPct": 0,
+      "maxMovesCenterPct": 0,
+      "maxMovesUnresolvedPct": 0,
+      "avgGameLength": 16.83,
+      "raw": {
+        "games": 725,
+        "red": 0,
+        "blue": 0,
+        "draw": 725,
+        "totalMoves": 12200,
+        "elimination": 0,
+        "repetition": 725,
+        "stalemate": 0,
+        "max_moves": 0,
+        "max_moves_captures": 0,
+        "max_moves_center": 0,
+        "max_moves_unresolved": 0
+      },
+      "label": "6 beads · cumulative"
+    },
+    "endgame": {
+      "beadsPerSide": 6,
+      "centerRule": "endgame",
+      "games": 725,
+      "redWinPct": 0.1,
+      "blueWinPct": 0.1,
+      "drawPct": 99.7,
+      "decisivePct": 0.3,
+      "eliminationPct": 0,
+      "repetitionPct": 99.7,
+      "stalematePct": 0,
+      "maxMovesPct": 0.3,
+      "maxMovesCapturesPct": 0,
+      "maxMovesCenterPct": 0.3,
+      "maxMovesUnresolvedPct": 0,
+      "avgGameLength": 16.7,
+      "raw": {
+        "games": 725,
+        "red": 1,
+        "blue": 1,
+        "draw": 723,
+        "totalMoves": 12108,
+        "elimination": 0,
+        "repetition": 723,
+        "stalemate": 0,
+        "max_moves": 2,
+        "max_moves_captures": 0,
+        "max_moves_center": 2,
+        "max_moves_unresolved": 0
+      },
+      "label": "6 beads · endgame"
+    }
+  },
+  "depth4Completed": true,
+  "totalElapsedMs": 214367,
+  "experiments": [
+    {
+      "beadsPerSide": 6,
+      "centerRule": "cumulative",
+      "aiDepth": 3,
+      "games": 725,
+      "redWinPct": 30.5,
+      "blueWinPct": 29.8,
+      "drawPct": 39.7,
+      "decisivePct": 60.3,
+      "eliminationPct": 20.4,
+      "repetitionPct": 39.6,
+      "stalematePct": 0,
+      "maxMovesPct": 40,
+      "maxMovesCapturesPct": 38.1,
+      "maxMovesCenterPct": 1.8,
+      "maxMovesUnresolvedPct": 0.1,
+      "avgGameLength": 32.06,
+      "raw": {
+        "games": 725,
+        "red": 221,
+        "blue": 216,
+        "draw": 288,
+        "totalMoves": 23245,
+        "elimination": 148,
+        "repetition": 287,
+        "stalemate": 0,
+        "max_moves": 290,
+        "max_moves_captures": 276,
+        "max_moves_center": 13,
+        "max_moves_unresolved": 1
+      },
+      "label": "6 beads · cumulative · depth 3",
+      "elapsedMs": 21707,
+      "vsDepth2Baseline": [
+        {
+          "metric": "decisivePct",
+          "baseline": 0,
+          "value": 60.3,
+          "delta": 60.3
+        },
+        {
+          "metric": "drawPct",
+          "baseline": 100,
+          "value": 39.7,
+          "delta": -60.3
+        },
+        {
+          "metric": "repetitionPct",
+          "baseline": 100,
+          "value": 39.6,
+          "delta": -60.4
+        },
+        {
+          "metric": "redWinPct",
+          "baseline": 0,
+          "value": 30.5,
+          "delta": 30.5
+        },
+        {
+          "metric": "blueWinPct",
+          "baseline": 0,
+          "value": 29.8,
+          "delta": 29.8
+        }
+      ]
+    },
+    {
+      "beadsPerSide": 6,
+      "centerRule": "endgame",
+      "aiDepth": 3,
+      "games": 725,
+      "redWinPct": 30.6,
+      "blueWinPct": 32.4,
+      "drawPct": 37,
+      "decisivePct": 63,
+      "eliminationPct": 24.6,
+      "repetitionPct": 36.3,
+      "stalematePct": 0,
+      "maxMovesPct": 39.2,
+      "maxMovesCapturesPct": 37.2,
+      "maxMovesCenterPct": 1.2,
+      "maxMovesUnresolvedPct": 0.7,
+      "avgGameLength": 32.21,
+      "raw": {
+        "games": 725,
+        "red": 222,
+        "blue": 235,
+        "draw": 268,
+        "totalMoves": 23355,
+        "elimination": 178,
+        "repetition": 263,
+        "stalemate": 0,
+        "max_moves": 284,
+        "max_moves_captures": 270,
+        "max_moves_center": 9,
+        "max_moves_unresolved": 5
+      },
+      "label": "6 beads · endgame · depth 3",
+      "elapsedMs": 21879,
+      "vsDepth2Baseline": [
+        {
+          "metric": "decisivePct",
+          "baseline": 0.3,
+          "value": 63,
+          "delta": 62.7
+        },
+        {
+          "metric": "drawPct",
+          "baseline": 99.7,
+          "value": 37,
+          "delta": -62.7
+        },
+        {
+          "metric": "repetitionPct",
+          "baseline": 99.7,
+          "value": 36.3,
+          "delta": -63.4
+        },
+        {
+          "metric": "redWinPct",
+          "baseline": 0.1,
+          "value": 30.6,
+          "delta": 30.5
+        },
+        {
+          "metric": "blueWinPct",
+          "baseline": 0.1,
+          "value": 32.4,
+          "delta": 32.3
+        }
+      ]
+    },
+    {
+      "beadsPerSide": 6,
+      "centerRule": "cumulative",
+      "aiDepth": 4,
+      "games": 725,
+      "redWinPct": 4.7,
+      "blueWinPct": 4.8,
+      "drawPct": 90.5,
+      "decisivePct": 9.5,
+      "eliminationPct": 1.4,
+      "repetitionPct": 90.5,
+      "stalematePct": 0,
+      "maxMovesPct": 8.1,
+      "maxMovesCapturesPct": 4.4,
+      "maxMovesCenterPct": 3.7,
+      "maxMovesUnresolvedPct": 0,
+      "avgGameLength": 20.07,
+      "raw": {
+        "games": 725,
+        "red": 34,
+        "blue": 35,
+        "draw": 656,
+        "totalMoves": 14551,
+        "elimination": 10,
+        "repetition": 656,
+        "stalemate": 0,
+        "max_moves": 59,
+        "max_moves_captures": 32,
+        "max_moves_center": 27,
+        "max_moves_unresolved": 0
+      },
+      "label": "6 beads · cumulative · depth 4",
+      "elapsedMs": 83074,
+      "vsDepth2Baseline": [
+        {
+          "metric": "decisivePct",
+          "baseline": 0,
+          "value": 9.5,
+          "delta": 9.5
+        },
+        {
+          "metric": "drawPct",
+          "baseline": 100,
+          "value": 90.5,
+          "delta": -9.5
+        },
+        {
+          "metric": "repetitionPct",
+          "baseline": 100,
+          "value": 90.5,
+          "delta": -9.5
+        }
+      ]
+    },
+    {
+      "beadsPerSide": 6,
+      "centerRule": "endgame",
+      "aiDepth": 4,
+      "games": 725,
+      "redWinPct": 3.4,
+      "blueWinPct": 2.8,
+      "drawPct": 93.8,
+      "decisivePct": 6.2,
+      "eliminationPct": 1.1,
+      "repetitionPct": 91.7,
+      "stalematePct": 0,
+      "maxMovesPct": 7.2,
+      "maxMovesCapturesPct": 3.6,
+      "maxMovesCenterPct": 1.5,
+      "maxMovesUnresolvedPct": 2.1,
+      "avgGameLength": 20.14,
+      "raw": {
+        "games": 725,
+        "red": 25,
+        "blue": 20,
+        "draw": 680,
+        "totalMoves": 14599,
+        "elimination": 8,
+        "repetition": 665,
+        "stalemate": 0,
+        "max_moves": 52,
+        "max_moves_captures": 26,
+        "max_moves_center": 11,
+        "max_moves_unresolved": 15
+      },
+      "label": "6 beads · endgame · depth 4",
+      "elapsedMs": 84422,
+      "vsDepth2Baseline": [
+        {
+          "metric": "decisivePct",
+          "baseline": 0.3,
+          "value": 6.2,
+          "delta": 5.9
+        },
+        {
+          "metric": "drawPct",
+          "baseline": 99.7,
+          "value": 93.8,
+          "delta": -5.9
+        },
+        {
+          "metric": "repetitionPct",
+          "baseline": 99.7,
+          "value": 91.7,
+          "delta": -8
+        }
+      ]
+    },
+    {
+      "beadsPerSide": 6,
+      "centerRule": "cumulative",
+      "aiDepth": 2,
+      "games": 725,
+      "redWinPct": 0.1,
+      "blueWinPct": 0,
+      "drawPct": 99.9,
+      "decisivePct": 0.1,
+      "eliminationPct": 0,
+      "repetitionPct": 99.9,
+      "stalematePct": 0,
+      "maxMovesPct": 0.1,
+      "maxMovesCapturesPct": 0,
+      "maxMovesCenterPct": 0.1,
+      "maxMovesUnresolvedPct": 0,
+      "avgGameLength": 16.88,
+      "raw": {
+        "games": 725,
+        "red": 1,
+        "blue": 0,
+        "draw": 724,
+        "totalMoves": 12235,
+        "elimination": 0,
+        "repetition": 724,
+        "stalemate": 0,
+        "max_moves": 1,
+        "max_moves_captures": 0,
+        "max_moves_center": 1,
+        "max_moves_unresolved": 0
+      },
+      "label": "6 beads · cumulative · depth 2 · rep-avoid tiebreak",
+      "elapsedMs": 1673,
+      "repetitionAvoidance": true,
+      "vsDepth2Baseline": []
+    },
+    {
+      "beadsPerSide": 6,
+      "centerRule": "endgame",
+      "aiDepth": 2,
+      "games": 725,
+      "redWinPct": 0.1,
+      "blueWinPct": 0,
+      "drawPct": 99.9,
+      "decisivePct": 0.1,
+      "eliminationPct": 0,
+      "repetitionPct": 99.9,
+      "stalematePct": 0,
+      "maxMovesPct": 0.1,
+      "maxMovesCapturesPct": 0,
+      "maxMovesCenterPct": 0.1,
+      "maxMovesUnresolvedPct": 0,
+      "avgGameLength": 16.54,
+      "raw": {
+        "games": 725,
+        "red": 1,
+        "blue": 0,
+        "draw": 724,
+        "totalMoves": 11991,
+        "elimination": 0,
+        "repetition": 724,
+        "stalemate": 0,
+        "max_moves": 1,
+        "max_moves_captures": 0,
+        "max_moves_center": 1,
+        "max_moves_unresolved": 0
+      },
+      "label": "6 beads · endgame · depth 2 · rep-avoid tiebreak",
+      "elapsedMs": 1592,
+      "repetitionAvoidance": true,
+      "vsDepth2Baseline": []
+    }
+  ]
+}
