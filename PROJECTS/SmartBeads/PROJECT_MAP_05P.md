@@ -56,6 +56,10 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **CURSOR_INDEX_6.html** — Cursor-improved playable Human-vs-AI (and PvP) game for 6-bead Board4. Same rules as Gemini Index 6; upgraded AI policy / UX shell.
 - **generate-cursor-index.cjs** / **verify-cursor-index.cjs** — Generator and smoke tests for the Cursor Index playables.
 - **GEMINI_LAB.html** — Batch-testing tool. Parametrized (bead count, board geometry, tiebreaker mode, move limit). Runs many AI-vs-AI games headless and outputs a comparison table across configs so results do not need to be copy-pasted from the console by hand.
+- **SHOLO_GUTI.html** — Standalone playable Human-vs-AI Sholo Guti / Sixteen Soldiers (37-point board, 16 vs 16). Calibration/reference traditional game — not a SmartBeads product config.
+- **SHOLO_GUTI_CALIBRATION.html** — Headless/calibration harness for the same geometry (hop-based AI; not the primary playable).
+- **sholo-guti-fullturn-engine.cjs** / **run-sholo-fullturn-lab.cjs** — Headless AI-vs-AI batch runner reusing the playable full-turn AI (seeded). Instrument calibration only — not SmartBeads board ranking.
+- **verify-sholo-guti.cjs** — Smoke tests for the playable (geometry, Finish, honest AI depth labels, AI replies).
 - **GEMINI_GAME_ARCHITECTURE_05P.md** — Describes the rules and mechanics implemented so far for both the 4-bead and 6-bead 4×4 variants (background reference; code is authoritative if they disagree).
 - **verify-gemini-lab.cjs** — Headless test script for GEMINI_LAB.html.
 - **WEB_RULES_05P.md** — Browser-verified, production-accepted rules for this prototype line.
