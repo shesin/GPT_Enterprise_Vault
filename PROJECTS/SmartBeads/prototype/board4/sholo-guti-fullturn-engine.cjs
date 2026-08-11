@@ -1,26 +1,30 @@
 'use strict';
 /**
- * Headless Sholo Guti full-turn engine.
- * Reuses AI architecture from SHOLO_GUTI.html (generateTurnEnds, evaluate,
- * opponentReplyPlies, minimaxTurns, selectAITurn) — no new search/eval.
- * DOM-free. Seeded RNG for AI tie-breaks only.
- * NOT a SmartBeads product instrument proof.
+ * Headless Sholo Guti full-turn Lab engine.
+ * Geometry + turn/capture rules match SHOLO_GUTI.html (unchanged).
+ * Lab-only reliability fixes: player-perspective scoring, capture-first
+ * enumeration before branch caps, signed capture tie-break, soft/hard
+ * repetition avoidance in AI choice (draws/repetitions remain legal outcomes).
  */
 
 const P1 = 1;
 const P2 = 2;
 
-/** Exact branch / chain limits from SHOLO_GUTI.html selectAITurn / generateTurnEnds. */
 const SEARCH_LIMITS = {
-  rootBranchByLevel: { 1: 140, 2: 140, 3: 90 },
-  replyBranchByLevel: { 1: null, 2: 80, 3: 56 },
+  rootBranchByLevel: { 1: 160, 2: 160, 3: 120 },
+  replyBranchByLevel: { 1: null, 2: 100, 3: 72 },
   chainDepthMax: 8,
+  rootBranchLegacyPlayable: { 1: 140, 2: 140, 3: 90 },
+  replyBranchLegacyPlayable: { 1: null, 2: 80, 3: 56 },
   note:
-    'If generateTurnEnds hits maxBranch, remaining legal turn ends are not searched (truncation). ' +
-    'Chain hops beyond depth 8 are not expanded further.',
+    'Branch caps can still truncate. Root moves are ordered captures-first so truncation prefers tactical lines. ' +
+    'Chain hops beyond depth 8 are not expanded. Caps raised slightly vs playable for Lab measurement stability.',
 };
 
-// --- Seeded RNG (same Mulberry32 pattern as SHOLO_GUTI_CALIBRATION / GEMINI_LAB) ---
+const REP_SOFT = 25;
+/** Soft only — never hard-block a legal third repeat; repetition draws remain a legal outcome. */
+const REP_HARD = 0;
+
 let aiTestSeed = null;
 let aiTestRng = null;
 
@@ -34,11 +38,9 @@ function createSeededRng(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
 function aiRandom() {
   return aiTestRng ? aiTestRng() : Math.random();
 }
-
 function setAiTestSeed(seed) {
   if (seed == null || seed === '') {
     aiTestSeed = null;
@@ -49,17 +51,14 @@ function setAiTestSeed(seed) {
   aiTestRng = createSeededRng(aiTestSeed);
   return aiTestSeed;
 }
-
 function clearAiTestSeed() {
   aiTestSeed = null;
   aiTestRng = null;
 }
-
 function getAiTestSeed() {
   return aiTestSeed;
 }
 
-// --- Geometry (identical to SHOLO_GUTI.html) ---
 const NODES = [];
 const NODE_INDEX = Object.create(null);
 function addNode(id, x, y) {
@@ -153,19 +152,32 @@ function pathCaptureCount(path) {
   for (let i = 0; i < path.length; i++) if (path[i].captured !== null) n++;
   return n;
 }
+function positionKey(board, moverJustMoved) {
+  return board.join('') + '_' + moverJustMoved;
+}
 
-/** Enumerate legal complete turns — same as SHOLO_GUTI.html. */
+/**
+ * Complete-turn enumeration. Captures-first at root so branch caps truncate
+ * quiet lines before tactics. Optional early chain stops included (Capture Optionality).
+ */
 function generateTurnEnds(currBoard, player, maxBranch) {
   const ends = [];
-  const root = getAllLegalMoves(currBoard, player);
+  const root = getAllLegalMoves(currBoard, player).slice();
+  root.sort((a, b) => {
+    const ca = a.captured !== null ? 1 : 0;
+    const cb = b.captured !== null ? 1 : 0;
+    return cb - ca;
+  });
   for (let i = 0; i < root.length; i++) {
     const m = root[i];
     const after = applyMove(currBoard, m);
     if (m.captured === null) {
       ends.push({ board: after, path: [m] });
+      if (ends.length >= maxBranch) return ends;
       continue;
     }
     ends.push({ board: after, path: [m] });
+    if (ends.length >= maxBranch) return ends;
     const stack = [{ board: after, pos: m.to, path: [m], depth: 1 }];
     while (stack.length) {
       const node = stack.pop();
@@ -184,25 +196,44 @@ function generateTurnEnds(currBoard, player, maxBranch) {
   return ends;
 }
 
-/** P2-centric eval — identical formula to SHOLO_GUTI.html (no random noise). */
+/**
+ * Absolute eval: positive favors P1. Same material/mobility weights as playable
+ * (playable was P2-positive; Lab flips sign so both sides share one scale).
+ */
 function evaluate(b) {
   const a = count(b, P1);
   const c = count(b, P2);
-  if (a === 0) return 10000;
-  if (c === 0) return -10000;
-  const mob = getAllLegalMoves(b, P2).length - getAllLegalMoves(b, P1).length;
-  return (c - a) * 48 + mob * 1.5;
+  if (a === 0) return -10000;
+  if (c === 0) return 10000;
+  const mob1 = getAllLegalMoves(b, P1).length;
+  const mob2 = getAllLegalMoves(b, P2).length;
+  return (a - c) * 48 + (mob1 - mob2) * 1.5;
 }
 
-/** L1 unused; L2→0; L3→1. Never Math.min-capped. */
+/** Score from `player`'s perspective (both sides maximize this). */
+function scoreForPlayer(b, player) {
+  const v = evaluate(b);
+  return player === P1 ? v : -v;
+}
+
 function opponentReplyPlies(level) {
   if (level <= 1) return -1;
   return level - 2;
 }
 
+function rootBranch(level) {
+  return level >= 3 ? SEARCH_LIMITS.rootBranchByLevel[3] : SEARCH_LIMITS.rootBranchByLevel[2];
+}
+function replyBranch(level) {
+  return level >= 3 ? SEARCH_LIMITS.replyBranchByLevel[3] : SEARCH_LIMITS.replyBranchByLevel[2];
+}
+
+/**
+ * Minimax over complete turns. `maximizing` true ⇒ P1 to move (P1-centric evaluate).
+ */
 function minimaxTurns(curr, depth, maximizing, alpha, beta, branchCap) {
   if (depth === 0) return evaluate(curr);
-  const player = maximizing ? P2 : P1;
+  const player = maximizing ? P1 : P2;
   const ends = generateTurnEnds(curr, player, branchCap);
   if (!ends.length) return maximizing ? -900 : 900;
   if (maximizing) {
@@ -225,19 +256,20 @@ function minimaxTurns(curr, depth, maximizing, alpha, beta, branchCap) {
   return best;
 }
 
-function rootBranch(level) {
-  return level >= 3 ? 90 : 140;
-}
-function replyBranch(level) {
-  return level >= 3 ? 56 : 80;
+function repetitionPenaltyForMover(boardAfter, mover, hist) {
+  if (!hist) return 0;
+  const key = positionKey(boardAfter, mover);
+  const c = hist[key] || 0;
+  // Soft steer away from early cycles; do not forbid the legal third repeat.
+  if (c + 1 >= 2) return REP_SOFT * (c + 1);
+  return 0;
 }
 
 /**
- * Full-turn path for `player`. Same algorithm as SHOLO_GUTI.html selectAITurn;
- * player arg enables AI-vs-AI (playable was P2-only). Eval remains P2-centric:
- * P2 maximizes, P1 minimizes. Tie-breaks use aiRandom().
+ * Both players maximize scoreForPlayer. Capture tie-break signed for the mover.
+ * Optional hist applies soft/hard repetition avoidance (outcomes still legal).
  */
-function selectAITurn(level, fromBoard, player) {
+function selectAITurn(level, fromBoard, player, hist) {
   const b = fromBoard;
   const pl = player;
   const branch = rootBranch(level);
@@ -245,39 +277,38 @@ function selectAITurn(level, fromBoard, player) {
   if (!ends.length) return null;
 
   if (level <= 1) {
-    let maxC = -1;
+    let bestScore = -Infinity;
     let pool = [];
     for (let i = 0; i < ends.length; i++) {
-      const c = pathCaptureCount(ends[i].path);
-      if (c > maxC) {
-        maxC = c;
-        pool = [ends[i]];
-      } else if (c === maxC) pool.push(ends[i]);
+      const end = ends[i];
+      const caps = pathCaptureCount(end.path);
+      let score = caps * 100 + scoreForPlayer(end.board, pl) * 0.01;
+      score -= repetitionPenaltyForMover(end.board, pl, hist);
+      if (score > bestScore) {
+        bestScore = score;
+        pool = [end];
+      } else if (score === bestScore) pool.push(end);
     }
     return pool[Math.floor(aiRandom() * pool.length)].path;
   }
 
   const reply = opponentReplyPlies(level);
   const rBranch = replyBranch(level);
-  const maximize = pl === P2;
-  let bestScore = maximize ? -Infinity : Infinity;
+  let bestScore = -Infinity;
   let best = [];
   for (let i = 0; i < ends.length; i++) {
     const end = ends[i];
-    let score;
-    if (reply <= 0) score = evaluate(end.board);
+    let abs;
+    if (reply <= 0) abs = evaluate(end.board);
     else {
-      // After this player's turn end, opponent moves. maximizing=true means P2 to move.
-      const oppIsP2 = pl === P1;
-      score = minimaxTurns(end.board, reply, oppIsP2, -Infinity, Infinity, rBranch);
+      // After mover's turn, opponent plays. P1-to-move ⇒ maximizing true.
+      const p1ToMove = pl === P2;
+      abs = minimaxTurns(end.board, reply, p1ToMove, -Infinity, Infinity, rBranch);
     }
+    let score = pl === P1 ? abs : -abs;
     score += pathCaptureCount(end.path) * 0.05;
-    if (maximize) {
-      if (score > bestScore) {
-        bestScore = score;
-        best = [end];
-      } else if (score === bestScore) best.push(end);
-    } else if (score < bestScore) {
+    score -= repetitionPenaltyForMover(end.board, pl, hist);
+    if (score > bestScore) {
       bestScore = score;
       best = [end];
     } else if (score === bestScore) best.push(end);
@@ -295,15 +326,12 @@ function applyPath(board, path) {
   return { board: b, captures, hops: path.length };
 }
 
-/**
- * Explicit search semantics for a requested level. Never claims a deeper search than coded.
- */
 function describeSearchSemantics(requestedDepth) {
   const d = requestedDepth | 0;
   if (d <= 1) {
     return {
       requestedDepth: d,
-      actualEffectiveDepth: 'greedy / 0-ply search (max captures among turn ends)',
+      actualEffectiveDepth: 'greedy captures + light eval (0-ply search)',
       searchUnit: 'complete turn',
       opponentReplyPlies: 0,
       search: false,
@@ -312,15 +340,14 @@ function describeSearchSemantics(requestedDepth) {
       chainDepthLimit: SEARCH_LIMITS.chainDepthMax,
       depthCapMathMin: false,
       evalNoise: false,
-      truncationRisk:
-        'Root turn-end enumeration capped at ' + rootBranch(1) + '; chain expand stops after depth ' +
-        SEARCH_LIMITS.chainDepthMax + '. Truncation can omit legal turn ends.',
+      playerPerspective: 'both maximize scoreForPlayer; P1-centric evaluate absolute scale',
+      truncationRisk: SEARCH_LIMITS.note,
     };
   }
   if (d === 2) {
     return {
       requestedDepth: 2,
-      actualEffectiveDepth: '1-turn look (evaluate own turn ends only)',
+      actualEffectiveDepth: '1-turn look (own turn ends only)',
       searchUnit: 'complete turn',
       opponentReplyPlies: 0,
       search: true,
@@ -329,16 +356,14 @@ function describeSearchSemantics(requestedDepth) {
       chainDepthLimit: SEARCH_LIMITS.chainDepthMax,
       depthCapMathMin: false,
       evalNoise: false,
-      truncationRisk:
-        'Root capped at ' + rootBranch(2) + '; reply branch ' + replyBranch(2) +
-        ' unused at L2 (no opponent ply). Chain depth ' + SEARCH_LIMITS.chainDepthMax + '.',
+      playerPerspective: 'both maximize scoreForPlayer',
+      truncationRisk: SEARCH_LIMITS.note,
     };
   }
-  // Only levels 1–3 exist in playable; refuse to invent deeper labels
   if (d === 3) {
     return {
       requestedDepth: 3,
-      actualEffectiveDepth: '2-turn look (own turn ends + 1 opponent full-turn reply ply)',
+      actualEffectiveDepth: '2-turn look (own turn + 1 opponent full-turn reply)',
       searchUnit: 'complete turn',
       opponentReplyPlies: 1,
       search: true,
@@ -347,125 +372,88 @@ function describeSearchSemantics(requestedDepth) {
       chainDepthLimit: SEARCH_LIMITS.chainDepthMax,
       depthCapMathMin: false,
       evalNoise: false,
-      truncationRisk:
-        'Root capped at ' + rootBranch(3) + '; opponent reply enumeration capped at ' +
-        replyBranch(3) + '; chain depth ' + SEARCH_LIMITS.chainDepthMax +
-        '. These limits can truncate the legal search tree.',
+      playerPerspective: 'both maximize scoreForPlayer; minimax on P1-centric evaluate',
+      truncationRisk: SEARCH_LIMITS.note,
     };
   }
   return {
     requestedDepth: d,
     actualEffectiveDepth: null,
-    error: 'Only depths 1–3 are implemented in the reused SHOLO_GUTI AI. Refusing to claim search for depth ' + d,
-    searchUnit: 'complete turn',
-    opponentReplyPlies: null,
+    error: 'Only depths 1–3 are implemented. Refusing to claim search for depth ' + d,
   };
 }
 
-/**
- * AI-vs-AI headless game. Both sides use selectAITurn.
- * Termination/metrics aligned with prior Sholo calibration harness.
- */
 function playHeadlessGame(aiDepth, moveCap, seed, firstPlayer) {
   const sem = describeSearchSemantics(aiDepth);
-  if (sem.actualEffectiveDepth == null) {
-    throw new Error(sem.error);
-  }
+  if (sem.actualEffectiveDepth == null) throw new Error(sem.error);
   const resolvedSeed = setAiTestSeed(seed);
+  const first = firstPlayer || P1;
   try {
     let sim = startingBoard();
-    let turn = firstPlayer || P1;
+    let turn = first;
     let moves = 0;
     let hist = {};
     let totalCaptures = 0;
+    let p1Captures = 0;
+    let p2Captures = 0;
     let maxChain = 0;
     while (moves < moveCap) {
       const legal = getAllLegalMoves(sim, turn);
       if (!legal.length) {
         clearAiTestSeed();
-        return {
-          seed: resolvedSeed,
-          winner: turn === P1 ? 'P2' : 'P1',
-          endReason: 'stalemate',
-          gameLength: moves,
-          totalCaptures,
-          maxChain,
-          searchSemantics: sem,
-        };
+        return finish(resolvedSeed, turn === P1 ? 'P2' : 'P1', 'stalemate', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
       }
-      const path = selectAITurn(aiDepth, sim, turn);
+      const path = selectAITurn(aiDepth, sim, turn, hist);
       if (!path || !path.length) {
         clearAiTestSeed();
-        return {
-          seed: resolvedSeed,
-          winner: turn === P1 ? 'P2' : 'P1',
-          endReason: 'stalemate',
-          gameLength: moves,
-          totalCaptures,
-          maxChain,
-          searchSemantics: sem,
-        };
+        return finish(resolvedSeed, turn === P1 ? 'P2' : 'P1', 'stalemate', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
       }
       const turnRes = applyPath(sim, path);
       sim = turnRes.board;
       moves++;
       totalCaptures += turnRes.captures;
+      if (turn === P1) p1Captures += turnRes.captures;
+      else p2Captures += turnRes.captures;
       if (turnRes.hops > maxChain) maxChain = turnRes.hops;
       if (count(sim, P1) === 0) {
         clearAiTestSeed();
-        return {
-          seed: resolvedSeed,
-          winner: 'P2',
-          endReason: 'elimination',
-          gameLength: moves,
-          totalCaptures,
-          maxChain,
-          searchSemantics: sem,
-        };
+        return finish(resolvedSeed, 'P2', 'elimination', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
       }
       if (count(sim, P2) === 0) {
         clearAiTestSeed();
-        return {
-          seed: resolvedSeed,
-          winner: 'P1',
-          endReason: 'elimination',
-          gameLength: moves,
-          totalCaptures,
-          maxChain,
-          searchSemantics: sem,
-        };
+        return finish(resolvedSeed, 'P1', 'elimination', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
       }
-      const key = sim.join('') + '_' + turn;
+      const key = positionKey(sim, turn);
       hist[key] = (hist[key] || 0) + 1;
       if (hist[key] >= 3) {
         clearAiTestSeed();
-        return {
-          seed: resolvedSeed,
-          winner: 'draw',
-          endReason: 'repetition',
-          gameLength: moves,
-          totalCaptures,
-          maxChain,
-          searchSemantics: sem,
-        };
+        return finish(resolvedSeed, 'draw', 'repetition', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
       }
       turn = turn === P1 ? P2 : P1;
     }
     clearAiTestSeed();
-    return {
-      seed: resolvedSeed,
-      winner: 'draw',
-      endReason: 'move_cap_lab_safety',
-      gameLength: moves,
-      totalCaptures,
-      maxChain,
-      searchSemantics: sem,
-      note: 'move-cap is LAB harness safety only — not a traditional Sholo Guti rule',
-    };
+    return finish(resolvedSeed, 'draw', 'move_cap_lab_safety', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
   } catch (e) {
     clearAiTestSeed();
     throw e;
   }
+}
+
+function finish(seed, winner, endReason, gameLength, totalCaptures, p1Captures, p2Captures, maxChain, firstPlayer, sem) {
+  return {
+    seed,
+    winner,
+    endReason,
+    gameLength,
+    totalCaptures,
+    p1Captures,
+    p2Captures,
+    maxChain,
+    firstPlayer: firstPlayer === P1 ? 'P1' : 'P2',
+    firstPlayerWon: winner !== 'draw' && ((firstPlayer === P1 && winner === 'P1') || (firstPlayer === P2 && winner === 'P2')),
+    searchSemantics: sem,
+    note: endReason === 'move_cap_lab_safety' ? 'move-cap is LAB harness safety only — not a traditional Sholo Guti rule' : undefined,
+  };
 }
 
 module.exports = {
@@ -474,7 +462,10 @@ module.exports = {
   N,
   NODES,
   ADJ,
+  NODE_INDEX,
   SEARCH_LIMITS,
+  REP_SOFT,
+  REP_HARD,
   startingBoard,
   getAllLegalMoves,
   getMovesForNode,
@@ -482,8 +473,10 @@ module.exports = {
   applyMove,
   applyPath,
   count,
+  pathCaptureCount,
   generateTurnEnds,
   evaluate,
+  scoreForPlayer,
   opponentReplyPlies,
   minimaxTurns,
   selectAITurn,
@@ -495,4 +488,6 @@ module.exports = {
   aiRandom,
   rootBranch,
   replyBranch,
+  continueCollinear,
+  positionKey,
 };

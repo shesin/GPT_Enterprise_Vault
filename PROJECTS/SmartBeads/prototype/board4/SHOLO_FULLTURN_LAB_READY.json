@@ -1,0 +1,444 @@
+{
+  "verdict": "READY",
+  "purpose": "Lab readiness for future SmartBeads config comparison (Sholo reference only)",
+  "comparisonProtocol": {
+    "primaryDepth": 2,
+    "primaryUse": "Wins/losses, legitimate draws, first-player advantage, captures, length, side symmetry",
+    "secondaryDepth": 3,
+    "secondaryUse": "Long-horizon attrition (avg captures / length under move-cap). Do not rank configs by D3 elimination% alone.",
+    "depth1Use": "Greedy baseline / sanity",
+    "drawsAreLegitimate": true
+  },
+  "totalValidationGames": 420,
+  "moveCap": 120,
+  "searchSemantics": {
+    "1": {
+      "requestedDepth": 1,
+      "actualEffectiveDepth": "greedy captures + light eval (0-ply search)",
+      "searchUnit": "complete turn",
+      "opponentReplyPlies": 0,
+      "search": false,
+      "rootBranchLimit": 160,
+      "replyBranchLimit": null,
+      "chainDepthLimit": 8,
+      "depthCapMathMin": false,
+      "evalNoise": false,
+      "playerPerspective": "both maximize scoreForPlayer; P1-centric evaluate absolute scale",
+      "truncationRisk": "Branch caps can still truncate. Root moves are ordered captures-first so truncation prefers tactical lines. Chain hops beyond depth 8 are not expanded. Caps raised slightly vs playable for Lab measurement stability."
+    },
+    "2": {
+      "requestedDepth": 2,
+      "actualEffectiveDepth": "1-turn look (own turn ends only)",
+      "searchUnit": "complete turn",
+      "opponentReplyPlies": 0,
+      "search": true,
+      "rootBranchLimit": 160,
+      "replyBranchLimit": 100,
+      "chainDepthLimit": 8,
+      "depthCapMathMin": false,
+      "evalNoise": false,
+      "playerPerspective": "both maximize scoreForPlayer",
+      "truncationRisk": "Branch caps can still truncate. Root moves are ordered captures-first so truncation prefers tactical lines. Chain hops beyond depth 8 are not expanded. Caps raised slightly vs playable for Lab measurement stability."
+    },
+    "3": {
+      "requestedDepth": 3,
+      "actualEffectiveDepth": "2-turn look (own turn + 1 opponent full-turn reply)",
+      "searchUnit": "complete turn",
+      "opponentReplyPlies": 1,
+      "search": true,
+      "rootBranchLimit": 120,
+      "replyBranchLimit": 72,
+      "chainDepthLimit": 8,
+      "depthCapMathMin": false,
+      "evalNoise": false,
+      "playerPerspective": "both maximize scoreForPlayer; minimax on P1-centric evaluate",
+      "truncationRisk": "Branch caps can still truncate. Root moves are ordered captures-first so truncation prefers tactical lines. Chain hops beyond depth 8 are not expanded. Caps raised slightly vs playable for Lab measurement stability."
+    }
+  },
+  "searchLimits": {
+    "rootBranchByLevel": {
+      "1": 160,
+      "2": 160,
+      "3": 120
+    },
+    "replyBranchByLevel": {
+      "1": null,
+      "2": 100,
+      "3": 72
+    },
+    "chainDepthMax": 8,
+    "rootBranchLegacyPlayable": {
+      "1": 140,
+      "2": 140,
+      "3": 90
+    },
+    "replyBranchLegacyPlayable": {
+      "1": null,
+      "2": 80,
+      "3": 56
+    },
+    "note": "Branch caps can still truncate. Root moves are ordered captures-first so truncation prefers tactical lines. Chain hops beyond depth 8 are not expanded. Caps raised slightly vs playable for Lab measurement stability."
+  },
+  "checks": [
+    {
+      "name": "depth_1_defined",
+      "ok": true,
+      "detail": "greedy captures + light eval (0-ply search)"
+    },
+    {
+      "name": "depth_2_defined",
+      "ok": true,
+      "detail": "1-turn look (own turn ends only)"
+    },
+    {
+      "name": "depth_3_defined",
+      "ok": true,
+      "detail": "2-turn look (own turn + 1 opponent full-turn reply)"
+    },
+    {
+      "name": "p1_prefers_capture_L2",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "caps": 1,
+        "legalCaps": 1,
+        "pathLen": 1
+      }
+    },
+    {
+      "name": "p2_prefers_capture_L2",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "caps": 1
+      }
+    },
+    {
+      "name": "reproducibility_D2_seed101",
+      "ok": true,
+      "detail": {
+        "n": 30
+      }
+    },
+    {
+      "name": "metrics_sum_D1",
+      "ok": true,
+      "detail": {
+        "n": 90,
+        "eliminationPct": 100,
+        "forcedWinPct": 100,
+        "moveCapPct": 0,
+        "repetitionPct": 0,
+        "drawPct": 0,
+        "p1WinPct": 52.22222222222222,
+        "p2WinPct": 47.77777777777778,
+        "firstPlayerWinPctAmongDecisive": 52.22222222222222,
+        "firstPlayerAdvantagePp": 2.2222222222222214,
+        "avgLength": 54.233333333333334,
+        "avgCaptures": 27.633333333333333,
+        "counts": {
+          "elim": 90,
+          "stalemate": 0,
+          "moveCap": 0,
+          "rep": 0,
+          "p1Wins": 47,
+          "p2Wins": 43,
+          "draws": 0,
+          "decisive": 90
+        }
+      }
+    },
+    {
+      "name": "depth_regime_ok_D1",
+      "ok": true,
+      "detail": {
+        "n": 90,
+        "eliminationPct": 100,
+        "forcedWinPct": 100,
+        "moveCapPct": 0,
+        "repetitionPct": 0,
+        "drawPct": 0,
+        "p1WinPct": 52.22222222222222,
+        "p2WinPct": 47.77777777777778,
+        "firstPlayerWinPctAmongDecisive": 52.22222222222222,
+        "firstPlayerAdvantagePp": 2.2222222222222214,
+        "avgLength": 54.233333333333334,
+        "avgCaptures": 27.633333333333333,
+        "counts": {
+          "elim": 90,
+          "stalemate": 0,
+          "moveCap": 0,
+          "rep": 0,
+          "p1Wins": 47,
+          "p2Wins": 43,
+          "draws": 0,
+          "decisive": 90
+        }
+      }
+    },
+    {
+      "name": "metrics_sum_D2",
+      "ok": true,
+      "detail": {
+        "n": 90,
+        "eliminationPct": 100,
+        "forcedWinPct": 100,
+        "moveCapPct": 0,
+        "repetitionPct": 0,
+        "drawPct": 0,
+        "p1WinPct": 52.22222222222222,
+        "p2WinPct": 47.77777777777778,
+        "firstPlayerWinPctAmongDecisive": 52.22222222222222,
+        "firstPlayerAdvantagePp": 2.2222222222222214,
+        "avgLength": 54.233333333333334,
+        "avgCaptures": 27.633333333333333,
+        "counts": {
+          "elim": 90,
+          "stalemate": 0,
+          "moveCap": 0,
+          "rep": 0,
+          "p1Wins": 47,
+          "p2Wins": 43,
+          "draws": 0,
+          "decisive": 90
+        }
+      }
+    },
+    {
+      "name": "depth_regime_ok_D2",
+      "ok": true,
+      "detail": {
+        "n": 90,
+        "eliminationPct": 100,
+        "forcedWinPct": 100,
+        "moveCapPct": 0,
+        "repetitionPct": 0,
+        "drawPct": 0,
+        "p1WinPct": 52.22222222222222,
+        "p2WinPct": 47.77777777777778,
+        "firstPlayerWinPctAmongDecisive": 52.22222222222222,
+        "firstPlayerAdvantagePp": 2.2222222222222214,
+        "avgLength": 54.233333333333334,
+        "avgCaptures": 27.633333333333333,
+        "counts": {
+          "elim": 90,
+          "stalemate": 0,
+          "moveCap": 0,
+          "rep": 0,
+          "p1Wins": 47,
+          "p2Wins": 43,
+          "draws": 0,
+          "decisive": 90
+        }
+      }
+    },
+    {
+      "name": "metrics_sum_D3",
+      "ok": true,
+      "detail": {
+        "n": 90,
+        "eliminationPct": 0,
+        "forcedWinPct": 1.1111111111111112,
+        "moveCapPct": 98.88888888888889,
+        "repetitionPct": 0,
+        "drawPct": 98.88888888888889,
+        "p1WinPct": 1.1111111111111112,
+        "p2WinPct": 0,
+        "firstPlayerWinPctAmongDecisive": 100,
+        "firstPlayerAdvantagePp": 50,
+        "avgLength": 119.92222222222222,
+        "avgCaptures": 11.7,
+        "counts": {
+          "elim": 0,
+          "stalemate": 1,
+          "moveCap": 89,
+          "rep": 0,
+          "p1Wins": 1,
+          "p2Wins": 0,
+          "draws": 89,
+          "decisive": 1
+        }
+      }
+    },
+    {
+      "name": "depth_regime_ok_D3",
+      "ok": true,
+      "detail": {
+        "n": 90,
+        "eliminationPct": 0,
+        "forcedWinPct": 1.1111111111111112,
+        "moveCapPct": 98.88888888888889,
+        "repetitionPct": 0,
+        "drawPct": 98.88888888888889,
+        "p1WinPct": 1.1111111111111112,
+        "p2WinPct": 0,
+        "firstPlayerWinPctAmongDecisive": 100,
+        "firstPlayerAdvantagePp": 50,
+        "avgLength": 119.92222222222222,
+        "avgCaptures": 11.7,
+        "counts": {
+          "elim": 0,
+          "stalemate": 1,
+          "moveCap": 89,
+          "rep": 0,
+          "p1Wins": 1,
+          "p2Wins": 0,
+          "draws": 89,
+          "decisive": 1
+        }
+      }
+    },
+    {
+      "name": "first_player_measurable",
+      "ok": true,
+      "detail": {
+        "firstP1": 48.333333333333336,
+        "firstP2": 46.666666666666664,
+        "n": 60
+      }
+    },
+    {
+      "name": "ai_symmetry_first_mover",
+      "ok": true,
+      "detail": {
+        "fpa1": 48.333333333333336,
+        "fpa2": 46.666666666666664,
+        "fpaDelta": 1.6666666666666714
+      }
+    },
+    {
+      "name": "turn_ends_at_start",
+      "ok": true,
+      "detail": {
+        "n": 13
+      }
+    }
+  ],
+  "perDepth": {
+    "1": {
+      "n": 90,
+      "eliminationPct": 100,
+      "forcedWinPct": 100,
+      "moveCapPct": 0,
+      "repetitionPct": 0,
+      "drawPct": 0,
+      "p1WinPct": 52.22222222222222,
+      "p2WinPct": 47.77777777777778,
+      "firstPlayerWinPctAmongDecisive": 52.22222222222222,
+      "firstPlayerAdvantagePp": 2.2222222222222214,
+      "avgLength": 54.233333333333334,
+      "avgCaptures": 27.633333333333333,
+      "counts": {
+        "elim": 90,
+        "stalemate": 0,
+        "moveCap": 0,
+        "rep": 0,
+        "p1Wins": 47,
+        "p2Wins": 43,
+        "draws": 0,
+        "decisive": 90
+      }
+    },
+    "2": {
+      "n": 90,
+      "eliminationPct": 100,
+      "forcedWinPct": 100,
+      "moveCapPct": 0,
+      "repetitionPct": 0,
+      "drawPct": 0,
+      "p1WinPct": 52.22222222222222,
+      "p2WinPct": 47.77777777777778,
+      "firstPlayerWinPctAmongDecisive": 52.22222222222222,
+      "firstPlayerAdvantagePp": 2.2222222222222214,
+      "avgLength": 54.233333333333334,
+      "avgCaptures": 27.633333333333333,
+      "counts": {
+        "elim": 90,
+        "stalemate": 0,
+        "moveCap": 0,
+        "rep": 0,
+        "p1Wins": 47,
+        "p2Wins": 43,
+        "draws": 0,
+        "decisive": 90
+      }
+    },
+    "3": {
+      "n": 90,
+      "eliminationPct": 0,
+      "forcedWinPct": 1.1111111111111112,
+      "moveCapPct": 98.88888888888889,
+      "repetitionPct": 0,
+      "drawPct": 98.88888888888889,
+      "p1WinPct": 1.1111111111111112,
+      "p2WinPct": 0,
+      "firstPlayerWinPctAmongDecisive": 100,
+      "firstPlayerAdvantagePp": 50,
+      "avgLength": 119.92222222222222,
+      "avgCaptures": 11.7,
+      "counts": {
+        "elim": 0,
+        "stalemate": 1,
+        "moveCap": 89,
+        "rep": 0,
+        "p1Wins": 1,
+        "p2Wins": 0,
+        "draws": 89,
+        "decisive": 1
+      }
+    }
+  },
+  "firstPlayer": {
+    "whenFirstP1": {
+      "n": 60,
+      "eliminationPct": 100,
+      "forcedWinPct": 100,
+      "moveCapPct": 0,
+      "repetitionPct": 0,
+      "drawPct": 0,
+      "p1WinPct": 48.333333333333336,
+      "p2WinPct": 51.666666666666664,
+      "firstPlayerWinPctAmongDecisive": 48.333333333333336,
+      "firstPlayerAdvantagePp": -1.6666666666666643,
+      "avgLength": 55.983333333333334,
+      "avgCaptures": 28.033333333333335,
+      "counts": {
+        "elim": 60,
+        "stalemate": 0,
+        "moveCap": 0,
+        "rep": 0,
+        "p1Wins": 29,
+        "p2Wins": 31,
+        "draws": 0,
+        "decisive": 60
+      }
+    },
+    "whenFirstP2": {
+      "n": 60,
+      "eliminationPct": 100,
+      "forcedWinPct": 100,
+      "moveCapPct": 0,
+      "repetitionPct": 0,
+      "drawPct": 0,
+      "p1WinPct": 53.333333333333336,
+      "p2WinPct": 46.666666666666664,
+      "firstPlayerWinPctAmongDecisive": 46.666666666666664,
+      "firstPlayerAdvantagePp": -3.3333333333333357,
+      "avgLength": 56.9,
+      "avgCaptures": 28.3,
+      "counts": {
+        "elim": 60,
+        "stalemate": 0,
+        "moveCap": 0,
+        "rep": 0,
+        "p1Wins": 32,
+        "p2Wins": 28,
+        "draws": 0,
+        "decisive": 60
+      }
+    }
+  },
+  "failed": [],
+  "elapsedMs": 45125,
+  "note": "Draws/repetitions/move-cap draws are legitimate outcomes. READY means instrument is trustworthy enough for comparative research under comparisonProtocol, not that Sholo elim% should be maximized."
+}
