@@ -159,8 +159,9 @@ function positionKey(board, moverJustMoved) {
 /**
  * Complete-turn enumeration. Captures-first at root so branch caps truncate
  * quiet lines before tactics. Optional early chain stops included (Capture Optionality).
+ * Returns { ends, truncated }.
  */
-function generateTurnEnds(currBoard, player, maxBranch) {
+function generateTurnEndsDetailed(currBoard, player, maxBranch) {
   const ends = [];
   const root = getAllLegalMoves(currBoard, player).slice();
   root.sort((a, b) => {
@@ -173,11 +174,13 @@ function generateTurnEnds(currBoard, player, maxBranch) {
     const after = applyMove(currBoard, m);
     if (m.captured === null) {
       ends.push({ board: after, path: [m] });
-      if (ends.length >= maxBranch) return ends;
+      if (ends.length >= maxBranch) {
+        return { ends, truncated: true };
+      }
       continue;
     }
     ends.push({ board: after, path: [m] });
-    if (ends.length >= maxBranch) return ends;
+    if (ends.length >= maxBranch) return { ends, truncated: true };
     const stack = [{ board: after, pos: m.to, path: [m], depth: 1 }];
     while (stack.length) {
       const node = stack.pop();
@@ -189,11 +192,16 @@ function generateTurnEnds(currBoard, player, maxBranch) {
         const path = node.path.concat([hop]);
         ends.push({ board: nb, path });
         stack.push({ board: nb, pos: hop.to, path, depth: node.depth + 1 });
-        if (ends.length >= maxBranch) return ends;
+        if (ends.length >= maxBranch) return { ends, truncated: true };
       }
     }
   }
-  return ends;
+  return { ends, truncated: false };
+}
+
+/** Array-only wrapper (search call sites). */
+function generateTurnEnds(currBoard, player, maxBranch) {
+  return generateTurnEndsDetailed(currBoard, player, maxBranch).ends;
 }
 
 /**
@@ -267,7 +275,7 @@ function repetitionPenaltyForMover(boardAfter, mover, hist) {
 
 /**
  * Both players maximize scoreForPlayer. Capture tie-break signed for the mover.
- * Optional hist applies soft/hard repetition avoidance (outcomes still legal).
+ * Optional hist applies soft repetition steer (outcomes still legal).
  */
 function selectAITurn(level, fromBoard, player, hist) {
   const b = fromBoard;
@@ -475,6 +483,7 @@ module.exports = {
   count,
   pathCaptureCount,
   generateTurnEnds,
+  generateTurnEndsDetailed,
   evaluate,
   scoreForPlayer,
   opponentReplyPlies,

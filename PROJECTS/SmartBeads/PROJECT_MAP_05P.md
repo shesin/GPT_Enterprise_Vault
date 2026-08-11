@@ -58,7 +58,7 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **GEMINI_LAB.html** — Batch-testing tool. Parametrized (bead count, board geometry, tiebreaker mode, move limit). Runs many AI-vs-AI games headless and outputs a comparison table across configs so results do not need to be copy-pasted from the console by hand.
 - **SHOLO_GUTI.html** — Standalone playable Human-vs-AI Sholo Guti / Sixteen Soldiers (37-point board, 16 vs 16). Calibration/reference traditional game — not a SmartBeads product config.
 - **SHOLO_GUTI_CALIBRATION.html** — Headless/calibration harness for the same geometry (hop-based AI; not the primary playable).
-- **sholo-guti-fullturn-engine.cjs** / **run-sholo-fullturn-lab.cjs** / **validate-sholo-fullturn-lab.cjs** — Headless AI-vs-AI full-turn Lab (seeded). Use validate script for readiness; instrument for future SmartBeads config compare — not a product board ranking by itself.
+- **sholo-guti-fullturn-engine.cjs** / **sholo-lab-metrics.cjs** / **validate-sholo-fullturn-lab.cjs** / **final-validate-sholo-lab.cjs** — Headless full-turn Lab + comparison guards. Run `final-validate-sholo-lab.cjs` before SmartBeads candidate testing.
 - **verify-sholo-guti.cjs** — Smoke tests for the playable (geometry, Finish, honest AI depth labels, AI replies).
 - **GEMINI_GAME_ARCHITECTURE_05P.md** — Describes the rules and mechanics implemented so far for both the 4-bead and 6-bead 4×4 variants (background reference; code is authoritative if they disagree).
 - **verify-gemini-lab.cjs** — Headless test script for GEMINI_LAB.html.
