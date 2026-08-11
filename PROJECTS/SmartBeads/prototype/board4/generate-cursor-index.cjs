@@ -6,12 +6,69 @@
 const fs = require('fs');
 const path = require('path');
 
+/** Exact Gemini Index 4/6 BGM list (20 tracks) — used by CURSOR_INDEX_6. */
+const BGM_GEMINI_ALL = [
+  ['Bubble Gum Puzzler', 'http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler.mp3'],
+  ['Bubble Gum Puzzler 2', 'http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler-2.mp3'],
+  ['Cool Puzzler', 'http://soundimage.org/wp-content/uploads/2017/07/Cool-Puzzler.mp3'],
+  ['Sky Puzzle', 'http://soundimage.org/wp-content/uploads/2017/06/Sky-Puzzle.mp3'],
+  ['Mind Bender', 'http://soundimage.org/wp-content/uploads/2017/06/Mind-Bender.mp3'],
+  ['Puzzle Dreams', 'http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams.mp3'],
+  ['Puzzle Dreams 3', 'http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams-3.mp3'],
+  ['Mysterious Puzzle', 'http://soundimage.org/wp-content/uploads/2014/10/Mysterious-Puzzle.mp3'],
+  ['8-Bit Puzzler', 'http://soundimage.org/wp-content/uploads/2017/03/8-Bit-Puzzler.mp3'],
+  ['Puzzle Game 5', 'http://soundimage.org/wp-content/uploads/2014/12/Puzzle-Game-5.mp3'],
+  ['Happy Puzzler', 'http://soundimage.org/wp-content/uploads/2017/09/Happy-Puzzler.mp3'],
+  ['Puzzle Action', 'http://soundimage.org/wp-content/uploads/2017/08/Puzzle-Action.mp3'],
+  ['Puzzle Technica', 'https://soundimage.org/wp-content/uploads/2021/11/Puzzle-Technica.mp3'],
+  ["Cool Puzzle Groovin' 2", 'https://soundimage.org/wp-content/uploads/2021/08/Cool-Puzzle-Groovin-2.mp3'],
+  ['Quirky Quarks', 'https://soundimage.org/wp-content/uploads/2021/08/Quirky-Quarks.mp3'],
+  ['Drifting Things', 'http://soundimage.org/wp-content/uploads/2018/01/Drifting-Things.mp3'],
+  ['Wind-Up Things', 'http://soundimage.org/wp-content/uploads/2018/01/Wind-Up-Things.mp3'],
+  ['Carnival Games', 'http://soundimage.org/wp-content/uploads/2018/07/Carnival-Games.mp3'],
+  ['Far Away Puzzle Places', 'http://soundimage.org/wp-content/uploads/2018/07/Far-Away-Puzzle-Places.mp3'],
+  ['Thought Puzzles', 'http://soundimage.org/wp-content/uploads/2017/09/Thought-Puzzles.mp3'],
+];
+
+/**
+ * Cursor Index 4 curated set (also 20) — HTTPS, no overlap with Gemini list.
+ * Biased toward calmer / cryptic / board-game moods rather than candy/bubblegum.
+ */
+const BGM_CURSOR4_CURATED = [
+  ['Puzzle Meditation', 'https://soundimage.org/wp-content/uploads/2022/06/Puzzle-Meditation.mp3'],
+  ['Glistening Puzzles', 'https://soundimage.org/wp-content/uploads/2022/01/Glistening-Puzzles.mp3'],
+  ['Mind Bender 2', 'https://soundimage.org/wp-content/uploads/2022/01/Mind-Bender-2.mp3'],
+  ['Arctic Puzzler', 'https://soundimage.org/wp-content/uploads/2021/12/Arctic-Puzzler.mp3'],
+  ['Cryptic Clues', 'https://soundimage.org/wp-content/uploads/2023/05/Cryptic-Clues.mp3'],
+  ['Light Puzzles 8', 'https://soundimage.org/wp-content/uploads/2021/07/Light-Puzzles-8.mp3'],
+  ['Light Puzzles 9', 'https://soundimage.org/wp-content/uploads/2021/07/Light-Puzzles-9.mp3'],
+  ['Light Puzzles 10', 'https://soundimage.org/wp-content/uploads/2021/07/Light-Puzzles-10.mp3'],
+  ['Light Puzzles 11', 'https://soundimage.org/wp-content/uploads/2021/08/Light-Puzzles-11.mp3'],
+  ['Ancient Magic', 'https://soundimage.org/wp-content/uploads/2025/08/Ancient-Magic.mp3'],
+  ['Peaceful Puzzles', 'https://soundimage.org/wp-content/uploads/2020/01/Peaceful-Puzzles.mp3'],
+  ['Ancient Puzzles', 'https://soundimage.org/wp-content/uploads/2019/12/Ancient-Puzzles.mp3'],
+  ['Winter Puzzles', 'https://soundimage.org/wp-content/uploads/2019/12/Winter-Puzzles.mp3'],
+  ['Cosmic Puzzle', 'https://soundimage.org/wp-content/uploads/2019/11/Cosmic-Puzzle.mp3'],
+  ['Crystal Puzzles', 'https://soundimage.org/wp-content/uploads/2019/05/Crystal-Puzzles.mp3'],
+  ['Midnight Puzzles', 'https://soundimage.org/wp-content/uploads/2019/02/Midnight-Puzzles.mp3'],
+  ['Cool Contemplation', 'https://soundimage.org/wp-content/uploads/2020/08/Cool-Contemplation.mp3'],
+  ['Cryptic Coolosity', 'https://soundimage.org/wp-content/uploads/2020/08/Cryptic-Coolosity.mp3'],
+  ['Music Box Puzzles', 'https://soundimage.org/wp-content/uploads/2019/07/Music-Box-Puzzles.mp3'],
+  ['Puzzle Journeys', 'https://soundimage.org/wp-content/uploads/2019/09/Puzzle-Journeys.mp3'],
+];
+
+function bgmOptionsHtml(tracks) {
+  return tracks.map(([label, url]) => `    <option value="${url}">${label}</option>`).join('\n');
+}
+
 function buildHtml(variant) {
   const beads = variant.beads;
   const startBoard = JSON.stringify(variant.startBoard);
   const title = `${beads}-Bead SmartBeads — Cursor Index`;
   const h1 = `CURSOR INDEX ${beads}`;
   const tagline = variant.tagline;
+  const bgmLabel = variant.bgmLabel;
+  const bgmOptions = bgmOptionsHtml(variant.bgmTracks);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -133,6 +190,33 @@ function buildHtml(variant) {
     }
     .modal-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.55rem; color: var(--amber); margin-bottom: 10px; font-weight: 700; }
     .modal-body { font-size: 0.95rem; margin-bottom: 18px; color: #c5d5cc; line-height: 1.45; }
+    #bgm-panel {
+      position: fixed; bottom: 12px; left: 12px; z-index: 9999;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      max-width: min(420px, calc(100vw - 24px));
+      background: rgba(28, 46, 40, 0.96);
+      color: var(--sand);
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(224,160,69,0.35);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+      font-size: 0.78rem;
+    }
+    #bgm-panel .bgm-label {
+      font-weight: 700; color: var(--amber); letter-spacing: 0.03em; text-transform: uppercase; font-size: 0.68rem;
+    }
+    #bgm-select {
+      flex: 1 1 180px; min-width: 140px;
+      background: var(--ink); color: var(--sand);
+      border: 1px solid var(--line); border-radius: 8px;
+      padding: 6px 8px; font-family: inherit; font-weight: 600;
+    }
+    #bgm-panel button {
+      border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-weight: 700; font-family: inherit;
+    }
+    #bgm-play { background: var(--mint); color: #06241c; }
+    #bgm-pause { background: var(--red); color: #fff; }
+    #bgm-vol { width: 72px; vertical-align: middle; accent-color: var(--amber); }
   </style>
 </head>
 <body>
@@ -245,6 +329,18 @@ function buildHtml(variant) {
     <button class="main-btn" id="play-again-btn" type="button">Play Again</button>
   </div>
 </div>
+
+<div id="bgm-panel" aria-label="Background music">
+  <span class="bgm-label">${bgmLabel}</span>
+  <select id="bgm-select">
+    <option value="">— pick a track —</option>
+${bgmOptions}
+  </select>
+  <button id="bgm-play" type="button" title="Play">▶</button>
+  <button id="bgm-pause" type="button" title="Pause">⏸</button>
+  <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.3" title="Volume" aria-label="BGM volume">
+</div>
+<audio id="bgm-audio" loop></audio>
 
 <script>
 (function () {
@@ -943,6 +1039,29 @@ function buildHtml(variant) {
     updateUI(); drawBoard();
   }
 
+  function wireBgm() {
+    const bgmAudio = document.getElementById('bgm-audio');
+    const bgmSelect = document.getElementById('bgm-select');
+    const bgmVol = document.getElementById('bgm-vol');
+    const bgmPlay = document.getElementById('bgm-play');
+    const bgmPause = document.getElementById('bgm-pause');
+    if (!bgmAudio || !bgmSelect || !bgmVol || !bgmPlay || !bgmPause) return;
+    bgmAudio.volume = parseFloat(bgmVol.value) || 0.3;
+    const playSelected = () => {
+      if (!bgmSelect.value) return;
+      bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
+    };
+    bgmSelect.addEventListener('change', () => { if (bgmSelect.value) playSelected(); else bgmAudio.pause(); });
+    bgmPlay.addEventListener('click', () => {
+      if (!bgmSelect.value) return;
+      if (!bgmAudio.src || !bgmAudio.src.includes(bgmSelect.value.split('/').pop())) bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
+    });
+    bgmPause.addEventListener('click', () => bgmAudio.pause());
+    bgmVol.addEventListener('input', () => { bgmAudio.volume = parseFloat(bgmVol.value) || 0; });
+  }
+
   function init() {
     setupCanvas();
     document.body.addEventListener('click', initAudio, { once: true });
@@ -956,6 +1075,7 @@ function buildHtml(variant) {
     });
     document.getElementById('game-mode-select').addEventListener('change', syncAiLevelEnabled);
     window.addEventListener('resize', () => { setupCanvas(); drawBoard(); });
+    wireBgm();
     resetGame();
   }
   window.addEventListener('load', init);
@@ -988,19 +1108,25 @@ const variants = [
     startBoard: [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2],
     tagline: '4 beads · 4×4 · Human vs AI',
     file: 'CURSOR_INDEX_4.html',
+    bgmLabel: 'BGM · Cursor pick',
+    bgmTracks: BGM_CURSOR4_CURATED,
   },
   {
     beads: 6,
     startBoard: [1, 1, 1, 1, 1, 0, 0, 1, 2, 0, 0, 2, 2, 2, 2, 2],
     tagline: '6 beads · 4×4 · Human vs AI',
     file: 'CURSOR_INDEX_6.html',
+    bgmLabel: 'BGM · Gemini set',
+    bgmTracks: BGM_GEMINI_ALL,
   },
 ];
 
 for (const v of variants) {
+  if (v.bgmTracks.length !== 20) {
+    throw new Error(v.file + ' must have exactly 20 BGM tracks, got ' + v.bgmTracks.length);
+  }
   const html = buildHtml(v);
-  // Fix accidental CSS typo if any
   const cleaned = html.replace(/--muted: #9 Panela3b0;\s*/g, '');
   fs.writeFileSync(path.join(outDir, v.file), cleaned, 'utf8');
-  console.log('Wrote', v.file, cleaned.length, 'bytes');
+  console.log('Wrote', v.file, cleaned.length, 'bytes', 'bgm=', v.bgmTracks.length);
 }

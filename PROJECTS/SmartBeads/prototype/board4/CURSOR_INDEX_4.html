@@ -118,6 +118,33 @@
     }
     .modal-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.55rem; color: var(--amber); margin-bottom: 10px; font-weight: 700; }
     .modal-body { font-size: 0.95rem; margin-bottom: 18px; color: #c5d5cc; line-height: 1.45; }
+    #bgm-panel {
+      position: fixed; bottom: 12px; left: 12px; z-index: 9999;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      max-width: min(420px, calc(100vw - 24px));
+      background: rgba(28, 46, 40, 0.96);
+      color: var(--sand);
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(224,160,69,0.35);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+      font-size: 0.78rem;
+    }
+    #bgm-panel .bgm-label {
+      font-weight: 700; color: var(--amber); letter-spacing: 0.03em; text-transform: uppercase; font-size: 0.68rem;
+    }
+    #bgm-select {
+      flex: 1 1 180px; min-width: 140px;
+      background: var(--ink); color: var(--sand);
+      border: 1px solid var(--line); border-radius: 8px;
+      padding: 6px 8px; font-family: inherit; font-weight: 600;
+    }
+    #bgm-panel button {
+      border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-weight: 700; font-family: inherit;
+    }
+    #bgm-play { background: var(--mint); color: #06241c; }
+    #bgm-pause { background: var(--red); color: #fff; }
+    #bgm-vol { width: 72px; vertical-align: middle; accent-color: var(--amber); }
   </style>
 </head>
 <body>
@@ -230,6 +257,37 @@
     <button class="main-btn" id="play-again-btn" type="button">Play Again</button>
   </div>
 </div>
+
+<div id="bgm-panel" aria-label="Background music">
+  <span class="bgm-label">BGM · Cursor pick</span>
+  <select id="bgm-select">
+    <option value="">— pick a track —</option>
+    <option value="https://soundimage.org/wp-content/uploads/2022/06/Puzzle-Meditation.mp3">Puzzle Meditation</option>
+    <option value="https://soundimage.org/wp-content/uploads/2022/01/Glistening-Puzzles.mp3">Glistening Puzzles</option>
+    <option value="https://soundimage.org/wp-content/uploads/2022/01/Mind-Bender-2.mp3">Mind Bender 2</option>
+    <option value="https://soundimage.org/wp-content/uploads/2021/12/Arctic-Puzzler.mp3">Arctic Puzzler</option>
+    <option value="https://soundimage.org/wp-content/uploads/2023/05/Cryptic-Clues.mp3">Cryptic Clues</option>
+    <option value="https://soundimage.org/wp-content/uploads/2021/07/Light-Puzzles-8.mp3">Light Puzzles 8</option>
+    <option value="https://soundimage.org/wp-content/uploads/2021/07/Light-Puzzles-9.mp3">Light Puzzles 9</option>
+    <option value="https://soundimage.org/wp-content/uploads/2021/07/Light-Puzzles-10.mp3">Light Puzzles 10</option>
+    <option value="https://soundimage.org/wp-content/uploads/2021/08/Light-Puzzles-11.mp3">Light Puzzles 11</option>
+    <option value="https://soundimage.org/wp-content/uploads/2025/08/Ancient-Magic.mp3">Ancient Magic</option>
+    <option value="https://soundimage.org/wp-content/uploads/2020/01/Peaceful-Puzzles.mp3">Peaceful Puzzles</option>
+    <option value="https://soundimage.org/wp-content/uploads/2019/12/Ancient-Puzzles.mp3">Ancient Puzzles</option>
+    <option value="https://soundimage.org/wp-content/uploads/2019/12/Winter-Puzzles.mp3">Winter Puzzles</option>
+    <option value="https://soundimage.org/wp-content/uploads/2019/11/Cosmic-Puzzle.mp3">Cosmic Puzzle</option>
+    <option value="https://soundimage.org/wp-content/uploads/2019/05/Crystal-Puzzles.mp3">Crystal Puzzles</option>
+    <option value="https://soundimage.org/wp-content/uploads/2019/02/Midnight-Puzzles.mp3">Midnight Puzzles</option>
+    <option value="https://soundimage.org/wp-content/uploads/2020/08/Cool-Contemplation.mp3">Cool Contemplation</option>
+    <option value="https://soundimage.org/wp-content/uploads/2020/08/Cryptic-Coolosity.mp3">Cryptic Coolosity</option>
+    <option value="https://soundimage.org/wp-content/uploads/2019/07/Music-Box-Puzzles.mp3">Music Box Puzzles</option>
+    <option value="https://soundimage.org/wp-content/uploads/2019/09/Puzzle-Journeys.mp3">Puzzle Journeys</option>
+  </select>
+  <button id="bgm-play" type="button" title="Play">▶</button>
+  <button id="bgm-pause" type="button" title="Pause">⏸</button>
+  <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.3" title="Volume" aria-label="BGM volume">
+</div>
+<audio id="bgm-audio" loop></audio>
 
 <script>
 (function () {
@@ -928,6 +986,29 @@
     updateUI(); drawBoard();
   }
 
+  function wireBgm() {
+    const bgmAudio = document.getElementById('bgm-audio');
+    const bgmSelect = document.getElementById('bgm-select');
+    const bgmVol = document.getElementById('bgm-vol');
+    const bgmPlay = document.getElementById('bgm-play');
+    const bgmPause = document.getElementById('bgm-pause');
+    if (!bgmAudio || !bgmSelect || !bgmVol || !bgmPlay || !bgmPause) return;
+    bgmAudio.volume = parseFloat(bgmVol.value) || 0.3;
+    const playSelected = () => {
+      if (!bgmSelect.value) return;
+      bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
+    };
+    bgmSelect.addEventListener('change', () => { if (bgmSelect.value) playSelected(); else bgmAudio.pause(); });
+    bgmPlay.addEventListener('click', () => {
+      if (!bgmSelect.value) return;
+      if (!bgmAudio.src || !bgmAudio.src.includes(bgmSelect.value.split('/').pop())) bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
+    });
+    bgmPause.addEventListener('click', () => bgmAudio.pause());
+    bgmVol.addEventListener('input', () => { bgmAudio.volume = parseFloat(bgmVol.value) || 0; });
+  }
+
   function init() {
     setupCanvas();
     document.body.addEventListener('click', initAudio, { once: true });
@@ -941,6 +1022,7 @@
     });
     document.getElementById('game-mode-select').addEventListener('change', syncAiLevelEnabled);
     window.addEventListener('resize', () => { setupCanvas(); drawBoard(); });
+    wireBgm();
     resetGame();
   }
   window.addEventListener('load', init);
