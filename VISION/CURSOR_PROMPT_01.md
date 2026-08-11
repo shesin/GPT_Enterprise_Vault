@@ -13,6 +13,16 @@ The verified repository is the implementation source of truth.
 Agent roles, approval tiers, workflow, safety rules, and the verification checklist are defined once in AGENT_RULE_05P.md — this file does not repeat them.
 
 ---
+# Instrument Verification Rule 
+
+Before trusting ANY output from a testing tool, lab, or harness — and before asking for more runs, more depths, or more seeds — first verify the instrument itself is measuring what it claims to measure.
+
+This applies specifically to:
+
+- Any parameter passed to a test tool (e.g. "depth", "N", "seed") — confirm what the code actually does with that parameter before treating results across different parameter values as meaningful. A parameter can be silently capped, ignored, or reinterpreted without the report saying so.
+- Any tool producing results that look surprising, unstable, or inconsistent — the default hypothesis is the TOOL, not the subject being tested, until the tool has been calibrated against a known-correct reference.
+
+---
 
 # Core Principle
 

@@ -16,6 +16,25 @@ If repository contents conflict with memory or previous conversations, the verif
 
 Agent roles, approval tiers, workflow, safety rules, and verification requirements are defined once in AGENT_RULE_05P.md — this file does not repeat them.
 
+----
+
+# Instrument Verification Rule 
+
+Before trusting ANY output from a testing tool, lab, or harness — and before asking for more runs, more depths, or more seeds — first verify the instrument itself is measuring what it claims to measure.
+
+This applies specifically to:
+
+- Any parameter passed to a test tool (e.g. "depth", "N", "seed") — confirm what the code actually does with that parameter before treating results across different parameter values as meaningful. A parameter can be silently capped, ignored, or reinterpreted without the report saying so.
+- Any tool producing results that look surprising, unstable, or inconsistent — the default hypothesis is the TOOL, not the subject being tested, until the tool has been calibrated against a known-correct reference.
+- Any request for "one more test at a different setting" — before making this request, stop and ask: has it been confirmed that changing this setting actually changes what we think it changes?
+
+
+## Required behavior going forward
+
+1. When a test tool is new, has recently changed, or has produced surprising/unstable results, STOP and run a small calibration check against a known-correct reference case before running any large or repeated experiment.
+2. When asking Cursor (or any implementer) to vary a parameter across runs, explicitly require the report to confirm what that parameter actually does in code, not just what value was passed in.
+3. Do not recommend "more data" (more depths, more seeds, more N) as the next step when results are unstable or surprising. Recommend instrument verification first. Only recommend more data once the instrument is confirmed sound.
+4. If the human questions whether the tool itself is reliable, treat that as a Priority 1 question to resolve before continuing any other testing thread — do not continue parallel investigations that assume the tool works.
 ---
 
 # Communication Style

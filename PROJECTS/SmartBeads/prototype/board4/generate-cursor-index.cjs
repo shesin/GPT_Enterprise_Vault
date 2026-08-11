@@ -351,6 +351,41 @@ ${bgmOptions}
   const REP_HARD = 900;
   const REP_SOFT = 35;
 
+  /** Seeded PRNG for AI/test reproducibility. Interactive play uses Math.random when unset. */
+  let aiTestSeed = null;
+  let aiTestRng = null;
+  function createSeededRng(seed) {
+    let s = (seed >>> 0) || 1;
+    return function () {
+      s |= 0;
+      s = (s + 0x6D2B79F5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function aiRandom() {
+    return aiTestRng ? aiTestRng() : Math.random();
+  }
+  function setAiTestSeed(seed) {
+    if (seed == null || seed === '') {
+      aiTestSeed = null;
+      aiTestRng = null;
+      return null;
+    }
+    aiTestSeed = (seed >>> 0);
+    if (aiTestSeed === 0) aiTestSeed = 1;
+    aiTestRng = createSeededRng(aiTestSeed);
+    return aiTestSeed;
+  }
+  function clearAiTestSeed() {
+    aiTestSeed = null;
+    aiTestRng = null;
+  }
+  function getAiTestSeed() {
+    return aiTestSeed;
+  }
+
   let currentState = STATE.IDLE;
   let board = [];
   let currentTurn = CONFIG.P1;
@@ -572,7 +607,7 @@ ${bgmOptions}
       // Prefer non-repeating when possible
       const safe = pool.filter((m) => repetitionPenalty(applyMoveClone(board, m), CONFIG.P2) < REP_HARD);
       const use = safe.length ? safe : pool;
-      return use[Math.floor(Math.random() * use.length)];
+      return use[Math.floor(aiRandom() * use.length)];
     }
     let bestScore = -Infinity;
     let bestMoves = [];
@@ -592,7 +627,7 @@ ${bgmOptions}
       if (v.score > bestScore) { bestScore = v.score; bestMoves = [v]; }
       else if (v.score === bestScore) bestMoves.push(v);
     });
-    const pick = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+    const pick = bestMoves[Math.floor(aiRandom() * bestMoves.length)];
     // Stash whether AI prefers stopping after first capture of this opening
     window.__aiPreferStop = !!pick.preferStop && pick.opening.captured !== null;
     return pick.opening;
@@ -1094,6 +1129,10 @@ ${bgmOptions}
     completeTurn,
     getMovesForNode,
     isAiThinking: () => aiThinking,
+    setAiTestSeed,
+    clearAiTestSeed,
+    getAiTestSeed,
+    aiRandom,
   };
 })();
 </script>

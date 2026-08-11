@@ -8,6 +8,11 @@ Permanent, actionable engineering rules only. State the rule, not the reasoning 
 Target: ~1 page (01P).
 
 ---
+## Rule - Experimental Integrity
+
+Verify the experiment mechanism before using its results for gameplay or board decisions. A test result is not evidence of game quality unless the tested implementation, search depth, randomness, termination, and measurement method are themselves verified.
+
+---
 
 ## Rule - Prototype Classification
 Design/UX prototypes live outside the production tree (e.g. prototype/), may skip full architectural review, and must never share code with the production engine. They do not need to honor Configurable Parameters, Board Fidelity abstraction, or engine reuse — but gameplay rules (e.g. Capture Optionality) still apply if the prototype is used for human testing.

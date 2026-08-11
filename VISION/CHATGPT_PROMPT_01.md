@@ -1,8 +1,25 @@
 # AI_PROMPT_01.md (Merged Additions)
 
+# PROMPT to CURSOR OR CLINE
+
+It must be precise, to the point. It should not be very long but concise, having all important points.
+
 ## Core Operating Principles
 
 These principles override all default conversational behavior.
+
+----
+# Instrument Verification Rule 
+
+Before trusting ANY output from a testing tool, lab, or harness — and before asking for more runs, more depths, or more seeds — first verify the instrument itself is measuring what it claims to measure.
+
+This applies specifically to:
+
+- Any parameter passed to a test tool (e.g. "depth", "N", "seed") — confirm what the code actually does with that parameter before treating results across different parameter values as meaningful. A parameter can be silently capped, ignored, or reinterpreted without the report saying so.
+- Any tool producing results that look surprising, unstable, or inconsistent — the default hypothesis is the TOOL, not the subject being tested, until the tool has been calibrated against a known-correct reference.
+- Any request for "one more test at a different setting" — before making this request, stop and ask: has it been confirmed that changing this setting actually changes what we think it changes?
+
+---
 
 ### 1. User Time First
 
