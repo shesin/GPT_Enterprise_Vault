@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sholo Guti — Sixteen Soldiers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --felt: #1a3d2e;
+      --felt-deep: #0f241c;
+      --brass: #c9a227;
+      --ivory: #f3efe4;
+      --ebony: #1c1410;
+      --ink: #e8f0ea;
+      --muted: #9bb5a6;
+      --ok: #5fbf8a;
+      --danger: #c45c4a;
+      --panel: rgba(12, 28, 22, 0.9);
+      --glow: rgba(201, 162, 39, 0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: "Manrope", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 70% at 50% -10%, #2a5a42 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 100% 100%, #163528 0%, transparent 45%),
+        linear-gradient(165deg, #12281f 0%, var(--felt-deep) 45%, #0a1812 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 14px 72px;
+    }
+    .brand {
+      text-align: center;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+      animation: rise 0.7s ease-out both;
+    }
+    .brand h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-weight: 700;
+      font-size: clamp(1.45rem, 3.6vw, 2.05rem);
+      letter-spacing: 0.02em;
+      color: var(--ivory);
+      text-shadow: 0 2px 24px rgba(0,0,0,0.45);
+    }
+    .brand p {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .shell {
+      width: min(1280px, 100%);
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(170px, 210px) minmax(0, 1fr) minmax(170px, 210px);
+      gap: 16px;
+      align-items: start;
+      animation: rise 0.85s 0.08s ease-out both;
+    }
+    .side {
+      position: sticky;
+      top: 10px;
+      max-height: calc(100vh - 86px);
+      overflow: auto;
+    }
+    .board-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .board-frame {
+      position: relative;
+      width: min(100%, calc((100vh - 190px) * 0.74));
+      height: min(calc(100vh - 190px), 820px);
+      margin: 0 auto;
+      border-radius: 18px;
+      padding: 10px;
+      background:
+        linear-gradient(145deg, rgba(201,162,39,0.28), transparent 42%),
+        linear-gradient(180deg, #24523c, #143328);
+      box-shadow:
+        0 20px 50px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+      animation: boardIn 0.9s 0.15s ease-out both;
+    }
+    .board-frame.busy { cursor: wait; }
+    @media (max-width: 860px) {
+      .shell { grid-template-columns: 1fr; width: min(480px, 100%); }
+      .side { position: static; max-height: none; order: 2; }
+      .board-wrap { order: 1; }
+      .board-frame {
+        height: min(68vh, 660px);
+        width: min(100%, calc(68vh * 0.74));
+      }
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(201,162,39,0.18);
+      border-radius: 16px;
+      padding: 14px 16px;
+      backdrop-filter: blur(8px);
+    }
+    .side h2 {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--brass);
+      margin-bottom: 10px;
+    }
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.9rem;
+    }
+    .stat .val { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .player-pill {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 12px;
+      margin-bottom: 8px;
+      border: 1px solid transparent;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    }
+    .player-pill.active {
+      border-color: var(--brass);
+      box-shadow: 0 0 0 1px var(--glow), inset 0 0 20px rgba(201,162,39,0.08);
+      background: rgba(201,162,39,0.07);
+    }
+    .dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.35), 0 1px 2px rgba(255,255,255,0.2);
+      flex-shrink: 0;
+    }
+    .dot.human { background: radial-gradient(circle at 35% 30%, #fff8e8, var(--ivory) 45%, #cfc6b0); }
+    .dot.ai { background: radial-gradient(circle at 35% 30%, #4a3a32, var(--ebony) 50%, #0a0705); border: 1px solid #3a2a22; }
+    #bgm-panel {
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(12, 28, 22, 0.95);
+      color: var(--ink);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      max-width: min(96vw, 520px);
+      border: 1px solid rgba(201,162,39,0.28);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    #bgm-panel select { max-width: 200px; border-radius: 8px; padding: 4px 8px; }
+    #bgm-panel button { border-radius: 8px; padding: 4px 10px; }
+    #bgm-play { background: #10b981; border-color: transparent; color: #062; font-weight: 700; }
+    #bgm-pause { background: #c45c4a; border-color: transparent; color: #fff; font-weight: 700; }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 12px;
+      cursor: pointer;
+      background: #1b4332;
+      touch-action: manipulation;
+    }
+    .status {
+      text-align: center;
+      font-weight: 600;
+      font-size: 1rem;
+      min-height: 1.45em;
+      color: var(--ivory);
+      transition: color 0.2s;
+    }
+    .status.think { color: var(--brass); }
+    .status.chain { color: var(--ok); }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+    }
+    label.ctl {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.82rem; color: var(--muted);
+    }
+    select, button {
+      font-family: inherit;
+      font-size: 0.88rem;
+      border-radius: 999px;
+      border: 1px solid rgba(201,162,39,0.28);
+      background: rgba(15, 36, 28, 0.9);
+      color: var(--ink);
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+    select:focus, button:focus { outline: 2px solid var(--brass); outline-offset: 2px; }
+    button.primary {
+      background: linear-gradient(180deg, #d4a84b, #a67c1a);
+      color: #1a1208;
+      font-weight: 700;
+      border-color: transparent;
+    }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.finish {
+      background: linear-gradient(180deg, #3d9b6a, #246b48);
+      border-color: transparent;
+      font-weight: 700;
+    }
+    button.finish:not(:disabled) {
+      box-shadow: 0 0 0 1px rgba(95,191,138,0.35), 0 6px 16px rgba(0,0,0,0.25);
+      animation: finishPulse 1.6s ease-in-out infinite;
+    }
+    .hint { font-size: 0.76rem; color: var(--muted); text-align: center; max-width: 46ch; line-height: 1.4; }
+    .level-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+      max-width: 40ch;
+      line-height: 1.35;
+    }
+    .modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      align-items: center; justify-content: center;
+      z-index: 20;
+      padding: 16px;
+    }
+    .modal.show { display: flex; animation: fadeIn 0.25s ease; }
+    .modal-card {
+      background: #142820;
+      border: 1px solid var(--brass);
+      border-radius: 18px;
+      padding: 28px 24px;
+      text-align: center;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      animation: pop 0.35s ease;
+    }
+    .modal-card h2 { font-family: "Fraunces", Georgia, serif; font-size: 1.7rem; margin-bottom: 8px; }
+    .modal-card p { color: var(--muted); margin-bottom: 18px; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes boardIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pop {
+      from { opacity: 0; transform: scale(0.94); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes finishPulse {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.12); }
+    }
+  </style>
+</head>
+<body>
+  <header class="brand">
+    <h1>Sholo Guti</h1>
+    <p>Sixteen Soldiers · 37 points · traditional leaping capture</p>
+  </header>
+
+  <div class="shell">
+    <aside class="card side">
+      <h2>Players</h2>
+      <div class="player-pill" id="pill-human">
+        <span class="dot human"></span>
+        <div>
+          <div style="font-weight:700">Ivory · You (bottom)</div>
+          <div style="font-size:0.78rem;color:var(--muted)" id="human-count">16 pieces</div>
+        </div>
+      </div>
+      <div class="player-pill" id="pill-ai">
+        <span class="dot ai"></span>
+        <div>
+          <div style="font-weight:700">Ebony · AI (top)</div>
+          <div style="font-size:0.78rem;color:var(--muted)" id="ai-count">16 pieces</div>
+        </div>
+      </div>
+      <div class="stat"><span>Captures (you)</span><span class="val" id="human-caps">0</span></div>
+      <div class="stat"><span>Captures (AI)</span><span class="val" id="ai-caps">0</span></div>
+      <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
+    </aside>
+
+    <main class="board-wrap">
+      <div class="board-frame" id="board-frame">
+        <canvas id="board" width="500" height="680"></canvas>
+      </div>
+      <div class="status" id="status">Your turn — select a piece</div>
+      <div class="controls">
+        <label class="ctl">AI level
+          <select id="ai-level" title="Honest search: 1=greedy, 2=1-turn look, 3=2-turn look">
+            <option value="1">1 · Greedy</option>
+            <option value="2" selected>2 · 1-turn look</option>
+            <option value="3">3 · 2-turn look</option>
+          </select>
+        </label>
+        <button class="finish" id="finish-btn" disabled title="End your capture chain (Enter)">Finish chain</button>
+        <button id="restart-btn">New game</button>
+      </div>
+      <p class="level-note" id="level-note">Level 2 evaluates every legal complete turn (slides + optional chain stops). No fake deeper search.</p>
+      <p class="hint">Jump over an adjacent enemy along a line to capture. Chains are optional — press Finish or Enter to end. Esc deselects. You play from the bottom.</p>
+    </main>
+
+    <aside class="card side">
+      <h2>Rules</h2>
+      <p style="font-size:0.84rem;color:var(--muted);line-height:1.45">
+        Move along drawn lines. Capture by short leap. Multi-jumps allowed; you may stop anytime.
+        Win by capturing all 16 enemy pieces. No SmartBeads center tiebreaks.
+      </p>
+      <div class="stat" style="margin-top:12px"><span>Board</span><span class="val">37 pts</span></div>
+      <div class="stat"><span>Pieces</span><span class="val">16 vs 16</span></div>
+      <div class="stat"><span>Mode</span><span class="val">Human vs AI</span></div>
+    </aside>
+  </div>
+
+  <div id="bgm-panel">
+    <span style="color:var(--brass);font-weight:700">BGM</span>
+    <select id="bgm-select">
+      <option value="">— Select Music —</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler.mp3">Bubble Gum Puzzler</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler-2.mp3">Bubble Gum Puzzler 2</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/07/Cool-Puzzler.mp3">Cool Puzzler</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/06/Sky-Puzzle.mp3">Sky Puzzle</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/06/Mind-Bender.mp3">Mind Bender</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams.mp3">Puzzle Dreams</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams-3.mp3">Puzzle Dreams 3</option>
+      <option value="http://soundimage.org/wp-content/uploads/2014/10/Mysterious-Puzzle.mp3">Mysterious Puzzle</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/03/8-Bit-Puzzler.mp3">8-Bit Puzzler</option>
+      <option value="http://soundimage.org/wp-content/uploads/2014/12/Puzzle-Game-5.mp3">Puzzle Game 5</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/09/Happy-Puzzler.mp3">Happy Puzzler</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/08/Puzzle-Action.mp3">Puzzle Action</option>
+      <option value="https://soundimage.org/wp-content/uploads/2021/11/Puzzle-Technica.mp3">Puzzle Technica</option>
+      <option value="https://soundimage.org/wp-content/uploads/2021/08/Cool-Puzzle-Groovin-2.mp3">Cool Puzzle Groovin' 2</option>
+      <option value="https://soundimage.org/wp-content/uploads/2021/08/Quirky-Quarks.mp3">Quirky Quarks</option>
+      <option value="http://soundimage.org/wp-content/uploads/2018/01/Drifting-Things.mp3">Drifting Things</option>
+      <option value="http://soundimage.org/wp-content/uploads/2018/01/Wind-Up-Things.mp3">Wind Up Things</option>
+      <option value="http://soundimage.org/wp-content/uploads/2018/07/Carnival-Games.mp3">Carnival Games</option>
+      <option value="http://soundimage.org/wp-content/uploads/2018/07/Far-Away-Puzzle-Places.mp3">Far Away Puzzle Places</option>
+      <option value="http://soundimage.org/wp-content/uploads/2017/09/Thought-Puzzles.mp3">Thought Puzzles</option>
+    </select>
+    <button type="button" id="bgm-play">▶</button>
+    <button type="button" id="bgm-pause">⏸</button>
+    <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.3" style="width:70px;vertical-align:middle">
+  </div>
+  <audio id="bgm-audio" loop></audio>
+
+  <div class="modal" id="win-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 id="modal-title">Victory</h2>
+      <p id="modal-desc"></p>
+      <button class="primary" id="play-again-btn">Play again</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const P1 = 1, P2 = 2;
+  const STATE = { IDLE: 'IDLE', SELECTED: 'SELECTED', CHAIN_JUMPING: 'CHAIN_JUMPING', GAME_OVER: 'GAME_OVER' };
+
+  /** Authentic 37-point board (Alquerque 5×5 + L/R triangles). Unchanged geometry. */
+  const NODES = [];
+  const NODE_INDEX = Object.create(null);
+  function addNode(id, x, y) {
+    NODE_INDEX[id] = NODES.length;
+    NODES.push({ id, x, y });
+  }
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) addNode('A' + r + c, 2 * c, 2 * r);
+  [
+    ['LT', -2, 0], ['LM', -2, 4], ['LB', -2, 8], ['LIT', -1, 2], ['LIM', -1, 4], ['LIB', -1, 6],
+    ['RT', 10, 0], ['RM', 10, 4], ['RB', 10, 8], ['RIT', 9, 2], ['RIM', 9, 4], ['RIB', 9, 6],
+  ].forEach(([id, x, y]) => addNode(id, x, y));
+  const N = NODES.length;
+  const ADJ = Array.from({ length: N }, () => []);
+  function link(a, b) {
+    const i = NODE_INDEX[a], j = NODE_INDEX[b];
+    if (!ADJ[i].includes(j)) ADJ[i].push(j);
+    if (!ADJ[j].includes(i)) ADJ[j].push(i);
+  }
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
+        const r2 = r + dr, c2 = c + dc;
+        if (r2 < 0 || r2 > 4 || c2 < 0 || c2 > 4) continue;
+        link('A' + r + c, 'A' + r2 + c2);
+      }
+    }
+  }
+  [
+    ['RT', 'RM'], ['RM', 'RB'], ['RIT', 'RIM'], ['RIM', 'RIB'],
+    ['RT', 'RIT'], ['RIT', 'A24'], ['RB', 'RIB'], ['RIB', 'A24'], ['A24', 'RIM'], ['RIM', 'RM'],
+    ['LT', 'LM'], ['LM', 'LB'], ['LIT', 'LIM'], ['LIM', 'LIB'],
+    ['LT', 'LIT'], ['LIT', 'A20'], ['LB', 'LIB'], ['LIB', 'A20'], ['A20', 'LIM'], ['LIM', 'LM'],
+  ].forEach(([a, b]) => link(a, b));
+
+  function startingBoard() {
+    const b = new Array(N).fill(0);
+    for (let i = 0; i < N; i++) {
+      const p = NODES[i];
+      if (p.id.startsWith('L') || (p.id.startsWith('A') && (p.x === 0 || p.x === 2))) b[i] = P1;
+      else if (p.id.startsWith('R') || (p.id.startsWith('A') && (p.x === 6 || p.x === 8))) b[i] = P2;
+    }
+    return b;
+  }
+
+  function sameDir(dx, dy, ex, ey) { return dx * ey === dy * ex && dx * ex + dy * ey > 0; }
+  function continueCollinear(from, over) {
+    const a = NODES[from], b = NODES[over];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    for (const k of ADJ[over]) {
+      const c = NODES[k];
+      if (sameDir(dx, dy, c.x - b.x, c.y - b.y)) return k;
+    }
+    return -1;
+  }
+  function getMovesForNode(board, node, player) {
+    const moves = [];
+    for (const to of ADJ[node]) if (board[to] === 0) moves.push({ from: node, to, captured: null });
+    for (const over of ADJ[node]) {
+      if (!board[over] || board[over] === player) continue;
+      const land = continueCollinear(node, over);
+      if (land >= 0 && board[land] === 0) moves.push({ from: node, to: land, captured: over });
+    }
+    return moves;
+  }
+  function getAllLegalMoves(board, player) {
+    let m = [];
+    for (let i = 0; i < N; i++) if (board[i] === player) m = m.concat(getMovesForNode(board, i, player));
+    return m;
+  }
+  function getFollowUpJumps(board, node, player) {
+    return getMovesForNode(board, node, player).filter((x) => x.captured !== null);
+  }
+  function applyMove(board, move) {
+    const next = board.slice();
+    next[move.to] = next[move.from];
+    next[move.from] = 0;
+    if (move.captured !== null) next[move.captured] = 0;
+    return next;
+  }
+  function count(board, p) { return board.reduce((n, x) => n + (x === p ? 1 : 0), 0); }
+  function pathCaptureCount(path) {
+    let n = 0;
+    for (let i = 0; i < path.length; i++) if (path[i].captured !== null) n++;
+    return n;
+  }
+
+  /** Enumerate legal complete turns: slides, and capture paths with optional early stop. */
+  function generateTurnEnds(currBoard, player, maxBranch) {
+    const ends = [];
+    const root = getAllLegalMoves(currBoard, player);
+    for (let i = 0; i < root.length; i++) {
+      const m = root[i];
+      const after = applyMove(currBoard, m);
+      if (m.captured === null) {
+        ends.push({ board: after, path: [m] });
+        continue;
+      }
+      ends.push({ board: after, path: [m] });
+      const stack = [{ board: after, pos: m.to, path: [m], depth: 1 }];
+      while (stack.length) {
+        const node = stack.pop();
+        if (node.depth > 8) continue;
+        const jumps = getFollowUpJumps(node.board, node.pos, player);
+        for (let j = 0; j < jumps.length; j++) {
+          const hop = jumps[j];
+          const nb = applyMove(node.board, hop);
+          const path = node.path.concat([hop]);
+          ends.push({ board: nb, path });
+          stack.push({ board: nb, pos: hop.to, path, depth: node.depth + 1 });
+          if (ends.length >= maxBranch) return ends;
+        }
+      }
+    }
+    return ends;
+  }
+
+  function evaluate(b) {
+    const a = count(b, P1), c = count(b, P2);
+    if (a === 0) return 10000;
+    if (c === 0) return -10000;
+    const mob = getAllLegalMoves(b, P2).length - getAllLegalMoves(b, P1).length;
+    return (c - a) * 48 + mob * 1.5;
+  }
+
+  /** Opponent-reply plies after AI's own turn end. Level1 unused; L2→0; L3→1. Never capped. */
+  function opponentReplyPlies(level) {
+    if (level <= 1) return -1;
+    return level - 2;
+  }
+
+  function minimaxTurns(curr, depth, maximizing, alpha, beta, branchCap) {
+    if (depth === 0) return evaluate(curr);
+    const player = maximizing ? P2 : P1;
+    const ends = generateTurnEnds(curr, player, branchCap);
+    if (!ends.length) return maximizing ? -900 : 900;
+    if (maximizing) {
+      let best = -Infinity;
+      for (let i = 0; i < ends.length; i++) {
+        const v = minimaxTurns(ends[i].board, depth - 1, false, alpha, beta, branchCap);
+        if (v > best) best = v;
+        if (v > alpha) alpha = v;
+        if (beta <= alpha) break;
+      }
+      return best;
+    }
+    let best = Infinity;
+    for (let i = 0; i < ends.length; i++) {
+      const v = minimaxTurns(ends[i].board, depth - 1, true, alpha, beta, branchCap);
+      if (v < best) best = v;
+      if (v < beta) beta = v;
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+
+  /**
+   * Returns a full move path for AI's turn.
+   * L1: greedy max-captures among turn ends
+   * L2: best turn end by static eval (1-turn look)
+   * L3: best turn end vs 1 opponent reply ply (2-turn look)
+   */
+  function selectAITurn(level, fromBoard) {
+    const b = fromBoard || board;
+    const branch = level >= 3 ? 90 : 140;
+    const ends = generateTurnEnds(b, P2, branch);
+    if (!ends.length) return null;
+
+    if (level <= 1) {
+      let maxC = -1, pool = [];
+      for (let i = 0; i < ends.length; i++) {
+        const c = pathCaptureCount(ends[i].path);
+        if (c > maxC) { maxC = c; pool = [ends[i]]; }
+        else if (c === maxC) pool.push(ends[i]);
+      }
+      return pool[Math.floor(Math.random() * pool.length)].path;
+    }
+
+    const reply = opponentReplyPlies(level);
+    const replyBranch = level >= 3 ? 56 : 80;
+    let bestScore = -Infinity, best = [];
+    for (let i = 0; i < ends.length; i++) {
+      const end = ends[i];
+      let score;
+      if (reply <= 0) score = evaluate(end.board);
+      else score = minimaxTurns(end.board, reply, false, -Infinity, Infinity, replyBranch);
+      score += pathCaptureCount(end.path) * 0.05;
+      if (score > bestScore) { bestScore = score; best = [end]; }
+      else if (score === bestScore) best.push(end);
+    }
+    return best[Math.floor(Math.random() * best.length)].path;
+  }
+
+  let board = startingBoard();
+  let currentTurn = P1;
+  let currentState = STATE.IDLE;
+  let selected = null;
+  let validMoves = [];
+  let lastMove = null;
+  let hoverNode = -1;
+  let moveCount = 0;
+  let humanCaps = 0, aiCaps = 0;
+  let inputLocked = false;
+  let animPulse = 0;
+  let anim = null;
+  let captureFlash = null;
+  let syncMode = false;
+
+  const canvas = document.getElementById('board');
+  const frame = document.getElementById('board-frame');
+  const ctx = canvas.getContext('2d');
+  const statusEl = document.getElementById('status');
+  const finishBtn = document.getElementById('finish-btn');
+  const levelNote = document.getElementById('level-note');
+
+  const LEVEL_NOTES = {
+    1: 'Level 1 picks the turn end with the most captures (greedy). No lookahead search.',
+    2: 'Level 2 evaluates every legal complete turn (slides + optional chain stops). No fake deeper search.',
+    3: 'Level 3 scores each of its turn ends against one full opponent reply (true 2-turn look).',
+  };
+
+  function syncCanvasSize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = frame.getBoundingClientRect();
+    const cssW = Math.max(120, rect.width - 20);
+    const cssH = Math.max(160, rect.height - 20);
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+  }
+
+  /** Vertical view: lattice left/right → screen bottom/top. */
+  function toXY(x, y) {
+    const padX = canvas.width * 0.08;
+    const padY = canvas.height * 0.055;
+    const px = padX + (y / 8) * (canvas.width - padX * 2);
+    const py = padY + ((10 - x) / 12) * (canvas.height - padY * 2);
+    return [px, py];
+  }
+
+  function pieceRadius() {
+    return Math.max(11, Math.min(canvas.width, canvas.height) * 0.028);
+  }
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function drawPieceAt(x, y, player, radius, selectedRing) {
+    const grd = ctx.createRadialGradient(x - radius * 0.3, y - radius * 0.35, 1, x, y, radius);
+    if (player === P1) {
+      grd.addColorStop(0, '#fffaf0');
+      grd.addColorStop(0.55, '#ebe2cf');
+      grd.addColorStop(1, '#b7ab92');
+    } else {
+      grd.addColorStop(0, '#5a4538');
+      grd.addColorStop(0.5, '#241812');
+      grd.addColorStop(1, '#0a0604');
+    }
+    ctx.beginPath();
+    ctx.arc(x + 1, y + 2, radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+    ctx.strokeStyle = player === P1 ? 'rgba(80,60,30,0.35)' : 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = Math.max(1, radius * 0.08);
+    ctx.stroke();
+    if (selectedRing) {
+      ctx.beginPath();
+      ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
+      ctx.strokeStyle = '#d4a017';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+  }
+
+  function draw() {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#1f4d39');
+    g.addColorStop(0.5, '#183d2d');
+    g.addColorStop(1, '#143328');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    const lineW = Math.max(1.5, w * 0.0035);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(201,162,39,0.52)';
+    ctx.lineWidth = lineW;
+    for (let i = 0; i < N; i++) {
+      for (const j of ADJ[i]) {
+        if (j <= i) continue;
+        const [x1, y1] = toXY(NODES[i].x, NODES[i].y);
+        const [x2, y2] = toXY(NODES[j].x, NODES[j].y);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      }
+    }
+
+    if (lastMove) {
+      const [x1, y1] = toXY(NODES[lastMove.from].x, NODES[lastMove.from].y);
+      const [x2, y2] = toXY(NODES[lastMove.to].x, NODES[lastMove.to].y);
+      ctx.strokeStyle = 'rgba(95,191,138,0.55)';
+      ctx.lineWidth = lineW * 1.5;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    const rBase = pieceRadius();
+    const hideFrom = anim ? anim.from : -1;
+    const hideTo = anim ? anim.to : -1;
+
+    for (let i = 0; i < N; i++) {
+      const [x, y] = toXY(NODES[i].x, NODES[i].y);
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(3.5, rBase * 0.28), 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(201,162,39,0.38)';
+      ctx.fill();
+
+      if (hoverNode === i && currentTurn === P1 && !inputLocked && currentState !== STATE.GAME_OVER) {
+        ctx.beginPath();
+        ctx.arc(x, y, rBase + 6, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(232,240,234,0.22)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      const hintMove = validMoves.find((m) => m.to === i);
+      if (hintMove) {
+        const pulse = 0.55 + 0.25 * Math.sin(animPulse / 10);
+        ctx.beginPath();
+        ctx.arc(x, y, rBase + 5, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(95,191,138,${pulse})`;
+        ctx.lineWidth = 2.4;
+        ctx.stroke();
+        if (hintMove.captured !== null) {
+          ctx.beginPath();
+          ctx.arc(x, y, rBase + 9, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(196,92,74,${pulse})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+
+      if (captureFlash && captureFlash.node === i) {
+        const life = 1 - (performance.now() - captureFlash.t0) / 380;
+        if (life > 0) {
+          ctx.beginPath();
+          ctx.arc(x, y, rBase * (1.2 + (1 - life)), 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(196,92,74,${life})`;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+      }
+
+      if (board[i] && i !== hideFrom && !(anim && i === hideTo && anim.progress < 1)) {
+        drawPieceAt(x, y, board[i], selected === i ? rBase + 1.5 : rBase, selected === i);
+      }
+    }
+
+    if (anim) {
+      const [x1, y1] = toXY(NODES[anim.from].x, NODES[anim.from].y);
+      const [x2, y2] = toXY(NODES[anim.to].x, NODES[anim.to].y);
+      const t = easeOutCubic(anim.progress);
+      drawPieceAt(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, anim.player, rBase + 1, false);
+    }
+  }
+
+  function updateLevelNote() {
+    const level = parseInt(document.getElementById('ai-level').value, 10);
+    levelNote.textContent = LEVEL_NOTES[level] || LEVEL_NOTES[2];
+  }
+
+  function updateUI() {
+    document.getElementById('human-count').textContent = count(board, P1) + ' pieces';
+    document.getElementById('ai-count').textContent = count(board, P2) + ' pieces';
+    document.getElementById('human-caps').textContent = String(humanCaps);
+    document.getElementById('ai-caps').textContent = String(aiCaps);
+    document.getElementById('turn-count').textContent = String(moveCount);
+    document.getElementById('pill-human').classList.toggle('active', currentTurn === P1 && currentState !== STATE.GAME_OVER);
+    document.getElementById('pill-ai').classList.toggle('active', currentTurn === P2 && currentState !== STATE.GAME_OVER);
+    finishBtn.disabled = currentState !== STATE.CHAIN_JUMPING || currentTurn !== P1 || inputLocked;
+    frame.classList.toggle('busy', inputLocked);
+    updateLevelNote();
+  }
+
+  function setStatus(t, kind) {
+    statusEl.textContent = t;
+    statusEl.classList.remove('think', 'chain');
+    if (kind) statusEl.classList.add(kind);
+  }
+
+  function endGame(winner, reason) {
+    currentState = STATE.GAME_OVER;
+    inputLocked = false;
+    anim = null;
+    const title = document.getElementById('modal-title');
+    const desc = document.getElementById('modal-desc');
+    if (winner === P1) { title.textContent = 'You win'; title.style.color = '#ebe2cf'; }
+    else if (winner === P2) { title.textContent = 'AI wins'; title.style.color = '#c9a227'; }
+    else { title.textContent = 'Draw'; title.style.color = '#9bb5a6'; }
+    desc.textContent = reason;
+    document.getElementById('win-modal').classList.add('show');
+    setStatus(reason);
+    updateUI();
+    draw();
+  }
+
+  function completeTurn(opts) {
+    const skipAI = opts && opts.skipAI;
+    currentState = STATE.IDLE;
+    selected = null;
+    validMoves = [];
+    finishBtn.disabled = true;
+    moveCount++;
+    if (count(board, P1) === 0) { endGame(P2, 'AI captured all of your pieces.'); return; }
+    if (count(board, P2) === 0) { endGame(P1, 'You captured all AI pieces.'); return; }
+    currentTurn = currentTurn === P1 ? P2 : P1;
+    if (getAllLegalMoves(board, currentTurn).length === 0) {
+      endGame(currentTurn === P1 ? P2 : P1, (currentTurn === P1 ? 'You have' : 'AI has') + ' no legal moves.');
+      return;
+    }
+    updateUI();
+    draw();
+    if (currentTurn === P2) {
+      if (skipAI) {
+        inputLocked = false;
+        setStatus('AI to move');
+        return;
+      }
+      setStatus('AI is thinking…', 'think');
+      inputLocked = true;
+      if (syncMode) runAITurn(true);
+      else setTimeout(() => runAITurn(false), 40);
+    } else {
+      inputLocked = false;
+      setStatus('Your turn — select a piece');
+    }
+  }
+
+  function applyMoveInstant(move, player) {
+    board = applyMove(board, move);
+    lastMove = { from: move.from, to: move.to };
+    if (move.captured !== null) {
+      if (player === P1) humanCaps++; else aiCaps++;
+      captureFlash = { node: move.captured, t0: performance.now() };
+    }
+  }
+
+  function afterHop(move, player, done) {
+    if (move.captured !== null) {
+      const follow = getFollowUpJumps(board, move.to, player);
+      if (follow.length) {
+        currentState = STATE.CHAIN_JUMPING;
+        selected = move.to;
+        validMoves = follow;
+        setStatus(player === P1 ? 'Continue the capture or press Finish' : 'AI continuing capture…', 'chain');
+        updateUI();
+        draw();
+        done('chain');
+        return;
+      }
+    }
+    done('end');
+  }
+
+  function playMove(move, player, cb) {
+    if (syncMode) {
+      applyMoveInstant(move, player);
+      afterHop(move, player, cb);
+      return;
+    }
+    inputLocked = true;
+    const dur = move.captured !== null ? 280 : 220;
+    const t0 = performance.now();
+    anim = { from: move.from, to: move.to, player, progress: 0, captured: move.captured };
+    function step(now) {
+      anim.progress = Math.min(1, (now - t0) / dur);
+      draw();
+      if (anim.progress < 1) {
+        requestAnimationFrame(step);
+        return;
+      }
+      anim = null;
+      applyMoveInstant(move, player);
+      afterHop(move, player, cb);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function executeHumanMove(move) {
+    playMove(move, P1, (result) => {
+      if (result === 'end') completeTurn();
+      else {
+        inputLocked = false;
+        updateUI();
+        draw();
+      }
+    });
+  }
+
+  function runPath(path, player, index, onDone) {
+    if (index >= path.length) { onDone(); return; }
+    playMove(path[index], player, (result) => {
+      if (result === 'end') { onDone(); return; }
+      // Still in chain: follow planned path; if plan ends here, finish.
+      if (index + 1 >= path.length) { onDone(); return; }
+      runPath(path, player, index + 1, onDone);
+    });
+  }
+
+  function runAITurn(immediate) {
+    if (currentState === STATE.GAME_OVER) return;
+    const level = parseInt(document.getElementById('ai-level').value, 10);
+    const think = () => {
+      const path = selectAITurn(level);
+      if (!path || !path.length) { endGame(P1, 'AI has no legal moves.'); return; }
+      setStatus('AI moving…', 'think');
+      runPath(path, P2, 0, () => completeTurn());
+    };
+    if (immediate || syncMode) think();
+    else setTimeout(think, level >= 3 ? 30 : 10);
+  }
+
+  function resetGame() {
+    board = startingBoard();
+    currentTurn = P1;
+    currentState = STATE.IDLE;
+    selected = null;
+    validMoves = [];
+    lastMove = null;
+    hoverNode = -1;
+    moveCount = 0;
+    humanCaps = 0;
+    aiCaps = 0;
+    inputLocked = false;
+    anim = null;
+    captureFlash = null;
+    document.getElementById('win-modal').classList.remove('show');
+    setStatus('Your turn — select a piece');
+    updateUI();
+    draw();
+  }
+
+  function hitTest(mx, my) {
+    const r = pieceRadius() + 8;
+    let hit = -1, best = r;
+    for (let i = 0; i < N; i++) {
+      const [x, y] = toXY(NODES[i].x, NODES[i].y);
+      const d = Math.hypot(mx - x, my - y);
+      if (d < best) { best = d; hit = i; }
+    }
+    return hit;
+  }
+
+  function canvasPoint(ev) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+    return [(ev.clientX - rect.left) * sx, (ev.clientY - rect.top) * sy];
+  }
+
+  canvas.addEventListener('pointermove', (ev) => {
+    if (inputLocked || currentTurn !== P1 || currentState === STATE.GAME_OVER) {
+      if (hoverNode !== -1) { hoverNode = -1; draw(); }
+      return;
+    }
+    const [mx, my] = canvasPoint(ev);
+    const hit = hitTest(mx, my);
+    if (hit !== hoverNode) { hoverNode = hit; draw(); }
+  });
+  canvas.addEventListener('pointerleave', () => {
+    if (hoverNode !== -1) { hoverNode = -1; draw(); }
+  });
+
+  canvas.addEventListener('click', (ev) => {
+    if (currentState === STATE.GAME_OVER || inputLocked || currentTurn !== P1) return;
+    const [mx, my] = canvasPoint(ev);
+    const hit = hitTest(mx, my);
+    if (hit < 0) {
+      if (currentState === STATE.SELECTED) {
+        selected = null;
+        validMoves = [];
+        currentState = STATE.IDLE;
+        setStatus('Your turn — select a piece');
+        updateUI();
+        draw();
+      }
+      return;
+    }
+
+    if (currentState === STATE.CHAIN_JUMPING) {
+      const m = validMoves.find((v) => v.to === hit);
+      if (m) executeHumanMove(m);
+      return;
+    }
+    if (board[hit] === P1) {
+      selected = hit;
+      validMoves = getMovesForNode(board, hit, P1);
+      currentState = STATE.SELECTED;
+      setStatus(validMoves.some((m) => m.captured !== null)
+        ? 'Capture available — choose a landing point'
+        : (validMoves.length ? 'Choose a destination' : 'No moves from this piece'));
+      updateUI();
+      draw();
+      return;
+    }
+    if (currentState === STATE.SELECTED) {
+      const m = validMoves.find((v) => v.to === hit);
+      if (m) executeHumanMove(m);
+      else if (board[hit] === 0) {
+        selected = null;
+        validMoves = [];
+        currentState = STATE.IDLE;
+        setStatus('Your turn — select a piece');
+        updateUI();
+        draw();
+      }
+    }
+  });
+
+  finishBtn.addEventListener('click', () => {
+    if (currentState === STATE.CHAIN_JUMPING && currentTurn === P1 && !inputLocked) completeTurn();
+  });
+  document.getElementById('restart-btn').addEventListener('click', resetGame);
+  document.getElementById('play-again-btn').addEventListener('click', resetGame);
+  document.getElementById('ai-level').addEventListener('change', updateLevelNote);
+
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      if (currentState === STATE.CHAIN_JUMPING && currentTurn === P1 && !inputLocked) {
+        ev.preventDefault();
+        completeTurn();
+      }
+    } else if (ev.key === 'Escape') {
+      if (currentState === STATE.SELECTED && !inputLocked) {
+        selected = null;
+        validMoves = [];
+        currentState = STATE.IDLE;
+        setStatus('Your turn — select a piece');
+        updateUI();
+        draw();
+      }
+    }
+  });
+
+  (function wireBgm() {
+    const bgmAudio = document.getElementById('bgm-audio');
+    const bgmSelect = document.getElementById('bgm-select');
+    const bgmVol = document.getElementById('bgm-vol');
+    if (!bgmAudio || !bgmSelect || !bgmVol) return;
+    bgmAudio.volume = parseFloat(bgmVol.value) || 0.3;
+    bgmSelect.addEventListener('change', () => {
+      if (bgmSelect.value) {
+        bgmAudio.src = bgmSelect.value;
+        bgmAudio.play().catch(() => {});
+      }
+    });
+    document.getElementById('bgm-play').addEventListener('click', () => {
+      if (!bgmAudio.src && bgmSelect.value) bgmAudio.src = bgmSelect.value;
+      if (bgmSelect.value) bgmAudio.play().catch(() => {});
+    });
+    document.getElementById('bgm-pause').addEventListener('click', () => bgmAudio.pause());
+    bgmVol.addEventListener('input', () => { bgmAudio.volume = parseFloat(bgmVol.value) || 0; });
+  })();
+
+  function tick(now) {
+    animPulse++;
+    if (captureFlash && now - captureFlash.t0 > 400) captureFlash = null;
+    if (validMoves.length || anim || captureFlash) draw();
+    requestAnimationFrame(tick);
+  }
+
+  window.addEventListener('resize', () => { syncCanvasSize(); draw(); });
+
+  window.__SHOLO_GUTI__ = {
+    P1, P2, STATE, N, NODES, ADJ, NODE_INDEX,
+    getBoard: () => board.slice(),
+    getTurn: () => currentTurn,
+    getState: () => currentState,
+    resetGame,
+    setSyncMode: (on) => { syncMode = !!on; },
+    getMovesForNode: (b, n, p) => getMovesForNode(b || board, n, p),
+    getAllLegalMoves: (b, p) => getAllLegalMoves(b || board, p || currentTurn),
+    getFollowUpJumps: (b, n, p) => getFollowUpJumps(b || board, n, p),
+    generateTurnEnds: (b, p, max) => generateTurnEnds(b || board, p || P2, max || 120),
+    applyMove,
+    continueCollinear,
+    selectAITurn,
+    opponentReplyPlies,
+    /** Honest depth label: L1 none; L2 own-turn eval; L3 +1 opponent turn ply */
+    aiDepthInfo(level) {
+      if (level <= 1) return { label: 'greedy', ownTurnEnds: true, opponentReplyPlies: 0, search: false };
+      if (level === 2) return { label: '1-turn look', ownTurnEnds: true, opponentReplyPlies: 0, search: true };
+      return { label: '2-turn look', ownTurnEnds: true, opponentReplyPlies: 1, search: true };
+    },
+    playAITurnSync() {
+      syncMode = true;
+      inputLocked = true;
+      const level = parseInt(document.getElementById('ai-level').value, 10);
+      const path = selectAITurn(level);
+      if (!path) return null;
+      for (let i = 0; i < path.length; i++) applyMoveInstant(path[i], P2);
+      currentState = STATE.IDLE;
+      selected = null;
+      validMoves = [];
+      moveCount++;
+      currentTurn = P1;
+      inputLocked = false;
+      syncMode = false;
+      updateUI();
+      draw();
+      return path;
+    },
+    forceBoard(b, turn) {
+      board = b.slice();
+      currentTurn = turn || P1;
+      currentState = STATE.IDLE;
+      selected = null;
+      validMoves = [];
+      inputLocked = false;
+      updateUI();
+      draw();
+    },
+    count: (p) => count(board, p),
+    humanCaps: () => humanCaps,
+    aiCaps: () => aiCaps,
+    executeMoveHuman(m) {
+      syncMode = true;
+      applyMoveInstant(m, P1);
+      const follow = m.captured !== null ? getFollowUpJumps(board, m.to, P1) : [];
+      if (follow.length) {
+        currentState = STATE.CHAIN_JUMPING;
+        selected = m.to;
+        validMoves = follow;
+      } else {
+        currentState = STATE.IDLE;
+        selected = null;
+        validMoves = [];
+        moveCount++;
+        currentTurn = P2;
+      }
+      syncMode = false;
+      updateUI();
+      draw();
+      return { follow, turn: currentTurn, state: currentState };
+    },
+    finishChain() {
+      if (currentState === STATE.CHAIN_JUMPING && currentTurn === P1) {
+        completeTurn({ skipAI: true });
+      }
+    },
+  };
+
+  syncCanvasSize();
+  resetGame();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

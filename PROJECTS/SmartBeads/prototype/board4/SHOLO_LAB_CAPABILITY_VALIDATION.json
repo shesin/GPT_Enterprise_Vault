@@ -1,0 +1,249 @@
+{
+  "totalGames": 450,
+  "expectedTotal": 450,
+  "moveCap": 120,
+  "seeds": [
+    101,
+    202,
+    303
+  ],
+  "nPerSeedPerDepth": 50,
+  "depthSemantics": {
+    "1": {
+      "effective": "greedy / 0-ply search",
+      "detail": "depth<=1 → random among captures if any else legal; minimax not called"
+    },
+    "2": {
+      "effective": "1 hop-ply after root move (minimax(depth-1) with arg 1)",
+      "detail": "Root enumerates legal hops; each scored by minimax(..., 1, ...). Search unit = single hop, not full turn."
+    },
+    "3": {
+      "effective": "2 hop-plies after root move (minimax(depth-1) with arg 2)",
+      "detail": "Same as depth 2 but minimax arg = 2. Genuinely deeper than depth 2. Still hop-based, not turn-based."
+    },
+    "note": "From SHOLO_GUTI_CALIBRATION.html selectMoveForPlayer + minimax. No Math.min cap.",
+    "chain": "Chain continuation does not use minimax depth; depth<=1 random hop, else 1-eval greedy; 25% seeded early stop."
+  },
+  "perDepth": {
+    "1": {
+      "n": 150,
+      "eliminationPct": 51.333333333333336,
+      "forcedWinPct": 51.333333333333336,
+      "elimOnlyPct": 51.333333333333336,
+      "stalematePct": 0,
+      "moveCapPct": 48.666666666666664,
+      "repetitionPct": 0,
+      "avgLength": 105.55333333333333,
+      "avgCaptures": 25.14,
+      "counts": {
+        "elim": 77,
+        "stalemate": 0,
+        "moveCap": 73,
+        "rep": 0
+      }
+    },
+    "2": {
+      "n": 150,
+      "eliminationPct": 0,
+      "forcedWinPct": 0,
+      "elimOnlyPct": 0,
+      "stalematePct": 0,
+      "moveCapPct": 8.666666666666666,
+      "repetitionPct": 91.33333333333333,
+      "avgLength": 53.473333333333336,
+      "avgCaptures": 6.04,
+      "counts": {
+        "elim": 0,
+        "stalemate": 0,
+        "moveCap": 13,
+        "rep": 137
+      }
+    },
+    "3": {
+      "n": 150,
+      "eliminationPct": 22,
+      "forcedWinPct": 22,
+      "elimOnlyPct": 22,
+      "stalematePct": 0,
+      "moveCapPct": 10.666666666666666,
+      "repetitionPct": 67.33333333333333,
+      "avgLength": 89.45333333333333,
+      "avgCaptures": 23.813333333333333,
+      "counts": {
+        "elim": 33,
+        "stalemate": 0,
+        "moveCap": 16,
+        "rep": 101
+      }
+    }
+  },
+  "perDepthPerSeed": {
+    "1": {
+      "101": {
+        "n": 50,
+        "eliminationPct": 52,
+        "forcedWinPct": 52,
+        "elimOnlyPct": 52,
+        "stalematePct": 0,
+        "moveCapPct": 48,
+        "repetitionPct": 0,
+        "avgLength": 103.46,
+        "avgCaptures": 24.64,
+        "counts": {
+          "elim": 26,
+          "stalemate": 0,
+          "moveCap": 24,
+          "rep": 0
+        }
+      },
+      "202": {
+        "n": 50,
+        "eliminationPct": 50,
+        "forcedWinPct": 50,
+        "elimOnlyPct": 50,
+        "stalematePct": 0,
+        "moveCapPct": 50,
+        "repetitionPct": 0,
+        "avgLength": 106.74,
+        "avgCaptures": 25.62,
+        "counts": {
+          "elim": 25,
+          "stalemate": 0,
+          "moveCap": 25,
+          "rep": 0
+        }
+      },
+      "303": {
+        "n": 50,
+        "eliminationPct": 52,
+        "forcedWinPct": 52,
+        "elimOnlyPct": 52,
+        "stalematePct": 0,
+        "moveCapPct": 48,
+        "repetitionPct": 0,
+        "avgLength": 106.46,
+        "avgCaptures": 25.16,
+        "counts": {
+          "elim": 26,
+          "stalemate": 0,
+          "moveCap": 24,
+          "rep": 0
+        }
+      }
+    },
+    "2": {
+      "101": {
+        "n": 50,
+        "eliminationPct": 0,
+        "forcedWinPct": 0,
+        "elimOnlyPct": 0,
+        "stalematePct": 0,
+        "moveCapPct": 18,
+        "repetitionPct": 82,
+        "avgLength": 60.34,
+        "avgCaptures": 7.6,
+        "counts": {
+          "elim": 0,
+          "stalemate": 0,
+          "moveCap": 9,
+          "rep": 41
+        }
+      },
+      "202": {
+        "n": 50,
+        "eliminationPct": 0,
+        "forcedWinPct": 0,
+        "elimOnlyPct": 0,
+        "stalematePct": 0,
+        "moveCapPct": 6,
+        "repetitionPct": 94,
+        "avgLength": 47.92,
+        "avgCaptures": 4.76,
+        "counts": {
+          "elim": 0,
+          "stalemate": 0,
+          "moveCap": 3,
+          "rep": 47
+        }
+      },
+      "303": {
+        "n": 50,
+        "eliminationPct": 0,
+        "forcedWinPct": 0,
+        "elimOnlyPct": 0,
+        "stalematePct": 0,
+        "moveCapPct": 2,
+        "repetitionPct": 98,
+        "avgLength": 52.16,
+        "avgCaptures": 5.76,
+        "counts": {
+          "elim": 0,
+          "stalemate": 0,
+          "moveCap": 1,
+          "rep": 49
+        }
+      }
+    },
+    "3": {
+      "101": {
+        "n": 50,
+        "eliminationPct": 18,
+        "forcedWinPct": 18,
+        "elimOnlyPct": 18,
+        "stalematePct": 0,
+        "moveCapPct": 6,
+        "repetitionPct": 76,
+        "avgLength": 92,
+        "avgCaptures": 23.92,
+        "counts": {
+          "elim": 9,
+          "stalemate": 0,
+          "moveCap": 3,
+          "rep": 38
+        }
+      },
+      "202": {
+        "n": 50,
+        "eliminationPct": 22,
+        "forcedWinPct": 22,
+        "elimOnlyPct": 22,
+        "stalematePct": 0,
+        "moveCapPct": 12,
+        "repetitionPct": 66,
+        "avgLength": 85.26,
+        "avgCaptures": 23.2,
+        "counts": {
+          "elim": 11,
+          "stalemate": 0,
+          "moveCap": 6,
+          "rep": 33
+        }
+      },
+      "303": {
+        "n": 50,
+        "eliminationPct": 26,
+        "forcedWinPct": 26,
+        "elimOnlyPct": 26,
+        "stalematePct": 0,
+        "moveCapPct": 14,
+        "repetitionPct": 60,
+        "avgLength": 91.1,
+        "avgCaptures": 24.32,
+        "counts": {
+          "elim": 13,
+          "stalemate": 0,
+          "moveCap": 7,
+          "rep": 30
+        }
+      }
+    }
+  },
+  "reproducibility": {
+    "depth": 2,
+    "baseSeed": 101,
+    "n": 50,
+    "identical": true,
+    "fingerprintMatch": true
+  },
+  "elapsedMs": 339174
+}

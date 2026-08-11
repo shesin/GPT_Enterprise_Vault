@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sholo Guti Calibration (37-point / 32 beads) — NOT a SmartBeads product</title>
+  <style>
+    :root { --bg:#0f172a; --card:#1e293b; --red:#ef4444; --blue:#3b82f6; --text:#f8fafc; --muted:#94a3b8; --line:#64748b; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:var(--bg); color:var(--text); padding:16px; }
+    h1 { font-size:1.15rem; margin:0 0 4px; }
+    .sub { color:var(--muted); font-size:0.85rem; margin-bottom:12px; }
+    .wrap { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+    .panel { background:var(--card); border-radius:12px; padding:12px; }
+    canvas { background:#0b1220; border-radius:8px; display:block; }
+    button, select { margin:4px 4px 4px 0; padding:6px 10px; border-radius:6px; border:0; cursor:pointer; }
+    .main-btn { background:#334155; color:var(--text); }
+    .btn-go { background:#059669; color:white; }
+    #status { margin-top:8px; color:var(--muted); font-size:0.9rem; }
+    #log { max-height:280px; overflow:auto; font-family:ui-monospace,Consolas,monospace; font-size:12px; white-space:pre-wrap; }
+    .warn { color:#fbbf24; }
+  </style>
+</head>
+<body>
+  <h1>Sholo Guti / Sixteen Soldiers — Calibration Only</h1>
+  <p class="sub">37 intersections · 16 vs 16 · Parker-style rules (optional capture, optional chain stop). Not a SmartBeads product config. Does not modify Index 4/6.</p>
+  <div class="wrap">
+    <div class="panel">
+      <canvas id="board" width="520" height="360"></canvas>
+      <div id="status">Ready.</div>
+      <div>
+        <label>AI depth <select id="ai-depth"><option>1</option><option selected>2</option><option>3</option></select></label>
+        <label>Seed <input id="seed" type="number" value="101" style="width:72px"></label>
+        <label>Move cap (LAB safety) <input id="move-cap" type="number" value="120" style="width:64px"></label>
+        <button class="main-btn" onclick="resetGame()">Reset</button>
+        <button class="main-btn" id="finish-btn" onclick="manualFinishTurn()" disabled>Finish chain</button>
+        <button class="btn-go" onclick="runSelfPlayDemo()">Self-play 1 game</button>
+      </div>
+    </div>
+    <div class="panel" style="min-width:320px;flex:1">
+      <strong>Geometry (Transum / Bell &amp; Cornelius; Parker board family)</strong>
+      <pre id="geo-ascii" style="font-size:11px;line-height:1.25"></pre>
+      <div id="log"></div>
+    </div>
+  </div>
+<script>
+(function () {
+  /**
+   * Authentic Sixteen Soldiers / Sholo Guti calibration board.
+   * Geometry reconstructed from drawn-line board used by Transum
+   * (ref: Bell & Cornelius, Board Games Around the World; Rajasthan carving photo)
+   * matching Parker/Wikipedia family: Alquerque 5×5 + two opposite triangular extensions.
+   * Lattice coords scale×2 so Alquerque sits on even points (0..8).
+   */
+  const P1 = 1, P2 = 2;
+  const STATE = { IDLE: 'IDLE', SELECTED: 'SELECTED', CHAIN_JUMPING: 'CHAIN_JUMPING', GAME_OVER: 'GAME_OVER' };
+
+  const NODES = [];
+  const NODE_INDEX = Object.create(null);
+  function addNode(id, x, y, kind) {
+    NODE_INDEX[id] = NODES.length;
+    NODES.push({ id, x, y, kind });
+  }
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) addNode('A' + r + c, 2 * c, 2 * r, 'alq');
+  [
+    ['LT', -2, 0], ['LM', -2, 4], ['LB', -2, 8], ['LIT', -1, 2], ['LIM', -1, 4], ['LIB', -1, 6],
+    ['RT', 10, 0], ['RM', 10, 4], ['RB', 10, 8], ['RIT', 9, 2], ['RIM', 9, 4], ['RIB', 9, 6],
+  ].forEach(([id, x, y]) => addNode(id, x, y, 'tri'));
+
+  const N = NODES.length; // 37
+  const ADJ = Array.from({ length: N }, () => []);
+  function link(a, b) {
+    const i = NODE_INDEX[a], j = NODE_INDEX[b];
+    if (!ADJ[i].includes(j)) ADJ[i].push(j);
+    if (!ADJ[j].includes(i)) ADJ[j].push(i);
+  }
+  // Alquerque core: orthogonals + unit diagonals (authoritative Alquerque drawn lines)
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
+        const r2 = r + dr, c2 = c + dc;
+        if (r2 < 0 || r2 > 4 || c2 < 0 || c2 > 4) continue;
+        link('A' + r + c, 'A' + r2 + c2);
+      }
+    }
+  }
+  // Right triangle — lines present on Transum SixteenSoldiers.svg
+  [
+    ['RT', 'RM'], ['RM', 'RB'], ['RIT', 'RIM'], ['RIM', 'RIB'],
+    ['RT', 'RIT'], ['RIT', 'A24'], ['RB', 'RIB'], ['RIB', 'A24'],
+    ['A24', 'RIM'], ['RIM', 'RM'],
+  ].forEach(([a, b]) => link(a, b));
+  // Left triangle — mirror
+  [
+    ['LT', 'LM'], ['LM', 'LB'], ['LIT', 'LIM'], ['LIM', 'LIB'],
+    ['LT', 'LIT'], ['LIT', 'A20'], ['LB', 'LIB'], ['LIB', 'A20'],
+    ['A20', 'LIM'], ['LIM', 'LM'],
+  ].forEach(([a, b]) => link(a, b));
+
+  function startingBoard() {
+    const b = new Array(N).fill(0);
+    for (let i = 0; i < N; i++) {
+      const p = NODES[i];
+      if (p.id.startsWith('L') || (p.kind === 'alq' && (p.x === 0 || p.x === 2))) b[i] = P1;
+      else if (p.id.startsWith('R') || (p.kind === 'alq' && (p.x === 6 || p.x === 8))) b[i] = P2;
+    }
+    return b;
+  }
+
+  // --- Seeded RNG (same approach as GEMINI_LAB / CURSOR_INDEX) ---
+  let aiTestSeed = null;
+  let aiTestRng = null;
+  function createSeededRng(seed) {
+    let s = (seed >>> 0) || 1;
+    return function () {
+      s |= 0;
+      s = (s + 0x6D2B79F5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function aiRandom() { return aiTestRng ? aiTestRng() : Math.random(); }
+  function setAiTestSeed(seed) {
+    if (seed == null || seed === '') { aiTestSeed = null; aiTestRng = null; return null; }
+    aiTestSeed = (seed >>> 0) || 1;
+    aiTestRng = createSeededRng(aiTestSeed);
+    return aiTestSeed;
+  }
+  function clearAiTestSeed() { aiTestSeed = null; aiTestRng = null; }
+  function getAiTestSeed() { return aiTestSeed; }
+
+  function sameDir(dx, dy, ex, ey) {
+    return dx * ey === dy * ex && (dx * ex + dy * ey) > 0;
+  }
+  function continueCollinear(from, over) {
+    const a = NODES[from], b = NODES[over];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    for (const k of ADJ[over]) {
+      const c = NODES[k];
+      if (sameDir(dx, dy, c.x - b.x, c.y - b.y)) return k;
+    }
+    return -1;
+  }
+
+  function getMovesForNode(board, node, player) {
+    const moves = [];
+    for (const to of ADJ[node]) {
+      if (board[to] === 0) moves.push({ from: node, to, captured: null });
+    }
+    for (const over of ADJ[node]) {
+      if (board[over] === 0 || board[over] === player) continue;
+      const land = continueCollinear(node, over);
+      if (land >= 0 && board[land] === 0) moves.push({ from: node, to: land, captured: over });
+    }
+    return moves;
+  }
+  function getAllLegalMoves(board, player) {
+    let moves = [];
+    for (let i = 0; i < N; i++) if (board[i] === player) moves = moves.concat(getMovesForNode(board, i, player));
+    return moves;
+  }
+  function getFollowUpJumps(board, node, player) {
+    return getMovesForNode(board, node, player).filter((m) => m.captured !== null);
+  }
+  function applyBoardMove(board, move) {
+    const next = board.slice();
+    next[move.to] = next[move.from];
+    next[move.from] = 0;
+    if (move.captured !== null) next[move.captured] = 0;
+    return next;
+  }
+
+  let currentState = STATE.IDLE;
+  let board = startingBoard();
+  let currentTurn = P1;
+  let selectedNode = null;
+  let validMoves = [];
+  let moveCount = 0;
+  let positionHistory = {};
+  let chainOrigin = null;
+
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+
+  function toCanvas(x, y) {
+    // lattice x:-2..10 → pad; y:0..8
+    const px = 40 + ((x + 2) / 12) * 440;
+    const py = 30 + (y / 8) * 300;
+    return [px, py];
+  }
+
+  function drawBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 1.5;
+    const drawn = new Set();
+    for (let i = 0; i < N; i++) {
+      for (const j of ADJ[i]) {
+        if (j < i) continue;
+        const key = i + '-' + j;
+        if (drawn.has(key)) continue;
+        drawn.add(key);
+        const [x1, y1] = toCanvas(NODES[i].x, NODES[i].y);
+        const [x2, y2] = toCanvas(NODES[j].x, NODES[j].y);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      }
+    }
+    for (let i = 0; i < N; i++) {
+      const [x, y] = toCanvas(NODES[i].x, NODES[i].y);
+      ctx.beginPath();
+      ctx.arc(x, y, board[i] ? 12 : 4, 0, Math.PI * 2);
+      if (board[i] === P1) { ctx.fillStyle = '#3b82f6'; ctx.fill(); }
+      else if (board[i] === P2) { ctx.fillStyle = '#ef4444'; ctx.fill(); }
+      else { ctx.fillStyle = '#334155'; ctx.fill(); }
+      if (selectedNode === i) { ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke(); }
+      if (validMoves.some((m) => m.to === i)) {
+        ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2);
+        ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.stroke();
+      }
+    }
+  }
+
+  function recordPosition() {
+    const key = board.join('') + '_' + currentTurn;
+    positionHistory[key] = (positionHistory[key] || 0) + 1;
+    return positionHistory[key];
+  }
+
+  function countPieces(b, p) { return b.filter((x) => x === p).length; }
+
+  function endGame(winner, reason) {
+    currentState = STATE.GAME_OVER;
+    document.getElementById('status').textContent = reason + (winner === 0 ? '' : (winner === P1 ? ' Blue wins.' : ' Red wins.'));
+    document.getElementById('finish-btn').disabled = true;
+    drawBoard();
+  }
+
+  function completeTurn() {
+    currentState = STATE.IDLE;
+    selectedNode = null;
+    validMoves = [];
+    chainOrigin = null;
+    document.getElementById('finish-btn').disabled = true;
+    moveCount++;
+    if (countPieces(board, P1) === 0) { endGame(P2, 'Elimination — all Blue pieces captured.'); return; }
+    if (countPieces(board, P2) === 0) { endGame(P1, 'Elimination — all Red pieces captured.'); return; }
+    if (recordPosition() >= 3) { endGame(0, 'Draw — 3-fold repetition.'); return; }
+    const cap = parseInt(document.getElementById('move-cap').value, 10) || 0;
+    if (cap > 0 && moveCount >= cap) { endGame(0, 'LAB safety move-cap reached (not a traditional Sholo Guti rule).'); return; }
+    currentTurn = currentTurn === P1 ? P2 : P1;
+    if (getAllLegalMoves(board, currentTurn).length === 0) {
+      endGame(currentTurn === P1 ? P2 : P1, 'No legal moves — stalemate/forced win.');
+      return;
+    }
+    document.getElementById('status').textContent = (currentTurn === P1 ? 'Blue' : 'Red') + ' to move. Moves=' + moveCount;
+    drawBoard();
+  }
+
+  function executeMove(move) {
+    board = applyBoardMove(board, move);
+    if (move.captured !== null) {
+      const follow = getFollowUpJumps(board, move.to, currentTurn);
+      if (follow.length > 0) {
+        currentState = STATE.CHAIN_JUMPING;
+        selectedNode = move.to;
+        validMoves = follow;
+        chainOrigin = move.to;
+        document.getElementById('finish-btn').disabled = false; // optional stop
+        document.getElementById('status').textContent = 'Capture chain — continue or Finish.';
+        drawBoard();
+        return;
+      }
+    }
+    completeTurn();
+  }
+
+  function manualFinishTurn() {
+    if (currentState === STATE.CHAIN_JUMPING) completeTurn();
+  }
+  window.manualFinishTurn = manualFinishTurn;
+
+  function resetGame() {
+    board = startingBoard();
+    currentTurn = P1;
+    currentState = STATE.IDLE;
+    selectedNode = null;
+    validMoves = [];
+    moveCount = 0;
+    positionHistory = {};
+    chainOrigin = null;
+    document.getElementById('finish-btn').disabled = true;
+    document.getElementById('status').textContent = 'Blue to move (start).';
+    drawBoard();
+  }
+  window.resetGame = resetGame;
+
+  canvas.addEventListener('click', (ev) => {
+    if (currentState === STATE.GAME_OVER) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = (ev.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (ev.clientY - rect.top) * (canvas.height / rect.height);
+    let hit = -1, best = 18;
+    for (let i = 0; i < N; i++) {
+      const [x, y] = toCanvas(NODES[i].x, NODES[i].y);
+      const d = Math.hypot(mx - x, my - y);
+      if (d < best) { best = d; hit = i; }
+    }
+    if (hit < 0) return;
+    if (currentState === STATE.CHAIN_JUMPING) {
+      const m = validMoves.find((v) => v.to === hit);
+      if (m) executeMove(m);
+      return;
+    }
+    if (board[hit] === currentTurn) {
+      selectedNode = hit;
+      validMoves = getMovesForNode(board, hit, currentTurn);
+      currentState = STATE.SELECTED;
+      drawBoard();
+      return;
+    }
+    if (currentState === STATE.SELECTED) {
+      const m = validMoves.find((v) => v.to === hit);
+      if (m) executeMove(m);
+    }
+  });
+
+  function evaluateBoard(b) {
+    const p1 = countPieces(b, P1), p2 = countPieces(b, P2);
+    if (p1 === 0) return 10000;
+    if (p2 === 0) return -10000;
+    const mob2 = getAllLegalMoves(b, P2).length;
+    const mob1 = getAllLegalMoves(b, P1).length;
+    return (p2 - p1) * 40 + (mob2 - mob1) * 1.5 + (aiRandom() * 2 - 1);
+  }
+
+  function minimax(curr, depth, maximizing, alpha, beta) {
+    if (depth === 0) return evaluateBoard(curr);
+    const player = maximizing ? P2 : P1;
+    const moves = getAllLegalMoves(curr, player);
+    if (!moves.length) return maximizing ? -1000 : 1000;
+    if (maximizing) {
+      let best = -Infinity;
+      for (const m of moves) {
+        const v = minimax(applyBoardMove(curr, m), depth - 1, false, alpha, beta);
+        if (v > best) best = v;
+        if (v > alpha) alpha = v;
+        if (beta <= alpha) break;
+      }
+      return best;
+    }
+    let best = Infinity;
+    for (const m of moves) {
+      const v = minimax(applyBoardMove(curr, m), depth - 1, true, alpha, beta);
+      if (v < best) best = v;
+      if (v < beta) beta = v;
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+
+  function selectMoveForPlayer(player, depth) {
+    const legal = getAllLegalMoves(board, player);
+    if (!legal.length) return null;
+    if (depth <= 1) {
+      const caps = legal.filter((m) => m.captured !== null);
+      const pool = caps.length ? caps : legal;
+      return pool[Math.floor(aiRandom() * pool.length)];
+    }
+    const isP2 = player === P2;
+    let bestScore = isP2 ? -Infinity : Infinity;
+    let best = [];
+    for (const m of legal) {
+      let score = minimax(applyBoardMove(board, m), depth - 1, player === P1, -Infinity, Infinity);
+      if (isP2) {
+        if (score > bestScore) { bestScore = score; best = [m]; }
+        else if (score === bestScore) best.push(m);
+      } else {
+        if (score < bestScore) { bestScore = score; best = [m]; }
+        else if (score === bestScore) best.push(m);
+      }
+    }
+    return best[Math.floor(aiRandom() * best.length)];
+  }
+
+  /** Headless full-turn with optional chain: AI may continue or stop (seeded). */
+  function executeTurnWithOptionalChain(simBoard, opening, player, depth) {
+    let b = applyBoardMove(simBoard, opening);
+    let pos = opening.to;
+    let hops = 1;
+    let captures = opening.captured !== null ? 1 : 0;
+    if (opening.captured === null) return { board: b, hops, captures, stoppedEarly: false };
+    for (;;) {
+      const follow = getFollowUpJumps(b, pos, player);
+      if (!follow.length) break;
+      // Optional stop: ~25% chance when alternatives exist (seeded)
+      if (follow.length && aiRandom() < 0.25) {
+        return { board: b, hops, captures, stoppedEarly: true };
+      }
+      let pick;
+      if (depth <= 1) pick = follow[Math.floor(aiRandom() * follow.length)];
+      else {
+        let best = -Infinity, choices = [];
+        for (const m of follow) {
+          const sc = evaluateBoard(applyBoardMove(b, m)) * (player === P2 ? 1 : -1);
+          if (sc > best) { best = sc; choices = [m]; }
+          else if (sc === best) choices.push(m);
+        }
+        pick = choices[Math.floor(aiRandom() * choices.length)];
+      }
+      b = applyBoardMove(b, pick);
+      pos = pick.to;
+      hops++;
+      captures++;
+    }
+    return { board: b, hops, captures, stoppedEarly: false };
+  }
+
+  function playHeadlessGame(aiDepth, moveCap, seed, firstPlayer) {
+    const resolvedSeed = setAiTestSeed(seed);
+    try {
+      let sim = startingBoard();
+      let turn = firstPlayer || P1;
+      let moves = 0;
+      let hist = {};
+      let totalCaptures = 0;
+      let chainStops = 0;
+      let maxChain = 0;
+      while (moves < moveCap) {
+        const legal = getAllLegalMoves(sim, turn);
+        if (!legal.length) {
+          clearAiTestSeed();
+          return {
+            seed: resolvedSeed, winner: turn === P1 ? 'red' : 'blue', endReason: 'stalemate',
+            gameLength: moves, totalCaptures, chainStops, maxChain,
+          };
+        }
+        // temporary board for selection helpers
+        const saved = board;
+        board = sim;
+        const opening = selectMoveForPlayer(turn, aiDepth);
+        board = saved;
+        const turnRes = executeTurnWithOptionalChain(sim, opening, turn, aiDepth);
+        sim = turnRes.board;
+        moves++;
+        totalCaptures += turnRes.captures;
+        if (turnRes.stoppedEarly) chainStops++;
+        if (turnRes.hops > maxChain) maxChain = turnRes.hops;
+        if (countPieces(sim, P1) === 0) {
+          clearAiTestSeed();
+          return { seed: resolvedSeed, winner: 'red', endReason: 'elimination', gameLength: moves, totalCaptures, chainStops, maxChain };
+        }
+        if (countPieces(sim, P2) === 0) {
+          clearAiTestSeed();
+          return { seed: resolvedSeed, winner: 'blue', endReason: 'elimination', gameLength: moves, totalCaptures, chainStops, maxChain };
+        }
+        const key = sim.join('') + '_' + turn;
+        hist[key] = (hist[key] || 0) + 1;
+        if (hist[key] >= 3) {
+          clearAiTestSeed();
+          return { seed: resolvedSeed, winner: 'draw', endReason: 'repetition', gameLength: moves, totalCaptures, chainStops, maxChain };
+        }
+        turn = turn === P1 ? P2 : P1;
+      }
+      clearAiTestSeed();
+      return {
+        seed: resolvedSeed, winner: 'draw', endReason: 'move_cap_lab_safety',
+        gameLength: moves, totalCaptures, chainStops, maxChain,
+        note: 'move-cap is LAB harness safety only — not a traditional Sholo Guti rule',
+      };
+    } catch (e) {
+      clearAiTestSeed();
+      throw e;
+    }
+  }
+
+  function runSelfPlayDemo() {
+    const depth = parseInt(document.getElementById('ai-depth').value, 10);
+    const seed = parseInt(document.getElementById('seed').value, 10);
+    const cap = parseInt(document.getElementById('move-cap').value, 10);
+    const log = playHeadlessGame(depth, cap, seed, P1);
+    document.getElementById('log').textContent = JSON.stringify(log, null, 2);
+    resetGame();
+  }
+  window.runSelfPlayDemo = runSelfPlayDemo;
+
+  // ASCII map for the panel
+  document.getElementById('geo-ascii').textContent =
+`Nodes=37  Edges=${ADJ.reduce((n, a) => n + a.length, 0) / 2}
+Start: Blue=left triangle+cols0-1 | empty=mid col | Red=cols3-4+right triangle
+
+        LT          RT
+       LIT LM      RM RIT
+      LIB LIM A20--A21--A22--A23--A24 RIM RIB
+              A10--A11--A12--A13--A14
+      LB      A00--A01--A02--A03--A04      RB
+              (Alquerque 5×5; triangles L/R)
+
+Capture example (collinear): RT → RIT → A24`;
+
+  window.SholoGutiCalibration = {
+    NODES, ADJ, N, P1, P2, STATE,
+    startingBoard, getAllLegalMoves, getMovesForNode, getFollowUpJumps,
+    applyBoardMove, playHeadlessGame, setAiTestSeed, clearAiTestSeed, getAiTestSeed, aiRandom,
+    countPieces, continueCollinear, NODE_INDEX,
+  };
+
+  resetGame();
+})();
+</script>
+</body>
+</html>
