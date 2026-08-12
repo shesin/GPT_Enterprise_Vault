@@ -119,10 +119,15 @@ function diffSummaries(depth, a, b, metricKeys) {
 const COMPARISON_PROTOCOL = {
   primaryDepth: PRIMARY_DEPTH,
   secondaryDepth: SECONDARY_DEPTH,
-  primaryUse: 'W/L, legitimate draws (split rep vs move-cap), FPA, captures, length',
-  secondaryUse: 'Long-horizon attrition only — never rank by D3 elimination%',
+  primaryUse:
+    'Contested play under honest 1-reply search: captures, length, legitimate draws ' +
+    '(split rep vs move-cap), W/L when decisive, FPA when decisive sample exists',
+  secondaryUse: 'Longer-horizon attrition (2-reply) — never rank by D3 elimination%',
   drawsAreLegitimate: true,
   moveCapIsLabSafetyNotTraditionalRule: true,
+  honestDepthNote:
+    'D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies. ' +
+    'Do not expect old 0-reply D2 elimination spikes.',
 };
 
 module.exports = {

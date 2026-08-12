@@ -1,0 +1,147 @@
+{
+  "file": "SHOLO_GUTI_WITH_FEATURE.html",
+  "board": "Standard Sholo Guti 16-bead / 37-point",
+  "checks": {
+    "uiOptions": {
+      "matchVals": [
+        "off",
+        "15",
+        "30",
+        "40"
+      ],
+      "shotVals": [
+        "off",
+        "60",
+        "120"
+      ],
+      "centerVals": [
+        "off",
+        "endgame"
+      ],
+      "maxMoves": "unlimited (option removed per UI request)"
+    },
+    "pveStart": {
+      "mode": "pve",
+      "turn": 1,
+      "legal": 13
+    },
+    "pvpTimer": {
+      "start": {
+        "mode": "15",
+        "global": 0,
+        "p1": 900,
+        "p2": 900
+      },
+      "afterP1Tick": {
+        "mode": "15",
+        "global": 0,
+        "p1": 899,
+        "p2": 900
+      },
+      "afterP2Tick": {
+        "mode": "15",
+        "global": 0,
+        "p1": 899,
+        "p2": 899
+      },
+      "shotAfterTurnSwap": 59
+    },
+    "pveGlobalTimer": {
+      "before": 1800,
+      "after": 1799
+    },
+    "centerRuleSwitching": "ok",
+    "aiSemantics": {
+      "medium": {
+        "level": 2,
+        "opponentReplyPlies": 1,
+        "rootBranch": 120,
+        "replyBranch": 72,
+        "labels": {
+          "1": "Easy greedy",
+          "2": "Medium 1 opponent turn",
+          "3": "Hard 2 opponent turns"
+        }
+      },
+      "hard": {
+        "level": 3,
+        "opponentReplyPlies": 2,
+        "rootBranch": 80,
+        "replyBranch": 40,
+        "labels": {
+          "1": "Easy greedy",
+          "2": "Medium 1 opponent turn",
+          "3": "Hard 2 opponent turns"
+        }
+      }
+    },
+    "aiPlayable": {
+      "pathLen": 1
+    }
+  },
+  "labComparison": {
+    "methodologyVerdict": "READY",
+    "protocol": {
+      "primaryDepth": 2,
+      "secondaryDepth": 3,
+      "primaryUse": "W/L, legitimate draws (split rep vs move-cap), FPA, captures, length",
+      "secondaryUse": "Long-horizon attrition only — never rank by D3 elimination%",
+      "drawsAreLegitimate": true,
+      "moveCapIsLabSafetyNotTraditionalRule": true
+    },
+    "perDepth": {
+      "1": {
+        "n": 150,
+        "eliminationPct": 62,
+        "forcedWinPct": 62,
+        "moveCapPct": 38,
+        "repetitionPct": 0,
+        "avgLength": 101.42666666666666,
+        "avgCaptures": 25.22,
+        "counts": {
+          "elim": 93,
+          "stalemate": 0,
+          "moveCap": 57,
+          "rep": 0
+        }
+      },
+      "2": {
+        "n": 150,
+        "eliminationPct": 100,
+        "forcedWinPct": 100,
+        "moveCapPct": 0,
+        "repetitionPct": 0,
+        "avgLength": 55.61333333333334,
+        "avgCaptures": 27.92,
+        "counts": {
+          "elim": 150,
+          "stalemate": 0,
+          "moveCap": 0,
+          "rep": 0
+        }
+      },
+      "3": {
+        "n": 150,
+        "eliminationPct": 0,
+        "forcedWinPct": 0,
+        "moveCapPct": 6.666666666666667,
+        "repetitionPct": 93.33333333333333,
+        "avgLength": 54.54666666666667,
+        "avgCaptures": 4.806666666666667,
+        "counts": {
+          "elim": 0,
+          "stalemate": 0,
+          "moveCap": 10,
+          "rep": 140
+        }
+      }
+    },
+    "reproducibility": {
+      "depth": 2,
+      "baseSeed": 101,
+      "n": 50,
+      "identical": true
+    }
+  },
+  "baselineVerdict": "PASS"
+}

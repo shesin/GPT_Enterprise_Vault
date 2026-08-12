@@ -1,10 +1,8 @@
 'use strict';
 /**
- * Headless Sholo Guti full-turn Lab engine.
- * Geometry + turn/capture rules match SHOLO_GUTI.html (unchanged).
- * Lab-only reliability fixes: player-perspective scoring, capture-first
- * enumeration before branch caps, signed capture tie-break, soft/hard
- * repetition avoidance in AI choice (draws/repetitions remain legal outcomes).
+ * Headless 10-bead / 5×5 Lab engine.
+ * Geometry + start match SHOLO_GUTI_10_BEAD_WITH_FEATURE.html (no triangle wings).
+ * Search/AI identical to sholo-guti-fullturn-engine.cjs (honest D1/D2/D3).
  */
 
 const P1 = 1;
@@ -66,10 +64,6 @@ function addNode(id, x, y) {
   NODES.push({ id, x, y });
 }
 for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) addNode('A' + r + c, 2 * c, 2 * r);
-[
-  ['LT', -2, 0], ['LM', -2, 4], ['LB', -2, 8], ['LIT', -1, 2], ['LIM', -1, 4], ['LIB', -1, 6],
-  ['RT', 10, 0], ['RM', 10, 4], ['RB', 10, 8], ['RIT', 9, 2], ['RIM', 9, 4], ['RIB', 9, 6],
-].forEach(([id, x, y]) => addNode(id, x, y));
 const N = NODES.length;
 const ADJ = Array.from({ length: N }, () => []);
 function link(a, b) {
@@ -88,19 +82,13 @@ for (let r = 0; r < 5; r++) {
     }
   }
 }
-[
-  ['RT', 'RM'], ['RM', 'RB'], ['RIT', 'RIM'], ['RIM', 'RIB'],
-  ['RT', 'RIT'], ['RIT', 'A24'], ['RB', 'RIB'], ['RIB', 'A24'], ['A24', 'RIM'], ['RIM', 'RM'],
-  ['LT', 'LM'], ['LM', 'LB'], ['LIT', 'LIM'], ['LIM', 'LIB'],
-  ['LT', 'LIT'], ['LIT', 'A20'], ['LB', 'LIB'], ['LIB', 'A20'], ['A20', 'LIM'], ['LIM', 'LM'],
-].forEach(([a, b]) => link(a, b));
 
 function startingBoard() {
   const b = new Array(N).fill(0);
   for (let i = 0; i < N; i++) {
     const p = NODES[i];
-    if (p.id.startsWith('L') || (p.id.startsWith('A') && (p.x === 0 || p.x === 2))) b[i] = P1;
-    else if (p.id.startsWith('R') || (p.id.startsWith('A') && (p.x === 6 || p.x === 8))) b[i] = P2;
+    if (p.x === 0 || p.x === 2) b[i] = P1;
+    else if (p.x === 6 || p.x === 8) b[i] = P2;
   }
   return b;
 }

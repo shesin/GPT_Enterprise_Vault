@@ -58,7 +58,12 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **GEMINI_LAB.html** — Batch-testing tool. Parametrized (bead count, board geometry, tiebreaker mode, move limit). Runs many AI-vs-AI games headless and outputs a comparison table across configs so results do not need to be copy-pasted from the console by hand.
 - **SHOLO_GUTI.html** — Standalone playable Human-vs-AI Sholo Guti / Sixteen Soldiers (37-point board, 16 vs 16). Calibration/reference traditional game — not a SmartBeads product config.
 - **SHOLO_GUTI_CALIBRATION.html** — Headless/calibration harness for the same geometry (hop-based AI; not the primary playable).
-- **sholo-guti-fullturn-engine.cjs** / **sholo-lab-metrics.cjs** / **validate-sholo-fullturn-lab.cjs** / **final-validate-sholo-lab.cjs** — Headless full-turn Lab + comparison guards. Run `final-validate-sholo-lab.cjs` before SmartBeads candidate testing.
+- **sholo-guti-fullturn-engine.cjs** / **sholo-lab-metrics.cjs** / **validate-sholo-fullturn-lab.cjs** / **final-validate-sholo-lab.cjs** — Headless full-turn Lab + comparison guards. Run `final-validate-sholo-lab.cjs` before SmartBeads candidate testing. Honest depths: D1 greedy, D2 = 1 opponent reply, D3 = 2 opponent replies. See **LAB_CAPABILITY_STATUS.json** for what the Lab can/cannot rank yet.
+- **SHOLO_GUTI_WITH_FEATURE.html** — Playable 16-bead Sholo Guti with full-stretch board, right-panel settings (PVP/PVE, timers, shot clock, center rules, BGM), undo, move/capture animation, turn highlight, honest Easy/Medium/Hard AI.
+- **SHOLO_GUTI_10_BEAD_WITH_FEATURE.html** — 10 vs 10 on 5×5 lattice only (side triangles removed). Same feature shell + move-highlight Off/On (PvP defaults Off).
+- **sholo-10-bead-fullturn-engine.cjs** / **compare-sholo-10-vs-16-lab.cjs** — Headless Lab for the 10-bead candidate + protocol compare vs 16-bead. Output: `SHOLO_10_VS_16_LAB_COMPARE.json`.
+- **record-sholo-16-feature-baseline.cjs** — Programmatic verification script for feature semantics and 16-bead feature baseline recording.
+- **verify-sholo-10-bead-feature.cjs** — Smoke checks for 10-bead geometry and highlight toggle.
 - **verify-sholo-guti.cjs** — Smoke tests for the playable (geometry, Finish, honest AI depth labels, AI replies).
 - **GEMINI_GAME_ARCHITECTURE_05P.md** — Describes the rules and mechanics implemented so far for both the 4-bead and 6-bead 4×4 variants (background reference; code is authoritative if they disagree).
 - **verify-gemini-lab.cjs** — Headless test script for GEMINI_LAB.html.

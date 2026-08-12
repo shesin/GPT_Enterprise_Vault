@@ -1,0 +1,37 @@
+{
+  "updated": "2026-08-12",
+  "verdict": "READY_FOR_SHOLO_REFERENCE_ONLY",
+  "labTrustFile": "SHOLO_LAB_FINAL_TRUST.json",
+  "labTrustVerdictAfterHonestDepthFix": "READY",
+  "whyEarlierLabFeltPoor": [
+    "Hop-based search (not complete turns) produced misleading depth results",
+    "Depth labels did not match actual opponent-reply search (D2 claimed 1-turn look but searched 0 opponent replies)",
+    "GEMINI_LAB / old hop AI mixed evaluation noise and inconsistent chain handling",
+    "Results were sometimes treated as board rankings before the instrument was verified"
+  ],
+  "whatIsImprovedNow": [
+    "Full-turn headless engine with player-perspective scoring",
+    "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies",
+    "Reproducible seeded RNG",
+    "Comparison protocol blocks ranking by misleading D3 elimination%",
+    "Draws/repetitions treated as legitimate outcomes"
+  ],
+  "whatLabCanDoNow": [
+    "Measure standard 16-bead Sholo Guti game quality metrics under comparisonProtocol",
+    "Compare the 10-bead/5×5 candidate via sholo-10-bead-fullturn-engine.cjs + compare-sholo-10-vs-16-lab.cjs (geometry guards prove not silent 16-bead)",
+    "Refuse unsafe metric compares"
+  ],
+  "whatLabCannotDoYet": [
+    "Inject CURSOR_INDEX_4 / INDEX_6 geometries automatically",
+    "Test Vision 8/6/4 bead slices until those boards exist as Lab board specs",
+    "Auto-suggest the single best product game without human judgment",
+    "Score timers/BGM/UX polish as game-strength metrics"
+  ],
+  "lastCandidateCompare": {
+    "file": "SHOLO_10_VS_16_LAB_COMPARE.json",
+    "verdict": "NEEDS FURTHER TESTING"
+  },
+  "nextRequiredBuild": "Human playtest of 10-bead + optional longer move-cap / larger N before KEEP; then Vision 8-bead slice if retained",
+  "primaryCompareDepth": 2,
+  "secondaryDepth": 3
+}

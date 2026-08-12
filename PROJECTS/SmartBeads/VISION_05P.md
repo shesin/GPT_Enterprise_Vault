@@ -288,3 +288,19 @@ The project should continue improving through evidence while preserving the iden
 - Improve through experimentation.
 - AI discovers possibilities.
 - Humans make final decisions.
+
+----
+
+## Task: Build Slice-Based SmartBeads Candidates
+
+We now have a validated Sholo Guti Lab.
+
+Our next goal is to discover the smallest good SmartBeads game.
+
+Use the **proven full board as the parent** and create smaller games by taking literal board slices from it, preserving the original geometry and rules as far as the slice permits.
+
+Test in **top-to-bottom order**:
+
+**Full board → 4 slices (10 beads) → 3 slices (8 beads) → 2 slices (6 beads) → 1 slice (4 beads)**
+
+
