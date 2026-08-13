@@ -250,6 +250,149 @@ Verdict labels for a **board** (not the instrument):
 - **NEEDS FURTHER TESTING** — Instrument OK but human play, larger N, or longer move-cap needed before product use.
 - **BROKEN** — Parity failure, crashes, illegal moves, or stuck states.
 
+These describe **board health**. They do **not** by themselves answer the product question *“which board in the ladder should we keep?”* — see **Board selection criteria** below.
+
+---
+
+## Board selection criteria (ladder: 16 / 10 / 8 / 7 / 6 / 5 / 4)
+
+**The question this section answers:**
+
+> *Why should we keep this board rather than the other candidates?*
+
+The seven rulers diagnose health. **Board selection** adds mandatory gates, comparative evidence against the **16-bead reference**, and explicit **KEEP / REJECT / NEEDS FURTHER TESTING** labels for the product ladder.
+
+**Rules of this methodology**
+
+- **No composite score.** Do not rank boards by a single number or weighted formula.
+- **No “higher elimination = better.”** Elimination must be *possible*; dominance by elimination % is not a KEEP reason.
+- **Draws are legitimate.** High move-cap % or repetition % alone is **not** REJECT.
+- **Same protocol for every board.** D1/D2/D3, seeds 101/202/303, move-cap 120, honest depths, geometry guards — identical to 16-bead baseline unless a human explicitly changes protocol for all boards.
+- **16-bead is the anchor, not a competitor.** It calibrates the instrument and supplies **reference bands**. Candidates are compared *to* it and *to each other* in prose, not declared winners by default.
+
+### Three selection verdicts
+
+| Verdict | Plain meaning | Typical next step |
+|---------|---------------|-------------------|
+| **PASS** | All mandatory gates passed. Board is **structurally sound** and safe to keep in the test pool. | Continue comparative Lab runs; schedule human playtest. |
+| **REJECT** | At least one **automatic REJECT trigger** fired. Clear structural or gameplay weakness under Lab. | Remove from ladder unless geometry/rules are fixed and re-tested. |
+| **NEEDS FURTHER TESTING** | Gates passed (or inconclusive fairness only), but **KEEP evidence is incomplete** — ambiguous vs reference, thin sample, or Lab-only with no human check. | Larger N, optional longer move-cap experiment, human playtest, then re-decide. |
+| **KEEP** | **Product decision** — not Lab-only. All PASS gates, no REJECT triggers, comparative rationale documented, **human playtest completed**. | Shortlist for product; may still lose to another KEEP candidate after ladder review. |
+
+**PASS ≠ KEEP.** PASS means “keep testing.” KEEP means “we are willing to ship this geometry pending final human ladder choice.”
+
+### Mandatory gates (all must pass for PASS)
+
+Each gate is evaluated at **primary depth D2** unless noted. Use 16-bead reference bands where indicated.
+
+| # | Gate | What we check | PASS signal | Does NOT prove |
+|---|------|---------------|-------------|----------------|
+| G1 | **No breakage** | Parity playable↔Lab engine; crash-free batch; legal `endReason`; no zero-turn stuck states | Same checks as trust gate + geometry guards for this board | Human UX |
+| G2 | **No meaningful side bias** | First-player fairness | See **Fairness rule** below | Perfect human balance |
+| G3 | **Game alive** | Movement and captures throughout | D2 `avgCaptures` and `avgLength` show contested play; D1 not frozen | Optimal pacing |
+| G4 | **Captures matter** | Captures change material, games not trivial | D1 shows captures and (usually) eliminations or long contest; not near-zero capture both depths | Every game must end in elimination |
+| G5 | **Elimination possible** | Win condition reachable | D1 and/or D3 shows elimination > 0% in validation sample, **or** D1 avgCaptures shows material exchange leading toward eliminations | Higher elimination % is better |
+| G6 | **Draws legitimate** | Repetition and move-cap not scored as failure | Report `repetitionDrawPct` and `moveCapDrawPct` separately; do not REJECT for draws alone | Board is fun |
+| G7 | **Reasonable length for this board** | Games not instant collapse or absurd grind | D2 `avgLength` not trivially tiny (< 5); profile explainable vs 16-bead reference (see **Length rule**) | Exact turn count target |
+| G8 | **Understandable across depths/seeds** | D1/D2/D3 differ predictably; per-seed not wildly contradictory | Reproducible; D3 avgCaptures ≥ D2 or longer horizon explained; no single-seed outlier driving verdict | Statistical proof |
+| G9 | **Same validated protocol** | Compare script uses same N, seeds, move-cap, depths as reference | Geometry verified not silent 16-bead; `comparisonProtocol` documented | — |
+
+#### Fairness rule (G2) — no invented FPA threshold
+
+Use the method already proven on 16-bead (`final-validate-sholo-lab.cjs`):
+
+- **When games with a winner exist (D2 or D1 sample):** first-player win rate among winners should not diverge wildly between “P1 moves first” and “P2 moves first” batches — use the same **±35 pp** symmetry check as the trust gate, or report FPA and flag for human review if sample is tiny (< 10 winners).
+- **When almost no winners (common at D2 on 16-bead):** compare **avgCaptures** between first-P1 and first-P2 batches — reference allowed **±3 captures** on 16-bead; candidates should be **within the same absolute band** unless bead count explains a difference.
+- **Automatic REJECT for fairness:** P1 wins ~100% of all games at D2 with large N, **or** first-player capture volume double second-player with no bead-layout explanation.
+
+#### Length rule (G7) — anchored to 16-bead, not a universal turn cap
+
+From validated 16-bead reference (`LAB_16_BEAD_REFERENCE_VALIDATION.json`):
+
+| Depth | 16-bead reference (anchor) | How to judge a candidate |
+|-------|---------------------------|---------------------------|
+| D1 | avgLength ~54, avgCaptures ~28, 100% elimination | Smaller boards may be shorter; REJECT only if D1 avgLength < 8 **and** avgCaptures < 2 |
+| D2 | avgLength ~120 (move-cap), avgCaptures ~12, ~99% move-cap | Same move-cap stop is **normal**; REJECT if D2 avgLength < 5 (instant termination) |
+| D3 | avgLength ~119, avgCaptures ~24 | Use for attrition comparison, not elimination ranking |
+
+**Establishing new numeric bands:** If the ladder adds a board size far from 16-bead, run PASS protocol first, then compare **capture-per-bead** (avgCaptures / starting beads) and **length ratio** to 16-bead — document the ratio in the board report. Do not copy 16-bead percentages as targets.
+
+#### Aliveness floor (G3/G4) — from existing compare guard, not a new score
+
+The 10-vs-16 compare script already encodes evidence-based REJECT floors (proven on real runs):
+
+- **REJECT:** D1 and D2 both avgCaptures < 2 — no contested play.
+- **REJECT:** D2 avgLength < 5 — games end almost immediately.
+
+These are **structural failure** detectors, not “quality scores.”
+
+### Evidence REQUIRED before calling a board **KEEP**
+
+All of the following must be true:
+
+1. **INSTRUMENT_VALID** for the Lab (16-bead reference validated).
+2. **PASS** on all nine mandatory gates for this candidate.
+3. **Geometry verified** — Lab engine matches playable; not silently 16-bead (`geometryVerifiedNotSilent16Bead`).
+4. **Same-protocol compare vs 16-bead** completed and archived (JSON + report section).
+5. **Comparative rationale written in plain language:** why this board over at least one other ladder member (e.g. shorter game with similar capture activity, better D1 fairness, fewer move-cap-only endings than reference *if* that matters to product — stated explicitly, not assumed).
+6. **Human playtest** — at least one session on the feature playable, confirming captures feel meaningful and games do not feel broken. Lab cannot satisfy this alone.
+7. **Ladder review** — if multiple boards are KEEP, human chooses among them; Lab does not auto-pick one winner.
+
+### Evidence that automatically prevents **KEEP** (REJECT triggers)
+
+Any one of these → **REJECT** (stop ladder promotion; fix or abandon):
+
+| Trigger | Detection |
+|---------|-----------|
+| Parity / geometry guard failure | playable N, coords, or start ≠ Lab engine |
+| Crash, illegal `endReason`, or stuck game in validation batch | exception or zero-turn loop |
+| Near-zero contest | D1 **and** D2 avgCaptures < 2 |
+| Instant games | D2 avgLength < 5 |
+| Broken opening | 0 legal opening moves for either side |
+| Silent wrong board | candidate metrics identical to 16-bead fingerprint / wrong N |
+| Extreme side dominance | measurable P1/P2 win skew > 35 pp between first-player swaps **or** ~100% one-side wins at D2 with adequate sample |
+| D1 sanity failure | no eliminations and avgCaptures < 2 at D1 |
+
+**NEEDS FURTHER TESTING** (not REJECT, but blocks KEEP) when:
+
+- Gates pass but N < 30 per seed and metrics flip verdict between seeds.
+- Compare vs 16-bead is ambiguous (similar capture profile, no written comparative advantage).
+- Only headless Lab complete — human playtest missing.
+- Fairness inconclusive (too few winners, capture symmetry borderline) — extend sample or run first-player swap batch.
+- Both candidate and 16-bead show D2 move-cap dominance — optional **paired** longer move-cap run on candidate **and** reference together (same cap, both boards) before claiming “finishes faster.”
+
+### How to compare the ladder (16 vs 10 vs 8 vs 7 vs 6 vs 5 vs 4)
+
+Use a **decision table**, not a leaderboard:
+
+1. Run **validate-lab-16-bead-reference** (once per instrument change).
+2. For each candidate: geometry guards + same-protocol batch + gate checklist → PASS / REJECT / NEEDS FURTHER TESTING.
+3. Eliminate all **REJECT** boards from KEEP consideration.
+4. Among **PASS** boards, compare **relative strengths** in prose:
+   - **Session length** (D1 avgLength, D2 move-cap profile)
+   - **Capture activity** (D2 avgCaptures, capture-per-bead)
+   - **Fairness** (D1 FPA or capture symmetry)
+   - **Natural endings** (elimination possible at D1/D3; stalemate/repetition rates)
+   - **Product fit** (human playtest notes — timers, board size, teachability)
+5. **KEEP** only boards with explicit comparative advantage **and** human sign-off.
+6. If two boards both PASS and human likes both → **NEEDS FURTHER TESTING** head-to-head human sessions, not another Lab score.
+
+**Why keep board X rather than Y?** The report must answer in one short paragraph per pair considered, citing gate results and metrics — never “score 7.2 vs 6.8.”
+
+### Reference bands from 16-bead (calibration anchor)
+
+Use these **measured** values from `LAB_16_BEAD_REFERENCE_VALIDATION.json` (2026-08-13) when interpreting candidates — they are **not targets to beat**:
+
+| Metric | D1 | D2 | D3 |
+|--------|----|----|-----|
+| avgCaptures | 27.6 | 11.7 | 24.1 |
+| avgLength | 54.2 | 119.9 | 119.2 |
+| eliminationPct | 100% | 0% | 4.4% |
+| moveCapDrawPct | 0% | 98.9% | 95.6% |
+| Games with a winner | 100% | 1.1% | 4.4% |
+
+**Interpretation:** 16-bead at D2 is **supposed to** hit move-cap often under honest AI. A candidate with **higher** D2 elimination % is not automatically better — ask whether eliminations are **healthy** (reasonable length, captures along the way) or **collapsed** (very short blowouts). A candidate with **lower** D2 avgCaptures than ~12 may be dead — gate G3/G4.
+
 ---
 
 ## Product features (NOT board Lab)
@@ -289,6 +432,7 @@ Verdict labels for a **board** (not the instrument):
 | **INSTRUMENT_VALID** | Lab matches playable 16-bead rules; honest D1/D2/D3; reproducible; crash-free. Safe to compare **same-protocol** candidate boards. |
 | **INSTRUMENT_INVALID** | Parity mismatch, fake depth, crash, or reproducibility failure. **Stop** — no board-quality verdict until fixed. |
 | **Board GOOD / NEEDS FURTHER TESTING / BROKEN** | Applies to a **geometry**, using the seven rulers above. |
+| **Board PASS / REJECT / NEEDS FURTHER TESTING / KEEP** | Ladder selection — see **Board selection criteria**. |
 
 ---
 
@@ -301,6 +445,7 @@ Verdict labels for a **board** (not the instrument):
 | `final-validate-sholo-lab.cjs` | 25-check trust gate |
 | `validate-lab-16-bead-reference.cjs` | Reference validation + baseline batch |
 | `LAB_REPORT_16_BEAD_05P.md` | 16-bead baseline board-quality report |
+| `compare-sholo-*-vs-16-lab.cjs` | Same-protocol candidate compare (geometry guards + gates) |
 
 ---
 

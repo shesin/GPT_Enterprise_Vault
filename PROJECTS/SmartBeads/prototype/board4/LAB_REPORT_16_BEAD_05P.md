@@ -140,19 +140,51 @@ Timer code correctness **does not** prove timer values are good for humans.
 
 ## 6. Template for future board reports
 
-Each candidate report (10/8/7/6/5…) should follow this structure:
+Each candidate report (10/8/7/6/5/4…) should follow this structure:
 
 1. Terminology reference (`LAB_TERMINOLOGY_05P.md`)
 2. Geometry guards vs 16-bead (not silent reuse)
 3. Instrument checks for that board’s engine
 4. Baseline batch under same protocol (D1/D2/D3, seeds, N, move-cap)
 5. Seven ruler assessments
-6. Verdict: **GOOD / NEEDS FURTHER TESTING / BROKEN**
-7. Explicit separation of Lab vs product features
+6. **Mandatory gate checklist (G1–G9)** → PASS / REJECT / NEEDS FURTHER TESTING
+7. **Comparative rationale** vs 16-bead reference bands (and vs other ladder members if known)
+8. **Selection verdict:** PASS / REJECT / NEEDS FURTHER TESTING / KEEP (KEEP only after human playtest)
+9. Explicit separation of Lab vs product features
+
+See **Board selection criteria** in `LAB_TERMINOLOGY_05P.md` for KEEP requirements and automatic REJECT triggers.
 
 ---
 
-## 7. Raw artifacts
+## 7. Board selection criteria applied (16-bead as reference anchor)
+
+16-bead is **not** a ladder candidate to KEEP or REJECT — it **anchors** the methodology. This section shows how the nine gates read against measured reference data so future compares have a fixed baseline.
+
+| Gate | 16-bead result | Role for ladder |
+|------|----------------|-----------------|
+| G1 No breakage | PASS — 25/25 trust, crash-free | Instrument trusted; candidates must match this bar |
+| G2 No side bias | PASS — D1 FPA +2.2 pp; D2 capture symmetry 12.69 vs 12.81 when first swapped | Fairness method validated; use same rules on candidates |
+| G3 Game alive | PASS — D2 avgCaptures 11.7 | **Floor reference:** candidates far below ~12 at D2 need explanation |
+| G4 Captures matter | PASS — D1 avgCaptures 27.6 | **Floor reference:** near-zero at D1+D2 → REJECT on any board |
+| G5 Elimination possible | PASS — D1 100% elimination; D3 4.4% | Elimination exists; D2 0% is **not** failure on reference |
+| G6 Draws legitimate | PASS — move-cap/repetition reported separately | High D2 move-cap % on reference is **expected** |
+| G7 Reasonable length | PASS — D1 ~54 turns; D2 at move-cap | Instant D2 (< 5 turns) on a candidate would REJECT |
+| G8 Depth/seed stability | PASS — reproducible; D3 captures > D2 | Candidates must reproduce and not hinge on one seed |
+| G9 Same protocol | PASS — defines the protocol | All ladder compares use identical settings |
+
+**16-bead selection label:** **REFERENCE ANCHOR** (not PASS/KEEP — it is the calibration board).
+
+**What candidates must show to beat “do nothing / stay on 16-bead”:** Written comparative advantage at PASS gates **plus** human playtest — e.g. similar capture activity in fewer turns, better teachability, or fairness — **not** higher D2 elimination % alone.
+
+**Reference bands** (copy into candidate reports for side-by-side tables):
+
+- D1: avgCaptures **27.6**, avgLength **54.2**, elimination **100%**
+- D2: avgCaptures **11.7**, avgLength **119.9**, moveCapDraw **98.9%**
+- D3: avgCaptures **24.1**, avgLength **119.2**, elimination **4.4%**
+
+---
+
+## 8. Raw artifacts
 
 | File | Purpose |
 |------|---------|
@@ -162,4 +194,4 @@ Each candidate report (10/8/7/6/5…) should follow this structure:
 
 ---
 
-*SmartBeads Lab — 16-bead reference baseline. Candidate boards not tested in this report.*
+*SmartBeads Lab — 16-bead reference baseline. Candidate boards use Board selection criteria in LAB_TERMINOLOGY_05P.md.*
