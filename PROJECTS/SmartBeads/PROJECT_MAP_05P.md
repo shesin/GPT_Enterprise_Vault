@@ -61,9 +61,13 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **sholo-guti-fullturn-engine.cjs** / **sholo-lab-metrics.cjs** / **validate-sholo-fullturn-lab.cjs** / **final-validate-sholo-lab.cjs** — Headless full-turn Lab + comparison guards. Run `final-validate-sholo-lab.cjs` before SmartBeads candidate testing. Honest depths: D1 greedy, D2 = 1 opponent reply, D3 = 2 opponent replies. See **LAB_CAPABILITY_STATUS.json** for what the Lab can/cannot rank yet.
 - **SHOLO_GUTI_WITH_FEATURE.html** — Playable 16-bead Sholo Guti with full-stretch board, right-panel settings (PVP/PVE, timers, shot clock, center rules, BGM), undo, move/capture animation, turn highlight, honest Easy/Medium/Hard AI.
 - **SHOLO_GUTI_10_BEAD_WITH_FEATURE.html** — 10 vs 10 on 5×5 lattice only (side triangles removed). Same feature shell + move-highlight Off/On (PvP defaults Off).
+- **SHOLO_GUTI_8_BEAD_WITH_FEATURE.html** — 8 vs 8 on 4×5. Rows 1–2 Ebony (top), row 3 empty (amber centre line col2–col3), rows 4–5 Ivory (bottom). P1 plays from bottom.
+- **SHOLO_GUTI_7_BEAD_WITH_FEATURE.html** — 7 vs 7 on 4×5 (column layout 5+2+2+5). Amber centre line at row 3 between col 2 and col 3 = endgame zone. P1 plays from bottom.
+- **SHOLO_GUTI_6_BEAD_WITH_FEATURE.html** — 6 vs 6 on 3×5 (sketch geometry). Rows 1–2 Ebony top, row 3 empty + single amber centre node, rows 4–5 Ivory bottom. Square board, P1 at bottom.
+- **SHOLO_GUTI_5_BEAD_WITH_FEATURE.html** — 5 vs 5 on 5×3 (sketch geometry). Top row Ebony, middle row empty + single amber centre node, bottom row Ivory. Square board, P1 at bottom.
 - **sholo-10-bead-fullturn-engine.cjs** / **compare-sholo-10-vs-16-lab.cjs** — Headless Lab for the 10-bead candidate + protocol compare vs 16-bead. Output: `SHOLO_10_VS_16_LAB_COMPARE.json`.
 - **record-sholo-16-feature-baseline.cjs** — Programmatic verification script for feature semantics and 16-bead feature baseline recording.
-- **verify-sholo-10-bead-feature.cjs** — Smoke checks for 10-bead geometry and highlight toggle.
+- **verify-sholo-10-bead-feature.cjs** / **verify-sholo-8-bead-feature.cjs** / **verify-sholo-7-bead-feature.cjs** / **verify-sholo-6-bead-feature.cjs** / **verify-sholo-5-bead-feature.cjs** — Smoke checks for 10-bead / 8-bead / 7-bead / 6-bead / 5-bead playables.
 - **verify-sholo-guti.cjs** — Smoke tests for the playable (geometry, Finish, honest AI depth labels, AI replies).
 - **GEMINI_GAME_ARCHITECTURE_05P.md** — Describes the rules and mechanics implemented so far for both the 4-bead and 6-bead 4×4 variants (background reference; code is authoritative if they disagree).
 - **verify-gemini-lab.cjs** — Headless test script for GEMINI_LAB.html.

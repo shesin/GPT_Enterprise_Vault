@@ -156,6 +156,21 @@ Capabilities include:
 
 Only improvements supported by consistent evidence become part of the product.
 
+## Lab terms (plain language — always introduce before using)
+
+Agents and humans discussing Lab output must use these meanings. **Do not call elimination “decisive.”**
+
+- **Elimination** — One player captured all of the opponent’s beads and wins. Primary good win outcome.
+- **Stalemate** — Side to move has no legal move; opponent wins.
+- **Move-cap** — Lab harness turn limit (safety stop for batch runs). Not a traditional Sholo Guti rule. A high move-cap rate means many games were still contested when the limit hit.
+- **Repetition** — Same position three times → draw (legitimate).
+- **Games with a winner** — Finished by elimination or stalemate. Never labelled “decisive.”
+- **Depth D1 / D2 / D3** — Greedy / one opponent full-turn reply / two opponent full-turn replies (honest search labels).
+- **Seed / N** — Reproducible RNG start / number of games in a batch.
+- **FPA** — First-player advantage among games that had a winner.
+
+Cursor Implementer prompts must define these terms before explaining results (see `VISION/CURSOR_PROMPT_01.md` Terminology Clarity Rule).
+
 ---
 
 # AI Philosophy
@@ -301,6 +316,8 @@ Use the **proven full board as the parent** and create smaller games by taking l
 
 Test in **top-to-bottom order**:
 
-**Full board → 4 slices (10 beads) → 3 slices (8 beads) → 2 slices (6 beads) → 1 slice (4 beads)**
+**Full board → 4 slices (10 beads, 5×5) → 3 slices (8 beads, 4 columns × 5 rows) → 2 slices (6 beads) → 1 slice (4 beads)**
 
+For the **8-bead** candidate: remove one column from the 10-bead 5×5 parent → **4×5** lattice, **8 vs 8**. The **centre line** of the middle two columns is the endgame centre zone and must be shown in a distinct **amber** colour on the playable board.
 
+---

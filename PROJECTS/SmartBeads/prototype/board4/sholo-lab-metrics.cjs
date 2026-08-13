@@ -1,11 +1,33 @@
 'use strict';
 /**
  * Lab aggregation + comparison guards for Sholo full-turn instrument.
- * Prevents misleading SmartBeads compares (e.g. ranking on D3 elimination%).
+ *
+ * TERM GLOSSARY (plain language — use these with humans):
+ * - elimination: one side captured all of the opponent's beads (a real win).
+ * - stalemate: side to move has no legal move (opponent wins).
+ * - move-cap: Lab safety stop after N turns so a batch cannot run forever.
+ *   Not a traditional Sholo rule. High move-cap % means games stayed contested
+ *   until the harness stopped them — OK for measurement, not a "bad game" label.
+ * - repetition: same position occurred 3 times → draw.
+ * - withWinner / gamesWithWinner: games that ended with a P1 or P2 win
+ *   (elimination or stalemate). Do NOT call this "decisive" — that word is banned
+ *   as a synonym for elimination.
+ * - elimOrStalematePct: % of games ending by elimination OR stalemate.
+ *   Legacy alias: forcedWinPct (same number; prefer elimOrStalematePct in new text).
  */
 
 const PRIMARY_DEPTH = 2;
 const SECONDARY_DEPTH = 3;
+
+const TERM_GLOSSARY = {
+  elimination: 'One player captured all opposing beads → win.',
+  stalemate: 'Player to move has no legal move → opponent wins.',
+  moveCap:
+    'Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.',
+  repetition: 'Same board+side-to-move appeared 3 times → draw.',
+  withWinner: 'Game ended with a winner (elimination or stalemate). Not called "decisive".',
+  elimOrStalematePct: 'Share of games ending by elimination or stalemate (legacy name: forcedWinPct).',
+};
 
 function summarizeGames(games) {
   let elim = 0;
@@ -16,7 +38,7 @@ function summarizeGames(games) {
   let p2Wins = 0;
   let draws = 0;
   let firstWins = 0;
-  let decisive = 0;
+  let withWinner = 0;
   let lenSum = 0;
   let capSum = 0;
   let p1CapSum = 0;
@@ -32,7 +54,7 @@ function summarizeGames(games) {
     else if (g.winner === 'draw') draws++;
     else throw new Error('unknown winner: ' + g.winner);
     if (g.winner !== 'draw') {
-      decisive++;
+      withWinner++;
       if (g.firstPlayerWon) firstWins++;
     }
     lenSum += g.gameLength;
@@ -44,35 +66,47 @@ function summarizeGames(games) {
   if (!n) throw new Error('summarizeGames: empty');
   const repetitionDrawPct = (100 * rep) / n;
   const moveCapDrawPct = (100 * moveCap) / n;
+  const elimOrStalematePct = (100 * (elim + stalemate)) / n;
   return {
     n,
     eliminationPct: (100 * elim) / n,
     stalematePct: (100 * stalemate) / n,
-    forcedWinPct: (100 * (elim + stalemate)) / n,
+    /** Preferred name. Legacy alias forcedWinPct kept for older scripts. */
+    elimOrStalematePct,
+    forcedWinPct: elimOrStalematePct,
     repetitionDrawPct,
     moveCapDrawPct,
-    /** All non-decisive: repetition + move-cap (both legitimate Lab outcomes). */
     drawPct: (100 * draws) / n,
     p1WinPct: (100 * p1Wins) / n,
     p2WinPct: (100 * p2Wins) / n,
-    firstPlayerWinPctAmongDecisive: decisive ? (100 * firstWins) / decisive : null,
-    firstPlayerAdvantagePp: decisive ? (100 * firstWins) / decisive - 50 : null,
+    firstPlayerWinPctAmongWins: withWinner ? (100 * firstWins) / withWinner : null,
+    /** @deprecated name — use firstPlayerWinPctAmongWins */
+    firstPlayerWinPctAmongDecisive: withWinner ? (100 * firstWins) / withWinner : null,
+    firstPlayerAdvantagePp: withWinner ? (100 * firstWins) / withWinner - 50 : null,
     avgLength: lenSum / n,
     avgCaptures: capSum / n,
     avgP1Captures: p1CapSum / n,
     avgP2Captures: p2CapSum / n,
-    counts: { elim, stalemate, moveCap, rep, p1Wins, p2Wins, draws, decisive },
+    counts: {
+      elim,
+      stalemate,
+      moveCap,
+      rep,
+      p1Wins,
+      p2Wins,
+      draws,
+      withWinner,
+      /** @deprecated — same as withWinner; do not say "decisive" in reports */
+      decisive: withWinner,
+    },
   };
 }
 
-/**
- * Metrics safe to compare across configs at a given depth.
- * Ranking on D3 elimination% is rejected as misleading on this instrument.
- */
 function allowedCompareMetrics(depth) {
   if (depth === PRIMARY_DEPTH || depth === 1) {
     return [
       'eliminationPct',
+      'elimOrStalematePct',
       'forcedWinPct',
       'repetitionDrawPct',
       'moveCapDrawPct',
@@ -105,7 +139,6 @@ function assertSafeCompare(depth, metricKeys) {
   return true;
 }
 
-/** Side-by-side delta for allowed metrics only. */
 function diffSummaries(depth, a, b, metricKeys) {
   assertSafeCompare(depth, metricKeys);
   const out = {};
@@ -120,19 +153,22 @@ const COMPARISON_PROTOCOL = {
   primaryDepth: PRIMARY_DEPTH,
   secondaryDepth: SECONDARY_DEPTH,
   primaryUse:
-    'Contested play under honest 1-reply search: captures, length, legitimate draws ' +
-    '(split rep vs move-cap), W/L when decisive, FPA when decisive sample exists',
-  secondaryUse: 'Longer-horizon attrition (2-reply) — never rank by D3 elimination%',
+    'Contested play under honest 1-reply search: elimination%, captures, length, ' +
+    'legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0',
+  secondaryUse: 'Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone',
   drawsAreLegitimate: true,
   moveCapIsLabSafetyNotTraditionalRule: true,
+  terminologyNote:
+    'Say elimination — not "decisive". move-cap is Lab harness safety only.',
   honestDepthNote:
-    'D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies. ' +
-    'Do not expect old 0-reply D2 elimination spikes.',
+    'D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.',
+  termGlossary: TERM_GLOSSARY,
 };
 
 module.exports = {
   PRIMARY_DEPTH,
   SECONDARY_DEPTH,
+  TERM_GLOSSARY,
   COMPARISON_PROTOCOL,
   summarizeGames,
   allowedCompareMetrics,

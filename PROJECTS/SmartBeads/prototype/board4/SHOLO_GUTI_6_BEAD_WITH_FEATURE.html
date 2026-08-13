@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sholo Guti 10 Bead With Features</title>
+  <title>Sholo Guti 6 Bead With Features</title>
   <style>
     :root {
       --bg: #0f2019;
@@ -30,7 +30,7 @@
     .shell {
       width: min(1280px, 100%);
       display: grid;
-      grid-template-columns: minmax(200px, 240px) minmax(0, 1fr) minmax(220px, 260px);
+      grid-template-columns: minmax(200px, 220px) minmax(280px, 1fr) minmax(200px, 240px) minmax(160px, 200px);
       gap: 14px;
       align-items: start;
     }
@@ -114,12 +114,18 @@
     .modal-card h3 { font-size: 1.4rem; margin-bottom: 8px; }
     .modal-card p { color: var(--muted); margin-bottom: 12px; }
 
-    /* BGM Section in Right Panel */
+    /* BGM panel — right column (matches snapshot) */
+    .bgm-panel h2 {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
     .bgm-section {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-top: 4px;
     }
     .bgm-controls {
       display: flex;
@@ -145,6 +151,7 @@
     @media (max-width: 980px) {
       .shell { grid-template-columns: 1fr; }
       .board-frame { height: min(65vh, 620px); width: min(100%, calc(65vh * 0.74)); }
+      .bgm-panel { order: 4; }
     }
   </style>
 </head>
@@ -167,8 +174,8 @@
         </div>
         <div class="timer" id="p2-clock">--:--</div>
       </div>
-      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">10</span></div>
-      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">10</span></div>
+      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">8</span></div>
+      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">8</span></div>
       <div class="stat"><span>P1 captures</span><span class="val" id="p1-caps">0</span></div>
       <div class="stat"><span>P2 captures</span><span class="val" id="p2-caps">0</span></div>
       <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
@@ -188,7 +195,7 @@
       </div>
     </main>
 
-    <!-- Right Panel: Settings + BGM -->
+    <!-- Right Panel: Settings -->
     <aside class="card right">
       <h2>Settings</h2>
       <div class="setting-list">
@@ -231,6 +238,7 @@
             <option value="off" selected>Off</option>
             <option value="endgame">End-Game</option>
           </select>
+          <div class="tiny">3×5 · 6 vs 6. Ebony top (rows 1–2) · Row 3 amber centre · Ivory bottom (rows 4–5). You play from the bottom.</div>
         </div>
         <div class="setting">
           <label>Move highlight</label>
@@ -241,8 +249,11 @@
           <div class="tiny">PvP defaults Off — legal targets are not shown (not chess).</div>
         </div>
       </div>
+    </aside>
 
-      <h2 style="margin-top: 14px;">BGM Music</h2>
+    <!-- BGM — far right column (snapshot layout) -->
+    <aside class="card bgm-panel">
+      <h2>BGM Music</h2>
       <div class="bgm-section">
         <select id="bgm-select">
           <option value="">— Select Music —</option>
@@ -293,14 +304,16 @@
   const P1 = 1, P2 = 2;
   const STATE = { IDLE: 'IDLE', SELECTED: 'SELECTED', CHAIN_JUMPING: 'CHAIN_JUMPING', GAME_OVER: 'GAME_OVER' };
 
-  // 5×5 lattice only — left/right triangle wings removed (Vision 10-bead slice parent).
+  // 3×5 lattice — 6-bead slice: rows 1–2 Ebony top, row 3 empty + amber centre, rows 4–5 Ivory bottom.
+  const COLS = 3;
+  const ROWS = 5;
   const NODES = [];
   const NODE_INDEX = Object.create(null);
   function addNode(id, x, y) {
     NODE_INDEX[id] = NODES.length;
     NODES.push({ id, x, y });
   }
-  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) addNode('A' + r + c, 2 * c, 2 * r);
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) addNode('A' + r + c, 2 * c, 2 * r);
   const N = NODES.length;
   const ADJ = Array.from({ length: N }, () => []);
   function link(a, b) {
@@ -308,23 +321,28 @@
     if (!ADJ[i].includes(j)) ADJ[i].push(j);
     if (!ADJ[j].includes(i)) ADJ[j].push(i);
   }
-  for (let r = 0; r < 5; r++) {
-    for (let c = 0; c < 5; c++) {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
       for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
         const r2 = r + dr, c2 = c + dc;
-        if (r2 < 0 || r2 > 4 || c2 < 0 || c2 > 4) continue;
+        if (r2 < 0 || r2 >= ROWS || c2 < 0 || c2 >= COLS) continue;
         link('A' + r + c, 'A' + r2 + c2);
       }
     }
   }
 
+  function isEndgameCenterNode(node) {
+    // Row 3 (y=4): single centre node only.
+    return node.y === 4 && node.x === 2;
+  }
+
   function startingBoard() {
     const b = new Array(N).fill(0);
+    // 6 vs 6: P2 (Ebony) rows 1–2 top; row 3 empty; P1 (Ivory) rows 4–5 bottom.
     for (let i = 0; i < N; i++) {
       const p = NODES[i];
-      // 10 vs 10 on remaining columns: P1 left two columns, P2 right two; center empty.
-      if (p.x === 0 || p.x === 2) b[i] = P1;
-      else if (p.x === 6 || p.x === 8) b[i] = P2;
+      if (p.y === 0 || p.y === 2) b[i] = P2;
+      else if (p.y === 6 || p.y === 8) b[i] = P1;
     }
     return b;
   }
@@ -519,10 +537,20 @@
   }
 
   function toXY(x, y) {
-    // Square 5×5 lattice: x,y in {0,2,4,6,8}
+    // Horizontal play board: rows top→bottom (Ivory rows 1–2, Ebony rows 4–5), cols left→right.
+    // Square cells, centred in canvas — same full square frame as 7-bead, not stretched.
     const pad = 44;
-    const px = pad + (y / 8) * (canvas.width - pad * 2);
-    const py = pad + ((8 - x) / 8) * (canvas.height - pad * 2);
+    const maxX = 2 * (COLS - 1);
+    const maxY = 2 * (ROWS - 1);
+    const innerW = canvas.width - pad * 2;
+    const innerH = canvas.height - pad * 2;
+    const pitch = Math.min(innerW / maxX, innerH / maxY);
+    const gridW = maxX * pitch;
+    const gridH = maxY * pitch;
+    const ox = pad + (innerW - gridW) / 2;
+    const oy = pad + (innerH - gridH) / 2;
+    const px = ox + (x / maxX) * gridW;
+    const py = oy + (y / maxY) * gridH;
     return [px, py];
   }
   function fmtClock(sec) {
@@ -675,15 +703,15 @@
 
     // Whose-turn wash on board (not a text banner)
     if (currentState !== STATE.GAME_OVER) {
-      const wash = ctx.createLinearGradient(0, 0, w, 0);
+      const wash = ctx.createLinearGradient(0, 0, 0, h);
       if (currentTurn === P1) {
-        wash.addColorStop(0, 'rgba(255,245,220,0.14)');
-        wash.addColorStop(0.45, 'rgba(255,245,220,0)');
-        wash.addColorStop(1, 'rgba(0,0,0,0)');
-      } else {
         wash.addColorStop(0, 'rgba(0,0,0,0)');
-        wash.addColorStop(0.55, 'rgba(30,20,10,0)');
-        wash.addColorStop(1, 'rgba(40,90,160,0.16)');
+        wash.addColorStop(0.55, 'rgba(255,245,220,0)');
+        wash.addColorStop(1, 'rgba(255,245,220,0.14)');
+      } else {
+        wash.addColorStop(0, 'rgba(40,90,160,0.16)');
+        wash.addColorStop(0.45, 'rgba(30,20,10,0)');
+        wash.addColorStop(1, 'rgba(0,0,0,0)');
       }
       ctx.fillStyle = wash;
       ctx.fillRect(0, 0, w, h);
@@ -700,14 +728,34 @@
       }
     }
 
+    // Amber centre square at row 3, centre node (lattice x=2,y=4).
+    {
+      const [cx, cy] = toXY(2, 4);
+      ctx.fillStyle = 'rgba(232,168,60,0.35)';
+      ctx.fillRect(cx - 14, cy - 14, 28, 28);
+      ctx.strokeStyle = 'rgba(232,168,60,0.95)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(cx - 14, cy - 14, 28, 28);
+    }
+
     const hideFrom = anim ? anim.from : -1;
     const hideCap = anim && anim.captured != null ? anim.captured : -1;
 
     for (let i = 0; i < N; i++) {
       const [x, y] = toXY(NODES[i].x, NODES[i].y);
+      // Amber rings on row-3 centre nodes (endgame zone).
+      if (isEndgameCenterNode(NODES[i])) {
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(212, 140, 40, 0.22)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(232, 168, 60, 0.85)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(212,168,75,0.4)';
+      ctx.fillStyle = isEndgameCenterNode(NODES[i]) ? 'rgba(232,168,60,0.95)' : 'rgba(212,168,75,0.4)';
       ctx.fill();
 
       if (moveHighlight && validMoves.some((m) => m.to === i) && !animating) {
@@ -764,8 +812,8 @@
     let c1 = 0, c2 = 0;
     if (centerRule === 'endgame') {
       for (let i = 0; i < N; i++) {
-        if (board[i] === P1 && NODES[i].id.startsWith('A') && (NODES[i].x === 4 || NODES[i].x === 2 || NODES[i].x === 6)) c1++;
-        if (board[i] === P2 && NODES[i].id.startsWith('A') && (NODES[i].x === 4 || NODES[i].x === 2 || NODES[i].x === 6)) c2++;
+        if (board[i] === P1 && isEndgameCenterNode(NODES[i])) c1++;
+        if (board[i] === P2 && isEndgameCenterNode(NODES[i])) c2++;
       }
     }
     document.getElementById('p1-center').textContent = centerRule === 'off' ? 'Off' : String(c1);
@@ -819,8 +867,8 @@
     if (centerRule === 'endgame') {
       c1 = 0; c2 = 0;
       for (let i = 0; i < N; i++) {
-        if (board[i] === P1 && NODES[i].id.startsWith('A') && (NODES[i].x === 4 || NODES[i].x === 2 || NODES[i].x === 6)) c1++;
-        if (board[i] === P2 && NODES[i].id.startsWith('A') && (NODES[i].x === 4 || NODES[i].x === 2 || NODES[i].x === 6)) c2++;
+        if (board[i] === P1 && isEndgameCenterNode(NODES[i])) c1++;
+        if (board[i] === P2 && isEndgameCenterNode(NODES[i])) c2++;
       }
     }
     if (centerRule !== 'off') {
@@ -1118,7 +1166,7 @@
   });
   canvas.addEventListener('click', handleCanvasClick);
 
-  window.__SHOLO_GUTI_10_FEATURE__ = {
+  window.__SHOLO_GUTI_6_FEATURE__ = {
     P1, P2, STATE, N, NODES, ADJ, NODE_INDEX,
     getBoard: () => board.slice(),
     getTurn: () => currentTurn,

@@ -23,6 +23,31 @@ This applies specifically to:
 - Any tool producing results that look surprising, unstable, or inconsistent — the default hypothesis is the TOOL, not the subject being tested, until the tool has been calibrated against a known-correct reference.
 
 ---
+# Terminology Clarity Rule
+
+Before explaining Lab results, metrics, or board comparisons to the human, **define every technical term in plain language first**. Do not assume the human already knows Lab jargon.
+
+Never use the word **decisive** as a synonym for elimination or for “games with a winner.”
+
+## Terms in active use (Lab / Sholo / SmartBeads)
+
+| Term | Plain meaning |
+|------|----------------|
+| **Elimination** | One side captured all opposing beads → that side **wins**. This is a good, primary outcome. |
+| **Stalemate** | The player to move has no legal move → opponent wins. |
+| **Move-cap** | Lab-only turn limit (e.g. 120) so batch tests cannot run forever. **Not** a traditional Sholo rule. High move-cap % means games were still contested when the harness stopped — not automatically a “bad game.” |
+| **Repetition** | Same position (board + side that just moved) appeared 3 times → draw. |
+| **Games with a winner** | Ended by elimination or stalemate (P1 or P2 won). Prefer this phrase; never say “decisive.” |
+| **elimOrStalematePct** | % of games ending by elimination or stalemate. Legacy code may still print `forcedWinPct` for the same number. |
+| **Depth (D1 / D2 / D3)** | Honest AI search: D1 = greedy; D2 = 1 opponent full-turn reply; D3 = 2 opponent full-turn replies. |
+| **Seed / N** | Seed = RNG start for reproducibility; N = games per seed (or per batch). |
+| **FPA** | First-player advantage among games that had a winner. |
+
+When introducing a **new** metric or Lab term in a report, define it in one short sentence before using it.
+
+Canonical glossary also lives in `prototype/board4/sholo-lab-metrics.cjs` (`TERM_GLOSSARY`) and SmartBeads `VISION_05P.md` (Smart Game Lab terms).
+
+---
 
 # Core Principle
 
