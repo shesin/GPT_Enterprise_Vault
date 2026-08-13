@@ -1,0 +1,1213 @@
+{
+  "purpose": "Ladder evaluation applying G1-G9 from LAB_TERMINOLOGY_05P.md",
+  "reference16": {
+    "role": "REFERENCE ANCHOR",
+    "perDepth": {
+      "1": {
+        "n": 90,
+        "eliminationPct": 100,
+        "stalematePct": 0,
+        "elimOrStalematePct": 100,
+        "forcedWinPct": 100,
+        "repetitionDrawPct": 0,
+        "moveCapDrawPct": 0,
+        "drawPct": 0,
+        "p1WinPct": 52.22222222222222,
+        "p2WinPct": 47.77777777777778,
+        "firstPlayerWinPctAmongWins": 52.22222222222222,
+        "firstPlayerWinPctAmongDecisive": 52.22222222222222,
+        "firstPlayerAdvantagePp": 2.2222222222222214,
+        "avgLength": 54.233333333333334,
+        "avgCaptures": 27.633333333333333,
+        "avgP1Captures": 13.811111111111112,
+        "avgP2Captures": 13.822222222222223,
+        "counts": {
+          "elim": 90,
+          "stalemate": 0,
+          "moveCap": 0,
+          "rep": 0,
+          "p1Wins": 47,
+          "p2Wins": 43,
+          "draws": 0,
+          "withWinner": 90,
+          "decisive": 90
+        }
+      },
+      "2": {
+        "n": 90,
+        "eliminationPct": 0,
+        "stalematePct": 1.1111111111111112,
+        "elimOrStalematePct": 1.1111111111111112,
+        "forcedWinPct": 1.1111111111111112,
+        "repetitionDrawPct": 0,
+        "moveCapDrawPct": 98.88888888888889,
+        "drawPct": 98.88888888888889,
+        "p1WinPct": 1.1111111111111112,
+        "p2WinPct": 0,
+        "firstPlayerWinPctAmongWins": 100,
+        "firstPlayerWinPctAmongDecisive": 100,
+        "firstPlayerAdvantagePp": 50,
+        "avgLength": 119.92222222222222,
+        "avgCaptures": 11.7,
+        "avgP1Captures": 8.255555555555556,
+        "avgP2Captures": 3.4444444444444446,
+        "counts": {
+          "elim": 0,
+          "stalemate": 1,
+          "moveCap": 89,
+          "rep": 0,
+          "p1Wins": 1,
+          "p2Wins": 0,
+          "draws": 89,
+          "withWinner": 1,
+          "decisive": 1
+        }
+      },
+      "3": {
+        "n": 90,
+        "eliminationPct": 4.444444444444445,
+        "stalematePct": 0,
+        "elimOrStalematePct": 4.444444444444445,
+        "forcedWinPct": 4.444444444444445,
+        "repetitionDrawPct": 0,
+        "moveCapDrawPct": 95.55555555555556,
+        "drawPct": 95.55555555555556,
+        "p1WinPct": 1.1111111111111112,
+        "p2WinPct": 3.3333333333333335,
+        "firstPlayerWinPctAmongWins": 25,
+        "firstPlayerWinPctAmongDecisive": 25,
+        "firstPlayerAdvantagePp": -25,
+        "avgLength": 119.21111111111111,
+        "avgCaptures": 24.066666666666666,
+        "avgP1Captures": 11.222222222222221,
+        "avgP2Captures": 12.844444444444445,
+        "counts": {
+          "elim": 4,
+          "stalemate": 0,
+          "moveCap": 86,
+          "rep": 0,
+          "p1Wins": 1,
+          "p2Wins": 3,
+          "draws": 86,
+          "withWinner": 4,
+          "decisive": 4
+        }
+      }
+    },
+    "firstPlayerSwap": {
+      "whenFirstP1": {
+        "n": 20,
+        "eliminationPct": 0,
+        "stalematePct": 0,
+        "elimOrStalematePct": 0,
+        "forcedWinPct": 0,
+        "repetitionDrawPct": 0,
+        "moveCapDrawPct": 100,
+        "drawPct": 100,
+        "p1WinPct": 0,
+        "p2WinPct": 0,
+        "firstPlayerWinPctAmongWins": null,
+        "firstPlayerWinPctAmongDecisive": null,
+        "firstPlayerAdvantagePp": null,
+        "avgLength": 120,
+        "avgCaptures": 12.55,
+        "avgP1Captures": 8.7,
+        "avgP2Captures": 3.85,
+        "counts": {
+          "elim": 0,
+          "stalemate": 0,
+          "moveCap": 20,
+          "rep": 0,
+          "p1Wins": 0,
+          "p2Wins": 0,
+          "draws": 20,
+          "withWinner": 0,
+          "decisive": 0
+        }
+      },
+      "whenFirstP2": {
+        "n": 20,
+        "eliminationPct": 0,
+        "stalematePct": 0,
+        "elimOrStalematePct": 0,
+        "forcedWinPct": 0,
+        "repetitionDrawPct": 0,
+        "moveCapDrawPct": 100,
+        "drawPct": 100,
+        "p1WinPct": 0,
+        "p2WinPct": 0,
+        "firstPlayerWinPctAmongWins": null,
+        "firstPlayerWinPctAmongDecisive": null,
+        "firstPlayerAdvantagePp": null,
+        "avgLength": 120,
+        "avgCaptures": 12.55,
+        "avgP1Captures": 3.75,
+        "avgP2Captures": 8.8,
+        "counts": {
+          "elim": 0,
+          "stalemate": 0,
+          "moveCap": 20,
+          "rep": 0,
+          "p1Wins": 0,
+          "p2Wins": 0,
+          "draws": 20,
+          "withWinner": 0,
+          "decisive": 0
+        }
+      }
+    }
+  },
+  "boards": {
+    "5": {
+      "selectionVerdict": "NOT TESTED",
+      "reason": "No validated headless Lab engine in repository"
+    },
+    "6": {
+      "selectionVerdict": "NOT TESTED",
+      "reason": "No validated headless Lab engine in repository"
+    },
+    "7": {
+      "playable": "SHOLO_GUTI_7_BEAD_WITH_FEATURE.html",
+      "engine": "./sholo-7-bead-fullturn-engine.cjs",
+      "compareJson": "SHOLO_7_VS_16_LAB_COMPARE.json",
+      "geometryVerified": true,
+      "reproducibleD2": true,
+      "perDepth": {
+        "1": {
+          "n": 150,
+          "eliminationPct": 100,
+          "stalematePct": 0,
+          "elimOrStalematePct": 100,
+          "forcedWinPct": 100,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 0,
+          "drawPct": 0,
+          "p1WinPct": 18.666666666666668,
+          "p2WinPct": 81.33333333333333,
+          "firstPlayerWinPctAmongWins": 18.666666666666668,
+          "firstPlayerWinPctAmongDecisive": 18.666666666666668,
+          "firstPlayerAdvantagePp": -31.333333333333332,
+          "avgLength": 18.16,
+          "avgCaptures": 11.746666666666666,
+          "avgP1Captures": 4.933333333333334,
+          "avgP2Captures": 6.8133333333333335,
+          "counts": {
+            "elim": 150,
+            "stalemate": 0,
+            "moveCap": 0,
+            "rep": 0,
+            "p1Wins": 28,
+            "p2Wins": 122,
+            "draws": 0,
+            "withWinner": 150,
+            "decisive": 150
+          }
+        },
+        "2": {
+          "n": 150,
+          "eliminationPct": 12,
+          "stalematePct": 0,
+          "elimOrStalematePct": 12,
+          "forcedWinPct": 12,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 88,
+          "drawPct": 88,
+          "p1WinPct": 3.3333333333333335,
+          "p2WinPct": 8.666666666666666,
+          "firstPlayerWinPctAmongWins": 27.77777777777778,
+          "firstPlayerWinPctAmongDecisive": 27.77777777777778,
+          "firstPlayerAdvantagePp": -22.22222222222222,
+          "avgLength": 113.47333333333333,
+          "avgCaptures": 8.653333333333334,
+          "avgP1Captures": 4.193333333333333,
+          "avgP2Captures": 4.46,
+          "counts": {
+            "elim": 18,
+            "stalemate": 0,
+            "moveCap": 132,
+            "rep": 0,
+            "p1Wins": 5,
+            "p2Wins": 13,
+            "draws": 132,
+            "withWinner": 18,
+            "decisive": 18
+          }
+        },
+        "3": {
+          "n": 150,
+          "eliminationPct": 36.666666666666664,
+          "stalematePct": 0,
+          "elimOrStalematePct": 36.666666666666664,
+          "forcedWinPct": 36.666666666666664,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 63.333333333333336,
+          "drawPct": 63.333333333333336,
+          "p1WinPct": 5.333333333333333,
+          "p2WinPct": 31.333333333333332,
+          "firstPlayerWinPctAmongWins": 14.545454545454545,
+          "firstPlayerWinPctAmongDecisive": 14.545454545454545,
+          "firstPlayerAdvantagePp": -35.45454545454545,
+          "avgLength": 102.44,
+          "avgCaptures": 11.18,
+          "avgP1Captures": 5.08,
+          "avgP2Captures": 6.1,
+          "counts": {
+            "elim": 55,
+            "stalemate": 0,
+            "moveCap": 95,
+            "rep": 0,
+            "p1Wins": 8,
+            "p2Wins": 47,
+            "draws": 95,
+            "withWinner": 55,
+            "decisive": 55
+          }
+        }
+      },
+      "firstPlayerSwap": {
+        "whenFirstP1": {
+          "n": 60,
+          "eliminationPct": 15,
+          "stalematePct": 0,
+          "elimOrStalematePct": 15,
+          "forcedWinPct": 15,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 85,
+          "drawPct": 85,
+          "p1WinPct": 6.666666666666667,
+          "p2WinPct": 8.333333333333334,
+          "firstPlayerWinPctAmongWins": 44.44444444444444,
+          "firstPlayerWinPctAmongDecisive": 44.44444444444444,
+          "firstPlayerAdvantagePp": -5.555555555555557,
+          "avgLength": 113.2,
+          "avgCaptures": 8.366666666666667,
+          "avgP1Captures": 3.8833333333333333,
+          "avgP2Captures": 4.483333333333333,
+          "counts": {
+            "elim": 9,
+            "stalemate": 0,
+            "moveCap": 51,
+            "rep": 0,
+            "p1Wins": 4,
+            "p2Wins": 5,
+            "draws": 51,
+            "withWinner": 9,
+            "decisive": 9
+          }
+        },
+        "whenFirstP2": {
+          "n": 60,
+          "eliminationPct": 13.333333333333334,
+          "stalematePct": 0,
+          "elimOrStalematePct": 13.333333333333334,
+          "forcedWinPct": 13.333333333333334,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 86.66666666666667,
+          "drawPct": 86.66666666666667,
+          "p1WinPct": 13.333333333333334,
+          "p2WinPct": 0,
+          "firstPlayerWinPctAmongWins": 0,
+          "firstPlayerWinPctAmongDecisive": 0,
+          "firstPlayerAdvantagePp": -50,
+          "avgLength": 112.23333333333333,
+          "avgCaptures": 8.85,
+          "avgP1Captures": 4.983333333333333,
+          "avgP2Captures": 3.8666666666666667,
+          "counts": {
+            "elim": 8,
+            "stalemate": 0,
+            "moveCap": 52,
+            "rep": 0,
+            "p1Wins": 8,
+            "p2Wins": 0,
+            "draws": 52,
+            "withWinner": 8,
+            "decisive": 8
+          }
+        }
+      },
+      "gates": [
+        {
+          "id": "G1",
+          "name": "No breakage",
+          "pass": true,
+          "detail": {
+            "geoOk": true,
+            "crash": {
+              "ok": true,
+              "n": 40
+            }
+          }
+        },
+        {
+          "id": "G2",
+          "name": "No meaningful side bias",
+          "pass": true,
+          "detail": {
+            "swap": {
+              "whenFirstP1": {
+                "n": 60,
+                "eliminationPct": 15,
+                "stalematePct": 0,
+                "elimOrStalematePct": 15,
+                "forcedWinPct": 15,
+                "repetitionDrawPct": 0,
+                "moveCapDrawPct": 85,
+                "drawPct": 85,
+                "p1WinPct": 6.666666666666667,
+                "p2WinPct": 8.333333333333334,
+                "firstPlayerWinPctAmongWins": 44.44444444444444,
+                "firstPlayerWinPctAmongDecisive": 44.44444444444444,
+                "firstPlayerAdvantagePp": -5.555555555555557,
+                "avgLength": 113.2,
+                "avgCaptures": 8.366666666666667,
+                "avgP1Captures": 3.8833333333333333,
+                "avgP2Captures": 4.483333333333333,
+                "counts": {
+                  "elim": 9,
+                  "stalemate": 0,
+                  "moveCap": 51,
+                  "rep": 0,
+                  "p1Wins": 4,
+                  "p2Wins": 5,
+                  "draws": 51,
+                  "withWinner": 9,
+                  "decisive": 9
+                }
+              },
+              "whenFirstP2": {
+                "n": 60,
+                "eliminationPct": 13.333333333333334,
+                "stalematePct": 0,
+                "elimOrStalematePct": 13.333333333333334,
+                "forcedWinPct": 13.333333333333334,
+                "repetitionDrawPct": 0,
+                "moveCapDrawPct": 86.66666666666667,
+                "drawPct": 86.66666666666667,
+                "p1WinPct": 13.333333333333334,
+                "p2WinPct": 0,
+                "firstPlayerWinPctAmongWins": 0,
+                "firstPlayerWinPctAmongDecisive": 0,
+                "firstPlayerAdvantagePp": -50,
+                "avgLength": 112.23333333333333,
+                "avgCaptures": 8.85,
+                "avgP1Captures": 4.983333333333333,
+                "avgP2Captures": 3.8666666666666667,
+                "counts": {
+                  "elim": 8,
+                  "stalemate": 0,
+                  "moveCap": 52,
+                  "rep": 0,
+                  "p1Wins": 8,
+                  "p2Wins": 0,
+                  "draws": 52,
+                  "withWinner": 8,
+                  "decisive": 8
+                }
+              }
+            },
+            "d1Fpa": -31.333333333333332,
+            "d2": {
+              "p1": 3.3333333333333335,
+              "p2": 8.666666666666666,
+              "p1Caps": 4.193333333333333,
+              "p2Caps": 4.46
+            }
+          }
+        },
+        {
+          "id": "G3",
+          "name": "Game alive",
+          "pass": true,
+          "detail": {
+            "avgCaptures": 8.653333333333334,
+            "avgLength": 113.47333333333333
+          }
+        },
+        {
+          "id": "G4",
+          "name": "Captures matter",
+          "pass": true,
+          "detail": {
+            "d1Caps": 11.746666666666666,
+            "d2Caps": 8.653333333333334
+          }
+        },
+        {
+          "id": "G5",
+          "name": "Elimination possible",
+          "pass": true,
+          "detail": {
+            "d1Elim": 100,
+            "d3Elim": 36.666666666666664
+          }
+        },
+        {
+          "id": "G6",
+          "name": "Draws legitimate",
+          "pass": true,
+          "detail": {
+            "moveCapDrawPct": 88,
+            "repetitionDrawPct": 0,
+            "note": "reported separately; not a failure"
+          }
+        },
+        {
+          "id": "G7",
+          "name": "Reasonable length",
+          "pass": true,
+          "detail": {
+            "d2Length": 113.47333333333333
+          }
+        },
+        {
+          "id": "G8",
+          "name": "Depth/seed stability",
+          "pass": true,
+          "detail": {
+            "reproducible": true,
+            "d2Caps": 8.653333333333334,
+            "d3Caps": 11.18
+          }
+        },
+        {
+          "id": "G9",
+          "name": "Same protocol",
+          "pass": true,
+          "detail": {
+            "protocol": "D1/D2/D3 seeds 101/202/303 N=50 moveCap 120"
+          }
+        }
+      ],
+      "failedGates": [],
+      "rejectTriggers": [],
+      "selectionVerdict": "NEEDS FURTHER TESTING",
+      "compareScriptVerdict": "NEEDS FURTHER TESTING"
+    },
+    "8": {
+      "playable": "SHOLO_GUTI_8_BEAD_WITH_FEATURE.html",
+      "engine": "./sholo-8-bead-fullturn-engine.cjs",
+      "compareJson": "SHOLO_8_VS_16_LAB_COMPARE.json",
+      "geometryVerified": true,
+      "reproducibleD2": true,
+      "perDepth": {
+        "1": {
+          "n": 150,
+          "eliminationPct": 100,
+          "stalematePct": 0,
+          "elimOrStalematePct": 100,
+          "forcedWinPct": 100,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 0,
+          "drawPct": 0,
+          "p1WinPct": 32,
+          "p2WinPct": 68,
+          "firstPlayerWinPctAmongWins": 32,
+          "firstPlayerWinPctAmongDecisive": 32,
+          "firstPlayerAdvantagePp": -18,
+          "avgLength": 20.68,
+          "avgCaptures": 12.946666666666667,
+          "avgP1Captures": 5.74,
+          "avgP2Captures": 7.206666666666667,
+          "counts": {
+            "elim": 150,
+            "stalemate": 0,
+            "moveCap": 0,
+            "rep": 0,
+            "p1Wins": 48,
+            "p2Wins": 102,
+            "draws": 0,
+            "withWinner": 150,
+            "decisive": 150
+          }
+        },
+        "2": {
+          "n": 150,
+          "eliminationPct": 72,
+          "stalematePct": 0,
+          "elimOrStalematePct": 72,
+          "forcedWinPct": 72,
+          "repetitionDrawPct": 0.6666666666666666,
+          "moveCapDrawPct": 27.333333333333332,
+          "drawPct": 28,
+          "p1WinPct": 0,
+          "p2WinPct": 72,
+          "firstPlayerWinPctAmongWins": 0,
+          "firstPlayerWinPctAmongDecisive": 0,
+          "firstPlayerAdvantagePp": -50,
+          "avgLength": 67.4,
+          "avgCaptures": 8.953333333333333,
+          "avgP1Captures": 1.3066666666666666,
+          "avgP2Captures": 7.6466666666666665,
+          "counts": {
+            "elim": 108,
+            "stalemate": 0,
+            "moveCap": 41,
+            "rep": 1,
+            "p1Wins": 0,
+            "p2Wins": 108,
+            "draws": 42,
+            "withWinner": 108,
+            "decisive": 108
+          }
+        },
+        "3": {
+          "n": 150,
+          "eliminationPct": 43.333333333333336,
+          "stalematePct": 0,
+          "elimOrStalematePct": 43.333333333333336,
+          "forcedWinPct": 43.333333333333336,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 56.666666666666664,
+          "drawPct": 56.666666666666664,
+          "p1WinPct": 1.3333333333333333,
+          "p2WinPct": 42,
+          "firstPlayerWinPctAmongWins": 3.076923076923077,
+          "firstPlayerWinPctAmongDecisive": 3.076923076923077,
+          "firstPlayerAdvantagePp": -46.92307692307692,
+          "avgLength": 93.70666666666666,
+          "avgCaptures": 12.866666666666667,
+          "avgP1Captures": 5.553333333333334,
+          "avgP2Captures": 7.3133333333333335,
+          "counts": {
+            "elim": 65,
+            "stalemate": 0,
+            "moveCap": 85,
+            "rep": 0,
+            "p1Wins": 2,
+            "p2Wins": 63,
+            "draws": 85,
+            "withWinner": 65,
+            "decisive": 65
+          }
+        }
+      },
+      "firstPlayerSwap": {
+        "whenFirstP1": {
+          "n": 60,
+          "eliminationPct": 63.333333333333336,
+          "stalematePct": 0,
+          "elimOrStalematePct": 63.333333333333336,
+          "forcedWinPct": 63.333333333333336,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 36.666666666666664,
+          "drawPct": 36.666666666666664,
+          "p1WinPct": 0,
+          "p2WinPct": 63.333333333333336,
+          "firstPlayerWinPctAmongWins": 0,
+          "firstPlayerWinPctAmongDecisive": 0,
+          "firstPlayerAdvantagePp": -50,
+          "avgLength": 72.36666666666666,
+          "avgCaptures": 9,
+          "avgP1Captures": 1.5333333333333334,
+          "avgP2Captures": 7.466666666666667,
+          "counts": {
+            "elim": 38,
+            "stalemate": 0,
+            "moveCap": 22,
+            "rep": 0,
+            "p1Wins": 0,
+            "p2Wins": 38,
+            "draws": 22,
+            "withWinner": 38,
+            "decisive": 38
+          }
+        },
+        "whenFirstP2": {
+          "n": 60,
+          "eliminationPct": 78.33333333333333,
+          "stalematePct": 0,
+          "elimOrStalematePct": 78.33333333333333,
+          "forcedWinPct": 78.33333333333333,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 21.666666666666668,
+          "drawPct": 21.666666666666668,
+          "p1WinPct": 78.33333333333333,
+          "p2WinPct": 0,
+          "firstPlayerWinPctAmongWins": 0,
+          "firstPlayerWinPctAmongDecisive": 0,
+          "firstPlayerAdvantagePp": -50,
+          "avgLength": 61.666666666666664,
+          "avgCaptures": 8.75,
+          "avgP1Captures": 7.683333333333334,
+          "avgP2Captures": 1.0666666666666667,
+          "counts": {
+            "elim": 47,
+            "stalemate": 0,
+            "moveCap": 13,
+            "rep": 0,
+            "p1Wins": 47,
+            "p2Wins": 0,
+            "draws": 13,
+            "withWinner": 47,
+            "decisive": 47
+          }
+        }
+      },
+      "gates": [
+        {
+          "id": "G1",
+          "name": "No breakage",
+          "pass": true,
+          "detail": {
+            "geoOk": true,
+            "crash": {
+              "ok": true,
+              "n": 40
+            }
+          }
+        },
+        {
+          "id": "G2",
+          "name": "No meaningful side bias",
+          "pass": false,
+          "detail": {
+            "swap": {
+              "whenFirstP1": {
+                "n": 60,
+                "eliminationPct": 63.333333333333336,
+                "stalematePct": 0,
+                "elimOrStalematePct": 63.333333333333336,
+                "forcedWinPct": 63.333333333333336,
+                "repetitionDrawPct": 0,
+                "moveCapDrawPct": 36.666666666666664,
+                "drawPct": 36.666666666666664,
+                "p1WinPct": 0,
+                "p2WinPct": 63.333333333333336,
+                "firstPlayerWinPctAmongWins": 0,
+                "firstPlayerWinPctAmongDecisive": 0,
+                "firstPlayerAdvantagePp": -50,
+                "avgLength": 72.36666666666666,
+                "avgCaptures": 9,
+                "avgP1Captures": 1.5333333333333334,
+                "avgP2Captures": 7.466666666666667,
+                "counts": {
+                  "elim": 38,
+                  "stalemate": 0,
+                  "moveCap": 22,
+                  "rep": 0,
+                  "p1Wins": 0,
+                  "p2Wins": 38,
+                  "draws": 22,
+                  "withWinner": 38,
+                  "decisive": 38
+                }
+              },
+              "whenFirstP2": {
+                "n": 60,
+                "eliminationPct": 78.33333333333333,
+                "stalematePct": 0,
+                "elimOrStalematePct": 78.33333333333333,
+                "forcedWinPct": 78.33333333333333,
+                "repetitionDrawPct": 0,
+                "moveCapDrawPct": 21.666666666666668,
+                "drawPct": 21.666666666666668,
+                "p1WinPct": 78.33333333333333,
+                "p2WinPct": 0,
+                "firstPlayerWinPctAmongWins": 0,
+                "firstPlayerWinPctAmongDecisive": 0,
+                "firstPlayerAdvantagePp": -50,
+                "avgLength": 61.666666666666664,
+                "avgCaptures": 8.75,
+                "avgP1Captures": 7.683333333333334,
+                "avgP2Captures": 1.0666666666666667,
+                "counts": {
+                  "elim": 47,
+                  "stalemate": 0,
+                  "moveCap": 13,
+                  "rep": 0,
+                  "p1Wins": 47,
+                  "p2Wins": 0,
+                  "draws": 13,
+                  "withWinner": 47,
+                  "decisive": 47
+                }
+              }
+            },
+            "d1Fpa": -18,
+            "d2": {
+              "p1": 0,
+              "p2": 72,
+              "p1Caps": 1.3066666666666666,
+              "p2Caps": 7.6466666666666665
+            }
+          }
+        },
+        {
+          "id": "G3",
+          "name": "Game alive",
+          "pass": true,
+          "detail": {
+            "avgCaptures": 8.953333333333333,
+            "avgLength": 67.4
+          }
+        },
+        {
+          "id": "G4",
+          "name": "Captures matter",
+          "pass": true,
+          "detail": {
+            "d1Caps": 12.946666666666667,
+            "d2Caps": 8.953333333333333
+          }
+        },
+        {
+          "id": "G5",
+          "name": "Elimination possible",
+          "pass": true,
+          "detail": {
+            "d1Elim": 100,
+            "d3Elim": 43.333333333333336
+          }
+        },
+        {
+          "id": "G6",
+          "name": "Draws legitimate",
+          "pass": true,
+          "detail": {
+            "moveCapDrawPct": 27.333333333333332,
+            "repetitionDrawPct": 0.6666666666666666,
+            "note": "reported separately; not a failure"
+          }
+        },
+        {
+          "id": "G7",
+          "name": "Reasonable length",
+          "pass": true,
+          "detail": {
+            "d2Length": 67.4
+          }
+        },
+        {
+          "id": "G8",
+          "name": "Depth/seed stability",
+          "pass": true,
+          "detail": {
+            "reproducible": true,
+            "d2Caps": 8.953333333333333,
+            "d3Caps": 12.866666666666667
+          }
+        },
+        {
+          "id": "G9",
+          "name": "Same protocol",
+          "pass": true,
+          "detail": {
+            "protocol": "D1/D2/D3 seeds 101/202/303 N=50 moveCap 120"
+          }
+        }
+      ],
+      "failedGates": [
+        "G2"
+      ],
+      "rejectTriggers": [],
+      "selectionVerdict": "REJECT",
+      "compareScriptVerdict": "KEEP"
+    },
+    "10": {
+      "playable": "SHOLO_GUTI_10_BEAD_WITH_FEATURE.html",
+      "engine": "./sholo-10-bead-fullturn-engine.cjs",
+      "compareJson": "SHOLO_10_VS_16_LAB_COMPARE.json",
+      "geometryVerified": true,
+      "reproducibleD2": true,
+      "perDepth": {
+        "1": {
+          "n": 150,
+          "eliminationPct": 100,
+          "stalematePct": 0,
+          "forcedWinPct": 100,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 0,
+          "drawPct": 0,
+          "p1WinPct": 36,
+          "p2WinPct": 64,
+          "firstPlayerWinPctAmongDecisive": 36,
+          "firstPlayerAdvantagePp": -14,
+          "avgLength": 24.826666666666668,
+          "avgCaptures": 16.593333333333334,
+          "avgP1Captures": 7.653333333333333,
+          "avgP2Captures": 8.94,
+          "counts": {
+            "elim": 150,
+            "stalemate": 0,
+            "moveCap": 0,
+            "rep": 0,
+            "p1Wins": 54,
+            "p2Wins": 96,
+            "draws": 0,
+            "decisive": 150
+          }
+        },
+        "2": {
+          "n": 150,
+          "eliminationPct": 10.666666666666666,
+          "stalematePct": 0,
+          "forcedWinPct": 10.666666666666666,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 89.33333333333333,
+          "drawPct": 89.33333333333333,
+          "p1WinPct": 10,
+          "p2WinPct": 0.6666666666666666,
+          "firstPlayerWinPctAmongDecisive": 93.75,
+          "firstPlayerAdvantagePp": 43.75,
+          "avgLength": 115.91333333333333,
+          "avgCaptures": 11.973333333333333,
+          "avgP1Captures": 7.193333333333333,
+          "avgP2Captures": 4.78,
+          "counts": {
+            "elim": 16,
+            "stalemate": 0,
+            "moveCap": 134,
+            "rep": 0,
+            "p1Wins": 15,
+            "p2Wins": 1,
+            "draws": 134,
+            "decisive": 16
+          }
+        },
+        "3": {
+          "n": 150,
+          "eliminationPct": 20.666666666666668,
+          "stalematePct": 0,
+          "forcedWinPct": 20.666666666666668,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 79.33333333333333,
+          "drawPct": 79.33333333333333,
+          "p1WinPct": 0,
+          "p2WinPct": 20.666666666666668,
+          "firstPlayerWinPctAmongDecisive": 0,
+          "firstPlayerAdvantagePp": -50,
+          "avgLength": 106.28,
+          "avgCaptures": 16.233333333333334,
+          "avgP1Captures": 7.4,
+          "avgP2Captures": 8.833333333333334,
+          "counts": {
+            "elim": 31,
+            "stalemate": 0,
+            "moveCap": 119,
+            "rep": 0,
+            "p1Wins": 0,
+            "p2Wins": 31,
+            "draws": 119,
+            "decisive": 31
+          }
+        }
+      },
+      "firstPlayerSwap": {
+        "whenFirstP1": {
+          "n": 60,
+          "eliminationPct": 11.666666666666666,
+          "stalematePct": 0,
+          "elimOrStalematePct": 11.666666666666666,
+          "forcedWinPct": 11.666666666666666,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 88.33333333333333,
+          "drawPct": 88.33333333333333,
+          "p1WinPct": 8.333333333333334,
+          "p2WinPct": 3.3333333333333335,
+          "firstPlayerWinPctAmongWins": 71.42857142857143,
+          "firstPlayerWinPctAmongDecisive": 71.42857142857143,
+          "firstPlayerAdvantagePp": 21.42857142857143,
+          "avgLength": 115.61666666666666,
+          "avgCaptures": 11.85,
+          "avgP1Captures": 6.683333333333334,
+          "avgP2Captures": 5.166666666666667,
+          "counts": {
+            "elim": 7,
+            "stalemate": 0,
+            "moveCap": 53,
+            "rep": 0,
+            "p1Wins": 5,
+            "p2Wins": 2,
+            "draws": 53,
+            "withWinner": 7,
+            "decisive": 7
+          }
+        },
+        "whenFirstP2": {
+          "n": 60,
+          "eliminationPct": 20,
+          "stalematePct": 0,
+          "elimOrStalematePct": 20,
+          "forcedWinPct": 20,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 80,
+          "drawPct": 80,
+          "p1WinPct": 1.6666666666666667,
+          "p2WinPct": 18.333333333333332,
+          "firstPlayerWinPctAmongWins": 91.66666666666667,
+          "firstPlayerWinPctAmongDecisive": 91.66666666666667,
+          "firstPlayerAdvantagePp": 41.66666666666667,
+          "avgLength": 112.98333333333333,
+          "avgCaptures": 11.6,
+          "avgP1Captures": 4.416666666666667,
+          "avgP2Captures": 7.183333333333334,
+          "counts": {
+            "elim": 12,
+            "stalemate": 0,
+            "moveCap": 48,
+            "rep": 0,
+            "p1Wins": 1,
+            "p2Wins": 11,
+            "draws": 48,
+            "withWinner": 12,
+            "decisive": 12
+          }
+        }
+      },
+      "gates": [
+        {
+          "id": "G1",
+          "name": "No breakage",
+          "pass": true,
+          "detail": {
+            "geoOk": true,
+            "crash": {
+              "ok": true,
+              "n": 40
+            }
+          }
+        },
+        {
+          "id": "G2",
+          "name": "No meaningful side bias",
+          "pass": true,
+          "detail": {
+            "swap": {
+              "whenFirstP1": {
+                "n": 60,
+                "eliminationPct": 11.666666666666666,
+                "stalematePct": 0,
+                "elimOrStalematePct": 11.666666666666666,
+                "forcedWinPct": 11.666666666666666,
+                "repetitionDrawPct": 0,
+                "moveCapDrawPct": 88.33333333333333,
+                "drawPct": 88.33333333333333,
+                "p1WinPct": 8.333333333333334,
+                "p2WinPct": 3.3333333333333335,
+                "firstPlayerWinPctAmongWins": 71.42857142857143,
+                "firstPlayerWinPctAmongDecisive": 71.42857142857143,
+                "firstPlayerAdvantagePp": 21.42857142857143,
+                "avgLength": 115.61666666666666,
+                "avgCaptures": 11.85,
+                "avgP1Captures": 6.683333333333334,
+                "avgP2Captures": 5.166666666666667,
+                "counts": {
+                  "elim": 7,
+                  "stalemate": 0,
+                  "moveCap": 53,
+                  "rep": 0,
+                  "p1Wins": 5,
+                  "p2Wins": 2,
+                  "draws": 53,
+                  "withWinner": 7,
+                  "decisive": 7
+                }
+              },
+              "whenFirstP2": {
+                "n": 60,
+                "eliminationPct": 20,
+                "stalematePct": 0,
+                "elimOrStalematePct": 20,
+                "forcedWinPct": 20,
+                "repetitionDrawPct": 0,
+                "moveCapDrawPct": 80,
+                "drawPct": 80,
+                "p1WinPct": 1.6666666666666667,
+                "p2WinPct": 18.333333333333332,
+                "firstPlayerWinPctAmongWins": 91.66666666666667,
+                "firstPlayerWinPctAmongDecisive": 91.66666666666667,
+                "firstPlayerAdvantagePp": 41.66666666666667,
+                "avgLength": 112.98333333333333,
+                "avgCaptures": 11.6,
+                "avgP1Captures": 4.416666666666667,
+                "avgP2Captures": 7.183333333333334,
+                "counts": {
+                  "elim": 12,
+                  "stalemate": 0,
+                  "moveCap": 48,
+                  "rep": 0,
+                  "p1Wins": 1,
+                  "p2Wins": 11,
+                  "draws": 48,
+                  "withWinner": 12,
+                  "decisive": 12
+                }
+              }
+            },
+            "d1Fpa": -14,
+            "d2": {
+              "p1": 10,
+              "p2": 0.6666666666666666,
+              "p1Caps": 7.193333333333333,
+              "p2Caps": 4.78
+            }
+          }
+        },
+        {
+          "id": "G3",
+          "name": "Game alive",
+          "pass": true,
+          "detail": {
+            "avgCaptures": 11.973333333333333,
+            "avgLength": 115.91333333333333
+          }
+        },
+        {
+          "id": "G4",
+          "name": "Captures matter",
+          "pass": true,
+          "detail": {
+            "d1Caps": 16.593333333333334,
+            "d2Caps": 11.973333333333333
+          }
+        },
+        {
+          "id": "G5",
+          "name": "Elimination possible",
+          "pass": true,
+          "detail": {
+            "d1Elim": 100,
+            "d3Elim": 20.666666666666668
+          }
+        },
+        {
+          "id": "G6",
+          "name": "Draws legitimate",
+          "pass": true,
+          "detail": {
+            "moveCapDrawPct": 89.33333333333333,
+            "repetitionDrawPct": 0,
+            "note": "reported separately; not a failure"
+          }
+        },
+        {
+          "id": "G7",
+          "name": "Reasonable length",
+          "pass": true,
+          "detail": {
+            "d2Length": 115.91333333333333
+          }
+        },
+        {
+          "id": "G8",
+          "name": "Depth/seed stability",
+          "pass": true,
+          "detail": {
+            "reproducible": true,
+            "d2Caps": 11.973333333333333,
+            "d3Caps": 16.233333333333334
+          }
+        },
+        {
+          "id": "G9",
+          "name": "Same protocol",
+          "pass": true,
+          "detail": {
+            "protocol": "D1/D2/D3 seeds 101/202/303 N=50 moveCap 120"
+          }
+        }
+      ],
+      "failedGates": [],
+      "rejectTriggers": [],
+      "selectionVerdict": "NEEDS FURTHER TESTING",
+      "compareScriptVerdict": "NEEDS FURTHER TESTING"
+    },
+    "16": {
+      "role": "REFERENCE ANCHOR",
+      "selectionVerdict": "REFERENCE ANCHOR",
+      "perDepth": {
+        "1": {
+          "n": 90,
+          "eliminationPct": 100,
+          "stalematePct": 0,
+          "elimOrStalematePct": 100,
+          "forcedWinPct": 100,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 0,
+          "drawPct": 0,
+          "p1WinPct": 52.22222222222222,
+          "p2WinPct": 47.77777777777778,
+          "firstPlayerWinPctAmongWins": 52.22222222222222,
+          "firstPlayerWinPctAmongDecisive": 52.22222222222222,
+          "firstPlayerAdvantagePp": 2.2222222222222214,
+          "avgLength": 54.233333333333334,
+          "avgCaptures": 27.633333333333333,
+          "avgP1Captures": 13.811111111111112,
+          "avgP2Captures": 13.822222222222223,
+          "counts": {
+            "elim": 90,
+            "stalemate": 0,
+            "moveCap": 0,
+            "rep": 0,
+            "p1Wins": 47,
+            "p2Wins": 43,
+            "draws": 0,
+            "withWinner": 90,
+            "decisive": 90
+          }
+        },
+        "2": {
+          "n": 90,
+          "eliminationPct": 0,
+          "stalematePct": 1.1111111111111112,
+          "elimOrStalematePct": 1.1111111111111112,
+          "forcedWinPct": 1.1111111111111112,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 98.88888888888889,
+          "drawPct": 98.88888888888889,
+          "p1WinPct": 1.1111111111111112,
+          "p2WinPct": 0,
+          "firstPlayerWinPctAmongWins": 100,
+          "firstPlayerWinPctAmongDecisive": 100,
+          "firstPlayerAdvantagePp": 50,
+          "avgLength": 119.92222222222222,
+          "avgCaptures": 11.7,
+          "avgP1Captures": 8.255555555555556,
+          "avgP2Captures": 3.4444444444444446,
+          "counts": {
+            "elim": 0,
+            "stalemate": 1,
+            "moveCap": 89,
+            "rep": 0,
+            "p1Wins": 1,
+            "p2Wins": 0,
+            "draws": 89,
+            "withWinner": 1,
+            "decisive": 1
+          }
+        },
+        "3": {
+          "n": 90,
+          "eliminationPct": 4.444444444444445,
+          "stalematePct": 0,
+          "elimOrStalematePct": 4.444444444444445,
+          "forcedWinPct": 4.444444444444445,
+          "repetitionDrawPct": 0,
+          "moveCapDrawPct": 95.55555555555556,
+          "drawPct": 95.55555555555556,
+          "p1WinPct": 1.1111111111111112,
+          "p2WinPct": 3.3333333333333335,
+          "firstPlayerWinPctAmongWins": 25,
+          "firstPlayerWinPctAmongDecisive": 25,
+          "firstPlayerAdvantagePp": -25,
+          "avgLength": 119.21111111111111,
+          "avgCaptures": 24.066666666666666,
+          "avgP1Captures": 11.222222222222221,
+          "avgP2Captures": 12.844444444444445,
+          "counts": {
+            "elim": 4,
+            "stalemate": 0,
+            "moveCap": 86,
+            "rep": 0,
+            "p1Wins": 1,
+            "p2Wins": 3,
+            "draws": 86,
+            "withWinner": 4,
+            "decisive": 4
+          }
+        }
+      }
+    }
+  }
+}
