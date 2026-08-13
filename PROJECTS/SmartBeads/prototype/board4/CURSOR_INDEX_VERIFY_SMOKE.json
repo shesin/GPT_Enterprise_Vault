@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "r4": {
+    "file": "CURSOR_INDEX_4.html",
+    "beads": 4,
+    "ok": true,
+    "humanMove": {
+      "from": 0,
+      "to": 4,
+      "captured": null
+    },
+    "fullGame": {
+      "humanPlies": 20,
+      "finished": true,
+      "winnerText": "Draw",
+      "reason": "Max moves limit of 40 reached! Draw — equal captures (1).",
+      "modal": "flex"
+    }
+  },
+  "r6": {
+    "file": "CURSOR_INDEX_6.html",
+    "beads": 6,
+    "ok": true,
+    "humanMove": {
+      "from": 0,
+      "to": 5,
+      "captured": null
+    },
+    "fullGame": {
+      "humanPlies": 8,
+      "finished": true,
+      "winnerText": "Blue wins",
+      "reason": "Blue eliminated all Red beads!",
+      "modal": "flex"
+    }
+  },
+  "at": "2026-08-13T16:18:51.722Z"
+}

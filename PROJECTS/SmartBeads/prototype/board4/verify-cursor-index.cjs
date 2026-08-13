@@ -225,3 +225,5 @@ assert(gem4.includes('4 BEADS STRATEGY'), 'gemini 4 title');
 assert(gem4.includes('Run 100-Game Lab'), 'gemini 4 still has lab');
 
 console.log(JSON.stringify({ ok: true, r4, r6 }, null, 2));
+fs.writeFileSync(path.join(ROOT, 'CURSOR_INDEX_VERIFY_SMOKE.json'), JSON.stringify({ ok: true, r4, r6, at: new Date().toISOString() }, null, 2));
+process.exit(0);

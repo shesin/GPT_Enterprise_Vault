@@ -1072,11 +1072,27 @@
   }
 
   /** Play one headless AI-vs-AI game. Returns per-game log object. Optional seed forces reproducible AI RNG. */
+  function attachCaptureMetrics(result, simBoard, beadsPerSide) {
+    const rCount = simBoard.filter((p) => p === P1).length;
+    const bCount = simBoard.filter((p) => p === P2).length;
+    result.p1Captures = beadsPerSide - bCount;
+    result.p2Captures = beadsPerSide - rCount;
+    result.totalCaptures = result.p1Captures + result.p2Captures;
+    result.finalBoard = simBoard.slice();
+    result.firstPlayerWon =
+      result.winner === 'draw'
+        ? null
+        : (result.firstPlayer === 'red' && result.winner === 'red') ||
+          (result.firstPlayer === 'blue' && result.winner === 'blue');
+    return result;
+  }
+
   function playHeadlessGame(geo, gameIndex, aiDepth, moveCap, seed) {
     const resolvedSeed = setAiTestSeed(
       seed != null ? seed : (((gameIndex * 1000003) + 1) >>> 0) || 1
     );
-    function withSeed(result) {
+    function withSeed(result, simBoard) {
+      attachCaptureMetrics(result, simBoard, geo.beadsPerSide);
       result.seed = resolvedSeed;
       clearAiTestSeed();
       return result;
@@ -1096,7 +1112,7 @@
           return withSeed({
             winner, endReason: 'stalemate', maxMovesSubReason: null,
             gameLength: simMoves, firstPlayer: (gameIndex % 2 === 0) ? 'red' : 'blue',
-          });
+          }, simBoard);
         }
 
         let bestMove = legalMoves[0];
@@ -1131,16 +1147,16 @@
         const rCount = simBoard.filter((p) => p === P1).length;
         const bCount = simBoard.filter((p) => p === P2).length;
         if (rCount === 0) {
-          return withSeed({ winner: 'blue', endReason: 'elimination', maxMovesSubReason: null, gameLength: simMoves, firstPlayer: (gameIndex % 2 === 0) ? 'red' : 'blue' });
+          return withSeed({ winner: 'blue', endReason: 'elimination', maxMovesSubReason: null, gameLength: simMoves, firstPlayer: (gameIndex % 2 === 0) ? 'red' : 'blue' }, simBoard);
         }
         if (bCount === 0) {
-          return withSeed({ winner: 'red', endReason: 'elimination', maxMovesSubReason: null, gameLength: simMoves, firstPlayer: (gameIndex % 2 === 0) ? 'red' : 'blue' });
+          return withSeed({ winner: 'red', endReason: 'elimination', maxMovesSubReason: null, gameLength: simMoves, firstPlayer: (gameIndex % 2 === 0) ? 'red' : 'blue' }, simBoard);
         }
 
         const key = simBoard.join('') + '_' + simTurn;
         simHistory[key] = (simHistory[key] || 0) + 1;
         if (simHistory[key] >= 3) {
-          return withSeed({ winner: 'draw', endReason: 'repetition', maxMovesSubReason: null, gameLength: simMoves, firstPlayer: (gameIndex % 2 === 0) ? 'red' : 'blue' });
+          return withSeed({ winner: 'draw', endReason: 'repetition', maxMovesSubReason: null, gameLength: simMoves, firstPlayer: (gameIndex % 2 === 0) ? 'red' : 'blue' }, simBoard);
         }
 
         simTurn = simTurn === P1 ? P2 : P1;
@@ -1153,7 +1169,7 @@
         maxMovesSubReason: resolved.maxMovesSubReason,
         gameLength: simMoves,
         firstPlayer: (gameIndex % 2 === 0) ? 'red' : 'blue',
-      });
+      }, simBoard);
     } catch (err) {
       clearAiTestSeed();
       throw err;

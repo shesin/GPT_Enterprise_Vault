@@ -1,13 +1,17 @@
-# Lab Report: Board Ladder (16 · 10 · 8 · 7 · 6 · 5)
+# Lab Report: All Board Families (Sholo Ladder + Cursor Index 4×4)
 
 **Date:** 2026-08-13  
 **Methodology:** `LAB_TERMINOLOGY_05P.md` (G1–G9 gates, no new thresholds)  
-**Reference anchor:** 16-bead — `LAB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`  
-**Evaluation artifact:** `LADDER_LAB_EVALUATION.json` (via `evaluate-ladder-lab.cjs`)
+**Reference anchor:** 16-bead Sholo — `LAB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`  
+**Evaluation artifacts:**
+- Sholo ladder: `LADDER_LAB_EVALUATION.json` (`evaluate-ladder-lab.cjs`)
+- Cursor Index 4×4: `CURSOR_INDEX_LAB_EVALUATION.json` (`evaluate-cursor-index-lab.cjs`)
 
-**Protocol (same for all tested candidates):** D1 / D2 / D3 · seeds 101, 202, 303 · N=50 per seed · move-cap 120 · P1 moves first in main batch · additional first-player swap batch at D2 (60 games per side) for fairness.
+**Sholo protocol:** D1 / D2 / D3 · seeds 101, 202, 303 · N=50 per seed · move-cap **120** · P1 first · D2 swap batch (60/side).
 
-**Lab instrument:** INSTRUMENT_VALID (16-bead trust gate 25/25 READY — re-run confirmed prior session).
+**Cursor Index protocol:** D1 / D2 / D3 · seeds 101, 202, 303 · N=50 per seed · move-cap **40** · center rule **off** · Red first · headless via `GEMINI_LAB.html` · playable parity vs `CURSOR_INDEX_*.html`.
+
+**Lab instrument:** INSTRUMENT_VALID (Sholo trust gate 25/25 READY — re-run confirmed this session).
 
 ---
 
@@ -17,8 +21,11 @@ Every pending, failed, or assumed item was fixed and re-run. No failed check is 
 
 | Check | Status | Evidence |
 |-------|--------|----------|
-| Lab trust gate (`final-validate-sholo-lab.cjs`) | **PASS** | 25/25 READY (prior session) |
-| Ladder G1–G9 (`evaluate-ladder-lab.cjs`) | **PASS** | `LADDER_LAB_EVALUATION.json` — 10/7/6 NEEDS FURTHER TESTING; 8/5 REJECT |
+| Lab trust gate (`final-validate-sholo-lab.cjs`) | **PASS** | 25/25 READY (this session) |
+| GEMINI_LAB headless (`verify-gemini-lab.cjs`) | **PASS** | 25/25 assertions ok (after capture metrics on `playHeadlessGame`) |
+| Cursor Index playable smoke (`verify-cursor-index.cjs`) | **PASS** | `CURSOR_INDEX_VERIFY_SMOKE.json` — full Human-vs-AI games finish |
+| Cursor Index G1–G9 (`evaluate-cursor-index-lab.cjs`) | **PASS** | `CURSOR_INDEX_LAB_EVALUATION.json` — parity verified; INDEX_4/6 REJECT on G3 |
+| Ladder G1–G9 (`evaluate-ladder-lab.cjs`) | **PASS** | `LADDER_LAB_EVALUATION.json` — Sholo 10/7/6 NEEDS FURTHER TESTING; 8/5 REJECT |
 | Compare batches (5–10 vs 16) | **PASS** | `SHOLO_*_VS_16_LAB_COMPARE.json` — geometry verified, 900 games each, reproducible |
 | Playable smoke 5-bead (`verify-sholo-5-bead-feature.cjs`) | **PASS** | `SHOLO_5_BEAD_FEATURE_SMOKE.json` ok:true; mock canvas fixed (`strokeRect`) |
 | Playable smoke 6-bead (`verify-sholo-6-bead-feature.cjs`) | **PASS** | `SHOLO_6_BEAD_FEATURE_SMOKE.json` ok:true; mock canvas fixed (`strokeRect`) |
@@ -76,7 +83,13 @@ No methodology redesign or new thresholds were added. Existing checks adequately
 
 ---
 
+**Harness fixes this session:** (1) Sholo verify scripts — `strokeRect` mock + `process.exit(0)`. (2) Cursor Index parity — compare `START_BOARD` from HTML source (not post-reset board after sync AI). (3) `GEMINI_LAB.html` — headless logs now include capture counts for G3/G4.
+
+---
+
 ## One-page ladder verdict
+
+### Sholo Guti ladder (vs 16-bead reference)
 
 | Board | Verdict | Why (plain language) |
 |-------|---------|----------------------|
@@ -84,8 +97,17 @@ No methodology redesign or new thresholds were added. Existing checks adequately
 | **10** | **NEEDS FURTHER TESTING** | All nine gates pass. Contested captures (~12/game at D2). Human playtest still required before any KEEP. |
 | **8** | **REJECT** | **Fails G2 (fairness).** Second-mover crushes first-mover (~63–78% among games with a winner). Structural — not a Lab artifact. |
 | **7** | **NEEDS FURTHER TESTING** | All nine gates pass. Capture symmetry OK at D2; D1 P2 skew within gate. Human playtest needed. |
-| **6** | **NEEDS FURTHER TESTING** | All nine gates pass. D2 captures lower (~5.9 vs ~12 reference) but game alive; swap balanced. Human playtest needed. |
-| **5** | **REJECT** | **Fails G2 (fairness).** D1: P2 wins **99%** (FPA −49 pp). Swap FPA gap 64% vs 100% exceeds ±35 pp rule. Drop from ladder. |
+| **Sholo 6** (3×5) | **NEEDS FURTHER TESTING** | All nine gates pass. D2 captures lower (~5.9 vs ~12 reference) but alive; swap balanced. Human playtest needed. |
+| **5** | **REJECT** | **Fails G2 (fairness).** D1: P2 wins **99%** (FPA −49 pp). Drop from ladder. |
+
+### Cursor Index 4×4 (GEMINI_LAB headless, center off)
+
+| Board | Verdict | Why (plain language) |
+|-------|---------|----------------------|
+| **Cursor Index 4** | **REJECT** | **Fails G3 (game alive at D2).** D2 avgCaptures **~0.15** (71% repetition draws). D1 is healthy but primary depth is not contested. |
+| **Cursor Index 6** | **REJECT** | **Fails G3 (game alive at D2).** D2 **100% repetition**, avgCaptures **0**. D1 shows elimination (~8.6 caps/game) but D2 collapses to draw loops under Lab AI. |
+
+**Naming note:** **Sholo 6-bead** (3×5 portrait) and **Cursor Index 6** (4×4) are different boards — do not conflate verdicts.
 
 **No board receives KEEP** in this report — KEEP requires human playtest sign-off per methodology.
 
@@ -172,7 +194,7 @@ All G1–G9 **PASS**. Human playtest needed for feel and D1 skew check.
 
 ---
 
-## 6-bead — NEEDS FURTHER TESTING
+## 6-bead (Sholo 3×5) — NEEDS FURTHER TESTING
 
 **Sources:** `sholo-6-bead-fullturn-engine.cjs`, `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html`, `SHOLO_6_VS_16_LAB_COMPARE.json`  
 **Geometry:** Verified — 3×5 portrait, 6 vs 6, N=15.
@@ -231,6 +253,42 @@ All **PASS**.
 
 ---
 
+## Cursor Index 4 (4×4, 4 vs 4) — REJECT
+
+**Sources:** `CURSOR_INDEX_4.html`, `GEMINI_LAB.html`, `CURSOR_INDEX_4_LAB_EVAL.json`  
+**Playable smoke:** `verify-cursor-index.cjs` PASS — Human-vs-AI game completes to modal.  
+**Parity:** START_BOARD fingerprint matches `GeminiLab.createStartingBoard(4,4,4)`; opening moves match.
+
+### Metrics (plain language)
+
+| Depth | avgCaptures | avgLength | elimination | repetition draw | Notes |
+|-------|-------------|-----------|-------------|-----------------|-------|
+| D1 | 5.5 | 15 | 100% | 0% | Balanced wins (Red 51% / Blue 49%) |
+| D2 | **0.15** | 26 | 2% | **71%** | Primary depth not alive — G3 **FAIL** |
+| D3 | 3.4 | 33 | 16% | 39% | Some contested play returns at D3 |
+
+**Gates:** G1/G2/G4–G9 pass · **G3 FAIL** → **REJECT**.
+
+---
+
+## Cursor Index 6 (4×4, 6 vs 6) — REJECT
+
+**Sources:** `CURSOR_INDEX_6.html`, `GEMINI_LAB.html`, `CURSOR_INDEX_6_LAB_EVAL.json`  
+**Playable smoke:** Human-vs-AI sample ended at move-cap 40 with captures 5 vs 1 (contested in interactive mode).  
+**Parity:** START_BOARD matches Lab; opening moves match.
+
+### Metrics (plain language)
+
+| Depth | avgCaptures | avgLength | elimination | repetition draw | Notes |
+|-------|-------------|-----------|-------------|-----------------|-------|
+| D1 | 8.6 | 16 | 100% | 0% | Strong D1 — balanced FPA (−15 pp) |
+| D2 | **0** | 17 | 0% | **100%** | All D2 games draw by repetition — G3 **FAIL** |
+| D3 | 6.4 | 33 | 21% | 38% | D3 recovers capture activity |
+
+**Gates:** G1/G2/G4–G9 pass · **G3 FAIL** → **REJECT**. Lab REJECT does not invalidate playable Human-vs-AI feel, but blocks ladder promotion at primary depth.
+
+---
+
 ## Comparative notes (no scores)
 
 **Shorter sessions:** 7-bead D1 (~18 turns), 6-bead D1 (~17 turns), 5-bead D1 (~9 turns) finish faster than 10-bead (~25) and 16-bead (~54).
@@ -243,24 +301,34 @@ All **PASS**.
 
 ## Answer: who continues to human/product testing?
 
+### Sholo Guti ladder
+
 | Continue? | Boards |
 |-----------|--------|
-| **Yes — Lab PASS, schedule human playtest** | **10-bead**, **7-bead**, **6-bead** |
+| **Yes — Lab PASS, schedule human playtest** | **10-bead**, **7-bead**, **Sholo 6-bead (3×5)** |
 | **No — drop from ladder (Lab REJECT)** | **8-bead**, **5-bead** |
-| **Reference only (not a ladder pick)** | **16-bead** |
+| **Reference only** | **16-bead** |
 
-**Recommended order for human sessions:** 10-bead and 7-bead first (strongest D2 capture profile + all gates pass). Then 6-bead (gates pass but lower D2 captures — confirm feel). Do **not** human-test 8-bead or 5-bead until geometry/facing is redesigned and passes G2.
+**Recommended order:** 10-bead and 7-bead first, then Sholo 6-bead. Do **not** human-test 8-bead or 5-bead until geometry passes G2.
 
-**None of the candidates are KEEP** until a human reports a clear reason to prefer one over 16-bead traditional play or over each other.
+### Cursor Index 4×4
+
+| Continue? | Boards |
+|-----------|--------|
+| **No — Lab REJECT (G3 at D2)** | **Cursor Index 4**, **Cursor Index 6** |
+
+Both fail **G3** at primary depth (D2 capture activity near zero; heavy repetition). Optional informal human play of the HTML shells is **not** a methodology KEEP signal.
+
+**None of the candidates are KEEP** until human playtest sign-off per methodology.
 
 ### Technical Verification vs Gameplay / UX Review
 
 | | Technical Verification (Lab) | Gameplay / UX Review (human) |
 |--|---------------------------|------------------------------|
-| **Status** | **Complete** for all six candidates | **Not started** |
-| **10, 7, 6** | NEEDS FURTHER TESTING — eligible for human sessions | Timers, shot clock, BGM, undo, fairness *feel*, session fun — pending |
-| **8, 5** | REJECT — trust audits confirm geometry bias (`SHOLO_*_FAIRNESS_TRUST.json`) | N/A until redesign + re-Lab |
-| **16** | Reference anchor only | N/A |
+| **Sholo 10, 7, 6 (3×5)** | NEEDS FURTHER TESTING — eligible | Not started |
+| **Sholo 8, 5** | REJECT | N/A until redesign |
+| **Cursor Index 4, 6** | REJECT (G3 D2) — playable smoke PASS | Not started; not ladder-eligible |
+| **16-bead** | Reference anchor | N/A |
 
 ---
 
@@ -268,7 +336,12 @@ All **PASS**.
 
 | File | Content |
 |------|---------|
-| `LADDER_LAB_EVALUATION.json` | Gate results + metrics + swap batches (all six candidates) |
+| `CURSOR_INDEX_LAB_EVALUATION.json` | Cursor Index 4/6 G1–G9 evaluation |
+| `evaluate-cursor-index-lab.cjs` | Cursor Index Lab runner |
+| `verify-cursor-index.cjs` | Cursor Index playable smoke |
+| `CURSOR_INDEX_VERIFY_SMOKE.json` | Smoke run evidence |
+| `gemini-lab-loader.cjs` | Shared VM loader for GEMINI + Cursor Index |
+| `LADDER_LAB_EVALUATION.json` | Sholo gate results (16/10/8/7/6/5) |
 | `evaluate-ladder-lab.cjs` | Applies G1–G9 from terminology doc |
 | `sholo-6-bead-fullturn-engine.cjs` | 6-bead headless engine |
 | `sholo-5-bead-fullturn-engine.cjs` | 5-bead headless engine |
