@@ -16,7 +16,7 @@ function el(id, extra) {
     getBoundingClientRect: () => ({ left: 0, top: 0, width: 360, height: 360 }),
     getContext: () => ({
       clearRect() {}, fillRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, fill() {}, arc() {},
-      save() {}, restore() {}, closePath() {},
+      save() {}, restore() {}, closePath() {}, strokeRect() {},
       createLinearGradient() { return { addColorStop() {} }; },
       createRadialGradient() { return { addColorStop() {} }; },
     }),
@@ -93,3 +93,4 @@ const out = {
 };
 fs.writeFileSync(path.join(__dirname, 'SHOLO_6_BEAD_FEATURE_SMOKE.json'), JSON.stringify(out, null, 2));
 console.log(JSON.stringify(out, null, 2));
+process.exit(0);

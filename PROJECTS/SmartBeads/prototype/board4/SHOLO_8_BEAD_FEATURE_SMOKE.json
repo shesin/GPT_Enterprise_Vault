@@ -5,6 +5,7 @@
     "p1": 8,
     "p2": 8
   },
-  "centerZoneNodes": 10,
+  "centerZoneNodes": 2,
+  "row3Empty": true,
   "ok": true
 }

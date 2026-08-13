@@ -143,6 +143,7 @@ function main() {
   const out = require('path').join(__dirname, 'SHOLO_10_BEAD_FEATURE_SMOKE.json');
   fs.writeFileSync(out, JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
+  process.exit(0);
 }
 
 main();

@@ -1,0 +1,51 @@
+{
+  "purpose": "8-bead fairness REJECT trust audit — symmetric Lab AI, parity, D2 swap",
+  "parity": {
+    "allOk": true,
+    "checks": [
+      {
+        "name": "N_match",
+        "ok": true,
+        "detail": {
+          "play": 20,
+          "lab": 20
+        }
+      },
+      {
+        "name": "coords_match",
+        "ok": true,
+        "detail": {}
+      },
+      {
+        "name": "start_fingerprint",
+        "ok": true,
+        "detail": {}
+      },
+      {
+        "name": "opening_moves",
+        "ok": true,
+        "detail": {
+          "play": 10,
+          "lab": 10
+        }
+      }
+    ]
+  },
+  "labAiSymmetric": true,
+  "d2_whenFirstP1": {
+    "p1WinPct": 0,
+    "p2WinPct": 73.33333333333333,
+    "fpa": 0,
+    "avgP1Caps": 0.9666666666666667,
+    "avgP2Caps": 7.683333333333334
+  },
+  "d2_whenFirstP2": {
+    "p1WinPct": 76.66666666666667,
+    "p2WinPct": 0,
+    "fpa": 0,
+    "avgP1Caps": 7.683333333333334,
+    "avgP2Caps": 0.9833333333333333
+  },
+  "interpretation": "Second mover wins under symmetric AI when winners exist; bias flips with first player.",
+  "rejectTrustworthy": true
+}

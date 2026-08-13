@@ -96,3 +96,4 @@ const out = {
 };
 fs.writeFileSync(path.join(__dirname, 'SHOLO_8_BEAD_FEATURE_SMOKE.json'), JSON.stringify(out, null, 2));
 console.log(JSON.stringify(out, null, 2));
+process.exit(0);

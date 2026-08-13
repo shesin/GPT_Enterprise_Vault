@@ -1,0 +1,69 @@
+{
+  "purpose": "5-bead fairness REJECT trust audit — symmetric Lab AI, parity, swap at D1/D2",
+  "parity": {
+    "allOk": true,
+    "checks": [
+      {
+        "name": "N_match",
+        "ok": true,
+        "detail": {
+          "play": 15,
+          "lab": 15
+        }
+      },
+      {
+        "name": "coords_match",
+        "ok": true,
+        "detail": {}
+      },
+      {
+        "name": "start_fingerprint",
+        "ok": true,
+        "detail": {
+          "play": "222220000011111",
+          "lab": "222220000011111"
+        }
+      },
+      {
+        "name": "opening_moves",
+        "ok": true,
+        "detail": {
+          "play": 13,
+          "lab": 13
+        }
+      }
+    ]
+  },
+  "labAiSymmetric": true,
+  "note": "Headless engine uses scoreForPlayer for both sides; playable P2-centric evaluate does not affect batch runs",
+  "d1_whenFirstP1": {
+    "p1WinPct": 0,
+    "p2WinPct": 100,
+    "fpa": -50,
+    "avgP1Caps": 0.4,
+    "avgP2Caps": 5
+  },
+  "d1_whenFirstP2": {
+    "p1WinPct": 100,
+    "p2WinPct": 0,
+    "fpa": -50,
+    "avgP1Caps": 5,
+    "avgP2Caps": 0.3
+  },
+  "d2_whenFirstP1": {
+    "p1WinPct": 10,
+    "p2WinPct": 5,
+    "fpa": 66.66666666666667,
+    "avgP1Caps": 3.05,
+    "avgP2Caps": 2.183333333333333
+  },
+  "d2_whenFirstP2": {
+    "p1WinPct": 3.3333333333333335,
+    "p2WinPct": 10,
+    "fpa": 75,
+    "avgP1Caps": 2.0166666666666666,
+    "avgP2Caps": 3.1166666666666667
+  },
+  "interpretation": "If bias flips with first player under symmetric AI, REJECT is geometry/turn-order not harness bug. D1 extreme P2 win when P1 moves first is the primary G2 driver (FPA beyond ±35 pp at N=150 in ladder batch).",
+  "rejectTrustworthy": true
+}

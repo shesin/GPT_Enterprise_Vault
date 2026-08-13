@@ -37,6 +37,20 @@ const CANDIDATES = [
     perDepthKey: 'perDepthSlice',
     playable: 'SHOLO_GUTI_7_BEAD_WITH_FEATURE.html',
   },
+  {
+    beads: 6,
+    engine: './sholo-6-bead-fullturn-engine.cjs',
+    compareJson: 'SHOLO_6_VS_16_LAB_COMPARE.json',
+    perDepthKey: 'perDepthSlice',
+    playable: 'SHOLO_GUTI_6_BEAD_WITH_FEATURE.html',
+  },
+  {
+    beads: 5,
+    engine: './sholo-5-bead-fullturn-engine.cjs',
+    compareJson: 'SHOLO_5_VS_16_LAB_COMPARE.json',
+    perDepthKey: 'perDepthSlice',
+    playable: 'SHOLO_GUTI_5_BEAD_WITH_FEATURE.html',
+  },
 ];
 
 function runBatch(engine, depth, seed, n, first) {
@@ -178,8 +192,6 @@ function main() {
   }
 
   out.boards[16] = { role: 'REFERENCE ANCHOR', selectionVerdict: 'REFERENCE ANCHOR', perDepth: ref.perDepth };
-  out.boards[6] = { selectionVerdict: 'NOT TESTED', reason: 'No validated headless Lab engine in repository' };
-  out.boards[5] = { selectionVerdict: 'NOT TESTED', reason: 'No validated headless Lab engine in repository' };
 
   const outPath = path.join(__dirname, 'LADDER_LAB_EVALUATION.json');
   fs.writeFileSync(outPath, JSON.stringify(out, null, 2));
