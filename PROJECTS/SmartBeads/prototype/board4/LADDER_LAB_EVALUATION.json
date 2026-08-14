@@ -659,8 +659,10 @@
       "failedGates": [
         "G2"
       ],
-      "rejectTriggers": [],
-      "selectionVerdict": "NEEDS FURTHER TESTING"
+      "rejectTriggers": [
+        "g2_fairness_fail"
+      ],
+      "selectionVerdict": "REJECT"
     },
     "6": {
       "playable": "SHOLO_GUTI_6_BEAD_WITH_FEATURE.html",
@@ -1939,8 +1941,10 @@
       "failedGates": [
         "G2"
       ],
-      "rejectTriggers": [],
-      "selectionVerdict": "NEEDS FURTHER TESTING"
+      "rejectTriggers": [
+        "g2_fairness_fail"
+      ],
+      "selectionVerdict": "REJECT"
     },
     "10": {
       "playable": "SHOLO_GUTI_10_BEAD_WITH_FEATURE.html",
@@ -2464,5 +2468,9 @@
         }
       }
     }
-  }
+  },
+  "evaluatedOnly": [
+    5,
+    8
+  ]
 }

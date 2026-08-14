@@ -326,6 +326,8 @@ From validated 16-bead reference (`LAB_16_BEAD_REFERENCE_VALIDATION.json`):
 
 Compare scripts (`compare-sholo-*-vs-16-lab.cjs`) emit **metrics and geometry evidence only**. They must **not** emit KEEP / REJECT / NEEDS FURTHER TESTING. Run `evaluate-ladder-lab.cjs` for the authoritative G1–G9 **selectionVerdict**.
 
+**G2 fairness failure** → authoritative evaluator emits **REJECT** with reject trigger `g2_fairness_fail` (not NEEDS FURTHER TESTING).
+
 These are **structural failure** detectors, not “quality scores.”
 
 ### Evidence REQUIRED before calling a board **KEEP**

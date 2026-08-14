@@ -1,7 +1,8 @@
 'use strict';
 /**
  * Shared G1-G9 gate logic and authoritative ladder verdict mapping.
- * REJECT only on documented rejectTriggers — not on arbitrary gate failure alone.
+ * G2 fairness failure is a hard REJECT (g2_fairness_fail). Other gate failures
+ * without reject triggers map to NEEDS FURTHER TESTING.
  */
 const protocol = require('./sholo-lab-protocol.cjs');
 
@@ -63,6 +64,8 @@ function applyGates(d1, d2, d3, geoOk, crash, swap, reproducible, protocolCheck,
 
   const failed = gates.filter((x) => !x.pass);
   const rejectTriggers = checkRejectTriggers(d1, d2, geoOk, crash);
+  const g2 = gates.find((x) => x.id === 'G2');
+  if (g2 && !g2.pass) rejectTriggers.push('g2_fairness_fail');
   return {
     gates,
     failed: failed.map((x) => x.id),

@@ -85,7 +85,21 @@ function fingerprint(games) {
   return games.map((g) => [g.seed, g.endReason, g.winner, g.gameLength, g.totalCaptures].join(':')).join('|');
 }
 
+function parseOnly() {
+  const idx = process.argv.indexOf('--only');
+  if (idx === -1) return null;
+  const raw = process.argv[idx + 1];
+  if (!raw) return null;
+  return raw.split(',').map((x) => parseInt(x.trim(), 10)).filter((x) => !isNaN(x));
+}
+
 function main() {
+  const only = parseOnly();
+  const outPath = path.join(__dirname, 'LADDER_LAB_EVALUATION.json');
+  let prior = {};
+  if (only && fs.existsSync(outPath)) {
+    prior = JSON.parse(fs.readFileSync(outPath, 'utf8'));
+  }
   const ref = JSON.parse(fs.readFileSync(REF_PATH, 'utf8'));
   const refProtocolOk = protocol.matchesCanonical(ref.baselineProtocol);
   const out = {
@@ -93,10 +107,12 @@ function main() {
     authoritativeEvaluator: 'evaluate-ladder-lab.cjs',
     reference16: { role: 'REFERENCE ANCHOR', perDepth: ref.perDepth, firstPlayerSwap: ref.firstPlayerSwap },
     referenceProtocolCheck: refProtocolOk,
-    boards: {},
+    boards: prior.boards ? { ...prior.boards } : {},
+    evaluatedOnly: only || null,
   };
 
-  for (const c of CANDIDATES) {
+  const list = only ? CANDIDATES.filter((c) => only.includes(c.beads)) : CANDIDATES;
+  for (const c of list) {
     const comparePath = path.join(__dirname, c.compareJson);
     if (!fs.existsSync(comparePath)) {
       out.boards[c.beads] = { selectionVerdict: 'NOT TESTED', reason: 'compare JSON missing — run compare script first' };
@@ -135,7 +151,6 @@ function main() {
 
   out.boards[16] = { role: 'REFERENCE ANCHOR', selectionVerdict: 'REFERENCE ANCHOR', perDepth: ref.perDepth };
 
-  const outPath = path.join(__dirname, 'LADDER_LAB_EVALUATION.json');
   fs.writeFileSync(outPath, JSON.stringify(out, null, 2));
   console.log(JSON.stringify({
     out: outPath,

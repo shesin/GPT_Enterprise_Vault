@@ -1,26 +1,25 @@
 'use strict';
 /**
- * Authoritative G1-G9 verdict evaluator for Cursor Index 4×4 (GEMINI_LAB).
- * Separate instrument family — not Sholo ladder protocol.
+ * Authoritative G1-G9 verdict evaluator for Cursor Index 4×4.
+ * Uses certified complete-turn engine + sholo-lab-protocol.cjs (same as 16-bead reference).
  */
 const fs = require('fs');
 const path = require('path');
-const { loadGeminiLab, loadCursorIndex, geminiLogToSholo, ROOT } = require('./gemini-lab-loader.cjs');
+const { loadCursorIndex, ROOT } = require('./gemini-lab-loader.cjs');
+const { createEngine } = require('./cursor-index-fullturn-engine.cjs');
 const metrics = require('./sholo-lab-metrics.cjs');
 const gates = require('./sholo-lab-gates.cjs');
-const indexProtocol = require('./cursor-index-lab-protocol.cjs');
+const protocol = require('./sholo-lab-protocol.cjs');
 
 const CANDIDATES = [
   { id: 'INDEX_4', beads: 4, html: 'CURSOR_INDEX_4.html', smokeOut: 'CURSOR_INDEX_4_LAB_EVAL.json' },
   { id: 'INDEX_6', beads: 6, html: 'CURSOR_INDEX_6.html', smokeOut: 'CURSOR_INDEX_6_LAB_EVAL.json' },
 ];
 
-function runBatch(Lab, geo, depth, seed, n, redFirst) {
+function runBatch(engine, depth, seed, n, first) {
   const games = [];
   for (let i = 0; i < n; i++) {
-    const gameIndex = redFirst ? i * 2 : i * 2 + 1;
-    const raw = Lab.playHeadlessGame(geo, gameIndex, depth, indexProtocol.MOVE_CAP, (seed + i) >>> 0);
-    games.push(geminiLogToSholo(raw));
+    games.push(engine.playHeadlessGame(depth, protocol.MOVE_CAP, (seed + i) >>> 0, first));
   }
   return games;
 }
@@ -31,22 +30,20 @@ function parseStartBoard(html) {
   return m[1].split(',').map((x) => parseInt(x.trim(), 10));
 }
 
-function parityCheck(Lab, html, beads) {
+function parityCheck(engine, html, beads) {
   const checks = [];
   function g(name, ok, detail) { checks.push({ name, ok: !!ok, detail }); }
-  const labStart = Lab.createStartingBoard(beads, 4, 4);
+  const labStart = engine.startingBoard();
   const playStart = parseStartBoard(html);
   g('start_fingerprint', playStart.join('') === labStart.join(''), { play: playStart.join(''), lab: labStart.join('') });
   g('bead_count', playStart.filter((x) => x === 1).length === beads && playStart.filter((x) => x === 2).length === beads, { beads });
-  const geo = Lab.createLabConfig({
-    beadsPerSide: beads, rows: 4, cols: 4, centerRule: 'off', maxMoveLimit: indexProtocol.MOVE_CAP, aiDepth: 2,
-  });
-  const openPlay = Lab.getAllLegalMoves(playStart, Lab.P1, geo).length;
-  const openLab = Lab.getAllLegalMoves(labStart, Lab.P1, geo).length;
+  const openPlay = engine.getAllLegalMoves(playStart, engine.P1).length;
+  const openLab = engine.getAllLegalMoves(labStart, engine.P1).length;
   g('opening_moves', openPlay === openLab, { play: openPlay, lab: openLab });
-  g('center_nodes', JSON.stringify(Lab.deriveCenterNodes(4, 4)) === JSON.stringify([5, 6, 9, 10]), {
-    lab: Lab.deriveCenterNodes(4, 4),
+  g('search_unit_complete_turn', engine.describeSearchSemantics(2).searchUnit === 'complete turn', {
+    d2: engine.describeSearchSemantics(2),
   });
+  g('eval_noise_off', engine.describeSearchSemantics(2).evalNoise === false, {});
   return { allOk: checks.every((c) => c.ok), checks };
 }
 
@@ -54,19 +51,19 @@ function fingerprint(games) {
   return games.map((g) => [g.seed, g.endReason, g.winner, g.gameLength, g.totalCaptures].join(':')).join('|');
 }
 
-function firstPlayerSwap(Lab, geo) {
-  const whenFirstRed = [];
-  const whenFirstBlue = [];
-  for (const seed of indexProtocol.SWAP_SEEDS) {
-    whenFirstRed.push(...runBatch(Lab, geo, 2, seed, indexProtocol.SWAP_N, true));
-    whenFirstBlue.push(...runBatch(Lab, geo, 2, seed + 1000, indexProtocol.SWAP_N, false));
+function firstPlayerSwap(engine) {
+  const whenFirstP1 = [];
+  const whenFirstP2 = [];
+  for (const seed of protocol.SWAP_SEEDS) {
+    whenFirstP1.push(...runBatch(engine, 2, seed, protocol.SWAP_N, engine.P1));
+    whenFirstP2.push(...runBatch(engine, 2, seed + 1000, protocol.SWAP_N, engine.P2));
   }
-  return { whenFirstRed: metrics.summarizeGames(whenFirstRed), whenFirstBlue: metrics.summarizeGames(whenFirstBlue) };
+  return { whenFirstP1: metrics.summarizeGames(whenFirstP1), whenFirstP2: metrics.summarizeGames(whenFirstP2) };
 }
 
-function crashFree(Lab, geo) {
+function crashFree(engine) {
   try {
-    const g = runBatch(Lab, geo, 2, 99000, 40, true);
+    const g = runBatch(engine, 2, 99000, 40, engine.P1);
     const ok = g.every(
       (x) =>
         ['elimination', 'stalemate', 'move_cap_lab_safety', 'repetition'].includes(x.endReason) &&
@@ -79,11 +76,11 @@ function crashFree(Lab, geo) {
 }
 
 function main() {
-  const Lab = loadGeminiLab();
-  const batchProtocol = indexProtocol.protocolMeta();
+  const batchProtocol = protocol.protocolMeta();
   const out = {
-    purpose: 'Authoritative Cursor Index G1-G9 evaluation — GEMINI_LAB headless',
+    purpose: 'Authoritative Cursor Index G1-G9 — certified complete-turn protocol',
     authoritativeEvaluator: 'evaluate-cursor-index-lab.cjs',
+    headlessEngine: 'cursor-index-fullturn-engine.cjs',
     protocol: batchProtocol,
     boards: {},
   };
@@ -91,30 +88,29 @@ function main() {
   for (const c of CANDIDATES) {
     const html = fs.readFileSync(path.join(ROOT, c.html), 'utf8');
     loadCursorIndex(c.html);
-    const parity = parityCheck(Lab, html, c.beads);
-    const geo = Lab.createLabConfig({
-      beadsPerSide: c.beads, rows: 4, cols: 4, centerRule: 'off', maxMoveLimit: indexProtocol.MOVE_CAP, aiDepth: 2,
-    });
+    const engine = createEngine(c.beads);
+    const parity = parityCheck(engine, html, c.beads);
     const perDepth = {};
-    for (const depth of indexProtocol.DEPTHS) {
+    for (const depth of protocol.DEPTHS) {
       const batch = [];
-      for (const seed of indexProtocol.SEEDS) batch.push(...runBatch(Lab, geo, depth, seed, indexProtocol.N_PER_SEED, true));
+      for (const seed of protocol.SEEDS) {
+        batch.push(...runBatch(engine, depth, seed, protocol.N_PER_SEED, engine.P1));
+      }
       perDepth[depth] = metrics.summarizeGames(batch);
     }
-    const crash = crashFree(Lab, geo);
-    const swap = firstPlayerSwap(Lab, geo);
-    const a = runBatch(Lab, geo, 2, 101, indexProtocol.N_PER_SEED, true);
-    const b = runBatch(Lab, geo, 2, 101, indexProtocol.N_PER_SEED, true);
+    const crash = crashFree(engine);
+    const swap = firstPlayerSwap(engine);
+    const a = runBatch(engine, 2, 101, protocol.N_PER_SEED, engine.P1);
+    const b = runBatch(engine, 2, 101, protocol.N_PER_SEED, engine.P1);
     const reproducible = fingerprint(a) === fingerprint(b);
-    const protocolCheck = indexProtocol.matchesCanonical(batchProtocol);
+    const protocolCheck = protocol.matchesCanonical(batchProtocol);
     const ev = gates.applyGates(
-      perDepth[1], perDepth[2], perDepth[3], parity.allOk, crash, swap, reproducible, protocolCheck,
-      { first: 'whenFirstRed', second: 'whenFirstBlue' }
+      perDepth[1], perDepth[2], perDepth[3], parity.allOk, crash, swap, reproducible, protocolCheck
     );
     const selection = gates.ladderVerdict(ev.allPass, ev.rejectTriggers, ev.failed);
     out.boards[c.id] = {
       playable: c.html,
-      headless: 'GEMINI_LAB.html',
+      headless: 'cursor-index-fullturn-engine.cjs',
       beadsPerSide: c.beads,
       board: '4x4',
       parity,
