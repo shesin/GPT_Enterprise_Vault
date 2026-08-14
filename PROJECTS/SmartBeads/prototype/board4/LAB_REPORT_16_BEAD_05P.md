@@ -13,11 +13,26 @@
 | Item | Result |
 |------|--------|
 | **Lab instrument** | **INSTRUMENT_VALID** (trust gate 25/25 READY + crash-free batches) |
+| **16-bead certification** | See § Instrument certification below |
 | **16-bead board verdict** | **GOOD** |
 
 The standard 16-bead game is a **healthy reference board** for Lab calibration. Rules, geometry, captures, and honest AI depths behave as designed. Primary-depth (D2) batches mostly reach the **120-turn Lab move-cap** before elimination — that is an expected **measurement profile** under honest 1-reply search, not evidence the board is broken.
 
 **Product timers, shot clocks, and BGM were not evaluated in this report** (see § Product vs Lab).
+
+---
+
+## Instrument certification (2026-08-14)
+
+| Fix | Status |
+|-----|--------|
+| One authoritative verdict (`evaluate-ladder-lab.cjs`) | Applied — compare scripts metrics-only |
+| One canonical N=30 (`sholo-lab-protocol.cjs`) | Applied |
+| Playable L1/L2/L3 ≠ Lab D1/D2/D3 documented | Applied — `LAB_TERMINOLOGY_05P.md` |
+
+**Playable vs Lab:** Browser Level 2 uses static eval with **zero** opponent reply plies (human P1 vs AI P2). Lab D2 uses **one** opponent complete-turn reply in symmetric AI-vs-AI. **Never equate Lab D2 metrics with browser Level 2.**
+
+**Verdict path:** `selectionVerdict` from `evaluate-ladder-lab.cjs` only. Compare scripts emit metrics for G9 and gate inputs.
 
 ---
 

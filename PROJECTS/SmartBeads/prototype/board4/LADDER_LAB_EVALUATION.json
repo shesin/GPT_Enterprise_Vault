@@ -1,5 +1,6 @@
 {
-  "purpose": "Ladder evaluation applying G1-G9 from LAB_TERMINOLOGY_05P.md",
+  "purpose": "Authoritative ladder G1-G9 evaluation — LAB_TERMINOLOGY_05P.md",
+  "authoritativeEvaluator": "evaluate-ladder-lab.cjs",
   "reference16": {
     "role": "REFERENCE ANCHOR",
     "perDepth": {
@@ -155,6 +156,81 @@
           "decisive": 0
         }
       }
+    }
+  },
+  "referenceProtocolCheck": {
+    "ok": true,
+    "issues": [],
+    "expected": {
+      "depths": [
+        1,
+        2,
+        3
+      ],
+      "seeds": [
+        101,
+        202,
+        303
+      ],
+      "nPerSeed": 30,
+      "nPerSeedPerDepth": 30,
+      "moveCap": 120,
+      "firstPlayerBaseline": "P1",
+      "gamesPerBoard": 270,
+      "comparisonProtocol": {
+        "primaryDepth": 2,
+        "secondaryDepth": 3,
+        "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+        "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+        "drawsAreLegitimate": true,
+        "moveCapIsLabSafetyNotTraditionalRule": true,
+        "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+        "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+        "termGlossary": {
+          "elimination": "One player captured all opposing beads → win.",
+          "stalemate": "Player to move has no legal move → opponent wins.",
+          "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+          "repetition": "Same board+side-to-move appeared 3 times → draw.",
+          "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+          "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+        }
+      }
+    },
+    "received": {
+      "depths": [
+        1,
+        2,
+        3
+      ],
+      "seeds": [
+        101,
+        202,
+        303
+      ],
+      "nPerSeed": 30,
+      "nPerSeedPerDepth": 30,
+      "moveCap": 120,
+      "firstPlayerBaseline": "P1",
+      "gamesPerBoard": 270,
+      "comparisonProtocol": {
+        "primaryDepth": 2,
+        "secondaryDepth": 3,
+        "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+        "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+        "drawsAreLegitimate": true,
+        "moveCapIsLabSafetyNotTraditionalRule": true,
+        "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+        "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+        "termGlossary": {
+          "elimination": "One player captured all opposing beads → win.",
+          "stalemate": "Player to move has no legal move → opponent wins.",
+          "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+          "repetition": "Same board+side-to-move appeared 3 times → draw.",
+          "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+          "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+        }
+      },
+      "totalBaselineGames": 270
     }
   },
   "boards": {
@@ -397,13 +473,6 @@
                   "decisive": 9
                 }
               }
-            },
-            "d1Fpa": -48.666666666666664,
-            "d2": {
-              "p1": 14,
-              "p2": 4.666666666666667,
-              "p1Caps": 3.12,
-              "p2Caps": 2.0866666666666664
             }
           }
         },
@@ -440,8 +509,7 @@
           "pass": true,
           "detail": {
             "moveCapDrawPct": 81.33333333333333,
-            "repetitionDrawPct": 0,
-            "note": "reported separately; not a failure"
+            "repetitionDrawPct": 0
           }
         },
         {
@@ -465,18 +533,135 @@
         {
           "id": "G9",
           "name": "Same protocol",
-          "pass": true,
+          "pass": false,
           "detail": {
-            "protocol": "D1/D2/D3 seeds 101/202/303 N=50 moveCap 120"
+            "ok": false,
+            "issues": [
+              "nPerSeed=50 expected 30"
+            ],
+            "expected": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeed": 30,
+              "nPerSeedPerDepth": 30,
+              "moveCap": 120,
+              "firstPlayerBaseline": "P1",
+              "gamesPerBoard": 270,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              }
+            },
+            "received": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeedPerDepth": 50,
+              "moveCap": 120,
+              "gamesPerBoard": 450,
+              "totalGames": 900,
+              "expectedTotal": 900,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              },
+              "searchSemantics": {
+                "1": {
+                  "requestedDepth": 1,
+                  "actualEffectiveDepth": "greedy captures + light eval (0 opponent reply plies)",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 0,
+                  "search": false,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": null,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; P1-centric evaluate absolute scale",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "2": {
+                  "requestedDepth": 2,
+                  "actualEffectiveDepth": "1 opponent full-turn reply after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 1,
+                  "search": true,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": 80,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "3": {
+                  "requestedDepth": 3,
+                  "actualEffectiveDepth": "2 opponent full-turn reply plies after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 2,
+                  "search": true,
+                  "rootBranchLimit": 80,
+                  "replyBranchLimit": 40,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; minimax on P1-centric evaluate",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                }
+              }
+            }
           }
         }
       ],
       "failedGates": [
-        "G2"
+        "G2",
+        "G9"
       ],
       "rejectTriggers": [],
-      "selectionVerdict": "REJECT",
-      "compareScriptVerdict": "NEEDS FURTHER TESTING"
+      "selectionVerdict": "NEEDS FURTHER TESTING"
     },
     "6": {
       "playable": "SHOLO_GUTI_6_BEAD_WITH_FEATURE.html",
@@ -717,13 +902,6 @@
                   "decisive": 17
                 }
               }
-            },
-            "d1Fpa": 4,
-            "d2": {
-              "p1": 17.333333333333332,
-              "p2": 12,
-              "p1Caps": 3.033333333333333,
-              "p2Caps": 2.8466666666666667
             }
           }
         },
@@ -760,8 +938,7 @@
           "pass": true,
           "detail": {
             "moveCapDrawPct": 70.66666666666667,
-            "repetitionDrawPct": 0,
-            "note": "reported separately; not a failure"
+            "repetitionDrawPct": 0
           }
         },
         {
@@ -785,16 +962,134 @@
         {
           "id": "G9",
           "name": "Same protocol",
-          "pass": true,
+          "pass": false,
           "detail": {
-            "protocol": "D1/D2/D3 seeds 101/202/303 N=50 moveCap 120"
+            "ok": false,
+            "issues": [
+              "nPerSeed=50 expected 30"
+            ],
+            "expected": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeed": 30,
+              "nPerSeedPerDepth": 30,
+              "moveCap": 120,
+              "firstPlayerBaseline": "P1",
+              "gamesPerBoard": 270,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              }
+            },
+            "received": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeedPerDepth": 50,
+              "moveCap": 120,
+              "gamesPerBoard": 450,
+              "totalGames": 900,
+              "expectedTotal": 900,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              },
+              "searchSemantics": {
+                "1": {
+                  "requestedDepth": 1,
+                  "actualEffectiveDepth": "greedy captures + light eval (0 opponent reply plies)",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 0,
+                  "search": false,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": null,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; P1-centric evaluate absolute scale",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "2": {
+                  "requestedDepth": 2,
+                  "actualEffectiveDepth": "1 opponent full-turn reply after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 1,
+                  "search": true,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": 80,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "3": {
+                  "requestedDepth": 3,
+                  "actualEffectiveDepth": "2 opponent full-turn reply plies after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 2,
+                  "search": true,
+                  "rootBranchLimit": 80,
+                  "replyBranchLimit": 40,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; minimax on P1-centric evaluate",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                }
+              }
+            }
           }
         }
       ],
-      "failedGates": [],
+      "failedGates": [
+        "G9"
+      ],
       "rejectTriggers": [],
-      "selectionVerdict": "NEEDS FURTHER TESTING",
-      "compareScriptVerdict": "NEEDS FURTHER TESTING"
+      "selectionVerdict": "NEEDS FURTHER TESTING"
     },
     "7": {
       "playable": "SHOLO_GUTI_7_BEAD_WITH_FEATURE.html",
@@ -1035,13 +1330,6 @@
                   "decisive": 8
                 }
               }
-            },
-            "d1Fpa": -31.333333333333332,
-            "d2": {
-              "p1": 3.3333333333333335,
-              "p2": 8.666666666666666,
-              "p1Caps": 4.193333333333333,
-              "p2Caps": 4.46
             }
           }
         },
@@ -1078,8 +1366,7 @@
           "pass": true,
           "detail": {
             "moveCapDrawPct": 88,
-            "repetitionDrawPct": 0,
-            "note": "reported separately; not a failure"
+            "repetitionDrawPct": 0
           }
         },
         {
@@ -1103,16 +1390,134 @@
         {
           "id": "G9",
           "name": "Same protocol",
-          "pass": true,
+          "pass": false,
           "detail": {
-            "protocol": "D1/D2/D3 seeds 101/202/303 N=50 moveCap 120"
+            "ok": false,
+            "issues": [
+              "nPerSeed=50 expected 30"
+            ],
+            "expected": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeed": 30,
+              "nPerSeedPerDepth": 30,
+              "moveCap": 120,
+              "firstPlayerBaseline": "P1",
+              "gamesPerBoard": 270,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              }
+            },
+            "received": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeedPerDepth": 50,
+              "moveCap": 120,
+              "gamesPerBoard": 450,
+              "totalGames": 900,
+              "expectedTotal": 900,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              },
+              "searchSemantics": {
+                "1": {
+                  "requestedDepth": 1,
+                  "actualEffectiveDepth": "greedy captures + light eval (0 opponent reply plies)",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 0,
+                  "search": false,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": null,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; P1-centric evaluate absolute scale",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "2": {
+                  "requestedDepth": 2,
+                  "actualEffectiveDepth": "1 opponent full-turn reply after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 1,
+                  "search": true,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": 80,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "3": {
+                  "requestedDepth": 3,
+                  "actualEffectiveDepth": "2 opponent full-turn reply plies after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 2,
+                  "search": true,
+                  "rootBranchLimit": 80,
+                  "replyBranchLimit": 40,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; minimax on P1-centric evaluate",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                }
+              }
+            }
           }
         }
       ],
-      "failedGates": [],
+      "failedGates": [
+        "G9"
+      ],
       "rejectTriggers": [],
-      "selectionVerdict": "NEEDS FURTHER TESTING",
-      "compareScriptVerdict": "NEEDS FURTHER TESTING"
+      "selectionVerdict": "NEEDS FURTHER TESTING"
     },
     "8": {
       "playable": "SHOLO_GUTI_8_BEAD_WITH_FEATURE.html",
@@ -1353,13 +1758,6 @@
                   "decisive": 47
                 }
               }
-            },
-            "d1Fpa": -18,
-            "d2": {
-              "p1": 0,
-              "p2": 72,
-              "p1Caps": 1.3066666666666666,
-              "p2Caps": 7.6466666666666665
             }
           }
         },
@@ -1396,8 +1794,7 @@
           "pass": true,
           "detail": {
             "moveCapDrawPct": 27.333333333333332,
-            "repetitionDrawPct": 0.6666666666666666,
-            "note": "reported separately; not a failure"
+            "repetitionDrawPct": 0.6666666666666666
           }
         },
         {
@@ -1421,18 +1818,135 @@
         {
           "id": "G9",
           "name": "Same protocol",
-          "pass": true,
+          "pass": false,
           "detail": {
-            "protocol": "D1/D2/D3 seeds 101/202/303 N=50 moveCap 120"
+            "ok": false,
+            "issues": [
+              "nPerSeed=50 expected 30"
+            ],
+            "expected": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeed": 30,
+              "nPerSeedPerDepth": 30,
+              "moveCap": 120,
+              "firstPlayerBaseline": "P1",
+              "gamesPerBoard": 270,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              }
+            },
+            "received": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeedPerDepth": 50,
+              "moveCap": 120,
+              "gamesPerBoard": 450,
+              "totalGames": 900,
+              "expectedTotal": 900,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              },
+              "searchSemantics": {
+                "1": {
+                  "requestedDepth": 1,
+                  "actualEffectiveDepth": "greedy captures + light eval (0 opponent reply plies)",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 0,
+                  "search": false,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": null,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; P1-centric evaluate absolute scale",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "2": {
+                  "requestedDepth": 2,
+                  "actualEffectiveDepth": "1 opponent full-turn reply after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 1,
+                  "search": true,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": 80,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "3": {
+                  "requestedDepth": 3,
+                  "actualEffectiveDepth": "2 opponent full-turn reply plies after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 2,
+                  "search": true,
+                  "rootBranchLimit": 80,
+                  "replyBranchLimit": 40,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; minimax on P1-centric evaluate",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                }
+              }
+            }
           }
         }
       ],
       "failedGates": [
-        "G2"
+        "G2",
+        "G9"
       ],
       "rejectTriggers": [],
-      "selectionVerdict": "REJECT",
-      "compareScriptVerdict": "KEEP"
+      "selectionVerdict": "NEEDS FURTHER TESTING"
     },
     "10": {
       "playable": "SHOLO_GUTI_10_BEAD_WITH_FEATURE.html",
@@ -1664,13 +2178,6 @@
                   "decisive": 12
                 }
               }
-            },
-            "d1Fpa": -14,
-            "d2": {
-              "p1": 10,
-              "p2": 0.6666666666666666,
-              "p1Caps": 7.193333333333333,
-              "p2Caps": 4.78
             }
           }
         },
@@ -1707,8 +2214,7 @@
           "pass": true,
           "detail": {
             "moveCapDrawPct": 89.33333333333333,
-            "repetitionDrawPct": 0,
-            "note": "reported separately; not a failure"
+            "repetitionDrawPct": 0
           }
         },
         {
@@ -1732,16 +2238,125 @@
         {
           "id": "G9",
           "name": "Same protocol",
-          "pass": true,
+          "pass": false,
           "detail": {
-            "protocol": "D1/D2/D3 seeds 101/202/303 N=50 moveCap 120"
+            "ok": false,
+            "issues": [
+              "nPerSeed=50 expected 30"
+            ],
+            "expected": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeed": 30,
+              "nPerSeedPerDepth": 30,
+              "moveCap": 120,
+              "firstPlayerBaseline": "P1",
+              "gamesPerBoard": 270,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: elimination%, captures, length, legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "terminologyNote": "Say elimination — not \"decisive\". move-cap is Lab harness safety only.",
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies.",
+                "termGlossary": {
+                  "elimination": "One player captured all opposing beads → win.",
+                  "stalemate": "Player to move has no legal move → opponent wins.",
+                  "moveCap": "Lab-only turn limit (e.g. 120). Stops endless games for batch testing. Not a traditional rule.",
+                  "repetition": "Same board+side-to-move appeared 3 times → draw.",
+                  "withWinner": "Game ended with a winner (elimination or stalemate). Not called \"decisive\".",
+                  "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
+                }
+              }
+            },
+            "received": {
+              "depths": [
+                1,
+                2,
+                3
+              ],
+              "seeds": [
+                101,
+                202,
+                303
+              ],
+              "nPerSeedPerDepth": 50,
+              "moveCap": 120,
+              "gamesPerBoard": 450,
+              "totalGames": 900,
+              "expectedTotal": 900,
+              "comparisonProtocol": {
+                "primaryDepth": 2,
+                "secondaryDepth": 3,
+                "primaryUse": "Contested play under honest 1-reply search: captures, length, legitimate draws (split rep vs move-cap), W/L when decisive, FPA when decisive sample exists",
+                "secondaryUse": "Longer-horizon attrition (2-reply) — never rank by D3 elimination%",
+                "drawsAreLegitimate": true,
+                "moveCapIsLabSafetyNotTraditionalRule": true,
+                "honestDepthNote": "D1=greedy, D2=1 opponent full-turn reply, D3=2 opponent full-turn replies. Do not expect old 0-reply D2 elimination spikes."
+              },
+              "searchSemantics": {
+                "1": {
+                  "requestedDepth": 1,
+                  "actualEffectiveDepth": "greedy captures + light eval (0 opponent reply plies)",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 0,
+                  "search": false,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": null,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; P1-centric evaluate absolute scale",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "2": {
+                  "requestedDepth": 2,
+                  "actualEffectiveDepth": "1 opponent full-turn reply after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 1,
+                  "search": true,
+                  "rootBranchLimit": 140,
+                  "replyBranchLimit": 80,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                },
+                "3": {
+                  "requestedDepth": 3,
+                  "actualEffectiveDepth": "2 opponent full-turn reply plies after own turn",
+                  "searchUnit": "complete turn",
+                  "opponentReplyPlies": 2,
+                  "search": true,
+                  "rootBranchLimit": 80,
+                  "replyBranchLimit": 40,
+                  "chainDepthLimit": 8,
+                  "depthCapMathMin": false,
+                  "evalNoise": false,
+                  "playerPerspective": "both maximize scoreForPlayer; minimax on P1-centric evaluate",
+                  "truncationRisk": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
+                }
+              }
+            }
           }
         }
       ],
-      "failedGates": [],
+      "failedGates": [
+        "G9"
+      ],
       "rejectTriggers": [],
-      "selectionVerdict": "NEEDS FURTHER TESTING",
-      "compareScriptVerdict": "NEEDS FURTHER TESTING"
+      "selectionVerdict": "NEEDS FURTHER TESTING"
     },
     "16": {
       "role": "REFERENCE ANCHOR",

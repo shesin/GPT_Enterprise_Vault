@@ -1,7 +1,7 @@
 'use strict';
 /**
  * Lab capability validation on known-good Sholo Guti calibration harness.
- * Depths 1/2/3 × seeds 101/202/303 × N=50 = 450 games. Plus reproducibility check.
+ * Depths 1/2/3 × seeds 101/202/303 × N=30 = 270 games. Plus reproducibility check.
  * Does not modify rules/geometry.
  */
 const fs = require('fs');
@@ -10,10 +10,13 @@ const vm = require('vm');
 const ROOT = __dirname;
 const FILE = 'SHOLO_GUTI_CALIBRATION.html';
 
-const DEPTHS = [1, 2, 3];
-const SEEDS = [101, 202, 303];
-const N = 50;
-const MOVE_CAP = 120;
+const protocol = require('./sholo-lab-protocol.cjs');
+
+const DEPTHS = protocol.DEPTHS;
+const SEEDS = protocol.SEEDS;
+const N = protocol.N_PER_SEED;
+const MOVE_CAP = protocol.MOVE_CAP;
+const EXPECTED_TOTAL = protocol.gamesPerBoard();
 
 function el(id, extra) {
   const o = {
@@ -156,7 +159,7 @@ function main() {
 
   const report = {
     totalGames: DEPTHS.length * SEEDS.length * N,
-    expectedTotal: 450,
+    expectedTotal: EXPECTED_TOTAL,
     moveCap: MOVE_CAP,
     seeds: SEEDS,
     nPerSeedPerDepth: N,
@@ -185,7 +188,7 @@ function main() {
   fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
   console.error('wrote ' + outPath);
-  if (report.totalGames !== 450) process.exit(2);
+  if (report.totalGames !== EXPECTED_TOTAL) process.exit(2);
   if (!reproducible) process.exit(3);
 }
 

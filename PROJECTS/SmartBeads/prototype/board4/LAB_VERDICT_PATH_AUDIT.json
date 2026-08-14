@@ -1,0 +1,53 @@
+{
+  "purpose": "Verdict-path audit — one authoritative evaluator per Lab family",
+  "authoritativeEvaluators": {
+    "sholo": [
+      "evaluate-ladder-lab.cjs"
+    ],
+    "cursorIndex": [
+      "evaluate-cursor-index-lab.cjs"
+    ]
+  },
+  "metricsOnlyCompareScripts": [
+    "compare-sholo-5-vs-16-lab.cjs",
+    "compare-sholo-6-vs-16-lab.cjs",
+    "compare-sholo-7-vs-16-lab.cjs",
+    "compare-sholo-8-vs-16-lab.cjs",
+    "compare-sholo-10-vs-16-lab.cjs"
+  ],
+  "scriptIssues": [],
+  "rogueVerdictEmitters": [],
+  "staleCompareJsonWithLegacyVerdict": [
+    {
+      "file": "SHOLO_10_VS_16_LAB_COMPARE.json",
+      "candidateVerdict": "NEEDS FURTHER TESTING",
+      "n": 50
+    },
+    {
+      "file": "SHOLO_5_VS_16_LAB_COMPARE.json",
+      "candidateVerdict": "NEEDS FURTHER TESTING",
+      "n": 50
+    },
+    {
+      "file": "SHOLO_6_VS_16_LAB_COMPARE.json",
+      "candidateVerdict": "NEEDS FURTHER TESTING",
+      "n": 50
+    },
+    {
+      "file": "SHOLO_7_VS_16_LAB_COMPARE.json",
+      "candidateVerdict": "NEEDS FURTHER TESTING",
+      "n": 50
+    },
+    {
+      "file": "SHOLO_8_VS_16_LAB_COMPARE.json",
+      "candidateVerdict": "KEEP",
+      "n": 50
+    }
+  ],
+  "canonicalN": 30,
+  "referenceValidationN": 30,
+  "nConsistent": true,
+  "codeVerdictPathClean": true,
+  "note": "Legacy compare JSON may retain candidateVerdict until candidate boards are re-tested at canonical N.",
+  "verdict": "CODE_PATHS_OK"
+}

@@ -317,12 +317,14 @@ From validated 16-bead reference (`LAB_16_BEAD_REFERENCE_VALIDATION.json`):
 
 **Establishing new numeric bands:** If the ladder adds a board size far from 16-bead, run PASS protocol first, then compare **capture-per-bead** (avgCaptures / starting beads) and **length ratio** to 16-bead — document the ratio in the board report. Do not copy 16-bead percentages as targets.
 
-#### Aliveness floor (G3/G4) — from existing compare guard, not a new score
+#### Aliveness floor (G3/G4) — from shared gate module, not compare scripts
 
-The 10-vs-16 compare script already encodes evidence-based REJECT floors (proven on real runs):
+`sholo-lab-gates.cjs` (used only by `evaluate-ladder-lab.cjs` and `evaluate-cursor-index-lab.cjs`) encodes evidence-based **REJECT triggers**:
 
 - **REJECT:** D1 and D2 both avgCaptures < 2 — no contested play.
 - **REJECT:** D2 avgLength < 5 — games end almost immediately.
+
+Compare scripts (`compare-sholo-*-vs-16-lab.cjs`) emit **metrics and geometry evidence only**. They must **not** emit KEEP / REJECT / NEEDS FURTHER TESTING. Run `evaluate-ladder-lab.cjs` for the authoritative G1–G9 **selectionVerdict**.
 
 These are **structural failure** detectors, not “quality scores.”
 
@@ -366,7 +368,7 @@ Any one of these → **REJECT** (stop ladder promotion; fix or abandon):
 Use a **decision table**, not a leaderboard:
 
 1. Run **validate-lab-16-bead-reference** (once per instrument change).
-2. For each candidate: geometry guards + same-protocol batch + gate checklist → PASS / REJECT / NEEDS FURTHER TESTING.
+2. For each candidate: geometry guards + same-protocol compare batch (metrics only) → run **evaluate-ladder-lab.cjs** for PASS / REJECT / NEEDS FURTHER TESTING.
 3. Eliminate all **REJECT** boards from KEEP consideration.
 4. Among **PASS** boards, compare **relative strengths** in prose:
    - **Session length** (D1 avgLength, D2 move-cap profile)
@@ -425,6 +427,53 @@ Use these **measured** values from `LAB_16_BEAD_REFERENCE_VALIDATION.json` (2026
 
 ---
 
+## Playable Level 1/2/3 vs Lab D1/D2/D3 (certification)
+
+Rules and geometry must match between browser playable and headless Lab. **AI depth labels are not interchangeable.**
+
+| | Browser playable (`SHOLO_GUTI.html`) | Headless Lab (`sholo-guti-fullturn-engine.cjs`) |
+|---|--------------------------------------|--------------------------------------------------|
+| Role | Human P1 vs AI P2 only | Symmetric AI-vs-AI batch |
+| Level 1 / D1 | Greedy max-captures; no opponent reply search | Greedy complete turn + light eval; 0 reply plies |
+| Level 2 / D2 | Static eval after own turn only (**0** opponent replies) | **1** opponent complete-turn reply |
+| Level 3 / D3 | One opponent complete-turn reply | **2** opponent complete-turn replies |
+| Randomness | Unseeded `Math.random()` tie-breaks | Seeded per game |
+| Repetition / move-cap | None in interactive play | 3-fold repetition draw + move-cap 120 |
+
+**Reporting rule:** Never imply Lab D2 metrics describe browser Level 2 human-vs-AI strength or game length. Canonical source: `sholo-lab-protocol.cjs` → `PLAYABLE_VS_LAB_DEPTH`.
+
+---
+
+## Authoritative verdict path (certification)
+
+| Script | May emit board verdict? |
+|--------|-------------------------|
+| `evaluate-ladder-lab.cjs` | **Yes** — sole Sholo ladder `selectionVerdict` |
+| `evaluate-cursor-index-lab.cjs` | **Yes** — sole Cursor Index `selectionVerdict` |
+| `compare-sholo-*-vs-16-lab.cjs` | **No** — metrics, diffs, geometry guards only |
+| `sholo-lab-gates.cjs` | Internal gate logic only (imported by evaluators) |
+
+Run `audit-lab-verdict-paths.cjs` after instrument changes to confirm no second verdict path exists.
+
+---
+
+## Canonical Sholo protocol (N, seeds, depths)
+
+Single source: **`sholo-lab-protocol.cjs`**
+
+- N per seed: **30**
+- Seeds: 101, 202, 303
+- Depths: 1, 2, 3
+- Move-cap: 120
+- Games per board: **270**
+- Games per compare run (candidate + reference): **540**
+
+Reference validation, compare scripts, and `evaluate-ladder-lab.cjs` G9 must all read this module. No hardcoded competing N values.
+
+Cursor Index family uses separate **`cursor-index-lab-protocol.cjs`** (N=50, move-cap 40) when that instrument is tested.
+
+---
+
 ## Instrument vs board verdict
 
 | Verdict type | Meaning |
@@ -445,7 +494,12 @@ Use these **measured** values from `LAB_16_BEAD_REFERENCE_VALIDATION.json` (2026
 | `final-validate-sholo-lab.cjs` | 25-check trust gate |
 | `validate-lab-16-bead-reference.cjs` | Reference validation + baseline batch |
 | `LAB_REPORT_16_BEAD_05P.md` | 16-bead baseline board-quality report |
-| `compare-sholo-*-vs-16-lab.cjs` | Same-protocol candidate compare (geometry guards + gates) |
+| `sholo-lab-protocol.cjs` | Canonical N/seeds/depths + playable-vs-Lab depth documentation |
+| `sholo-lab-gates.cjs` | Shared G1–G9 gate logic + authoritative `ladderVerdict()` |
+| `evaluate-ladder-lab.cjs` | Authoritative Sholo ladder G1–G9 **selectionVerdict** |
+| `evaluate-cursor-index-lab.cjs` | Authoritative Cursor Index G1–G9 **selectionVerdict** |
+| `audit-lab-verdict-paths.cjs` | Static audit — one verdict path per family |
+| `compare-sholo-*-vs-16-lab.cjs` | Same-protocol candidate compare — **metrics only** (no board verdict) |
 
 ---
 

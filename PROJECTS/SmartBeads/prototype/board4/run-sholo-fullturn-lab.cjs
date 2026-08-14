@@ -1,17 +1,19 @@
 'use strict';
 /**
  * Small Sholo Guti calibration using full-turn headless engine.
- * Depths 1/2/3 × seeds 101/202/303 × N=50 = 450 games. Move cap 120.
+ * Depths 1/2/3 × seeds 101/202/303 × N=30 = 270 games. Move cap 120.
  * Not a SmartBeads board ranking.
  */
 const fs = require('fs');
 const path = require('path');
 const engine = require('./sholo-guti-fullturn-engine.cjs');
+const protocol = require('./sholo-lab-protocol.cjs');
 
-const DEPTHS = [1, 2, 3];
-const SEEDS = [101, 202, 303];
-const N = 50;
-const MOVE_CAP = 120;
+const DEPTHS = protocol.DEPTHS;
+const SEEDS = protocol.SEEDS;
+const N = protocol.N_PER_SEED;
+const MOVE_CAP = protocol.MOVE_CAP;
+const EXPECTED_TOTAL = protocol.gamesPerBoard();
 const OLD_HOP_CALIBRATION = {
   source: 'SHOLO_LAB_CAPABILITY_VALIDATION.json (hop-based SHOLO_GUTI_CALIBRATION AI)',
   depth1_elimPct: 51.3,
@@ -95,7 +97,7 @@ function main() {
     purpose:
       'Technically transparent reproducible headless instrument calibration — NOT proof of fitness for ranking SmartBeads boards',
     totalGames: DEPTHS.length * SEEDS.length * N,
-    expectedTotal: 450,
+    expectedTotal: EXPECTED_TOTAL,
     moveCap: MOVE_CAP,
     seeds: SEEDS,
     nPerSeedPerDepth: N,
@@ -140,7 +142,7 @@ function main() {
   fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
   process.stderr.write('wrote ' + outPath + '\n');
-  if (report.totalGames !== 450) process.exit(2);
+  if (report.totalGames !== EXPECTED_TOTAL) process.exit(2);
   if (!reproducible) process.exit(3);
 }
 

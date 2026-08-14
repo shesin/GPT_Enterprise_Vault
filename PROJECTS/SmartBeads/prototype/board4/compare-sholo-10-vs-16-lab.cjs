@@ -10,11 +10,13 @@ const vm = require('vm');
 const eng16 = require('./sholo-guti-fullturn-engine.cjs');
 const eng10 = require('./sholo-10-bead-fullturn-engine.cjs');
 const metrics = require('./sholo-lab-metrics.cjs');
+const protocol = require('./sholo-lab-protocol.cjs');
 
-const DEPTHS = [1, 2, 3];
-const SEEDS = [101, 202, 303];
-const N_GAMES = 50;
-const MOVE_CAP = 120;
+const DEPTHS = protocol.DEPTHS;
+const SEEDS = protocol.SEEDS;
+const N_GAMES = protocol.N_PER_SEED;
+const MOVE_CAP = protocol.MOVE_CAP;
+const EXPECTED_TOTAL = protocol.gamesPerCompareRun();
 const HTML_10 = path.join(__dirname, 'SHOLO_GUTI_10_BEAD_WITH_FEATURE.html');
 const OUT = path.join(__dirname, 'SHOLO_10_VS_16_LAB_COMPARE.json');
 
@@ -93,71 +95,6 @@ function fingerprint(games) {
   return games
     .map((g) => [g.seed, g.endReason, g.winner, g.gameLength, g.totalCaptures].join(':'))
     .join('|');
-}
-
-function decideVerdict(geoOk, perDepth10, perDepth16, diffsD2) {
-  if (!geoOk) {
-    return {
-      candidateVerdict: 'REJECT',
-      reason: 'Lab geometry guard failed — results not trusted for this candidate.',
-    };
-  }
-  const d2_10 = perDepth10[2];
-  const d2_16 = perDepth16[2];
-  const d1_10 = perDepth10[1];
-
-  // Hard reject: broken / empty game
-  if (d1_10.avgCaptures < 2 && d2_10.avgCaptures < 2) {
-    return {
-      candidateVerdict: 'REJECT',
-      reason: 'Near-zero captures at D1/D2 — candidate does not produce contested play under Lab AI.',
-    };
-  }
-  if (d2_10.avgLength < 5) {
-    return {
-      candidateVerdict: 'REJECT',
-      reason: 'Games terminate almost immediately at primary depth — not a usable candidate.',
-    };
-  }
-
-  // Keep signal: contested captures at primary depth, not pathologically worse than baseline
-  const captureOk = d2_10.avgCaptures >= 8;
-  const relativeCaps = d2_16.avgCaptures > 0 ? d2_10.avgCaptures / d2_16.avgCaptures : null;
-  const notCollapsed =
-    d2_10.forcedWinPct < 100 || d2_10.avgCaptures >= 10;
-
-  if (captureOk && notCollapsed && relativeCaps != null && relativeCaps >= 0.45) {
-    // Still need human play + more N before product lock — but Lab says keep for further work
-    if (d2_10.moveCapDrawPct >= 85 && d2_16.moveCapDrawPct >= 85) {
-      return {
-        candidateVerdict: 'NEEDS FURTHER TESTING',
-        reason:
-          '10-bead shows contested captures similar in spirit to 16-bead, but both configs are ' +
-          'dominated by move-cap draws under honest D2 — larger N / longer move-cap / human play needed before KEEP.',
-      };
-    }
-    return {
-      candidateVerdict: 'KEEP',
-      reason:
-        'Primary-depth Lab shows contested play (captures/length) on verified 10-bead geometry; ' +
-        'not rejected vs 16-bead baseline under comparisonProtocol. Product feel still needs human review.',
-    };
-  }
-
-  if (d2_10.avgCaptures >= 5) {
-    return {
-      candidateVerdict: 'NEEDS FURTHER TESTING',
-      reason:
-        'Some contested play observed, but capture/length profile vs 16-bead baseline is ambiguous under current sample.',
-      diffsD2,
-    };
-  }
-
-  return {
-    candidateVerdict: 'REJECT',
-    reason: 'Insufficient contested-play signal at primary depth relative to 16-bead baseline.',
-    diffsD2,
-  };
 }
 
 function main() {
@@ -261,28 +198,21 @@ function main() {
   const b = runBatch(eng10, 2, 101, N_GAMES);
   const reproducible10 = fingerprint(a) === fingerprint(b);
 
-  const decision = decideVerdict(geoOk, sum10, sum16, diffsD2);
-
   const report = {
-    purpose: 'Compare 10-bead/5×5 candidate vs 16-bead standard under validated Sholo Lab protocol',
+    purpose: 'Compare 10-bead/5×5 candidate vs 16-bead standard — metrics and evidence only (no board verdict)',
+    authoritativeEvaluator: 'evaluate-ladder-lab.cjs',
     candidateFile: 'SHOLO_GUTI_10_BEAD_WITH_FEATURE.html',
     candidateEngine: 'sholo-10-bead-fullturn-engine.cjs',
     baselineEngine: 'sholo-guti-fullturn-engine.cjs',
-    protocol: {
-      depths: DEPTHS,
-      seeds: SEEDS,
-      nPerSeedPerDepth: N_GAMES,
-      moveCap: MOVE_CAP,
-      gamesPerBoard: DEPTHS.length * SEEDS.length * N_GAMES,
+    protocol: protocol.protocolMeta({
       totalGames,
-      expectedTotal: 900,
-      comparisonProtocol: metrics.COMPARISON_PROTOCOL,
+      expectedTotal: EXPECTED_TOTAL,
       searchSemantics: {
         1: eng10.describeSearchSemantics(1),
         2: eng10.describeSearchSemantics(2),
         3: eng10.describeSearchSemantics(3),
       },
-    },
+    }),
     geometryGuards: geo,
     geometryVerifiedNotSilent16Bead: geoOk,
     perDepth10: sum10,
@@ -291,25 +221,24 @@ function main() {
     perDepthPerSeed16,
     diffs: { depth1: diffsD1, depth2: diffsD2, depth3: diffsD3 },
     reproducibility10: { depth: 2, baseSeed: 101, n: N_GAMES, identical: reproducible10 },
-    candidateVerdict: decision.candidateVerdict,
-    verdictReason: decision.reason,
     elapsedMs: Date.now() - t0,
   };
 
   fs.writeFileSync(OUT, JSON.stringify(report, null, 2));
   console.log(JSON.stringify({
-    candidateVerdict: report.candidateVerdict,
     geometryVerifiedNotSilent16Bead: geoOk,
     totalGames,
+    expectedTotal: EXPECTED_TOTAL,
     reproducible10,
     d2_10: sum10[2],
     d2_16: sum16[2],
     diffsD2,
     elapsedMs: report.elapsedMs,
     out: OUT,
+    note: 'Board verdict: run evaluate-ladder-lab.cjs',
   }, null, 2));
-  process.stderr.write('verdict=' + report.candidateVerdict + ' wrote ' + OUT + '\n');
-  if (totalGames !== 900) process.exit(2);
+  process.stderr.write('metrics-only compare wrote ' + OUT + ' totalGames=' + totalGames + '\n');
+  if (totalGames !== EXPECTED_TOTAL) process.exit(2);
   if (!reproducible10) process.exit(3);
   if (!geoOk) process.exit(4);
 }

@@ -7,11 +7,13 @@
 - Sholo ladder: `LADDER_LAB_EVALUATION.json` (`evaluate-ladder-lab.cjs`)
 - Cursor Index 4×4: `CURSOR_INDEX_LAB_EVALUATION.json` (`evaluate-cursor-index-lab.cjs`)
 
-**Sholo protocol:** D1 / D2 / D3 · seeds 101, 202, 303 · N=50 per seed · move-cap **120** · P1 first · D2 swap batch (60/side).
+**Sholo protocol:** D1 / D2 / D3 · seeds 101, 202, 303 · **N=30** per seed (canonical: `sholo-lab-protocol.cjs`) · move-cap **120** · P1 first · D2 swap batch (60/side).
 
-**Cursor Index protocol:** D1 / D2 / D3 · seeds 101, 202, 303 · N=50 per seed · move-cap **40** · center rule **off** · Red first · headless via `GEMINI_LAB.html` · playable parity vs `CURSOR_INDEX_*.html`.
+**Note (2026-08-14):** Candidate compare JSON files (`SHOLO_*_VS_16_LAB_COMPARE.json`) may still reflect pre-fix N=50 batches until candidate boards are re-tested. Authoritative ladder verdicts require fresh compare runs + `evaluate-ladder-lab.cjs`. This report's candidate sections predate the ecosystem fix.
 
-**Lab instrument:** INSTRUMENT_VALID (Sholo trust gate 25/25 READY — re-run confirmed this session).
+**Playable vs Lab:** Lab D2 ≠ browser Level 2 — see `LAB_TERMINOLOGY_05P.md`.
+
+**Cursor Index protocol:** D1 / D2 / D3 · seeds 101, 202, 303 · N=50 per seed (`cursor-index-lab-protocol.cjs`) · move-cap **40** · center rule **off** · Red first · headless via `GEMINI_LAB.html` · playable parity vs `CURSOR_INDEX_*.html`.
 
 ---
 

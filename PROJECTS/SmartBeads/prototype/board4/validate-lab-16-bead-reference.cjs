@@ -11,11 +11,12 @@ const path = require('path');
 const { execSync } = require('child_process');
 const engine = require('./sholo-guti-fullturn-engine.cjs');
 const metrics = require('./sholo-lab-metrics.cjs');
+const protocol = require('./sholo-lab-protocol.cjs');
 
-const MOVE_CAP = 120;
-const BASELINE_DEPTHS = [1, 2, 3];
-const BASELINE_SEEDS = [101, 202, 303];
-const BASELINE_N = 30;
+const MOVE_CAP = protocol.MOVE_CAP;
+const BASELINE_DEPTHS = protocol.DEPTHS;
+const BASELINE_SEEDS = protocol.SEEDS;
+const BASELINE_N = protocol.N_PER_SEED;
 
 function runBatch(depth, seed, n, first, moveCap) {
   const games = [];
@@ -129,14 +130,8 @@ function main() {
       : null,
     checks,
     failed: failed.map((f) => f.name),
-    baselineProtocol: {
-      depths: BASELINE_DEPTHS,
-      seeds: BASELINE_SEEDS,
-      nPerSeed: BASELINE_N,
-      moveCap: MOVE_CAP,
-      totalBaselineGames,
-      firstPlayerBaseline: 'P1',
-    },
+    baselineProtocol: protocol.protocolMeta({ totalBaselineGames }),
+    playableVsLabDepth: protocol.PLAYABLE_VS_LAB_DEPTH,
     perDepth,
     perDepthPerSeed,
     firstPlayerSwap: { whenFirstP1, whenFirstP2 },
