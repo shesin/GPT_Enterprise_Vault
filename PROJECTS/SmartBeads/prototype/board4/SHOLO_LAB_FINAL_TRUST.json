@@ -545,6 +545,6 @@
     },
     "note": "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies. Branch caps can truncate; root moves are captures-first. Chain hops beyond depth 8 are not expanded."
   },
-  "elapsedMs": 86468,
+  "elapsedMs": 71638,
   "note": "READY means Lab+methodology are trustworthy for future SAME-GEOMETRY config compares under comparisonProtocol. Not a claim about Index 4/6 or Vision slices until board-spec injection exists. Honest D2 may show high move-cap draws; that is instrument realism, not failure."
 }

@@ -13,15 +13,42 @@ The verified repository is the implementation source of truth.
 Agent roles, approval tiers, workflow, safety rules, and the verification checklist are defined once in AGENT_RULE_05P.md — this file does not repeat them.
 
 ---
-# Instrument Verification Rule 
+# Instrument Verification & Certification Rule
 
-Before trusting ANY output from a testing tool, lab, or harness — and before asking for more runs, more depths, or more seeds — first verify the instrument itself is measuring what it claims to measure.
+Before trusting ANY output from a testing tool, lab, or harness — and
+before asking for more runs, more depths, or more seeds — verify the
+instrument itself is measuring what it claims to measure. Default
+hypothesis for surprising, unstable, or inconsistent results is the
+TOOL, not the subject, until calibrated against a known-correct
+reference.
 
-This applies specifically to:
+16-bead standard board = the Lab reference instrument. No board may
+receive KEEP / REJECT / NEEDS FURTHER TESTING until its engine is
+certified against the 16-bead reference protocol. Certify the
+instrument, not the board.
 
-- Any parameter passed to a test tool (e.g. "depth", "N", "seed") — confirm what the code actually does with that parameter before treating results across different parameter values as meaningful. A parameter can be silently capped, ignored, or reinterpreted without the report saying so.
-- Any tool producing results that look surprising, unstable, or inconsistent — the default hypothesis is the TOOL, not the subject being tested, until the tool has been calibrated against a known-correct reference.
+Before evaluating any new or modified board engine, produce a
+Protocol Diff vs the 16-bead reference: D1/D2/D3 depth semantics,
+search type (complete-turn vs hop/ply), capture-chain handling,
+PRNG/seeding and eval noise, move-cap, termination/repetition
+handling, and gate/evaluator logic. Geometry and piece count may
+differ — that's what's being tested. The measurement protocol must
+not silently differ.
 
+Any unexplained protocol difference is a STOP — do not verdict that
+engine's results until resolved and approved.
+
+ONE authoritative verdict evaluator only. Compare scripts, smoke
+tests, or other tools must not emit conflicting verdicts.
+
+Before accepting a final result, all must hold: reference certified;
+board engine certified; same protocol used across all comparable
+boards; every documented gate implemented by the authoritative
+evaluator; no hidden rejection conditions; anomalies investigated
+before rejection, not after; results reproducible; no open Lab/
+harness/parity/methodology issue.
+
+If any fail: status is NOT YET VERIFIED. Do not force KEEP/REJECT.
 ---
 # Terminology Clarity Rule
 

@@ -640,6 +640,6 @@
       "elimOrStalematePct": "Share of games ending by elimination or stalemate (legacy name: forcedWinPct)."
     }
   },
-  "elapsedMs": 323007,
+  "elapsedMs": 325632,
   "note": "INSTRUMENT_VALID means Lab parity, honest depths, reproducibility, and crash-free batches passed. High move-cap % at D2 on 16-bead is expected under honest search — not instrument failure."
 }
