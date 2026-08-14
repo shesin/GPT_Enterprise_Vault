@@ -56,21 +56,42 @@ Before explaining Lab results, metrics, or board comparisons to the human, **def
 
 Never use the word **decisive** as a synonym for elimination or for “games with a winner.”
 
-## Terms in active use (Lab / Sholo / SmartBeads)
+Keep it in lab_terminology_05P.md under smartbeads/prototype/board4
 
-| Term | Plain meaning |
-|------|----------------|
-| **Elimination** | One side captured all opposing beads → that side **wins**. This is a good, primary outcome. |
-| **Stalemate** | The player to move has no legal move → opponent wins. |
-| **Move-cap** | Lab-only turn limit (e.g. 120) so batch tests cannot run forever. **Not** a traditional Sholo rule. High move-cap % means games were still contested when the harness stopped — not automatically a “bad game.” |
-| **Repetition** | Same position (board + side that just moved) appeared 3 times → draw. |
-| **Games with a winner** | Ended by elimination or stalemate (P1 or P2 won). Prefer this phrase; never say “decisive.” |
-| **elimOrStalematePct** | % of games ending by elimination or stalemate. Legacy code may still print `forcedWinPct` for the same number. |
-| **Depth (D1 / D2 / D3)** | Honest AI search: D1 = greedy; D2 = 1 opponent full-turn reply; D3 = 2 opponent full-turn replies. |
-| **Seed / N** | Seed = RNG start for reproducibility; N = games per seed (or per batch). |
-| **FPA** | First-player advantage among games that had a winner. |
+### Result Reporting Rule
 
-When introducing a **new** metric or Lab term in a report, define it in one short sentence before using it.
+Every board result must be understandable without decoding Lab jargon.
+
+For any fairness/bias result, always state:
+- who moved first
+- who won more: first mover or second mover
+- exact win percentages for both sides
+- depth at which the result occurred
+
+Never say only "one side wins", "side skew", "bias", or "FPA".
+For every REJECT or NEEDS FURTHER TESTING result, state the exact
+failed/pending gate and the plain-language reason.
+
+Never change or soften a verdict without explaining exactly why.
+
+# Fix Discipline Rule
+
+"Fix" means the problem is actually gone — not relabeled, not softened,
+not partially resolved. Before reporting any fix as complete, confirm
+the original problem cannot recur, and confirm no OTHER already-passing
+result was broken by the fix. A fix that solves one thing while quietly
+changing another is not complete — report it as incomplete and explain
+the side effect.
+
+Every board must be tested through the exact same gate, same protocol,
+same evaluator. No board gets special-case logic.
+
+Every board's final status must be one clear category only:
+KEEP / REJECT / NEEDS FURTHER TESTING / REFERENCE / NOT YET VERIFIED
+No partial labels, no "REJECT but not really," no silent downgrades.
+
+If a fix changes the verdict of a board that was not the target of the
+fix, STOP and report it before proceeding further.
 
 Canonical glossary also lives in `prototype/board4/sholo-lab-metrics.cjs` (`TERM_GLOSSARY`) and SmartBeads `VISION_05P.md` (Smart Game Lab terms).
 

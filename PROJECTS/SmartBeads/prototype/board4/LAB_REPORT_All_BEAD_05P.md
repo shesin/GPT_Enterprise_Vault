@@ -11,6 +11,8 @@
 
 **Playable vs Lab:** Lab D2 ≠ browser Level 2 — see `LAB_TERMINOLOGY_05P.md`.
 
+**Result reporting:** Every fairness result below follows the Result Reporting Rule in `VISION/CURSOR_PROMPT_01.md` — who moved first, who won more (first mover or second mover), exact win percentages for both sides, depth, and failed/pending gate with plain-language reason. No verdict changes in this update.
+
 ---
 
 ## Verification status (2026-08-14 — target boards re-run)
@@ -39,10 +41,10 @@
 | **10** | **NEEDS FURTHER TESTING** | none | Unchanged — all G1–G9 pass |
 | **7** | **NEEDS FURTHER TESTING** | none | Unchanged — all G1–G9 pass |
 | **6** (3×5) | **NEEDS FURTHER TESTING** | none | Unchanged — all G1–G9 pass |
-| **8** | **REJECT** | **G2** | Second-mover wins ~73–77% on D2 swap (N=60). Investigated — structural, not Lab bug. |
-| **5** | **REJECT** | **G2** | D1 P2 wins **97.8%** (FPA −47.8 pp); swap 100% second-mover at D1. Investigated — structural. |
-| **Cursor Index 4** | **REJECT** | **G2** | Complete-turn protocol; D1 P2 **85.6%**; swap FPA gap > ±35 pp. |
-| **Cursor Index 6** | **NEEDS FURTHER TESTING** | none | All G1–G9 pass under certified protocol. **Remaining:** human playtest sign-off. |
+| **8** | **REJECT** | **G2** | **D2**, P1 opens: second mover wins **67.8%** (P1 **0%** / P2 **67.8%**); D2 capture ratio also fails G2. Swap: second mover wins **100%** of games with a winner either way. |
+| **5** | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **97.8%** (P1 **2.2%** / P2 **97.8%**). D1 swap: second mover wins **100%** of games with a winner. Structural — not a Lab bug. |
+| **Cursor Index 4** | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **85.6%** (P1 **14.4%** / P2 **85.6%**). Exceeds G2 ±35 pp limit → `g2_fairness_fail`. |
+| **Cursor Index 6** | **NEEDS FURTHER TESTING** | none | All G1–G9 pass. **D3** first mover P1 wins **95.6%** (P2 **0%**) — not a G2 input. **Remaining:** human playtest sign-off. |
 
 **No board receives KEEP** — KEEP requires human playtest per methodology.
 
@@ -98,9 +100,17 @@ All G1–G9 **PASS**. D2 capture rate matches 16-bead reference spirit (~12/game
 | D2 | 9.1 | 69.6 | 67.8% | 32.2% | **0% / 67.8%** |
 | D3 | 12.9 | 96.0 | 40.0% | 60.0% | 1% / 39% |
 
-**G2 investigation:** Parity confirmed; symmetric Lab AI; D2 swap (N=60) — second-mover wins **73% / 77%** depending on who moves first. Structural turn-order bias, not harness error.
+**Fairness (Result Reporting Rule):** Certified batch — P1 (Red) opens every game unless noted.
 
-**Authoritative verdict:** **REJECT** (`g2_fairness_fail`). Drop from ladder until geometry redesigned and re-tested.
+| Depth | Who opens | First mover wins | Second mover wins | Who wins more |
+|-------|-----------|------------------|-------------------|---------------|
+| **D2** (primary) | P1 | **0%** (0/90) | **67.8%** (61/90) | **Second mover** |
+| **D2 swap** | P1 | **0%** (0/38 among games with a winner) | **100%** (38/38 among games with a winner) | **Second mover** |
+| **D2 swap** | P2 | **0%** (0/47 among games with a winner) | **100%** (47/47 among games with a winner) | **Second mover** |
+
+**Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`). At **D2** with P1 opening, the second mover wins **67.8%** of all games (P1 **0%**). G2 also fails because **D2** average captures are skewed beyond the 2× limit (P2 **7.6**/game vs P1 **1.5**/game at avg length **69.6**). Swap batches confirm second-mover dominance regardless of who opens. Parity confirmed; symmetric Lab AI — structural, not harness error.
+
+**Authoritative verdict:** **REJECT**. Drop from ladder until geometry redesigned and re-tested.
 
 ---
 
@@ -112,7 +122,7 @@ All G1–G9 **PASS**. D2 capture rate matches 16-bead reference spirit (~12/game
 | D2 | 8.6 | 113.3 | 12.2% | 87.8% | 3% / 9% |
 | D3 | 11.2 | 100.1 | 42.2% | 57.8% | 3% / 39% |
 
-All G1–G9 **PASS**. D1 P2 skew −30 pp (within ±35 pp gate). Human playtest needed.
+All G1–G9 **PASS**. **D1**, P1 opens: first mover **20%**, second mover **80%** — second mover wins more, but within G2 limit. **Pending gate:** none (Lab). **Remaining test:** human playtest sign-off.
 
 ---
 
@@ -136,9 +146,16 @@ All G1–G9 **PASS**. D2 captures below 16-bead reference (~12) but above alive 
 | D2 | 5.2 | 111.3 | 21.1% | 78.9% | 14% / 7% |
 | D3 | 7.1 | 109.5 | 26.7% | 73.3% | 12% / 14% |
 
-**G2 investigation:** D1 P2 wins **88/90** (FPA **−47.8 pp**); D1 swap audit — second-mover wins **100%**. Parity confirmed; not a Lab bug.
+**Fairness (Result Reporting Rule):** Certified batch — P1 (Red) opens every game.
 
-**Authoritative verdict:** **REJECT** (`g2_fairness_fail`). Drop until geometry/facing redesigned.
+| Depth | Who opens | First mover wins | Second mover wins | Who wins more |
+|-------|-----------|------------------|-------------------|---------------|
+| **D1** | P1 | **2.2%** (2/90) | **97.8%** (88/90) | **Second mover** |
+| **D1 swap** | either | first mover **0%** among games with a winner | second mover **100%** among games with a winner | **Second mover** |
+
+**Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`). At **D1** with P1 opening, the second mover wins **97.8%** of all games — beyond the ±35 pp G2 limit. Parity confirmed; not a Lab bug.
+
+**Authoritative verdict:** **REJECT**. Drop until geometry/facing redesigned.
 
 ---
 
@@ -148,11 +165,24 @@ All G1–G9 **PASS**. D2 captures below 16-bead reference (~12) but above alive 
 
 | Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
 |-------|-------------|-----------|-------------|---------------|-------------|
-| D1 | 4.2 | 9.5 | 100% | 0% | 14% / **86%** |
+| D1 | 4.2 | 9.5 | 100% | 0% | 14.4% / **85.6%** |
 | D2 | 3.8 | 111.5 | 8.9% | 91.1% | **0% / 8.9%** |
-| D3 | 5.3 | 99.3 | 26.7% | 73.3% | 21% / 6% |
+| D3 | 5.3 | 99.3 | 26.7% | 73.3% | 21.1% / 5.6% |
 
-**Gates:** G1/G3–G9 pass · **G2 FAIL** → **REJECT** (`g2_fairness_fail`). D1 FPA −35.6 pp; swap FPA gap exceeds ±35 pp rule.
+**Fairness (Result Reporting Rule):** Certified batch — P1 (Red) opens every game unless noted.
+
+| Depth | Who opens | First mover wins | Second mover wins | Who wins more |
+|-------|-----------|------------------|-------------------|---------------|
+| **D1** | P1 | **14.4%** (13/90) | **85.6%** (77/90) | **Second mover** |
+| **D2** | P1 | **0%** (0/90 overall; 0/8 among games with a winner) | **8.9%** (8/90 overall; 8/8 among games with a winner) | **Second mover** |
+| **D2 swap** | P1 | **0%** (0/17 among games with a winner) | **100%** (17/17 among games with a winner) | **Second mover** |
+| **D2 swap** | P2 | **14.3%** (1/7 among games with a winner) | **85.7%** (6/7 among games with a winner) | **Second mover** |
+
+**Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`).
+
+**Depth responsible:** **D1** (greedy). With P1 opening, the second mover wins **85.6%** vs the first mover **14.4%** — the first-mover/second-mover gap exceeds the G2 ±35 percentage-point limit (90 decisive games, no draws). D2 swap batches show the same second-mover advantage pattern but did not alone exceed the swap FPA gap rule; **D1 is the condition that failed G2**.
+
+G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 ---
 
@@ -162,13 +192,25 @@ All G1–G9 **PASS**. D2 captures below 16-bead reference (~12) but above alive 
 
 | Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
 |-------|-------------|-----------|-------------|---------------|-------------|
-| D1 | 8.7 | 11.0 | 100% | 0% | 33% / 67% |
-| D2 | 6.8 | 111.9 | 14.4% | 85.6% | 7% / 8% |
-| D3 | 8.5 | 45.5 | 95.6% | 2.2% | 96% / 0% |
+| D1 | 8.7 | 11.0 | 100% | 0% | 33.3% / 66.7% |
+| D2 | 6.8 | 111.9 | 14.4% | 85.6% | 6.7% / 7.8% |
+| D3 | 8.5 | 45.5 | 95.6% | 2.2% | **95.6% / 0%** |
 
-All G1–G9 **PASS** at primary depth (D2 avgCaptures 6.8, swap capture symmetry within ±3).
+**Fairness (Result Reporting Rule):** Certified batch — P1 (Red) opens every game unless noted.
 
-**Remaining test before KEEP:** human playtest sign-off (Gameplay / UX Review) — Lab cannot satisfy this alone.
+| Depth | Who opens | First mover wins | Second mover wins | Who wins more |
+|-------|-----------|------------------|-------------------|---------------|
+| **D1** | P1 | **33.3%** (30/90) | **66.7%** (60/90) | **Second mover** (within G2 limit) |
+| **D2** (primary Lab depth) | P1 | **6.7%** (6/90) | **7.8%** (7/90) | Near even among all games; among 13 games with a winner: P1 **46.2%**, P2 **53.8%** |
+| **D2 swap** | P1 | **45.5%** among games with a winner | **54.5%** among games with a winner | Near even |
+| **D2 swap** | P2 | **27.3%** among games with a winner | **72.7%** among games with a winner | Second mover wins more (gap **18.2 pp** — within G2 ±35 pp swap rule) |
+| **D3** | P1 | **95.6%** (86/90) | **0%** (0/90) | **First mover** |
+
+**Why G2 does not trigger on D3:** G2 fairness inputs are **D1 greedy batch**, **D2 primary-depth batch**, and **D2 first-player swap batches** only — plus capture symmetry on swap. **D3 is not a G2 input.** At D1 and D2 (and D2 swap), win rates stay within G2 limits; swap average captures differ by less than 3 per game.
+
+**Failed gate:** none — all G1–G9 **PASS**.
+
+**Remaining test before KEEP:** human playtest sign-off (Gameplay / UX Review). Lab cannot grant KEEP alone. The **D3** first-mover **95.6%** win rate (P1 opens, P2 **0%**) is recorded for human review; it did not fail any Lab gate.
 
 ---
 
@@ -176,7 +218,7 @@ All G1–G9 **PASS** at primary depth (D2 avgCaptures 6.8, swap capture symmetry
 
 **D2 capture activity vs 16-bead reference (~11.7):** 10-bead 12.0 ✓ · 8-bead 9.1 · 7-bead 8.6 · 6-bead 6.0 · 5-bead 5.2.
 
-**Fairness:** 5-bead, 8-bead, and Cursor Index 4 **REJECT** on G2 (investigated). Cursor Index 6 passes all gates — human playtest pending.
+**Fairness:** 5-bead (**D1**, second mover **97.8%**), 8-bead (**D2**, second mover **67.8%** when P1 opens), and Cursor Index 4 (**D1**, second mover **85.6%**) **REJECT** on **G2**. Cursor Index 6 passes all gates — **D3** first-mover **95.6%** noted but not a G2 input; human playtest pending.
 
 ---
 
@@ -228,4 +270,4 @@ All G1–G9 **PASS** at primary depth (D2 avgCaptures 6.8, swap capture symmetry
 
 ---
 
-*SmartBeads Lab — target board update 2026-08-14. G2 fix + Cursor Index complete-turn engine. No rules, geometry, AI strength, thresholds, or 16-bead reference modified.*
+*SmartBeads Lab — reporting clarification 2026-08-14. Result Reporting Rule applied to Cursor Index 4/6 and other board fairness results. No Lab re-run; no verdict, methodology, threshold, geometry, AI, or gate changes.*
