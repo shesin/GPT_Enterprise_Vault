@@ -1,6 +1,7 @@
-# Lab Report: 16-Bead Sholo Guti (Reference Baseline)
+# Web Report: 16-Bead Sholo Guti (Reference Baseline)
 
 **Date:** 2026-08-13  
+**Location:** SmartBeads root — Web JSON/engines in `prototype/board4/`  
 **Board:** Standard 16-bead Sholo Guti (37 intersections, 16 vs 16)  
 **Sources:** `SHOLO_GUTI.html`, `sholo-guti-fullturn-engine.cjs`  
 **Validation:** `validate-lab-16-bead-reference.cjs` → `LAB_16_BEAD_REFERENCE_VALIDATION.json`  
@@ -12,13 +13,13 @@
 
 | Item | Result |
 |------|--------|
-| **Lab instrument** | **INSTRUMENT_VALID** (trust gate 25/25 READY + crash-free batches) |
+| **Web instrument** | **INSTRUMENT_VALID** (trust gate 25/25 READY + crash-free batches) |
 | **16-bead certification** | See § Instrument certification below |
 | **16-bead board verdict** | **GOOD** |
 
-The standard 16-bead game is a **healthy reference board** for Lab calibration. Rules, geometry, captures, and honest AI depths behave as designed. Primary-depth (D2) batches mostly reach the **120-turn Lab move-cap** before elimination — that is an expected **measurement profile** under honest 1-reply search, not evidence the board is broken.
+The standard 16-bead game is a **healthy reference board** for Web calibration. Rules, geometry, captures, and honest AI depths behave as designed. Primary-depth (D2) batches mostly reach the **120-turn Web move-cap** before elimination — that is an expected **measurement profile** under honest 1-reply search, not evidence the board is broken.
 
-**Product timers, shot clocks, and BGM were not evaluated in this report** (see § Product vs Lab).
+**Product timers, shot clocks, and BGM were not evaluated in this report** (see § Product vs Web).
 
 ---
 
@@ -28,9 +29,9 @@ The standard 16-bead game is a **healthy reference board** for Lab calibration. 
 |-----|--------|
 | One authoritative verdict (`evaluate-ladder-lab.cjs`) | Applied — compare scripts metrics-only |
 | One canonical N=30 (`sholo-lab-protocol.cjs`) | Applied |
-| Playable L1/L2/L3 ≠ Lab D1/D2/D3 documented | Applied — `LAB_TERMINOLOGY_05P.md` |
+| Playable L1/L2/L3 ≠ Web D1/D2/D3 documented | Applied — `LAB_TERMINOLOGY_05P.md` |
 
-**Playable vs Lab:** Browser Level 2 uses static eval with **zero** opponent reply plies (human P1 vs AI P2). Lab D2 uses **one** opponent complete-turn reply in symmetric AI-vs-AI. **Never equate Lab D2 metrics with browser Level 2.**
+**Playable vs Web:** Browser Level 2 uses static eval with **zero** opponent reply plies (human P1 vs AI P2). Web D2 uses **one** opponent complete-turn reply in symmetric AI-vs-AI. **Never equate Web D2 metrics with browser Level 2.**
 
 **Verdict path:** `selectionVerdict` from `evaluate-ladder-lab.cjs` only. Compare scripts emit metrics for G9 and gate inputs.
 
@@ -42,8 +43,8 @@ The standard 16-bead game is a **healthy reference board** for Lab calibration. 
 
 | Check | Result | Plain meaning |
 |-------|--------|----------------|
-| Playable ↔ Lab parity (N=37, edges, coords, start counts) | PASS | Headless engine matches `SHOLO_GUTI.html` |
-| Opening legal move count (P1) | PASS | 13 opening moves — same in playable and Lab |
+| Playable ↔ Web parity (N=37, edges, coords, start counts) | PASS | Headless engine matches `SHOLO_GUTI.html` |
+| Opening legal move count (P1) | PASS | 13 opening moves — same in playable and Web |
 | Capture chains (optional stop + continue) | PASS | Capture Optionality honoured in turn enumeration |
 | D1 / D2 / D3 semantics | PASS | Greedy / 1-reply / 2-reply — not capped or faked |
 | P1 and P2 capture preference | PASS | Both sides prefer captures when available |
@@ -75,7 +76,7 @@ The standard 16-bead game is a **healthy reference board** for Lab calibration. 
 
 **Conclusion:** Board supports fast, capture-rich endings under greedy AI. Good sanity signal.
 
-### D2 — primary Lab depth (1 opponent reply)
+### D2 — primary Web Depth (1 opponent reply)
 
 | Metric | Value | Plain explanation |
 |--------|-------|-------------------|
@@ -86,7 +87,7 @@ The standard 16-bead game is a **healthy reference board** for Lab calibration. 
 | avgCaptures | **11.7** | Material still exchanged — not frozen |
 | Games with a winner | **1.1%** | Too few to trust FPA |
 
-**Conclusion:** Under honest D2 + 120 move-cap, 16-bead attrition dominates. **High move-cap % does not mean broken board** — it means the Lab stop arrived before elimination in this AI regime. Use D2 for **captures, length, and draw split**, not elimination ranking alone.
+**Conclusion:** Under honest D2 + 120 move-cap, 16-bead attrition dominates. **High move-cap % does not mean broken board** — it means the Web stop arrived before elimination in this AI regime. Use D2 for **captures, length, and draw split**, not elimination ranking alone.
 
 ### D3 — secondary depth (2 opponent replies)
 
@@ -107,20 +108,20 @@ The standard 16-bead game is a **healthy reference board** for Lab calibration. 
 | Ruler | Assessment | Evidence |
 |-------|------------|----------|
 | **BREAKAGE** | **PASS** | No crashes; legal endings; parity 25/25; no stuck zero-turn games |
-| **FAIRNESS** | **PASS (Lab)** | D1 FPA ≈ +2 pp; first-player swap capture volume 12.69 vs 12.81 (within 3) |
+| **FAIRNESS** | **PASS (Web)** | D1 FPA ≈ +2 pp; first-player swap capture volume 12.69 vs 12.81 (within 3) |
 | **ALIVENESS** | **PASS** | D2 avg 11.7 captures; D3 avg 24.1; D1 avg 27.6 |
-| **GAME ENDING** | **PASS (rules)** / **Lab note** | Elimination/stalemate/repetition all implemented; D2 mostly move-cap under current settings |
+| **GAME ENDING** | **PASS (rules)** / **Web note** | Elimination/stalemate/repetition all implemented; D2 mostly move-cap under current settings |
 | **CAPTURE DYNAMICS** | **PASS** | Optional chain stop/continue enumerated; no abnormal instant collapse |
 | **AI RELIABILITY** | **PASS** | D1/D2/D3 regimes differ; reproducible; branch limits documented |
 | **STABILITY** | **PASS** | D1 per-seed elimination 100% across 101/202/303; metrics partition correctly |
 
 ---
 
-## 4. Product vs Lab (Step 4)
+## 4. Product vs Web (Step 4)
 
-| Area | Headless Lab | Human playable |
+| Area | Headless Web | Human playable |
 |------|--------------|----------------|
-| Board rules & captures | **Measured** | Must match Lab (parity verified) |
+| Board rules & captures | **Measured** | Must match Web (parity verified) |
 | Match timer (min) | **Not measured** | Separate product test |
 | Turn shot clock (sec) | **Not measured** | Separate product test |
 | BGM, undo, UI | **Not measured** | Separate product test |
@@ -135,11 +136,11 @@ Timer code correctness **does not** prove timer values are good for humans.
 
 **Why GOOD**
 
-1. **Instrument-validated reference** — playable and Lab engine agree on geometry, start position, and opening moves.
+1. **Instrument-validated reference** — playable and Web engine agree on geometry, start position, and opening moves.
 2. **No breakage** — 270 baseline games + 120 crash-check games completed without illegal or stuck states.
 3. **Alive, contested play** — captures throughout at all depths; D1 shows natural eliminations; D3 shows deeper attrition.
 4. **Legitimate endings** — elimination, stalemate, repetition, and move-cap are all handled correctly.
-5. **Fair enough for Lab** — D1 balance near 50/50; capture symmetry when swapping first player under D2 move-cap regime.
+5. **Fair enough for Web** — D1 balance near 50/50; capture symmetry when swapping first player under D2 move-cap regime.
 
 **Caveats (not downgrades to BROKEN)**
 
@@ -165,7 +166,7 @@ Each candidate report (10/8/7/6/5/4…) should follow this structure:
 6. **Mandatory gate checklist (G1–G9)** → PASS / REJECT / NEEDS FURTHER TESTING
 7. **Comparative rationale** vs 16-bead reference bands (and vs other ladder members if known)
 8. **Selection verdict:** PASS / REJECT / NEEDS FURTHER TESTING / KEEP (KEEP only after human playtest)
-9. Explicit separation of Lab vs product features
+9. Explicit separation of Web vs product features
 
 See **Board selection criteria** in `LAB_TERMINOLOGY_05P.md` for KEEP requirements and automatic REJECT triggers.
 
@@ -209,4 +210,4 @@ See **Board selection criteria** in `LAB_TERMINOLOGY_05P.md` for KEEP requiremen
 
 ---
 
-*SmartBeads Lab — 16-bead reference baseline. Candidate boards use Board selection criteria in LAB_TERMINOLOGY_05P.md.*
+*SmartBeads Web — 16-bead reference baseline. Candidate boards use Board selection criteria in LAB_TERMINOLOGY_05P.md.*

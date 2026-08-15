@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 /**
- * Headless 5-bead / 3×5 Lab engine.
- * Geometry + start match SHOLO_GUTI_5_BEAD_WITH_FEATURE.html.
+ * Headless 3-bead / 3×5 Lab engine.
+ * Geometry + start match SHOLO_GUTI_3_BEAD_WITH_FEATURE.html.
  * Search/AI identical to sholo-guti-fullturn-engine.cjs (honest D1/D2/D3).
  */
 
@@ -89,8 +89,8 @@ function startingBoard() {
   const b = new Array(N).fill(0);
   for (let i = 0; i < N; i++) {
     const p = NODES[i];
-    if (p.y === 0 || (p.y === 2 && p.x !== 2)) b[i] = P2;
-    else if (p.y === 8 || (p.y === 6 && p.x !== 2)) b[i] = P1;
+    if (p.y === 0) b[i] = P2;
+    else if (p.y === 8) b[i] = P1;
   }
   return b;
 }

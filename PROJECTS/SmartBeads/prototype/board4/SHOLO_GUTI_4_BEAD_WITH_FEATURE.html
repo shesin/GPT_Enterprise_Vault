@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sholo Guti 5 Bead 3x5 With Features</title>
+  <title>Sholo Guti 4 Bead With Features</title>
   <style>
     :root {
       --bg: #0f2019;
@@ -174,8 +174,8 @@
         </div>
         <div class="timer" id="p2-clock">--:--</div>
       </div>
-      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">5</span></div>
-      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">5</span></div>
+      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">4</span></div>
+      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">4</span></div>
       <div class="stat"><span>P1 captures</span><span class="val" id="p1-caps">0</span></div>
       <div class="stat"><span>P2 captures</span><span class="val" id="p2-caps">0</span></div>
       <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
@@ -238,7 +238,7 @@
             <option value="off" selected>Off</option>
             <option value="endgame">End-Game</option>
           </select>
-          <div class="tiny">3×5 · 5 vs 5. Full row 1 + outer row 2 · Row 3 amber centre · Ivory bottom. You play from the bottom.</div>
+          <div class="tiny">3×5 · 4 vs 4. Outer columns rows 1–2 · Row 3 amber centre · Ivory bottom. You play from the bottom.</div>
         </div>
         <div class="setting">
           <label>Move highlight</label>
@@ -304,7 +304,7 @@
   const P1 = 1, P2 = 2;
   const STATE = { IDLE: 'IDLE', SELECTED: 'SELECTED', CHAIN_JUMPING: 'CHAIN_JUMPING', GAME_OVER: 'GAME_OVER' };
 
-  // 3×5 lattice — 5-bead 3×5 slice: full row 1 + outer row 2, row 3 empty + amber centre, rows 4–5 Ivory bottom.
+  // 3×5 lattice — 4-bead slice: sketch geometry from 6-bead 3×5, row 3 empty + amber centre, rows 4–5 Ivory bottom.
   const COLS = 3;
   const ROWS = 5;
   const NODES = [];
@@ -338,11 +338,11 @@
 
   function startingBoard() {
     const b = new Array(N).fill(0);
-    // 5 vs 5: P2 (Ebony) row 1 + outer row 2; row 3 empty; P1 (Ivory) row 5 + outer row 4.
+    // 4 vs 4: P2 (Ebony) outer cols rows 1–2; row 3 empty; P1 (Ivory) outer cols rows 4–5.
     for (let i = 0; i < N; i++) {
       const p = NODES[i];
-      if (p.y === 0 || (p.y === 2 && p.x !== 2)) b[i] = P2;
-      else if (p.y === 8 || (p.y === 6 && p.x !== 2)) b[i] = P1;
+      if ((p.y === 0 || p.y === 2) && p.x !== 2) b[i] = P2;
+      else if ((p.y === 6 || p.y === 8) && p.x !== 2) b[i] = P1;
     }
     return b;
   }
@@ -1166,7 +1166,7 @@
   });
   canvas.addEventListener('click', handleCanvasClick);
 
-  window.__SHOLO_GUTI_5_FEATURE__ = {
+  window.__SHOLO_GUTI_4_FEATURE__ = {
     P1, P2, STATE, N, NODES, ADJ, NODE_INDEX,
     getBoard: () => board.slice(),
     getTurn: () => currentTurn,

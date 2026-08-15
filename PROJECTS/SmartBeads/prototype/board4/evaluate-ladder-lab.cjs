@@ -41,6 +41,13 @@ const CANDIDATES = [
     playable: 'SHOLO_GUTI_6_BEAD_WITH_FEATURE.html',
   },
   {
+    beads: 4,
+    engine: './sholo-4-bead-fullturn-engine.cjs',
+    compareJson: 'SHOLO_4_VS_16_LAB_COMPARE.json',
+    perDepthKey: 'perDepthSlice',
+    playable: 'SHOLO_GUTI_4_BEAD_WITH_FEATURE.html',
+  },
+  {
     beads: 5,
     engine: './sholo-5-bead-fullturn-engine.cjs',
     compareJson: 'SHOLO_5_VS_16_LAB_COMPARE.json',

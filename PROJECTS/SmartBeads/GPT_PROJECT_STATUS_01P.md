@@ -16,17 +16,13 @@ Target: 01P (~1 page)
 
 ## Current Phase
 
-Core Engine Evaluation & Playtesting
+Sholo ladder Web evaluation & human playtest scheduling
 
 ---
 
 ## Current Focus
 
-Evaluate Board4 using AI self-play and developer playtesting with:
-
-- Slides
-- Optional captures
-- Multi-jump chains
+Headless G1–G9 board selection on the Sholo Guti ladder (4–16 bead variants + Cursor Index 4×4), with human playtest sign-off for boards that pass all Web gates.
 
 ---
 
@@ -34,45 +30,27 @@ Evaluate Board4 using AI self-play and developer playtesting with:
 
 - Project migrated into GPT_Enterprise_Vault.
 - BoardDefinition established as the authoritative board model.
-- Registered board variants in BoardConfig:
-  - Board4: fully implemented and playable (4×4 orthogonal grid with jumpPaths, center nodes, and ply limits).
-  - Board5: registered stub.
-  - Board6: registered stub.
-  - Board7: registered stub.
-- SmartBeadsEngine capabilities:
-  - legal slides
-  - optional captures
-  - multi-jump chains
-  - voluntary endTurn
-  - ply limits (configurable per board)
-  - capture-count victories & center tie-break logic
-  - countPieces(playerId) utility
-- SelfPlayRunner simulation module:
-  - automated game execution
-  - random legal move selection (`executeAiRandomMove`)
-  - alternating starting players
-  - safety guards & GameResult metric tracking
-  - machine-readable JSON batch reporting (`generateBatchReport` / `npm run sim:board4`)
-  - verified 100-game Board4 self-play run
-- Playtest interfaces for Board4:
-  - HumanVsAiRunner CLI interface (`npm run play:board4`).
-  - Browser SVG web playtest GUI (`npm run web:board4`) — CONFIRMED loading and rendering: directly observed via headless-browser console log and DOM dump showing the SVG board rendering all 16 nodes/connections with correct RED/BLUE starting piece placement and no console errors. Interactive click-to-move gameplay (piece selection, capture chains, AI turn execution) has NOT yet been directly observed end-to-end.
+- Registered board variants in BoardConfig (Board4–Board7).
+- SmartBeadsEngine: slides, captures, multi-jump chains, endTurn, ply limits, capture-count victories.
+- SelfPlayRunner + HumanVsAiRunner CLI + browser SVG playtest GUI (`npm run web:board4`).
+- **16-bead Sholo reference:** Web instrument certified — see `WEB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`.
+- **Sholo ladder G1–G9 (authoritative):** `evaluate-ladder-lab.cjs` → `LADDER_LAB_EVALUATION.json`; consolidated verdicts in `WEB_REPORT_All_BEAD_05P.md`.
+- **4-bead & 5-bead (3×5 sketch):** evaluated 2026-08-14 — both **REJECT** (G2, D1 second-mover 100%).
+- **8-bead, Cursor Index 4:** **REJECT** (G2). **10, 7, 6-bead, Cursor Index 6:** **NEEDS FURTHER TESTING** — human playtest pending.
+- **3-bead sketch:** dropped — not tested.
+- Web documentation at SmartBeads root: `LAB_TERMINOLOGY_05P.md`, `WEB_REPORT_16_BEAD_05P.md`, `WEB_REPORT_All_BEAD_05P.md`.
 
 ---
 
 ## Open Items
 
-- Web GUI end-of-game display: the `gameOver` banner element exists in the markup but announcing the winner/loser/draw at game end has not been directly observed working.
-- Ply-limit tie-breaker center-node-control logic (`SmartBeadsEngine.evaluateWinner`) needs verification against real gameplay — currently only exercised by automated self-play, not confirmed against a human-played scenario that actually reaches the ply limit with a center-node tiebreak.
-- AI opponent strength is undecided: the current playtest/self-play AI (`executeAiRandomMove`) is random-legal-move-only by design, intended for engine validation and balance analysis, not competitive strength. Whether a stronger AI (e.g. heuristic or minimax) is needed for meaningful human playtesting is an open question, not yet decided.
+None — all requested ladder Web runs and report updates for 4/5-bead 3×5 are complete. Human playtest for 10/7/6-bead and Cursor Index 6 is the next human-owned step, not a pending engineering item.
 
 ---
 
 ## Next Step
 
-Collect empirical AI self-play data and conduct developer playtesting on Board4 to measure balance, game length, and first-player advantage.
-
-Only after sufficient evidence should larger board variants become the primary research focus.
+Schedule human playtest for **10-bead**, **7-bead**, **6-bead (3×5)**, and **Cursor Index 6** (all Web gates pass). Do not promote **4-bead**, **5-bead (3×5)**, **8-bead**, or **Cursor Index 4** until geometry is redesigned and re-evaluated.
 
 ---
 
@@ -100,6 +78,6 @@ Only after sufficient evidence should larger board variants become the primary r
 
 ## Current Objective
 
-Develop the strongest possible four-bead game before expanding the platform to larger variants.
+Find the smallest balanced, enjoyable Sholo ladder candidate that passes Web G1–G9 and human playtest before expanding the production TypeScript engine to new variants.
 
 Quality takes priority over feature count.

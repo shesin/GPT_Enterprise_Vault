@@ -56,7 +56,7 @@ Before explaining Lab results, metrics, or board comparisons to the human, **def
 
 Never use the word **decisive** as a synonym for elimination or for “games with a winner.”
 
-Keep it in lab_terminology_05P.md under smartbeads/prototype/board4
+Keep it in `LAB_TERMINOLOGY_05P.md` under `PROJECTS/SmartBeads/`
 
 ### Result Reporting Rule
 

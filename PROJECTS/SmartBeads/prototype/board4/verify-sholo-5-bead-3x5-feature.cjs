@@ -1,0 +1,74 @@
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const FILE = path.join(__dirname, 'SHOLO_GUTI_5_BEAD_3X5_WITH_FEATURE.html');
+const ENGINE = './sholo-5-bead-3x5-fullturn-engine.cjs';
+
+function assert(ok, msg) {
+  if (!ok) throw new Error(msg);
+}
+function el(id, extra) {
+  return Object.assign({
+    id, style: {}, value: '', disabled: false, textContent: '', dataset: {},
+    classList: { toggle() {}, add() {}, remove() {} },
+    addEventListener() {},
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 360, height: 360 }),
+    getContext: () => ({
+      clearRect() {}, fillRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, fill() {}, arc() {},
+      save() {}, restore() {}, closePath() {}, strokeRect() {},
+      createLinearGradient() { return { addColorStop() {} }; },
+      createRadialGradient() { return { addColorStop() {} }; },
+    }),
+    width: 560, height: 560,
+  }, extra || {});
+}
+
+const html = fs.readFileSync(FILE, 'utf8');
+const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
+const elements = {
+  'game-mode-select': el('game-mode-select', { value: 'pve' }),
+  'ai-level-select': el('ai-level-select', { value: '2' }),
+  'center-rule-select': el('center-rule-select', { value: 'off' }),
+  'match-timer-select': el('match-timer-select', { value: 'off' }),
+  'shot-clock-select': el('shot-clock-select', { value: 'off' }),
+  'move-highlight-select': el('move-highlight-select', { value: 'on', dataset: {} }),
+  board: el('board'), status: el('status'), 'finish-btn': el('finish-btn'), 'undo-btn': el('undo-btn'),
+  'restart-btn': el('restart-btn'), 'play-again-btn': el('play-again-btn'),
+  'result-modal': el('result-modal'), 'result-title': el('result-title'), 'result-desc': el('result-desc'),
+  'p1-role': el('p1-role'), 'p2-role': el('p2-role'),
+  'p1-pieces': el('p1-pieces'), 'p2-pieces': el('p2-pieces'), 'p1-caps': el('p1-caps'), 'p2-caps': el('p2-caps'),
+  'turn-count': el('turn-count'), 'shot-clock-val': el('shot-clock-val'), 'match-clock-val': el('match-clock-val'),
+  'p1-clock': el('p1-clock'), 'p2-clock': el('p2-clock'), 'pill-p1': el('pill-p1'), 'pill-p2': el('pill-p2'),
+  'p1-center': el('p1-center'), 'p2-center': el('p2-center'), 'ai-level-container': el('ai-level-container', { style: {} }),
+  'bgm-audio': el('bgm-audio'), 'bgm-select': el('bgm-select'), 'bgm-vol': el('bgm-vol', { value: '0.3' }),
+  'bgm-play': el('bgm-play'), 'bgm-pause': el('bgm-pause'),
+};
+const sandbox = {
+  console, Math,
+  performance: { now: () => Date.now() },
+  requestAnimationFrame(fn) { return setTimeout(() => fn(Date.now()), 0); },
+  cancelAnimationFrame() {},
+  setTimeout(fn) { fn(); return 1; }, clearTimeout() {}, setInterval() { return 1; }, clearInterval() {},
+  window: {},
+  document: { getElementById: (id) => elements[id] || el(id), addEventListener() {} },
+};
+sandbox.window = sandbox;
+sandbox.globalThis = sandbox;
+vm.createContext(sandbox);
+vm.runInContext(scriptMatch[1], sandbox);
+const api = sandbox.window.__SHOLO_GUTI_5_3X5_FEATURE__;
+assert(api, 'API missing');
+const b = api.getBoard();
+assert(b.filter((x) => x === api.P1).length === 5, 'P1 count');
+assert(b.filter((x) => x === api.P2).length === 5, 'P2 count');
+const topBead = (n) => n.y === 0 || (n.y === 2 && n.x !== 2);
+const botBead = (n) => n.y === 8 || (n.y === 6 && n.x !== 2);
+assert(api.NODES.filter(topBead).every((n) => b[api.NODE_INDEX[n.id]] === api.P2), 'top layout');
+assert(api.NODES.filter(botBead).every((n) => b[api.NODE_INDEX[n.id]] === api.P1), 'bottom layout');
+const engine = require(ENGINE);
+assert(engine.startingBoard().join('') === b.join(''), 'engine parity');
+const out = { file: path.basename(FILE), engine: ENGINE, ok: true };
+fs.writeFileSync(path.join(__dirname, 'SHOLO_5_BEAD_3X5_FEATURE_SMOKE.json'), JSON.stringify(out, null, 2));
+console.log(JSON.stringify(out, null, 2));

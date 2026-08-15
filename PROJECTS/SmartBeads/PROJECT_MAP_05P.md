@@ -33,6 +33,9 @@ SmartBeads/
 ├── prototype/                         # Design/UX prototypes (outside production src/)
 │   └── board4/                        # Standalone HTML gameplay lab for Board4
 │
+├── LAB_TERMINOLOGY_05P.md             # Web glossary, gates G1–G9, board-quality ruler
+├── WEB_REPORT_16_BEAD_05P.md          # 16-bead reference baseline report
+├── WEB_REPORT_All_BEAD_05P.md         # All-board ladder + Cursor Index verdicts
 ├── PROJECT_MAP_05P.md                 # Project structure and navigation
 ├── GPT_PROJECT_RULES_01P.md           # Permanent engineering and design principles
 └── GPT_PROJECT_STATUS_01P.md          # Current milestone and next step
@@ -58,7 +61,7 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **GEMINI_LAB.html** — Batch-testing tool. Parametrized (bead count, board geometry, tiebreaker mode, move limit). Runs many AI-vs-AI games headless and outputs a comparison table across configs so results do not need to be copy-pasted from the console by hand.
 - **SHOLO_GUTI.html** — Standalone playable Human-vs-AI Sholo Guti / Sixteen Soldiers (37-point board, 16 vs 16). Calibration/reference traditional game — not a SmartBeads product config.
 - **SHOLO_GUTI_CALIBRATION.html** — Headless/calibration harness for the same geometry (hop-based AI; not the primary playable).
-- **sholo-guti-fullturn-engine.cjs** / **sholo-lab-metrics.cjs** / **validate-sholo-fullturn-lab.cjs** / **final-validate-sholo-lab.cjs** / **validate-lab-16-bead-reference.cjs** — Headless full-turn Lab + comparison guards. Run `final-validate-sholo-lab.cjs` before SmartBeads candidate testing; run `validate-lab-16-bead-reference.cjs` for 16-bead reference baseline. Honest depths: D1 greedy, D2 = 1 opponent reply, D3 = 2 opponent replies. See **LAB_CAPABILITY_STATUS.json**, **LAB_TERMINOLOGY_05P.md**, **LAB_REPORT_16_BEAD_05P.md**.
+- **sholo-guti-fullturn-engine.cjs** / **sholo-lab-metrics.cjs** / **validate-sholo-fullturn-lab.cjs** / **final-validate-sholo-lab.cjs** / **validate-lab-16-bead-reference.cjs** — Headless full-turn Web harness + comparison guards. Run `final-validate-sholo-lab.cjs` before SmartBeads candidate testing; run `validate-lab-16-bead-reference.cjs` for 16-bead reference baseline. Honest depths: D1 greedy, D2 = 1 opponent reply, D3 = 2 opponent replies. See **LAB_CAPABILITY_STATUS.json**; methodology at **`LAB_TERMINOLOGY_05P.md`**; reports at **`WEB_REPORT_16_BEAD_05P.md`**, **`WEB_REPORT_All_BEAD_05P.md`** (SmartBeads root).
 - **SHOLO_GUTI_WITH_FEATURE.html** — Playable 16-bead Sholo Guti with full-stretch board, right-panel settings (PVP/PVE, timers, shot clock, center rules, BGM), undo, move/capture animation, turn highlight, honest Easy/Medium/Hard AI.
 - **SHOLO_GUTI_10_BEAD_WITH_FEATURE.html** — 10 vs 10 on 5×5 lattice only (side triangles removed). Same feature shell + move-highlight Off/On (PvP defaults Off).
 - **SHOLO_GUTI_8_BEAD_WITH_FEATURE.html** — 8 vs 8 on 4×5. Rows 1–2 Ebony (top), row 3 empty (amber centre line col2–col3), rows 4–5 Ivory (bottom). P1 plays from bottom.
@@ -117,6 +120,10 @@ Contains the permanent engineering and design principles for SmartBeads.
 ### GPT_PROJECT_STATUS_01P.md
 
 Contains the current development phase, completed work, active milestone and immediate next step.
+
+### LAB_TERMINOLOGY_05P.md / WEB_REPORT_16_BEAD_05P.md / WEB_REPORT_All_BEAD_05P.md
+
+Project-level Web documentation (SmartBeads root). Terminology and G1–G9 gates; 16-bead reference certification report; consolidated ladder and Cursor Index verdicts. Headless engines, JSON artifacts, and evaluators remain under **`prototype/board4/`**.
 
 ---
 

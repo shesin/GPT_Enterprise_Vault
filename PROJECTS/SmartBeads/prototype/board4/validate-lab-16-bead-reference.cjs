@@ -2,7 +2,7 @@
 /**
  * Authoritative 16-bead reference validation for SmartBeads Lab trust.
  * Does NOT test candidate boards. Produces LAB_16_BEAD_REFERENCE_VALIDATION.json
- * for LAB_REPORT_16_BEAD_05P.md.
+ * for WEB_REPORT_16_BEAD_05P.md.
  *
  * Uses final-validate-sholo-lab.cjs trust gate + crash-free batches + baseline metrics.
  */

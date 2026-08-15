@@ -1,35 +1,32 @@
-# Lab Report: All Board Families (Sholo Ladder + Cursor Index 4×4)
+# Web Report: All Board Families (Sholo Ladder + Cursor Index 4×4)
 
 **Date:** 2026-08-14  
+**Location:** SmartBeads root — Web JSON/engines in `prototype/board4/`  
 **Methodology:** `LAB_TERMINOLOGY_05P.md` (G1–G9 gates, no new thresholds)  
-**Reference anchor:** 16-bead Sholo — **FULLY CERTIFIED** — `LAB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`  
+**Reference anchor:** 16-bead Sholo — **FULLY CERTIFIED** — `WEB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`  
 **Authoritative evaluators:**
 - Sholo ladder: `evaluate-ladder-lab.cjs` → `LADDER_LAB_EVALUATION.json`
 - Cursor Index 4×4: `evaluate-cursor-index-lab.cjs` → `CURSOR_INDEX_LAB_EVALUATION.json` (same certified protocol via `cursor-index-fullturn-engine.cjs`)
 
 **Sholo protocol (canonical):** D1 / D2 / D3 · seeds 101, 202, 303 · **N=30** per seed · move-cap **120** · P1 first · 270 games per board · 540 games per compare run (`sholo-lab-protocol.cjs`).
 
-**Playable vs Lab:** Lab D2 ≠ browser Level 2 — see `LAB_TERMINOLOGY_05P.md`.
+**Playable vs Web:** Web D2 ≠ browser Level 2 — see `LAB_TERMINOLOGY_05P.md`.
 
 **Result reporting:** Every fairness result below follows the Result Reporting Rule in `VISION/CURSOR_PROMPT_01.md` — who moved first, who won more (first mover or second mover), exact win percentages for both sides, depth, and failed/pending gate with plain-language reason. No verdict changes in this update.
 
 ---
 
-## Verification status (2026-08-14 — target boards re-run)
+## Verification status (2026-08-14 — 4-bead & 5-bead 3×5 re-run)
 
 | Check | Status | Evidence |
 |-------|--------|----------|
 | 16-bead reference instrument | **CERTIFIED** | Unchanged — `instrumentValid=true`, N=30 |
-| Ladder G1–G9 — boards **5, 8** | **PASS (evaluator)** | `evaluate-ladder-lab.cjs --only 5,8` → **REJECT** on G2 (`g2_fairness_fail`) |
-| Ladder G1–G9 — boards **10, 7, 6** | **UNCHANGED** | Prior verified `NEEDS FURTHER TESTING` preserved in `LADDER_LAB_EVALUATION.json` |
-| Cursor Index complete-turn engine | **PASS** | `cursor-index-fullturn-engine.cjs` — same D1/D2/D3, N=30, move-cap 120, no eval noise |
-| Cursor Index G1–G9 — **4, 6** | **PASS (evaluator)** | `evaluate-cursor-index-lab.cjs` — INDEX_4 **REJECT** (G2); INDEX_6 **NEEDS FURTHER TESTING** |
-| Verdict-path audit | **PASS** | `LAB_VERDICT_PATH_AUDIT.json` — `CODE_PATHS_OK` |
-| 5-bead / 8-bead fairness investigation | **PASS** | Trust audits confirm structural G2 failures (not harness bugs) |
-| Cursor Index playable smoke | **PASS (Technical)** | `verify-cursor-index.cjs` |
-| Human playtest | **NOT APPLICABLE** | Gameplay / UX Review — out of Lab scope |
-
-**Fix applied (2026-08-14):** G2 fairness failure now maps to **REJECT** via `g2_fairness_fail` reject trigger — no softened NEEDS FURTHER TESTING label for audited fairness failures.
+| Ladder G1–G9 — **4-bead, 5-bead (3×5 sketch)** | **PASS (evaluator)** | `evaluate-ladder-lab.cjs --only 4,5` → both **REJECT** (G2) |
+| Ladder G1–G9 — boards **10, 7, 6, 8** | **UNCHANGED** | Prior verdicts preserved in `LADDER_LAB_EVALUATION.json` |
+| **3-bead (3×5 sketch)** | **NOT TESTED** | Dropped from ladder — not evaluated |
+| Cursor Index G1–G9 — **4, 6** | **UNCHANGED** | INDEX_4 **REJECT**; INDEX_6 **NEEDS FURTHER TESTING** |
+| Compare batches | **PASS** | `SHOLO_4_VS_16_LAB_COMPARE.json`, `SHOLO_5_VS_16_LAB_COMPARE.json` (3×5 geometry) |
+| Human playtest | **NOT APPLICABLE** | Gameplay / UX Review — out of Web scope |
 
 ---
 
@@ -41,8 +38,9 @@
 | **10** | **NEEDS FURTHER TESTING** | none | Unchanged — all G1–G9 pass |
 | **7** | **NEEDS FURTHER TESTING** | none | Unchanged — all G1–G9 pass |
 | **6** (3×5) | **NEEDS FURTHER TESTING** | none | Unchanged — all G1–G9 pass |
+| **5** (3×5 sketch) | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **100%** (P1 **0%** / P2 **100%**). |
+| **4** (3×5 sketch) | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **100%** (P1 **0%** / P2 **100%**). |
 | **8** | **REJECT** | **G2** | **D2**, P1 opens: second mover wins **67.8%** (P1 **0%** / P2 **67.8%**); D2 capture ratio also fails G2. Swap: second mover wins **100%** of games with a winner either way. |
-| **5** | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **97.8%** (P1 **2.2%** / P2 **97.8%**). D1 swap: second mover wins **100%** of games with a winner. Structural — not a Lab bug. |
 | **Cursor Index 4** | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **85.6%** (P1 **14.4%** / P2 **85.6%**). Exceeds G2 ±35 pp limit → `g2_fairness_fail`. |
 | **Cursor Index 6** | **NEEDS FURTHER TESTING** | none | All G1–G9 pass. **D3** first mover P1 wins **95.6%** (P2 **0%**) — not a G2 input. **Remaining:** human playtest sign-off. |
 
@@ -108,7 +106,7 @@ All G1–G9 **PASS**. D2 capture rate matches 16-bead reference spirit (~12/game
 | **D2 swap** | P1 | **0%** (0/38 among games with a winner) | **100%** (38/38 among games with a winner) | **Second mover** |
 | **D2 swap** | P2 | **0%** (0/47 among games with a winner) | **100%** (47/47 among games with a winner) | **Second mover** |
 
-**Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`). At **D2** with P1 opening, the second mover wins **67.8%** of all games (P1 **0%**). G2 also fails because **D2** average captures are skewed beyond the 2× limit (P2 **7.6**/game vs P1 **1.5**/game at avg length **69.6**). Swap batches confirm second-mover dominance regardless of who opens. Parity confirmed; symmetric Lab AI — structural, not harness error.
+**Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`). At **D2** with P1 opening, the second mover wins **67.8%** of all games (P1 **0%**). G2 also fails because **D2** average captures are skewed beyond the 2× limit (P2 **7.6**/game vs P1 **1.5**/game at avg length **69.6**). Swap batches confirm second-mover dominance regardless of who opens. Parity confirmed; symmetric Web AI — structural, not harness error.
 
 **Authoritative verdict:** **REJECT**. Drop from ladder until geometry redesigned and re-tested.
 
@@ -122,7 +120,7 @@ All G1–G9 **PASS**. D2 capture rate matches 16-bead reference spirit (~12/game
 | D2 | 8.6 | 113.3 | 12.2% | 87.8% | 3% / 9% |
 | D3 | 11.2 | 100.1 | 42.2% | 57.8% | 3% / 39% |
 
-All G1–G9 **PASS**. **D1**, P1 opens: first mover **20%**, second mover **80%** — second mover wins more, but within G2 limit. **Pending gate:** none (Lab). **Remaining test:** human playtest sign-off.
+All G1–G9 **PASS**. **D1**, P1 opens: first mover **20%**, second mover **80%** — second mover wins more, but within G2 limit. **Pending gate:** none (Web). **Remaining test:** human playtest sign-off.
 
 ---
 
@@ -138,24 +136,61 @@ All G1–G9 **PASS**. D2 captures below 16-bead reference (~12) but above alive 
 
 ---
 
-## 5-bead — REJECT
+## 4-bead (Sholo 3×5 sketch) — REJECT
+
+**Sources:** `SHOLO_4_VS_16_LAB_COMPARE.json`, `LADDER_LAB_EVALUATION.json`  
+**Geometry:** 3×5 lattice — outer columns rows 1–2 (4 vs 4). Same family as 6-bead; derived from sketch.
 
 | Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
 |-------|-------------|-----------|-------------|---------------|-------------|
-| D1 | 5.3 | 8.7 | 100% | 0% | **2% / 98%** |
-| D2 | 5.2 | 111.3 | 21.1% | 78.9% | 14% / 7% |
-| D3 | 7.1 | 109.5 | 26.7% | 73.3% | 12% / 14% |
+| D1 | 5.0 | 8.0 | 100% | 0% | **0% / 100%** |
+| D2 | 3.4 | 115.6 | 6.7% | 93.3% | 3.3% / 3.3% |
+| D3 | 5.1 | 105.8 | 28.9% | 71.1% | 8.9% / 20% |
 
-**Fairness (Result Reporting Rule):** Certified batch — P1 (Red) opens every game.
+**Fairness (Result Reporting Rule):** Certified batch — P1 (Ivory) opens every game unless noted.
 
 | Depth | Who opens | First mover wins | Second mover wins | Who wins more |
 |-------|-----------|------------------|-------------------|---------------|
-| **D1** | P1 | **2.2%** (2/90) | **97.8%** (88/90) | **Second mover** |
-| **D1 swap** | either | first mover **0%** among games with a winner | second mover **100%** among games with a winner | **Second mover** |
+| **D1** | P1 | **0%** (0/90) | **100%** (90/90) | **Second mover** |
+| **D2** (primary) | P1 | **3.3%** (3/90) | **3.3%** (3/90) | Even among all games |
+| **D2 swap** | P1 | **33.3%** among games with a winner | **66.7%** among games with a winner | Second mover (6 games total) |
+| **D2 swap** | P2 | **62.5%** among games with a winner | **37.5%** among games with a winner | First mover (8 games total) |
 
-**Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`). At **D1** with P1 opening, the second mover wins **97.8%** of all games — beyond the ±35 pp G2 limit. Parity confirmed; not a Lab bug.
+**Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`).
 
-**Authoritative verdict:** **REJECT**. Drop until geometry/facing redesigned.
+**Depth responsible:** **D1** (greedy). With P1 opening, the second mover wins **100%** of all 90 games — beyond the G2 ±35 pp limit. D2 and swap batches are near even but do not override the D1 failure.
+
+**Authoritative verdict:** **REJECT**. Drop until geometry redesigned.
+
+---
+
+## 5-bead (Sholo 3×5 sketch) — REJECT
+
+**Sources:** `SHOLO_5_VS_16_LAB_COMPARE.json`, `LADDER_LAB_EVALUATION.json`  
+**Geometry:** 3×5 lattice — full row 1 + outer row 2 (5 vs 5). **Replaces prior 5×3 board** (`SHOLO_GUTI_5_BEAD_WITH_FEATURE.html` now uses this geometry).
+
+| Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
+|-------|-------------|-----------|-------------|---------------|-------------|
+| D1 | 7.0 | 12.0 | 100% | 0% | **0% / 100%** |
+| D2 | 4.9 | 113.1 | 25.6% | 74.4% | 16.7% / 8.9% |
+| D3 | 7.0 | 98.6 | 37.8% | 62.2% | 24.4% / 13.3% |
+
+**Fairness (Result Reporting Rule):** Certified batch — P1 (Ivory) opens every game unless noted.
+
+| Depth | Who opens | First mover wins | Second mover wins | Who wins more |
+|-------|-----------|------------------|-------------------|---------------|
+| **D1** | P1 | **0%** (0/90) | **100%** (90/90) | **Second mover** |
+| **D2** (primary) | P1 | **16.7%** (15/90) | **8.9%** (8/90) | **First mover** among all games; among 23 games with a winner: P1 **65.2%**, P2 **34.8%** |
+| **D2 swap** | P1 | **66.7%** among games with a winner | **33.3%** among games with a winner | First mover (9 games total) |
+| **D2 swap** | P2 | **27.3%** among games with a winner | **72.7%** among games with a winner | Second mover (11 games total) |
+
+**Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`).
+
+**Depth responsible:** **D1** (greedy). With P1 opening, the second mover wins **100%** of all 90 games. D2 primary depth favours the first mover, but G2 still fails on the D1 batch.
+
+**Authoritative verdict:** **REJECT**. Drop until geometry redesigned.
+
+**Note:** Prior Web **REJECT** on old **5×3** geometry is superseded by this run — same verdict, new board family member on 3×5 sketch lattice.
 
 ---
 
@@ -201,7 +236,7 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 | Depth | Who opens | First mover wins | Second mover wins | Who wins more |
 |-------|-----------|------------------|-------------------|---------------|
 | **D1** | P1 | **33.3%** (30/90) | **66.7%** (60/90) | **Second mover** (within G2 limit) |
-| **D2** (primary Lab depth) | P1 | **6.7%** (6/90) | **7.8%** (7/90) | Near even among all games; among 13 games with a winner: P1 **46.2%**, P2 **53.8%** |
+| **D2** (primary Web Depth) | P1 | **6.7%** (6/90) | **7.8%** (7/90) | Near even among all games; among 13 games with a winner: P1 **46.2%**, P2 **53.8%** |
 | **D2 swap** | P1 | **45.5%** among games with a winner | **54.5%** among games with a winner | Near even |
 | **D2 swap** | P2 | **27.3%** among games with a winner | **72.7%** among games with a winner | Second mover wins more (gap **18.2 pp** — within G2 ±35 pp swap rule) |
 | **D3** | P1 | **95.6%** (86/90) | **0%** (0/90) | **First mover** |
@@ -210,15 +245,15 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 **Failed gate:** none — all G1–G9 **PASS**.
 
-**Remaining test before KEEP:** human playtest sign-off (Gameplay / UX Review). Lab cannot grant KEEP alone. The **D3** first-mover **95.6%** win rate (P1 opens, P2 **0%**) is recorded for human review; it did not fail any Lab gate.
+**Remaining test before KEEP:** human playtest sign-off (Gameplay / UX Review). Web cannot grant KEEP alone. The **D3** first-mover **95.6%** win rate (P1 opens, P2 **0%**) is recorded for human review; it did not fail any Web gate.
 
 ---
 
 ## Comparative notes
 
-**D2 capture activity vs 16-bead reference (~11.7):** 10-bead 12.0 ✓ · 8-bead 9.1 · 7-bead 8.6 · 6-bead 6.0 · 5-bead 5.2.
+**D2 capture activity vs 16-bead reference (~11.7):** 10-bead 12.0 ✓ · 8-bead 9.1 · 7-bead 8.6 · 6-bead 6.0 · **5-bead (3×5) 4.9** · **4-bead (3×5) 3.4**.
 
-**Fairness:** 5-bead (**D1**, second mover **97.8%**), 8-bead (**D2**, second mover **67.8%** when P1 opens), and Cursor Index 4 (**D1**, second mover **85.6%**) **REJECT** on **G2**. Cursor Index 6 passes all gates — **D3** first-mover **95.6%** noted but not a G2 input; human playtest pending.
+**Fairness:** **4-bead** and **5-bead (3×5 sketch)** both **REJECT** on **G2** at **D1** (second mover **100%** when P1 opens). **8-bead** **REJECT** at **D2**. Cursor Index 4 **REJECT** at **D1**. **6-bead** and Cursor Index 6 pass all gates — human playtest pending. **3-bead sketch not tested.**
 
 ---
 
@@ -229,24 +264,24 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 | Continue? | Boards |
 |-----------|--------|
 | **Yes — schedule human playtest** | **10-bead**, **7-bead**, **Sholo 6-bead (3×5)** |
-| **No — Lab REJECT (G2)** | **8-bead**, **5-bead** |
+| **No — Web REJECT (G2)** | **8-bead**, **5-bead (3×5)**, **4-bead (3×5)** |
 | **Reference only** | **16-bead** |
 
 ### Cursor Index 4×4
 
 | Continue? | Boards |
 |-----------|--------|
-| **Yes — schedule human playtest** | **Cursor Index 6** (all Lab gates pass) |
-| **No — Lab REJECT (G2)** | **Cursor Index 4** |
+| **Yes — schedule human playtest** | **Cursor Index 6** (all Web gates pass) |
+| **No — Web REJECT (G2)** | **Cursor Index 4** |
 
 ---
 
 ## Technical Verification vs Gameplay / UX Review
 
-| | Technical Verification (Lab) | Gameplay / UX Review (human) |
+| | Technical Verification (Web) | Gameplay / UX Review (human) |
 |--|---------------------------|------------------------------|
 | **Sholo 10, 7, 6** | NEEDS FURTHER TESTING — **remaining: human playtest** | Not started |
-| **Sholo 8, 5** | **REJECT** (G2) | N/A until redesign |
+| **Sholo 8, 5, 4** | **REJECT** (G2) | N/A until redesign |
 | **Cursor Index 6** | NEEDS FURTHER TESTING — **remaining: human playtest** | Not started |
 | **Cursor Index 4** | **REJECT** (G2) | N/A until redesign |
 | **16-bead** | REFERENCE | N/A |
@@ -258,7 +293,7 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 | File | Content |
 |------|---------|
 | `LADDER_LAB_EVALUATION.json` | Fresh Sholo G1–G9 authoritative verdicts |
-| `SHOLO_*_VS_16_LAB_COMPARE.json` | Fresh N=30 compare batches (5/6/7/8/10) |
+| `SHOLO_*_VS_16_LAB_COMPARE.json` | Fresh N=30 compare batches (4/5/6/7/8/10) |
 | `LAB_VERDICT_PATH_AUDIT.json` | Verdict-path + N consistency audit |
 | `SHOLO_5_BEAD_FAIRNESS_TRUST.json` | 5-bead G2 investigation |
 | `SHOLO_8_BEAD_FAIRNESS_TRUST.json` | 8-bead G2 investigation |
@@ -270,4 +305,4 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 ---
 
-*SmartBeads Lab — reporting clarification 2026-08-14. Result Reporting Rule applied to Cursor Index 4/6 and other board fairness results. No Lab re-run; no verdict, methodology, threshold, geometry, AI, or gate changes.*
+*SmartBeads Web — 4-bead & 5-bead 3×5 sketch evaluation 2026-08-14. `evaluate-ladder-lab.cjs --only 4,5`. 3-bead sketch not tested.*

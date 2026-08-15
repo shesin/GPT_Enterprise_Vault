@@ -7,7 +7,7 @@ const metrics = require('./sholo-lab-metrics.cjs');
 
 const DEPTHS = [1, 2, 3];
 const SEEDS = [101, 202, 303];
-/** Approved reference batch size — LAB_REPORT_16_BEAD_05P.md */
+/** Approved reference batch size — WEB_REPORT_16_BEAD_05P.md */
 const N_PER_SEED = 30;
 const MOVE_CAP = 120;
 const SWAP_N = 20;

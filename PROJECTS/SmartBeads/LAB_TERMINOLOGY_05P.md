@@ -489,13 +489,22 @@ Cursor Index family uses separate **`cursor-index-lab-protocol.cjs`** (N=50, mov
 
 ## Related files
 
+**Web reports (SmartBeads root):**
+
+| File | Role |
+|------|------|
+| `LAB_TERMINOLOGY_05P.md` | Glossary + board-quality ruler (this file) |
+| `WEB_REPORT_16_BEAD_05P.md` | 16-bead baseline board-quality report |
+| `WEB_REPORT_All_BEAD_05P.md` | All-board ladder + Cursor Index verdicts |
+
+**Lab harness (`prototype/board4/`):**
+
 | File | Role |
 |------|------|
 | `sholo-guti-fullturn-engine.cjs` | 16-bead headless engine |
 | `sholo-lab-metrics.cjs` | Aggregation + comparison guards + `TERM_GLOSSARY` |
 | `final-validate-sholo-lab.cjs` | 25-check trust gate |
 | `validate-lab-16-bead-reference.cjs` | Reference validation + baseline batch |
-| `LAB_REPORT_16_BEAD_05P.md` | 16-bead baseline board-quality report |
 | `sholo-lab-protocol.cjs` | Canonical N/seeds/depths + playable-vs-Lab depth documentation |
 | `sholo-lab-gates.cjs` | Shared G1–G9 gate logic + authoritative `ladderVerdict()` |
 | `evaluate-ladder-lab.cjs` | Authoritative Sholo ladder G1–G9 **selectionVerdict** |

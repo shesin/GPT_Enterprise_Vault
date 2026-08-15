@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sholo 3×5 — 3 / 4 / 5 Bead Layouts</title>
+  <style>
+    :root {
+      --bg: #f8f4ec;
+      --ink: #1a2a35;
+      --line: #2b4a6b;
+      --p1: #e8dcc8;
+      --p1-stroke: #8b6914;
+      --p2: #2a2a2a;
+      --p2-stroke: #111;
+      --center: #d4a84b;
+      --empty: #fff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 24px;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .sub {
+      font-size: 0.9rem;
+      color: #556;
+      margin-bottom: 28px;
+      max-width: 720px;
+      line-height: 1.5;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      align-items: flex-start;
+    }
+    figure {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 16px 16px 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    figcaption {
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-top: 10px;
+    }
+    figcaption span {
+      display: block;
+      font-weight: 400;
+      font-size: 0.78rem;
+      color: #667;
+      margin-top: 4px;
+    }
+    svg { display: block; }
+    .legend {
+      margin-top: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      font-size: 0.85rem;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .dot-sm { width: 14px; height: 14px; border-radius: 50%; border: 2px solid; }
+    .dot-sm.p2 { background: var(--p2); border-color: var(--p2-stroke); }
+    .dot-sm.p1 { background: var(--p1); border-color: var(--p1-stroke); }
+    .sq-sm { width: 14px; height: 14px; border: 2px solid var(--center); background: #fff8e8; }
+  </style>
+</head>
+<body>
+  <h1>Sholo Guti — 3×5 lattice bead layouts</h1>
+  <p class="sub">
+    From your sketch: three vertical lines, five horizontal lines, amber centre marker on row 3.
+    Ebony (top) vs Ivory (bottom). Open a playable board below.
+  </p>
+  <p class="sub" style="margin-top:-16px">
+    <a href="SHOLO_GUTI_3_BEAD_WITH_FEATURE.html">3 vs 3 playable</a> ·
+    <a href="SHOLO_GUTI_4_BEAD_WITH_FEATURE.html">4 vs 4 playable</a> ·
+    <a href="SHOLO_GUTI_5_BEAD_3X5_WITH_FEATURE.html">5 vs 5 playable (3×5)</a> ·
+    <a href="SHOLO_GUTI_6_BEAD_WITH_FEATURE.html">6 vs 6 reference</a>
+  </p>
+
+  <div class="grid" id="boards"></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="dot-sm p2"></div> Ebony — top player (rows 1–2)</div>
+    <div class="legend-item"><div class="dot-sm p1"></div> Ivory — bottom player (rows 4–5)</div>
+    <div class="legend-item"><div class="sq-sm"></div> Centre marker (row 3, no starting bead)</div>
+  </div>
+
+  <script>
+    // 3 cols × 5 rows. bead[row][col]: 0=empty, 1=top/P2, 2=bottom/P1, 3=centre marker
+    const layouts = {
+      '3-bead': {
+        label: '3 vs 3',
+        sub: 'Row 1 only — 3 beads per side',
+        beads: [
+          [1,1,1],
+          [0,0,0],
+          [0,3,0],
+          [0,0,0],
+          [2,2,2],
+        ],
+      },
+      '4-bead': {
+        label: '4 vs 4',
+        sub: 'Outer columns on rows 1 & 2 — 4 beads per side',
+        beads: [
+          [1,0,1],
+          [1,0,1],
+          [0,3,0],
+          [2,0,2],
+          [2,0,2],
+        ],
+      },
+      '5-bead': {
+        label: '5 vs 5',
+        sub: 'Full row 1 + outer row 2 — 5 beads per side',
+        beads: [
+          [1,1,1],
+          [1,0,1],
+          [0,3,0],
+          [2,0,2],
+          [2,2,2],
+        ],
+      },
+    };
+
+    const W = 180, H = 260, PAD = 28;
+    const COLS = 3, ROWS = 5;
+
+    function nodeXY(c, r) {
+      const x = PAD + (c / (COLS - 1)) * (W - 2 * PAD);
+      const y = PAD + (r / (ROWS - 1)) * (H - 2 * PAD);
+      return { x, y };
+    }
+
+    function drawBoard(name, cfg) {
+      const fig = document.createElement('figure');
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', W);
+      svg.setAttribute('height', H);
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+      // grid lines
+      for (let r = 0; r < ROWS; r++) {
+        const y = nodeXY(0, r).y;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', PAD);
+        line.setAttribute('y1', y);
+        line.setAttribute('x2', W - PAD);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', '#2b4a6b');
+        line.setAttribute('stroke-width', '2');
+        svg.appendChild(line);
+      }
+      for (let c = 0; c < COLS; c++) {
+        const x = nodeXY(c, 0).x;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x);
+        line.setAttribute('y1', PAD);
+        line.setAttribute('x2', x);
+        line.setAttribute('y2', H - PAD);
+        line.setAttribute('stroke', '#2b4a6b');
+        line.setAttribute('stroke-width', '2');
+        svg.appendChild(line);
+      }
+
+      // diagonals (Sholo lattice)
+      const diags = [
+        [0,0,1,1],[1,0,2,1],[0,1,1,2],[1,1,2,2],
+        [0,2,1,3],[1,2,2,3],[0,3,1,4],[1,3,2,4],
+      ];
+      for (const [c1,r1,c2,r2] of diags) {
+        const a = nodeXY(c1, r1), b = nodeXY(c2, r2);
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+        line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+        line.setAttribute('stroke', '#2b4a6b');
+        line.setAttribute('stroke-width', '1.5');
+        svg.appendChild(line);
+      }
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const v = cfg.beads[r][c];
+          const { x, y } = nodeXY(c, r);
+          if (v === 3) {
+            const sq = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            sq.setAttribute('x', x - 9); sq.setAttribute('y', y - 9);
+            sq.setAttribute('width', 18); sq.setAttribute('height', 18);
+            sq.setAttribute('fill', '#fff8e8');
+            sq.setAttribute('stroke', '#d4a84b');
+            sq.setAttribute('stroke-width', '2');
+            svg.appendChild(sq);
+          } else if (v === 1 || v === 2) {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x); circle.setAttribute('cy', y);
+            circle.setAttribute('r', 11);
+            circle.setAttribute('fill', v === 1 ? '#2a2a2a' : '#e8dcc8');
+            circle.setAttribute('stroke', v === 1 ? '#111' : '#8b6914');
+            circle.setAttribute('stroke-width', '2');
+            svg.appendChild(circle);
+          }
+        }
+      }
+
+      const cap = document.createElement('figcaption');
+      cap.innerHTML = `${cfg.label}<span>${cfg.sub}</span>`;
+      fig.appendChild(svg);
+      fig.appendChild(cap);
+      return fig;
+    }
+
+    const root = document.getElementById('boards');
+    for (const [name, cfg] of Object.entries(layouts)) {
+      root.appendChild(drawBoard(name, cfg));
+    }
+  </script>
+</body>
+</html>

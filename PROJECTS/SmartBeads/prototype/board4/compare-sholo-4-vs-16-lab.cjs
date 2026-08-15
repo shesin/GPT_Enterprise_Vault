@@ -1,12 +1,12 @@
 'use strict';
 /**
- * Lab-compare 5-bead (3×5) candidate vs 16-bead standard under the same protocol.
+ * Lab-compare 4-bead (3×5) candidate vs 16-bead standard under the same protocol.
  */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const eng16 = require('./sholo-guti-fullturn-engine.cjs');
-const engSlice = require('./sholo-5-bead-fullturn-engine.cjs');
+const engSlice = require('./sholo-4-bead-fullturn-engine.cjs');
 const metrics = require('./sholo-lab-metrics.cjs');
 const protocol = require('./sholo-lab-protocol.cjs');
 
@@ -15,10 +15,10 @@ const SEEDS = protocol.SEEDS;
 const N_GAMES = protocol.N_PER_SEED;
 const MOVE_CAP = protocol.MOVE_CAP;
 const EXPECTED_TOTAL = protocol.gamesPerCompareRun();
-const SLICE = 5;
-const HTML_SLICE = path.join(__dirname, 'SHOLO_GUTI_5_BEAD_WITH_FEATURE.html');
-const OUT = path.join(__dirname, 'SHOLO_5_VS_16_LAB_COMPARE.json');
-const API_NAME = '__SHOLO_GUTI_5_FEATURE__';
+const SLICE = 4;
+const HTML_SLICE = path.join(__dirname, 'SHOLO_GUTI_4_BEAD_WITH_FEATURE.html');
+const OUT = path.join(__dirname, 'SHOLO_4_VS_16_LAB_COMPARE.json');
+const API_NAME = '__SHOLO_GUTI_4_FEATURE__';
 
 function assert(ok, msg) {
   if (!ok) throw new Error(msg);
@@ -203,10 +203,10 @@ function main() {
   const reproducibleSlice = fingerprint(a) === fingerprint(b);
 
   const report = {
-    purpose: 'Compare 5-bead/3×5 candidate vs 16-bead standard — metrics and evidence only (no board verdict)',
+    purpose: 'Compare 4-bead/3×5 candidate vs 16-bead standard — metrics and evidence only (no board verdict)',
     authoritativeEvaluator: 'evaluate-ladder-lab.cjs',
-    candidateFile: 'SHOLO_GUTI_5_BEAD_WITH_FEATURE.html',
-    candidateEngine: 'sholo-5-bead-fullturn-engine.cjs',
+    candidateFile: 'SHOLO_GUTI_4_BEAD_WITH_FEATURE.html',
+    candidateEngine: 'sholo-4-bead-fullturn-engine.cjs',
     baselineEngine: 'sholo-guti-fullturn-engine.cjs',
     protocol: protocol.protocolMeta({
       totalGames,
