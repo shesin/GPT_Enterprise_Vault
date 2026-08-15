@@ -1,7 +1,7 @@
 ﻿'use strict';
 /**
  * Headless 5-bead / 3×5 Lab engine.
- * Geometry + start match SHOLO_GUTI_5_BEAD_3X5_WITH_FEATURE.html.
+ * Geometry + start (playable removed — Web REJECT G2).
  * Search/AI identical to sholo-guti-fullturn-engine.cjs (honest D1/D2/D3).
  */
 

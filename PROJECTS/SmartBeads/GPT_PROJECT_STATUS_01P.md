@@ -35,9 +35,11 @@ Headless G1–G9 board selection on the Sholo Guti ladder (4–16 bead variants 
 - SelfPlayRunner + HumanVsAiRunner CLI + browser SVG playtest GUI (`npm run web:board4`).
 - **16-bead Sholo reference:** Web instrument certified — see `WEB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`.
 - **Sholo ladder G1–G9 (authoritative):** `evaluate-ladder-lab.cjs` → `LADDER_LAB_EVALUATION.json`; consolidated verdicts in `WEB_REPORT_All_BEAD_05P.md`.
-- **4-bead & 5-bead (3×5 sketch):** evaluated 2026-08-14 — both **REJECT** (G2, D1 second-mover 100%).
-- **8-bead, Cursor Index 4:** **REJECT** (G2). **10, 7, 6-bead, Cursor Index 6:** **NEEDS FURTHER TESTING** — human playtest pending.
-- **3-bead sketch:** dropped — not tested.
+- **4-bead & 5-bead (3×5 sketch):** evaluated 2026-08-14 — both **REJECT** (G2); playables removed.
+- **8-bead, Cursor Index 4:** **REJECT** (G2); playables removed.
+- **10, 7, 6-bead, Cursor Index 6:** **NEEDS FURTHER TESTING** — human playtest pending.
+- **3-bead sketch:** dropped — playable removed (not Web-evaluated).
+- **GEMINI_INDEX_4.html / GEMINI_INDEX_6.html:** removed (superseded by Cursor Index line; Index 4 Web REJECT).
 - Web documentation at SmartBeads root: `LAB_TERMINOLOGY_05P.md`, `WEB_REPORT_16_BEAD_05P.md`, `WEB_REPORT_All_BEAD_05P.md`.
 
 ---

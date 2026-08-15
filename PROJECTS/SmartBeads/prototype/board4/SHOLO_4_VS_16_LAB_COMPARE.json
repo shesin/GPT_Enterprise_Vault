@@ -1,7 +1,7 @@
 {
   "purpose": "Compare 4-bead/3×5 candidate vs 16-bead standard — metrics and evidence only (no board verdict)",
   "authoritativeEvaluator": "evaluate-ladder-lab.cjs",
-  "candidateFile": "SHOLO_GUTI_4_BEAD_WITH_FEATURE.html",
+  "candidateFile": "(removed — Web REJECT; was SHOLO_GUTI_4_BEAD_WITH_FEATURE.html)",
   "candidateEngine": "sholo-4-bead-fullturn-engine.cjs",
   "baselineEngine": "sholo-guti-fullturn-engine.cjs",
   "protocol": {
@@ -981,5 +981,5 @@
     "n": 30,
     "identical": true
   },
-  "elapsedMs": 237212
+  "elapsedMs": 196448
 }

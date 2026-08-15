@@ -1,7 +1,6 @@
 'use strict';
 /**
- * Generates CURSOR_INDEX_4.html and CURSOR_INDEX_6.html — playable Human-vs-AI games.
- * Rules match Gemini Index; AI/UX improvements only. Gemini originals untouched.
+ * Generates CURSOR_INDEX_6.html — playable Human-vs-AI game. GEMINI_INDEX_4/6 removed.
  */
 const fs = require('fs');
 const path = require('path');
@@ -1142,14 +1141,6 @@ ${bgmOptions}
 
 const outDir = __dirname;
 const variants = [
-  {
-    beads: 4,
-    startBoard: [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2],
-    tagline: '4 beads · 4×4 · Human vs AI',
-    file: 'CURSOR_INDEX_4.html',
-    bgmLabel: 'BGM · Cursor pick',
-    bgmTracks: BGM_CURSOR4_CURATED,
-  },
   {
     beads: 6,
     startBoard: [1, 1, 1, 1, 1, 0, 0, 1, 2, 0, 0, 2, 2, 2, 2, 2],

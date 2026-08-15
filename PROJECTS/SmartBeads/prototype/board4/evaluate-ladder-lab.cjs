@@ -141,7 +141,9 @@ function main() {
     const ev = gates.applyGates(d1, d2, d3, geoOk, crash, swap, reproducible, protocolCheck);
     const selection = gates.ladderVerdict(ev.allPass, ev.rejectTriggers, ev.failed);
     out.boards[c.beads] = {
-      playable: c.playable,
+      playable: fs.existsSync(path.join(__dirname, c.playable))
+        ? c.playable
+        : '(removed — Web REJECT)',
       engine: c.engine,
       compareJson: c.compareJson,
       geometryVerified: geoOk,

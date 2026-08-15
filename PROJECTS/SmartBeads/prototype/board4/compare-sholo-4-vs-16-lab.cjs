@@ -46,6 +46,17 @@ function el() {
 }
 
 function loadPlayableSliceApi() {
+  if (!fs.existsSync(HTML_SLICE)) {
+    return {
+      N: engSlice.N,
+      NODES: engSlice.NODES,
+      ADJ: engSlice.ADJ,
+      P1: engSlice.P1,
+      P2: engSlice.P2,
+      getBoard: () => engSlice.startingBoard(),
+      getAllLegalMoves: (b, p) => engSlice.getAllLegalMoves(b, p),
+    };
+  }
   const html = fs.readFileSync(HTML_SLICE, 'utf8');
   const match = html.match(/<script>([\s\S]*?)<\/script>/);
   assert(match, SLICE + '-bead HTML script missing');
@@ -205,7 +216,7 @@ function main() {
   const report = {
     purpose: 'Compare 4-bead/3×5 candidate vs 16-bead standard — metrics and evidence only (no board verdict)',
     authoritativeEvaluator: 'evaluate-ladder-lab.cjs',
-    candidateFile: 'SHOLO_GUTI_4_BEAD_WITH_FEATURE.html',
+    candidateFile: '(removed — Web REJECT; was SHOLO_GUTI_4_BEAD_WITH_FEATURE.html)',
     candidateEngine: 'sholo-4-bead-fullturn-engine.cjs',
     baselineEngine: 'sholo-guti-fullturn-engine.cjs',
     protocol: protocol.protocolMeta({

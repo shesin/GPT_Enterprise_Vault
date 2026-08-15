@@ -12,7 +12,6 @@ const gates = require('./sholo-lab-gates.cjs');
 const protocol = require('./sholo-lab-protocol.cjs');
 
 const CANDIDATES = [
-  { id: 'INDEX_4', beads: 4, html: 'CURSOR_INDEX_4.html', smokeOut: 'CURSOR_INDEX_4_LAB_EVAL.json' },
   { id: 'INDEX_6', beads: 6, html: 'CURSOR_INDEX_6.html', smokeOut: 'CURSOR_INDEX_6_LAB_EVAL.json' },
 ];
 
@@ -76,14 +75,22 @@ function crashFree(engine) {
 }
 
 function main() {
+  const combinedPath = path.join(ROOT, 'CURSOR_INDEX_LAB_EVALUATION.json');
+  let prior = {};
+  if (fs.existsSync(combinedPath)) {
+    prior = JSON.parse(fs.readFileSync(combinedPath, 'utf8'));
+  }
   const batchProtocol = protocol.protocolMeta();
   const out = {
     purpose: 'Authoritative Cursor Index G1-G9 — certified complete-turn protocol',
     authoritativeEvaluator: 'evaluate-cursor-index-lab.cjs',
     headlessEngine: 'cursor-index-fullturn-engine.cjs',
     protocol: batchProtocol,
-    boards: {},
+    boards: prior.boards ? { ...prior.boards } : {},
   };
+  if (out.boards.INDEX_4) {
+    out.boards.INDEX_4.playable = '(removed — Web REJECT; was CURSOR_INDEX_4.html)';
+  }
 
   for (const c of CANDIDATES) {
     const html = fs.readFileSync(path.join(ROOT, c.html), 'utf8');

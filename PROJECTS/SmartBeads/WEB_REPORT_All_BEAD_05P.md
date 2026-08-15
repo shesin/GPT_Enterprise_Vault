@@ -167,7 +167,7 @@ All G1–G9 **PASS**. D2 captures below 16-bead reference (~12) but above alive 
 ## 5-bead (Sholo 3×5 sketch) — REJECT
 
 **Sources:** `SHOLO_5_VS_16_LAB_COMPARE.json`, `LADDER_LAB_EVALUATION.json`  
-**Geometry:** 3×5 lattice — full row 1 + outer row 2 (5 vs 5). **Replaces prior 5×3 board** (`SHOLO_GUTI_5_BEAD_WITH_FEATURE.html` now uses this geometry).
+**Geometry:** 3×5 lattice — full row 1 + outer row 2 (5 vs 5). Playable removed (Web REJECT G2).
 
 | Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
 |-------|-------------|-----------|-------------|---------------|-------------|
@@ -264,7 +264,7 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 | Continue? | Boards |
 |-----------|--------|
 | **Yes — schedule human playtest** | **10-bead**, **7-bead**, **Sholo 6-bead (3×5)** |
-| **No — Web REJECT (G2)** | **8-bead**, **5-bead (3×5)**, **4-bead (3×5)** |
+| **No — Web REJECT (G2)** | **8-bead**, **5-bead (3×5)**, **4-bead (3×5)** — playables removed |
 | **Reference only** | **16-bead** |
 
 ### Cursor Index 4×4
@@ -272,7 +272,7 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 | Continue? | Boards |
 |-----------|--------|
 | **Yes — schedule human playtest** | **Cursor Index 6** (all Web gates pass) |
-| **No — Web REJECT (G2)** | **Cursor Index 4** |
+| **No — Web REJECT (G2)** | **Cursor Index 4** — playable removed |
 
 ---
 

@@ -235,7 +235,7 @@
   },
   "boards": {
     "4": {
-      "playable": "SHOLO_GUTI_4_BEAD_WITH_FEATURE.html",
+      "playable": "(removed — Web REJECT)",
       "engine": "./sholo-4-bead-fullturn-engine.cjs",
       "compareJson": "SHOLO_4_VS_16_LAB_COMPARE.json",
       "geometryVerified": true,
@@ -665,7 +665,7 @@
       "selectionVerdict": "REJECT"
     },
     "5": {
-      "playable": "SHOLO_GUTI_5_BEAD_WITH_FEATURE.html",
+      "playable": "(removed — Web REJECT)",
       "engine": "./sholo-5-bead-fullturn-engine.cjs",
       "compareJson": "SHOLO_5_VS_16_LAB_COMPARE.json",
       "geometryVerified": true,
@@ -1947,7 +1947,7 @@
       "selectionVerdict": "NEEDS FURTHER TESTING"
     },
     "8": {
-      "playable": "SHOLO_GUTI_8_BEAD_WITH_FEATURE.html",
+      "playable": "(removed — Web REJECT)",
       "engine": "./sholo-8-bead-fullturn-engine.cjs",
       "compareJson": "SHOLO_8_VS_16_LAB_COMPARE.json",
       "geometryVerified": true,

@@ -1,7 +1,7 @@
 'use strict';
 /**
  * Headless 8-bead / 4×5 Lab engine.
- * Geometry + start match SHOLO_GUTI_8_BEAD_WITH_FEATURE.html.
+ * Geometry + start (playable removed — Web REJECT G2).
  * Search/AI identical to sholo-guti-fullturn-engine.cjs (honest D1/D2/D3).
  */
 

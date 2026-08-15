@@ -29,7 +29,18 @@ function el() {
 }
 
 function loadPlayable() {
-  const html = fs.readFileSync(path.join(__dirname, 'SHOLO_GUTI_5_BEAD_WITH_FEATURE.html'), 'utf8');
+  const htmlPath = path.join(__dirname, 'SHOLO_GUTI_5_BEAD_WITH_FEATURE.html');
+  if (!fs.existsSync(htmlPath)) {
+    return {
+      N: eng.N,
+      NODES: eng.NODES,
+      getBoard: () => eng.startingBoard(),
+      getAllLegalMoves: (b, p) => eng.getAllLegalMoves(b ?? eng.startingBoard(), p ?? eng.P1),
+      P1: eng.P1,
+      P2: eng.P2,
+    };
+  }
+  const html = fs.readFileSync(htmlPath, 'utf8');
   const match = html.match(/<script>([\s\S]*?)<\/script>/);
   const ids = [
     'board', 'status', 'finish-btn', 'undo-btn', 'restart-btn', 'play-again-btn',

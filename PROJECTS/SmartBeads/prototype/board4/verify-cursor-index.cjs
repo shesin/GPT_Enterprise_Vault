@@ -214,16 +214,10 @@ function playOneGame(file, beads) {
   return { file, beads, ok: true, humanMove: step, fullGame };
 }
 
-assert(fs.existsSync(path.join(ROOT, 'GEMINI_INDEX_4.html')), 'gemini 4 missing');
-assert(fs.existsSync(path.join(ROOT, 'GEMINI_INDEX_6.html')), 'gemini 6 missing');
+assert(fs.existsSync(path.join(ROOT, 'CURSOR_INDEX_6.html')), 'CURSOR_INDEX_6 missing');
 
-const r4 = playOneGame('CURSOR_INDEX_4.html', 4);
 const r6 = playOneGame('CURSOR_INDEX_6.html', 6);
 
-const gem4 = fs.readFileSync(path.join(ROOT, 'GEMINI_INDEX_4.html'), 'utf8');
-assert(gem4.includes('4 BEADS STRATEGY'), 'gemini 4 title');
-assert(gem4.includes('Run 100-Game Lab'), 'gemini 4 still has lab');
-
-console.log(JSON.stringify({ ok: true, r4, r6 }, null, 2));
-fs.writeFileSync(path.join(ROOT, 'CURSOR_INDEX_VERIFY_SMOKE.json'), JSON.stringify({ ok: true, r4, r6, at: new Date().toISOString() }, null, 2));
+console.log(JSON.stringify({ ok: true, r6, note: 'GEMINI_INDEX_4/6 and CURSOR_INDEX_4 removed' }, null, 2));
+fs.writeFileSync(path.join(ROOT, 'CURSOR_INDEX_VERIFY_SMOKE.json'), JSON.stringify({ ok: true, r6, note: 'GEMINI_INDEX_4/6 and CURSOR_INDEX_4 removed', at: new Date().toISOString() }, null, 2));
 process.exit(0);
