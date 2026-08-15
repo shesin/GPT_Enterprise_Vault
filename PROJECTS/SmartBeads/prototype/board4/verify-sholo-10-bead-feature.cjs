@@ -30,8 +30,8 @@ function el(id, extra) {
     addEventListener() {},
     getBoundingClientRect: () => ({ left: 0, top: 0, width: 360, height: 360 }),
     getContext: () => ({
-      clearRect() {}, fillRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, fill() {}, arc() {},
-      save() {}, restore() {},
+      clearRect() {}, fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, fill() {}, arc() {},
+      save() {}, restore() {}, closePath() {},
       createLinearGradient() { return { addColorStop() {} }; },
       createRadialGradient() { return { addColorStop() {} }; },
     }),

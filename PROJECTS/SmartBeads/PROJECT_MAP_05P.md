@@ -53,8 +53,11 @@ Minimal browser-based playtest GUI rendered via Vite SVG and TypeScript controll
 
 Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside `src/` per the Prototype Classification rule: may skip full architectural review, must not share code with the production engine, and is not part of the Vite TypeScript playtest path.
 
-- **CURSOR_INDEX_6.html** — Cursor-improved playable Human-vs-AI (and PvP) game for 6-bead Board4. (**Removed:** `GEMINI_INDEX_4.html`, `GEMINI_INDEX_6.html`, `CURSOR_INDEX_4.html`.)
-- **generate-cursor-index.cjs** / **verify-cursor-index.cjs** — Generator and smoke tests for the Cursor Index playables.
+- **SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html** — 6-bead 4×4 playable (Human vs AI / PvP). Long diagonal rays. Web: **NEEDS FURTHER TESTING** (G1–G9 pass, 2026-08-15).
+- **SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html** — Same shell/start; **full box crosses** (X in every 2×2 cell). Web: **NEEDS FURTHER TESTING**; **preferred** 4×4 candidate for human playtest (2026-08-15).
+- **cursor-index-fullturn-engine.cjs** — Headless 4×4 engine (`geometry`: `rays` | `fullBoxCross`; beads 4 or 6).
+- **evaluate-cursor-index-lab.cjs** — Authoritative G1–G9 for INDEX_6 + INDEX_6_B → `CURSOR_INDEX_LAB_EVALUATION.json`.
+- **generate-cursor-index.cjs** / **verify-cursor-index.cjs** — Generator and smoke tests (both 4×4 playables).
 - **GEMINI_LAB.html** — Batch-testing tool. Parametrized (bead count, board geometry, tiebreaker mode, move limit). Runs many AI-vs-AI games headless and outputs a comparison table across configs so results do not need to be copy-pasted from the console by hand.
 - **SHOLO_GUTI.html** — Standalone playable Human-vs-AI Sholo Guti / Sixteen Soldiers (37-point board, 16 vs 16). Calibration/reference traditional game — not a SmartBeads product config.
 - **SHOLO_GUTI_CALIBRATION.html** — Headless/calibration harness for the same geometry (hop-based AI; not the primary playable).
@@ -73,6 +76,7 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **WEB_RULES_05P.md** — Browser-verified, production-accepted rules for this prototype line.
 - **WEB_STATUS_05P.md** — Verification log for this prototype line.
 - **WEB_IN_PROGRESS_05P.md** — Implemented-but-unverified features for this prototype line.
+- **CURSOR_INDEX_LAB_EVALUATION.json** / **CURSOR_INDEX_6_LAB_EVAL.json** / **CURSOR_INDEX_6_B_LAB_EVAL.json** / **CURSOR_INDEX_VERIFY_SMOKE.json** — 4×4 Web eval + playable smoke (2026-08-15).
 - **index.html**, **verify.cjs**, **collect-evidence.cjs**, **evidence/** — a separate, currently inactive prototype track. Explicitly different from the repository-root `index.html` used by the TypeScript engine Vite playtest GUI; do not conflate the two.
 
 ### src/models/GameState.ts

@@ -8,7 +8,7 @@ const ROOT = __dirname;
 function mockEl(id, extra) {
   const o = {
     id, style: {}, value: '', disabled: false, textContent: '', innerText: '', innerHTML: '',
-    className: '', options: [], selectedIndex: 0,
+    className: '', options: [], selectedIndex: 0, dataset: {},
     classList: { _c: new Set(), toggle(n, on) { if (on !== false) this._c.add(n); else this._c.delete(n); }, add(n) { this._c.add(n); }, remove(n) { this._c.delete(n); } },
     addEventListener() {},
     getBoundingClientRect: () => ({ left: 0, top: 0, width: 360, height: 360 }),
@@ -16,6 +16,7 @@ function mockEl(id, extra) {
     getContext: () => ({
       setTransform() {}, clearRect() {}, fillRect() {}, beginPath() {}, moveTo() {}, lineTo() {},
       stroke() {}, fill() {}, arc() {}, setLineDash() {}, closePath() {}, strokeRect() {},
+      save() {}, restore() {},
       createLinearGradient() { return { addColorStop() {} }; },
       createRadialGradient() { return { addColorStop() {} }; },
     }),
@@ -63,7 +64,10 @@ function loadCursorIndex(file) {
   const elements = {
     'audio-toggle': mockEl('audio-toggle'),
     'game-mode-select': mockEl('game-mode-select', { value: 'pve' }),
-    'ai-difficulty': mockEl('ai-difficulty', { value: '2', options: [{ text: 'Easy' }, { text: 'Medium' }, { text: 'Hard' }], selectedIndex: 1 }),
+    'ai-level-select': mockEl('ai-level-select', { value: '2', options: [{ text: 'Easy' }, { text: 'Medium' }, { text: 'Hard' }], selectedIndex: 1 }),
+    'move-highlight-select': mockEl('move-highlight-select', { value: 'on', dataset: {} }),
+    'match-timer-select': mockEl('match-timer-select', { value: 'off' }),
+    'shot-clock-select': mockEl('shot-clock-select', { value: 'off' }),
     'ai-level-container': mockEl('ai-level-container'),
     'turn-timer-select': mockEl('turn-timer-select', { value: '0' }),
     'timer-mode-select': mockEl('timer-mode-select', { value: 'off' }),
@@ -85,7 +89,10 @@ function loadCursorIndex(file) {
   const listeners = {};
   const sandbox = {
     console, Math, Date, Object, Array, Map, Set, Infinity, parseInt, parseFloat, isFinite,
+    performance: { now: () => Date.now() },
     setTimeout: (fn) => { fn(); return 1; }, clearTimeout() {}, setInterval() { return 1; }, clearInterval() {},
+    requestAnimationFrame: () => 0,
+    cancelAnimationFrame() {},
     window: {},
     document: {
       getElementById: (id) => elements[id] || mockEl(id),

@@ -174,6 +174,16 @@ Never continue with assumptions.
 
 Never invent files, tests, build results, errors, or implementation status. Report actual results only — see AGENT_RULE_05P.md for the full pre-completion verification checklist.
 
+## Playable HTML UI Parity
+
+When building or modifying a **playable HTML board** (Human vs AI / PvP shell):
+
+1. **Reference diff** — Identify the approved reference playable (e.g. `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html`) and match its shell: 4-column layout, Ivory/Ebony labels, settings panel IDs, undo, animations, turn highlight, and colour tokens unless the task explicitly changes them.
+2. **Geometry vs cosmetics** — Board node count, adjacency, starting position, and centre/endgame rules are geometry; panel chrome is shell. Do not ship a compact single-column lab UI when the reference is the full feature shell.
+3. **Smoke test ≠ visual parity** — Headless VM smoke tests (legal moves, game finish) do not confirm drawing, centre highlight, or layout. After smoke passes, assert in code or report explicitly what was **not** visually verified.
+4. **Centre highlight** — Endgame centre zones are drawn as **per-node amber rings** on the designated centre node(s), not a large filled square covering the whole centre region unless explicitly requested.
+5. **Completion claim** — Per AGENT_RULE_05P.md: user-visible behaviour is CONFIRMED only when directly observed (browser open, screenshot, or explicit human sign-off). Smoke-only passes are Technical Verification, not UI confirmation.
+
 ---
 
 # Completion Report

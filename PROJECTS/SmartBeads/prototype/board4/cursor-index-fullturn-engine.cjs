@@ -52,14 +52,21 @@ function clearAiTestSeed() {
   aiTestRng = null;
 }
 
-function buildDiagonalRays() {
+function buildDiagonalRays(geometry) {
+  if (geometry === 'fullBoxCross') return null;
   return [
     [0, 5, 10, 15], [3, 6, 9, 12],
     [1, 6, 11], [4, 9, 14], [2, 5, 8], [7, 10, 13],
   ];
 }
 
-function buildAdjacency() {
+function linkDiag(adj, u, v) {
+  if (!adj[u].includes(v)) adj[u].push(v);
+  if (!adj[v].includes(u)) adj[v].push(u);
+}
+
+function buildAdjacency(geometry) {
+  const mode = geometry === 'fullBoxCross' ? 'fullBoxCross' : 'rays';
   const adj = Array.from({ length: N }, () => []);
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
@@ -76,12 +83,17 @@ function buildAdjacency() {
       }
     }
   }
-  for (const ray of buildDiagonalRays()) {
-    for (let i = 0; i < ray.length - 1; i++) {
-      const u = ray[i];
-      const v = ray[i + 1];
-      if (!adj[u].includes(v)) adj[u].push(v);
-      if (!adj[v].includes(u)) adj[v].push(u);
+  if (mode === 'fullBoxCross') {
+    for (let r = 0; r < ROWS - 1; r++) {
+      for (let c = 0; c < COLS - 1; c++) {
+        const tl = r * COLS + c;
+        linkDiag(adj, tl, tl + COLS + 1);
+        linkDiag(adj, tl + 1, tl + COLS);
+      }
+    }
+  } else {
+    for (const ray of buildDiagonalRays('rays')) {
+      for (let i = 0; i < ray.length - 1; i++) linkDiag(adj, ray[i], ray[i + 1]);
     }
   }
   return adj;
@@ -106,7 +118,7 @@ function buildJumps(adj) {
   return jumps;
 }
 
-const ADJ = buildAdjacency();
+const ADJ = buildAdjacency('rays');
 const JUMPS = buildJumps(ADJ);
 
 function startingBoard(beadsPerSide) {
@@ -126,12 +138,12 @@ function startingBoard(beadsPerSide) {
   throw new Error('Unsupported beadsPerSide: ' + beadsPerSide);
 }
 
-function getMovesForNode(board, node, player) {
+function getMovesForNode(board, node, player, adj = ADJ, jumps = JUMPS) {
   const moves = [];
-  for (const neighbor of ADJ[node]) {
+  for (const neighbor of adj[node]) {
     if (board[neighbor] === 0) moves.push({ from: node, to: neighbor, captured: null });
   }
-  for (const j of JUMPS) {
+  for (const j of jumps) {
     if (j.from === node && board[j.over] !== 0 && board[j.over] !== player && board[j.to] === 0) {
       moves.push({ from: node, to: j.to, captured: j.over });
     }
@@ -139,16 +151,16 @@ function getMovesForNode(board, node, player) {
   return moves;
 }
 
-function getAllLegalMoves(board, player) {
+function getAllLegalMoves(board, player, adj = ADJ, jumps = JUMPS) {
   let moves = [];
   for (let i = 0; i < N; i++) {
-    if (board[i] === player) moves = moves.concat(getMovesForNode(board, i, player));
+    if (board[i] === player) moves = moves.concat(getMovesForNode(board, i, player, adj, jumps));
   }
   return moves;
 }
 
-function getFollowUpJumps(board, node, player) {
-  return getMovesForNode(board, node, player).filter((m) => m.captured !== null);
+function getFollowUpJumps(board, node, player, adj = ADJ, jumps = JUMPS) {
+  return getMovesForNode(board, node, player, adj, jumps).filter((m) => m.captured !== null);
 }
 
 function applyMove(board, move) {
@@ -173,9 +185,9 @@ function positionKey(board, moverJustMoved) {
   return board.join('') + '_' + moverJustMoved;
 }
 
-function generateTurnEnds(currBoard, player, maxBranch) {
+function generateTurnEnds(currBoard, player, maxBranch, adj = ADJ, jumps = JUMPS) {
   const ends = [];
-  const root = getAllLegalMoves(currBoard, player).slice();
+  const root = getAllLegalMoves(currBoard, player, adj, jumps).slice();
   root.sort((a, b) => (b.captured !== null ? 1 : 0) - (a.captured !== null ? 1 : 0));
   for (let i = 0; i < root.length; i++) {
     const m = root[i];
@@ -191,9 +203,9 @@ function generateTurnEnds(currBoard, player, maxBranch) {
     while (stack.length) {
       const node = stack.pop();
       if (node.depth > SEARCH_LIMITS.chainDepthMax) continue;
-      const jumps = getFollowUpJumps(node.board, node.pos, player);
-      for (let j = 0; j < jumps.length; j++) {
-        const hop = jumps[j];
+      const follow = getFollowUpJumps(node.board, node.pos, player, adj, jumps);
+      for (let j = 0; j < follow.length; j++) {
+        const hop = follow[j];
         const nb = applyMove(node.board, hop);
         const path = node.path.concat([hop]);
         ends.push({ board: nb, path });
@@ -205,13 +217,13 @@ function generateTurnEnds(currBoard, player, maxBranch) {
   return ends;
 }
 
-function evaluate(b) {
+function evaluate(b, adj = ADJ, jumps = JUMPS) {
   const a = count(b, P1);
   const c = count(b, P2);
   if (a === 0) return -10000;
   if (c === 0) return 10000;
-  const mob1 = getAllLegalMoves(b, P1).length;
-  const mob2 = getAllLegalMoves(b, P2).length;
+  const mob1 = getAllLegalMoves(b, P1, adj, jumps).length;
+  const mob2 = getAllLegalMoves(b, P2, adj, jumps).length;
   return (a - c) * 48 + (mob1 - mob2) * 1.5;
 }
 
@@ -233,15 +245,15 @@ function replyBranch(level) {
   return level >= 3 ? SEARCH_LIMITS.replyBranchByLevel[3] : SEARCH_LIMITS.replyBranchByLevel[2];
 }
 
-function minimaxTurns(curr, depth, maximizing, alpha, beta, branchCap) {
-  if (depth === 0) return evaluate(curr);
+function minimaxTurns(curr, depth, maximizing, alpha, beta, branchCap, adj = ADJ, jumps = JUMPS) {
+  if (depth === 0) return evaluate(curr, adj, jumps);
   const player = maximizing ? P1 : P2;
-  const ends = generateTurnEnds(curr, player, branchCap);
+  const ends = generateTurnEnds(curr, player, branchCap, adj, jumps);
   if (!ends.length) return maximizing ? -900 : 900;
   if (maximizing) {
     let best = -Infinity;
     for (let i = 0; i < ends.length; i++) {
-      const v = minimaxTurns(ends[i].board, depth - 1, false, alpha, beta, branchCap);
+      const v = minimaxTurns(ends[i].board, depth - 1, false, alpha, beta, branchCap, adj, jumps);
       if (v > best) best = v;
       if (v > alpha) alpha = v;
       if (beta <= alpha) break;
@@ -250,7 +262,7 @@ function minimaxTurns(curr, depth, maximizing, alpha, beta, branchCap) {
   }
   let best = Infinity;
   for (let i = 0; i < ends.length; i++) {
-    const v = minimaxTurns(ends[i].board, depth - 1, true, alpha, beta, branchCap);
+    const v = minimaxTurns(ends[i].board, depth - 1, true, alpha, beta, branchCap, adj, jumps);
     if (v < best) best = v;
     if (v < beta) beta = v;
     if (beta <= alpha) break;
@@ -266,9 +278,9 @@ function repetitionPenaltyForMover(boardAfter, mover, hist) {
   return 0;
 }
 
-function selectAITurn(level, fromBoard, player, hist) {
+function selectAITurn(level, fromBoard, player, hist, adj = ADJ, jumps = JUMPS) {
   const branch = rootBranch(level);
-  const ends = generateTurnEnds(fromBoard, player, branch);
+  const ends = generateTurnEnds(fromBoard, player, branch, adj, jumps);
   if (!ends.length) return null;
 
   if (level <= 1) {
@@ -277,7 +289,7 @@ function selectAITurn(level, fromBoard, player, hist) {
     for (let i = 0; i < ends.length; i++) {
       const end = ends[i];
       const caps = pathCaptureCount(end.path);
-      let score = caps * 100 + scoreForPlayer(end.board, player) * 0.01;
+      let score = caps * 100 + (player === P1 ? evaluate(end.board, adj, jumps) : -evaluate(end.board, adj, jumps)) * 0.01;
       score -= repetitionPenaltyForMover(end.board, player, hist);
       if (score > bestScore) {
         bestScore = score;
@@ -294,10 +306,10 @@ function selectAITurn(level, fromBoard, player, hist) {
   for (let i = 0; i < ends.length; i++) {
     const end = ends[i];
     let abs;
-    if (reply <= 0) abs = evaluate(end.board);
+    if (reply <= 0) abs = evaluate(end.board, adj, jumps);
     else {
       const p1ToMove = player === P2;
-      abs = minimaxTurns(end.board, reply, p1ToMove, -Infinity, Infinity, rBranch);
+      abs = minimaxTurns(end.board, reply, p1ToMove, -Infinity, Infinity, rBranch, adj, jumps);
     }
     let score = player === P1 ? abs : -abs;
     score += pathCaptureCount(end.path) * 0.05;
@@ -365,10 +377,13 @@ function describeSearchSemantics(requestedDepth) {
   };
 }
 
-function createEngine(beadsPerSide) {
+function createEngine(beadsPerSide, options) {
   if (beadsPerSide !== 4 && beadsPerSide !== 6) {
     throw new Error('cursor-index-fullturn-engine supports beadsPerSide 4 or 6 only');
   }
+  const geometry = options && options.geometry === 'fullBoxCross' ? 'fullBoxCross' : 'rays';
+  const adj = buildAdjacency(geometry);
+  const jumps = buildJumps(adj);
 
   function start() {
     return startingBoard(beadsPerSide);
@@ -389,12 +404,12 @@ function createEngine(beadsPerSide) {
       let p2Captures = 0;
       let maxChain = 0;
       while (moves < moveCap) {
-        const legal = getAllLegalMoves(sim, turn);
+        const legal = getAllLegalMoves(sim, turn, adj, jumps);
         if (!legal.length) {
           clearAiTestSeed();
           return finish(resolvedSeed, turn === P1 ? 'P2' : 'P1', 'stalemate', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
         }
-        const path = selectAITurn(aiDepth, sim, turn, hist);
+        const path = selectAITurn(aiDepth, sim, turn, hist, adj, jumps);
         if (!path || !path.length) {
           clearAiTestSeed();
           return finish(resolvedSeed, turn === P1 ? 'P2' : 'P1', 'stalemate', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
@@ -432,14 +447,15 @@ function createEngine(beadsPerSide) {
 
   return {
     beadsPerSide,
+    geometry,
     P1,
     P2,
     N,
     ROWS,
     COLS,
-    ADJ,
+    ADJ: adj,
     startingBoard: start,
-    getAllLegalMoves,
+    getAllLegalMoves: (b, p) => getAllLegalMoves(b, p, adj, jumps),
     describeSearchSemantics,
     playHeadlessGame,
     setAiTestSeed,

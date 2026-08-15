@@ -172,6 +172,7 @@
       <div class="stat"><span>P1 captures</span><span class="val" id="p1-caps">0</span></div>
       <div class="stat"><span>P2 captures</span><span class="val" id="p2-caps">0</span></div>
       <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
+      <div class="stat"><span>Starts</span><span class="val" id="starts-label">Ivory</span></div>
       <div class="stat"><span>Shot clock</span><span class="val" id="shot-clock-val">OFF</span></div>
       <div class="stat"><span>Match timer</span><span class="val" id="match-clock-val">OFF</span></div>
       <div class="stat"><span>P1 center</span><span class="val" id="p1-center">0</span></div>
@@ -211,18 +212,18 @@
           <label>Match timer</label>
           <select id="match-timer-select">
             <option value="off" selected>Off</option>
+            <option value="10">10 min</option>
             <option value="20">20 min</option>
             <option value="30">30 min</option>
-            <option value="40">40 min</option>
           </select>
         </div>
         <div class="setting">
           <label>Turn shot clock</label>
           <select id="shot-clock-select">
             <option value="off" selected>Off</option>
-            <option value="5">5 sec</option>
-            <option value="10">10 sec</option>
-            <option value="15">15 sec</option>
+            <option value="20">20 sec</option>
+            <option value="30">30 sec</option>
+            <option value="50">50 sec</option>
           </select>
         </div>
         <div class="setting">
@@ -231,6 +232,7 @@
             <option value="off" selected>Off</option>
             <option value="endgame">End-Game</option>
           </select>
+          <div class="tiny">5×5 · 10 vs 10. Amber centre square at middle node (centre column, row 3) — same style as 6-bead.</div>
         </div>
         <div class="setting">
           <label>Move highlight</label>
@@ -316,6 +318,11 @@
         link('A' + r + c, 'A' + r2 + c2);
       }
     }
+  }
+
+  function isEndgameCenterNode(node) {
+    // Middle row centre node (lattice x=4,y=4) — same single-node pattern as 6-bead row 3.
+    return node.y === 4 && node.x === 4;
   }
 
   function startingBoard() {
@@ -482,6 +489,7 @@
   }
 
   let board = startingBoard();
+  let nextStartingPlayer = P1;
   let currentTurn = P1;
   let currentState = STATE.IDLE;
   let selected = null;
@@ -700,14 +708,33 @@
       }
     }
 
+    // Amber centre square at middle row, centre column (lattice x=4,y=4).
+    {
+      const [cx, cy] = toXY(4, 4);
+      ctx.fillStyle = 'rgba(232,168,60,0.35)';
+      ctx.fillRect(cx - 14, cy - 14, 28, 28);
+      ctx.strokeStyle = 'rgba(232,168,60,0.95)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(cx - 14, cy - 14, 28, 28);
+    }
+
     const hideFrom = anim ? anim.from : -1;
     const hideCap = anim && anim.captured != null ? anim.captured : -1;
 
     for (let i = 0; i < N; i++) {
       const [x, y] = toXY(NODES[i].x, NODES[i].y);
+      if (isEndgameCenterNode(NODES[i])) {
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(212, 140, 40, 0.22)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(232, 168, 60, 0.85)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(212,168,75,0.4)';
+      ctx.fillStyle = isEndgameCenterNode(NODES[i]) ? 'rgba(232,168,60,0.95)' : 'rgba(212,168,75,0.4)';
       ctx.fill();
 
       if (moveHighlight && validMoves.some((m) => m.to === i) && !animating) {
@@ -764,8 +791,8 @@
     let c1 = 0, c2 = 0;
     if (centerRule === 'endgame') {
       for (let i = 0; i < N; i++) {
-        if (board[i] === P1 && NODES[i].id.startsWith('A') && (NODES[i].x === 4 || NODES[i].x === 2 || NODES[i].x === 6)) c1++;
-        if (board[i] === P2 && NODES[i].id.startsWith('A') && (NODES[i].x === 4 || NODES[i].x === 2 || NODES[i].x === 6)) c2++;
+        if (board[i] === P1 && isEndgameCenterNode(NODES[i])) c1++;
+        if (board[i] === P2 && isEndgameCenterNode(NODES[i])) c2++;
       }
     }
     document.getElementById('p1-center').textContent = centerRule === 'off' ? 'Off' : String(c1);
@@ -819,8 +846,8 @@
     if (centerRule === 'endgame') {
       c1 = 0; c2 = 0;
       for (let i = 0; i < N; i++) {
-        if (board[i] === P1 && NODES[i].id.startsWith('A') && (NODES[i].x === 4 || NODES[i].x === 2 || NODES[i].x === 6)) c1++;
-        if (board[i] === P2 && NODES[i].id.startsWith('A') && (NODES[i].x === 4 || NODES[i].x === 2 || NODES[i].x === 6)) c2++;
+        if (board[i] === P1 && isEndgameCenterNode(NODES[i])) c1++;
+        if (board[i] === P2 && isEndgameCenterNode(NODES[i])) c2++;
       }
     }
     if (centerRule !== 'off') {
@@ -1032,7 +1059,9 @@
     if (timerId) clearInterval(timerId);
     if (rafId) cancelAnimationFrame(rafId);
     board = startingBoard();
-    currentTurn = P1;
+    currentTurn = nextStartingPlayer;
+    document.getElementById('starts-label').textContent = currentTurn === P1 ? 'Ivory' : 'Ebony';
+    nextStartingPlayer = nextStartingPlayer === P1 ? P2 : P1;
     currentState = STATE.IDLE;
     selected = null;
     validMoves = [];
@@ -1049,11 +1078,18 @@
     document.getElementById('result-modal').style.display = 'none';
     applySettings();
     resetTurnClock();
-    setStatus('Your turn — select a piece');
     updateUI();
     drawBoard();
     startTimers();
     if (undoBtn) undoBtn.disabled = true;
+    if (mode === 'pve' && currentTurn === P2) {
+      aiThinking = true;
+      setStatus('AI is thinking…');
+      setTimeout(runAITurn, 40);
+    } else {
+      aiThinking = false;
+      setStatus(currentTurn === P1 ? 'Your turn — select a piece' : 'Ebony turn');
+    }
   }
 
   function loopPulse(ts) {

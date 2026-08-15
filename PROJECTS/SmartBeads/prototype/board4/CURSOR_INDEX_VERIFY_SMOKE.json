@@ -1,24 +1,7 @@
 {
   "ok": true,
-  "r4": {
-    "file": "CURSOR_INDEX_4.html",
-    "beads": 4,
-    "ok": true,
-    "humanMove": {
-      "from": 0,
-      "to": 4,
-      "captured": null
-    },
-    "fullGame": {
-      "humanPlies": 16,
-      "finished": true,
-      "winnerText": "Blue wins",
-      "reason": "Blue eliminated all Red beads!",
-      "modal": "flex"
-    }
-  },
   "r6": {
-    "file": "CURSOR_INDEX_6.html",
+    "file": "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html",
     "beads": 6,
     "ok": true,
     "humanMove": {
@@ -27,12 +10,31 @@
       "captured": null
     },
     "fullGame": {
-      "humanPlies": 20,
+      "humanPlies": 6,
       "finished": true,
-      "winnerText": "Blue wins",
-      "reason": "Max moves limit of 40 reached! Blue won on captures (5 vs 1).",
+      "winnerText": "Ivory wins",
+      "reason": "AI has no legal moves.",
       "modal": "flex"
     }
   },
-  "at": "2026-08-14T09:46:46.395Z"
+  "r6b": {
+    "file": "SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html",
+    "beads": 6,
+    "ok": true,
+    "humanMove": {
+      "from": 0,
+      "to": 5,
+      "captured": null
+    },
+    "fullGame": {
+      "humanPlies": 6,
+      "finished": true,
+      "winnerText": "Ivory wins",
+      "reason": "AI has no legal moves.",
+      "modal": "flex"
+    }
+  },
+  "playable": "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html",
+  "playableB": "SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html",
+  "at": "2026-08-15T09:57:21.858Z"
 }

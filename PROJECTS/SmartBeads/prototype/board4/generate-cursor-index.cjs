@@ -247,20 +247,20 @@ function buildHtml(variant) {
       </select>
     </div>
     <div class="setting-item">
-      <label>Turn Shot Clock</label>
+      <label>Turn shot clock</label>
       <select id="turn-timer-select">
-        <option value="10">10 Sec</option>
-        <option value="15">15 Sec</option>
-        <option value="20">20 Sec</option>
+        <option value="10">10 sec</option>
+        <option value="20">20 sec</option>
+        <option value="30">30 sec</option>
         <option value="0" selected>Off</option>
       </select>
     </div>
     <div class="setting-item">
-      <label>Match Timer</label>
+      <label>Match timer</label>
       <select id="timer-mode-select">
-        <option value="global_60">1 Min</option>
-        <option value="global_120">2 Min</option>
-        <option value="global_180">3 Min</option>
+        <option value="global_180">3 min</option>
+        <option value="global_300">5 min</option>
+        <option value="global_480">8 min</option>
         <option value="off" selected>Off</option>
       </select>
     </div>
@@ -1145,7 +1145,7 @@ const variants = [
     beads: 6,
     startBoard: [1, 1, 1, 1, 1, 0, 0, 1, 2, 0, 0, 2, 2, 2, 2, 2],
     tagline: '6 beads · 4×4 · Human vs AI',
-    file: 'CURSOR_INDEX_6.html',
+    file: 'SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html',
     bgmLabel: 'BGM · Gemini set',
     bgmTracks: BGM_GEMINI_ALL,
   },

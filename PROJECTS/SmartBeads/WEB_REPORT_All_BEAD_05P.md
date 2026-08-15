@@ -1,6 +1,6 @@
 # Web Report: All Board Families (Sholo Ladder + Cursor Index 4×4)
 
-**Date:** 2026-08-14  
+**Date:** 2026-08-15 (4×4 6-bead vs 6-bead-b re-run) · prior sections 2026-08-14  
 **Location:** SmartBeads root — Web JSON/engines in `prototype/board4/`  
 **Methodology:** `LAB_TERMINOLOGY_05P.md` (G1–G9 gates, no new thresholds)  
 **Reference anchor:** 16-bead Sholo — **FULLY CERTIFIED** — `WEB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`  
@@ -16,16 +16,18 @@
 
 ---
 
-## Verification status (2026-08-14 — 4-bead & 5-bead 3×5 re-run)
+## Verification status (2026-08-15 — 4×4 6-bead vs 6-bead-b)
 
 | Check | Status | Evidence |
 |-------|--------|----------|
 | 16-bead reference instrument | **CERTIFIED** | Unchanged — `instrumentValid=true`, N=30 |
 | Ladder G1–G9 — **4-bead, 5-bead (3×5 sketch)** | **PASS (evaluator)** | `evaluate-ladder-lab.cjs --only 4,5` → both **REJECT** (G2) |
-| Ladder G1–G9 — boards **10, 7, 6, 8** | **UNCHANGED** | Prior verdicts preserved in `LADDER_LAB_EVALUATION.json` |
+| Ladder G1–G9 — boards **10, 7, 6, 8** | **UNCHANGED** | Prior verdicts in `LADDER_LAB_EVALUATION.json` |
 | **3-bead (3×5 sketch)** | **NOT TESTED** | Dropped from ladder — not evaluated |
-| Cursor Index G1–G9 — **4, 6** | **UNCHANGED** | INDEX_4 **REJECT**; INDEX_6 **NEEDS FURTHER TESTING** |
-| Compare batches | **PASS** | `SHOLO_4_VS_16_LAB_COMPARE.json`, `SHOLO_5_VS_16_LAB_COMPARE.json` (3×5 geometry) |
+| Cursor Index G1–G9 — **6, 6-b** | **PASS (evaluator)** | `evaluate-cursor-index-lab.cjs` 2026-08-15 → both **NEEDS FURTHER TESTING** (G1–G9 pass) |
+| Cursor Index playable smoke | **PASS** | `verify-cursor-index.cjs` → both 4×4 feature shells |
+| Cursor Index G1–G9 — **4** | **UNCHANGED** | INDEX_4 **REJECT** (G2) |
+| Compare batches (3×5) | **PASS** | `SHOLO_4_VS_16_LAB_COMPARE.json`, `SHOLO_5_VS_16_LAB_COMPARE.json` |
 | Human playtest | **NOT APPLICABLE** | Gameplay / UX Review — out of Web scope |
 
 ---
@@ -42,7 +44,8 @@
 | **4** (3×5 sketch) | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **100%** (P1 **0%** / P2 **100%**). |
 | **8** | **REJECT** | **G2** | **D2**, P1 opens: second mover wins **67.8%** (P1 **0%** / P2 **67.8%**); D2 capture ratio also fails G2. Swap: second mover wins **100%** of games with a winner either way. |
 | **Cursor Index 4** | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **85.6%** (P1 **14.4%** / P2 **85.6%**). Exceeds G2 ±35 pp limit → `g2_fairness_fail`. |
-| **Cursor Index 6** | **NEEDS FURTHER TESTING** | none | All G1–G9 pass. **D3** first mover P1 wins **95.6%** (P2 **0%**) — not a G2 input. **Remaining:** human playtest sign-off. |
+| **Cursor Index 6** (`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`) | **NEEDS FURTHER TESTING** | none | Long diagonal rays. All G1–G9 pass. D3 P1 **95.6%** / P2 **0%** (not G2 input). Human playtest pending. |
+| **Cursor Index 6-b** (`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`) | **NEEDS FURTHER TESTING** | none | Full box crosses (X in every 2×2 cell). All G1–G9 pass. D3 P1 **68.9%** / P2 **0%** (not G2 input). **Preferred lab profile** vs 6 — see comparison below. |
 
 **No board receives KEEP** — KEEP requires human playtest per methodology.
 
@@ -221,9 +224,60 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 ---
 
-## Cursor Index 6 (4×4, 6 vs 6) — NEEDS FURTHER TESTING
+## Cursor Index 6 vs 6-b (4×4, 6 vs 6) — side-by-side Web run (2026-08-15)
 
-**Sources:** `cursor-index-fullturn-engine.cjs`, `CURSOR_INDEX_6_LAB_EVAL.json`.
+**Evaluator:** `evaluate-cursor-index-lab.cjs` · **Engine:** `cursor-index-fullturn-engine.cjs` (geometry: `rays` vs `fullBoxCross`) · **Protocol:** D1/D2/D3 · seeds 101/202/303 · N=30/seed · move-cap 120 · P1 opens.
+
+| Playable | Geometry | Web verdict | Failed gates |
+|----------|----------|-------------|--------------|
+| `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html` | Long diagonal rays | **NEEDS FURTHER TESTING** | none (G1–G9 pass) |
+| `SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html` | Full box crosses (X in every 2×2 cell) | **NEEDS FURTHER TESTING** | none (G1–G9 pass) |
+
+**Neither is Web REJECT.** **Neither receives KEEP** — KEEP requires human playtest (Gameplay / UX Review).
+
+### Lab metrics (primary depth D2)
+
+| Metric | 6 (rays) | 6-b (full crosses) | Notes |
+|--------|----------|-------------------|-------|
+| D2 avgCaptures | **6.8** | 6.6 | Similar contest at primary depth |
+| D2 avgLength | 111.9 | 116.0 | Both hit move-cap often (~86%) |
+| D2 elimination | 14.4% | 14.4% | Same |
+| D2 move-cap draw | 85.6% | 85.6% | Same |
+| D2 P1 / P2 win (all games) | 6.7% / 7.8% | 7.8% / 6.7% | Near even |
+| D2 among games with winner | P1 **46.2%** / P2 **53.8%** | P1 **53.8%** / P2 **46.2%** | Both within G2 |
+
+### D1 greedy fairness (G2 input)
+
+| Who opens | 6 (rays) | 6-b (full crosses) |
+|-----------|----------|-------------------|
+| P1 | First mover **33.3%** · second mover **66.7%** | First mover **43.3%** · second mover **56.7%** |
+| D1 avgCaptures | 8.7 | **9.8** |
+
+**6-b is more balanced at D1** (smaller second-mover edge) and shows **higher capture activity**.
+
+### D3 longer horizon (not a G2 input — human review only)
+
+| Who opens | 6 (rays) | 6-b (full crosses) |
+|-----------|----------|-------------------|
+| P1 | P1 **95.6%** · P2 **0%** | P1 **68.9%** · P2 **0%** |
+| D3 elimination | 95.6% | 68.9% |
+| D3 move-cap draw | 2.2% | 31.1% |
+
+**6-b has less extreme D3 first-mover skew** (still P2 **0%** at D3 — flag for human review on both).
+
+### Recommendation (Web → product)
+
+| Action | Board |
+|--------|-------|
+| **Schedule human playtest first** | **`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`** — better D1 balance, higher D1 captures, milder D3 skew, matches requested full-cross geometry |
+| **Keep as alternate / do not reject** | **`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`** — passes all gates but weaker D1 balance and harsher D3 skew; useful if human prefers long-ray feel |
+| **Web REJECT** | **Neither** |
+
+---
+
+## Cursor Index 6 (4×4, 6 vs 6) — detail (`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`)
+
+**Sources:** `cursor-index-fullturn-engine.cjs` (geometry `rays`), `CURSOR_INDEX_6_LAB_EVAL.json`.
 
 | Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
 |-------|-------------|-----------|-------------|---------------|-------------|
@@ -245,7 +299,23 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 **Failed gate:** none — all G1–G9 **PASS**.
 
-**Remaining test before KEEP:** human playtest sign-off (Gameplay / UX Review). Web cannot grant KEEP alone. The **D3** first-mover **95.6%** win rate (P1 opens, P2 **0%**) is recorded for human review; it did not fail any Web gate.
+**Remaining test before KEEP:** human playtest sign-off. Prefer **6-b** for first human session (see comparison above).
+
+---
+
+## Cursor Index 6-b (4×4, full box crosses) — detail (`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`)
+
+**Sources:** `cursor-index-fullturn-engine.cjs` (geometry `fullBoxCross`), `CURSOR_INDEX_6_B_LAB_EVAL.json`.
+
+| Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
+|-------|-------------|-----------|-------------|---------------|-------------|
+| D1 | 9.8 | 13.2 | 100% | 0% | 43.3% / 56.7% |
+| D2 | 6.6 | 116.0 | 14.4% | 85.6% | 7.8% / 6.7% |
+| D3 | 8.8 | 80.0 | 68.9% | 31.1% | **68.9% / 0%** |
+
+**Fairness (D2 primary):** P1 opens — among 13 games with a winner: P1 **53.8%**, P2 **46.2%**. D2 swap batches within G2 limits.
+
+**Failed gate:** none — all G1–G9 **PASS**. Parity confirmed (playable ↔ lab engine).
 
 ---
 
@@ -253,7 +323,7 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 **D2 capture activity vs 16-bead reference (~11.7):** 10-bead 12.0 ✓ · 8-bead 9.1 · 7-bead 8.6 · 6-bead 6.0 · **5-bead (3×5) 4.9** · **4-bead (3×5) 3.4**.
 
-**Fairness:** **4-bead** and **5-bead (3×5 sketch)** both **REJECT** on **G2** at **D1** (second mover **100%** when P1 opens). **8-bead** **REJECT** at **D2**. Cursor Index 4 **REJECT** at **D1**. **6-bead** and Cursor Index 6 pass all gates — human playtest pending. **3-bead sketch not tested.**
+**Fairness:** **4-bead** and **5-bead (3×5 sketch)** both **REJECT** on **G2** at **D1**. **8-bead** **REJECT** at **D2**. Cursor Index 4 **REJECT** at **D1**. **Both 4×4 6-bead variants** pass all gates — human playtest pending; **prefer 6-b** for first session.
 
 ---
 
@@ -271,7 +341,8 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 | Continue? | Boards |
 |-----------|--------|
-| **Yes — schedule human playtest** | **Cursor Index 6** (all Web gates pass) |
+| **Yes — schedule human playtest (prefer first)** | **`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`** (full box crosses) |
+| **Yes — alternate geometry** | **`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`** (long diagonal rays) |
 | **No — Web REJECT (G2)** | **Cursor Index 4** — playable removed |
 
 ---
@@ -282,11 +353,20 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 |--|---------------------------|------------------------------|
 | **Sholo 10, 7, 6** | NEEDS FURTHER TESTING — **remaining: human playtest** | Not started |
 | **Sholo 8, 5, 4** | **REJECT** (G2) | N/A until redesign |
-| **Cursor Index 6** | NEEDS FURTHER TESTING — **remaining: human playtest** | Not started |
+| **Cursor Index 6 / 6-b** | NEEDS FURTHER TESTING — **remaining: human playtest** (prefer **6-b** first) | Not started |
 | **Cursor Index 4** | **REJECT** (G2) | N/A until redesign |
 | **16-bead** | REFERENCE | N/A |
 
 ---
+
+## Artifacts (2026-08-15 — 4×4 6 vs 6-b)
+
+| File | Content |
+|------|---------|
+| `CURSOR_INDEX_LAB_EVALUATION.json` | Fresh G1–G9 for INDEX_6 + INDEX_6_B |
+| `CURSOR_INDEX_6_LAB_EVAL.json` | `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE` eval |
+| `CURSOR_INDEX_6_B_LAB_EVAL.json` | `SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE` eval |
+| `CURSOR_INDEX_VERIFY_SMOKE.json` | Playable smoke (both 4×4 files) |
 
 ## Artifacts (2026-08-14)
 
@@ -299,10 +379,9 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 | `SHOLO_8_BEAD_FAIRNESS_TRUST.json` | 8-bead G2 investigation |
 | `SHOLO_*_BEAD_FEATURE_SMOKE.json` | Playable smoke (5/6/7/8/10) |
 | `LAB_16_BEAD_REFERENCE_VALIDATION.json` | Certified 16-bead anchor |
-| `cursor-index-fullturn-engine.cjs` | Complete-turn headless engine (4/6 bead, 4×4) |
-| `CURSOR_INDEX_LAB_EVALUATION.json` | Fresh Cursor Index G1–G9 (certified protocol) |
-| `CURSOR_INDEX_4_LAB_EVAL.json` / `CURSOR_INDEX_6_LAB_EVAL.json` | Per-board eval artifacts |
+| `cursor-index-fullturn-engine.cjs` | 4×4 headless engine (`rays` / `fullBoxCross`) |
+| `CURSOR_INDEX_4_LAB_EVAL.json` | INDEX_4 eval (REJECT) |
 
 ---
 
-*SmartBeads Web — 4-bead & 5-bead 3×5 sketch evaluation 2026-08-14. `evaluate-ladder-lab.cjs --only 4,5`. 3-bead sketch not tested.*
+*SmartBeads Web — 4×4 6-bead vs 6-bead-b evaluation 2026-08-15 (`evaluate-cursor-index-lab.cjs`). Prior 4-bead & 5-bead 3×5 sketch evaluation 2026-08-14.*

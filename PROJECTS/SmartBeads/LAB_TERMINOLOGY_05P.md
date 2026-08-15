@@ -472,7 +472,7 @@ Single source: **`sholo-lab-protocol.cjs`**
 
 Reference validation, compare scripts, and `evaluate-ladder-lab.cjs` G9 must all read this module. No hardcoded competing N values.
 
-Cursor Index family uses separate **`cursor-index-lab-protocol.cjs`** (N=50, move-cap 40) when that instrument is tested.
+**Cursor Index 4×4 (2026-08-15):** Uses the **same** `sholo-lab-protocol.cjs` batch (N=30, move-cap 120, seeds 101/202/303, D1/D2/D3) via `evaluate-cursor-index-lab.cjs`. Legacy `cursor-index-lab-protocol.cjs` (N=50, move-cap 40) is **not** the authoritative path for current playables.
 
 ---
 
@@ -508,7 +508,11 @@ Cursor Index family uses separate **`cursor-index-lab-protocol.cjs`** (N=50, mov
 | `sholo-lab-protocol.cjs` | Canonical N/seeds/depths + playable-vs-Lab depth documentation |
 | `sholo-lab-gates.cjs` | Shared G1–G9 gate logic + authoritative `ladderVerdict()` |
 | `evaluate-ladder-lab.cjs` | Authoritative Sholo ladder G1–G9 **selectionVerdict** |
-| `evaluate-cursor-index-lab.cjs` | Authoritative Cursor Index G1–G9 **selectionVerdict** |
+| `evaluate-cursor-index-lab.cjs` | Authoritative Cursor Index G1–G9 **selectionVerdict** (INDEX_6 + INDEX_6_B) |
+| `cursor-index-fullturn-engine.cjs` | 4×4 headless engine (`rays` / `fullBoxCross`) |
+| `CURSOR_INDEX_LAB_EVALUATION.json` | Combined Cursor Index verdicts |
+| `CURSOR_INDEX_6_LAB_EVAL.json` / `CURSOR_INDEX_6_B_LAB_EVAL.json` | Per-playable eval artifacts |
+| `verify-cursor-index.cjs` | Playable smoke (both 4×4 feature shells) |
 | `audit-lab-verdict-paths.cjs` | Static audit — one verdict path per family |
 | `compare-sholo-*-vs-16-lab.cjs` | Same-protocol candidate compare — **metrics only** (no board verdict) |
 

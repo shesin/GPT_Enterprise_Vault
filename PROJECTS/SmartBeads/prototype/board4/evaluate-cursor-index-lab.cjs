@@ -12,7 +12,22 @@ const gates = require('./sholo-lab-gates.cjs');
 const protocol = require('./sholo-lab-protocol.cjs');
 
 const CANDIDATES = [
-  { id: 'INDEX_6', beads: 6, html: 'CURSOR_INDEX_6.html', smokeOut: 'CURSOR_INDEX_6_LAB_EVAL.json' },
+  {
+    id: 'INDEX_6',
+    beads: 6,
+    html: 'SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html',
+    smokeOut: 'CURSOR_INDEX_6_LAB_EVAL.json',
+    geometry: 'rays',
+    label: '6-bead 4×4 (long diagonal rays)',
+  },
+  {
+    id: 'INDEX_6_B',
+    beads: 6,
+    html: 'SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html',
+    smokeOut: 'CURSOR_INDEX_6_B_LAB_EVAL.json',
+    geometry: 'fullBoxCross',
+    label: '6-bead 4×4 b (full box crosses)',
+  },
 ];
 
 function runBatch(engine, depth, seed, n, first) {
@@ -23,26 +38,24 @@ function runBatch(engine, depth, seed, n, first) {
   return games;
 }
 
-function parseStartBoard(html) {
-  const m = html.match(/const START_BOARD = \[([^\]]+)\]/);
-  if (!m) throw new Error('START_BOARD missing in playable HTML');
-  return m[1].split(',').map((x) => parseInt(x.trim(), 10));
-}
-
-function parityCheck(engine, html, beads) {
+function parityCheck(engine, beads, playableFile) {
   const checks = [];
   function g(name, ok, detail) { checks.push({ name, ok: !!ok, detail }); }
+  const { api } = loadCursorIndex(playableFile);
+  const playStart = api.getBoard();
   const labStart = engine.startingBoard();
-  const playStart = parseStartBoard(html);
   g('start_fingerprint', playStart.join('') === labStart.join(''), { play: playStart.join(''), lab: labStart.join('') });
   g('bead_count', playStart.filter((x) => x === 1).length === beads && playStart.filter((x) => x === 2).length === beads, { beads });
-  const openPlay = engine.getAllLegalMoves(playStart, engine.P1).length;
+  const openPlay = api.getAllLegalMoves(playStart, api.CONFIG.P1).length;
   const openLab = engine.getAllLegalMoves(labStart, engine.P1).length;
   g('opening_moves', openPlay === openLab, { play: openPlay, lab: openLab });
   g('search_unit_complete_turn', engine.describeSearchSemantics(2).searchUnit === 'complete turn', {
     d2: engine.describeSearchSemantics(2),
   });
   g('eval_noise_off', engine.describeSearchSemantics(2).evalNoise === false, {});
+  g('geometry_mode', engine.geometry === (playableFile.includes('_b_') ? 'fullBoxCross' : 'rays'), {
+    engine: engine.geometry,
+  });
   return { allOk: checks.every((c) => c.ok), checks };
 }
 
@@ -87,16 +100,19 @@ function main() {
     headlessEngine: 'cursor-index-fullturn-engine.cjs',
     protocol: batchProtocol,
     boards: prior.boards ? { ...prior.boards } : {},
+    evaluatedAt: new Date().toISOString(),
   };
   if (out.boards.INDEX_4) {
     out.boards.INDEX_4.playable = '(removed — Web REJECT; was CURSOR_INDEX_4.html)';
   }
 
   for (const c of CANDIDATES) {
-    const html = fs.readFileSync(path.join(ROOT, c.html), 'utf8');
-    loadCursorIndex(c.html);
-    const engine = createEngine(c.beads);
-    const parity = parityCheck(engine, html, c.beads);
+    if (!fs.existsSync(path.join(ROOT, c.html))) {
+      process.stderr.write(c.id + ' SKIP missing ' + c.html + '\n');
+      continue;
+    }
+    const engine = createEngine(c.beads, { geometry: c.geometry });
+    const parity = parityCheck(engine, c.beads, c.html);
     const perDepth = {};
     for (const depth of protocol.DEPTHS) {
       const batch = [];
@@ -117,6 +133,8 @@ function main() {
     const selection = gates.ladderVerdict(ev.allPass, ev.rejectTriggers, ev.failed);
     out.boards[c.id] = {
       playable: c.html,
+      label: c.label,
+      geometry: c.geometry,
       headless: 'cursor-index-fullturn-engine.cjs',
       beadsPerSide: c.beads,
       board: '4x4',
@@ -134,12 +152,11 @@ function main() {
     process.stderr.write(c.id + ' selection=' + selection + '\n');
   }
 
-  const combined = path.join(ROOT, 'CURSOR_INDEX_LAB_EVALUATION.json');
-  fs.writeFileSync(combined, JSON.stringify(out, null, 2));
+  fs.writeFileSync(combinedPath, JSON.stringify(out, null, 2));
   console.log(JSON.stringify({
-    out: combined,
+    out: combinedPath,
     authoritativeEvaluator: 'evaluate-cursor-index-lab.cjs',
-    boards: Object.fromEntries(Object.entries(out.boards).map(([k, v]) => [k, v.selectionVerdict])),
+    boards: Object.fromEntries(Object.entries(out.boards).map(([k, v]) => [k, v.selectionVerdict || v.playable])),
   }, null, 2));
   process.exit(0);
 }

@@ -1,6 +1,6 @@
 {
-  "updated": "2026-08-12",
-  "verdict": "READY_FOR_SHOLO_REFERENCE_ONLY",
+  "updated": "2026-08-15",
+  "verdict": "READY_FOR_SHOLO_LADDER_AND_CURSOR_INDEX_4x4",
   "labTrustFile": "SHOLO_LAB_FINAL_TRUST.json",
   "labTrustVerdictAfterHonestDepthFix": "READY",
   "whyEarlierLabFeltPoor": [
@@ -14,24 +14,50 @@
     "Honest depths: D1 greedy, D2 = 1 opponent full-turn reply, D3 = 2 opponent full-turn replies",
     "Reproducible seeded RNG",
     "Comparison protocol blocks ranking by misleading D3 elimination%",
-    "Draws/repetitions treated as legitimate outcomes"
+    "Draws/repetitions treated as legitimate outcomes",
+    "Cursor Index 4×4: dual geometry (rays vs fullBoxCross) with playable ↔ lab parity checks",
+    "Authoritative evaluator runs INDEX_6 and INDEX_6_B on same sholo-lab-protocol batch"
   ],
   "whatLabCanDoNow": [
     "Measure standard 16-bead Sholo Guti game quality metrics under comparisonProtocol",
-    "Compare the 10-bead/5×5 candidate via sholo-10-bead-fullturn-engine.cjs + compare-sholo-10-vs-16-lab.cjs (geometry guards prove not silent 16-bead)",
+    "Compare ladder candidates (4/5/6/7/8/10-bead) via evaluate-ladder-lab.cjs",
+    "Evaluate 4×4 Cursor Index playables: SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE (rays) and SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE (fullBoxCross)",
     "Refuse unsafe metric compares"
   ],
   "whatLabCannotDoYet": [
-    "Inject CURSOR_INDEX_4 / INDEX_6 geometries automatically",
-    "Test Vision 8/6/4 bead slices until those boards exist as Lab board specs",
+    "Grant KEEP without human playtest sign-off",
     "Auto-suggest the single best product game without human judgment",
     "Score timers/BGM/UX polish as game-strength metrics"
   ],
-  "lastCandidateCompare": {
-    "file": "SHOLO_10_VS_16_LAB_COMPARE.json",
-    "verdict": "NEEDS FURTHER TESTING"
+  "cursorIndex4x4": {
+    "evaluator": "evaluate-cursor-index-lab.cjs",
+    "engine": "cursor-index-fullturn-engine.cjs",
+    "protocol": "sholo-lab-protocol.cjs (N=30, move-cap 120)",
+    "variants": [
+      {
+        "id": "INDEX_6",
+        "playable": "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html",
+        "geometry": "rays",
+        "selectionVerdict": "NEEDS FURTHER TESTING",
+        "failedGates": []
+      },
+      {
+        "id": "INDEX_6_B",
+        "playable": "SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html",
+        "geometry": "fullBoxCross",
+        "selectionVerdict": "NEEDS FURTHER TESTING",
+        "failedGates": [],
+        "humanPlaytestPriority": 1
+      }
+    ],
+    "evaluatedAt": "2026-08-15",
+    "recommendation": "Prefer INDEX_6_B for first human playtest (better D1 balance, higher D1 captures, milder D3 skew)"
   },
-  "nextRequiredBuild": "Human playtest of 10-bead + optional longer move-cap / larger N before KEEP; then Vision 8-bead slice if retained",
+  "lastCandidateCompare": {
+    "file": "CURSOR_INDEX_LAB_EVALUATION.json",
+    "verdict": "INDEX_6: NEEDS FURTHER TESTING; INDEX_6_B: NEEDS FURTHER TESTING (prefer 6-b)"
+  },
+  "nextRequiredBuild": "Human playtest of 4×4 6-bead-b, then 10/7/6-bead (3×5); optional longer move-cap / larger N before KEEP",
   "primaryCompareDepth": 2,
   "secondaryDepth": 3
 }

@@ -22,7 +22,7 @@ Sholo ladder Web evaluation & human playtest scheduling
 
 ## Current Focus
 
-Headless G1–G9 board selection on the Sholo Guti ladder (4–16 bead variants + Cursor Index 4×4), with human playtest sign-off for boards that pass all Web gates.
+Headless G1–G9 board selection on the Sholo Guti ladder (4–16 bead variants + Cursor Index 4×4), with human playtest sign-off for boards that pass all Web gates. **4×4 6-bead vs 6-bead-b comparison complete (2026-08-15)** — prefer **6-b** for first human session.
 
 ---
 
@@ -37,22 +37,34 @@ Headless G1–G9 board selection on the Sholo Guti ladder (4–16 bead variants 
 - **Sholo ladder G1–G9 (authoritative):** `evaluate-ladder-lab.cjs` → `LADDER_LAB_EVALUATION.json`; consolidated verdicts in `WEB_REPORT_All_BEAD_05P.md`.
 - **4-bead & 5-bead (3×5 sketch):** evaluated 2026-08-14 — both **REJECT** (G2); playables removed.
 - **8-bead, Cursor Index 4:** **REJECT** (G2); playables removed.
-- **10, 7, 6-bead, Cursor Index 6:** **NEEDS FURTHER TESTING** — human playtest pending.
+- **10, 7, 6-bead (3×5):** **NEEDS FURTHER TESTING** — human playtest pending.
+- **4×4 6-bead (2026-08-15):** `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html` (long diagonal rays) — **NEEDS FURTHER TESTING**; G1–G9 pass; playable + lab parity confirmed.
+- **4×4 6-bead-b (2026-08-15):** `SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html` (full box crosses) — **NEEDS FURTHER TESTING**; G1–G9 pass; **preferred lab profile** vs rays variant (better D1 balance, higher D1 captures, milder D3 skew).
+- **Cursor Index lab engine:** `cursor-index-fullturn-engine.cjs` supports geometry `rays` | `fullBoxCross`; evaluator `evaluate-cursor-index-lab.cjs` runs both INDEX_6 and INDEX_6_B.
+- **4×4 playables:** feature shell (Ivory/Ebony, undo, animations, settings); centre highlight = per-node amber rings on nodes 5, 6, 9, 10.
 - **3-bead sketch:** dropped — playable removed (not Web-evaluated).
-- **GEMINI_INDEX_4.html / GEMINI_INDEX_6.html:** removed (superseded by Cursor Index line; Index 4 Web REJECT).
+- **Removed superseded files:** `CURSOR_INDEX_6.html`, `GEMINI_INDEX_4.html`, `GEMINI_INDEX_6.html`.
 - Web documentation at SmartBeads root: `LAB_TERMINOLOGY_05P.md`, `WEB_REPORT_16_BEAD_05P.md`, `WEB_REPORT_All_BEAD_05P.md`.
 
 ---
 
 ## Open Items
 
-None — all requested ladder Web runs and report updates for 4/5-bead 3×5 are complete. Human playtest for 10/7/6-bead and Cursor Index 6 is the next human-owned step, not a pending engineering item.
+Human playtest (Gameplay / UX Review) — not an engineering blocker:
+
+| Priority | Board | Web verdict |
+|----------|-------|-------------|
+| 1 | **4×4 6-bead-b** (`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`) | NEEDS FURTHER TESTING |
+| 2 | 10-bead, 7-bead, 6-bead (3×5) | NEEDS FURTHER TESTING |
+| 3 | 4×4 6-bead rays (`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`) | NEEDS FURTHER TESTING (alternate geometry) |
+
+Do not promote **4-bead**, **5-bead (3×5)**, **8-bead**, or **Cursor Index 4** until geometry is redesigned and re-evaluated.
 
 ---
 
 ## Next Step
 
-Schedule human playtest for **10-bead**, **7-bead**, **6-bead (3×5)**, and **Cursor Index 6** (all Web gates pass). Do not promote **4-bead**, **5-bead (3×5)**, **8-bead**, or **Cursor Index 4** until geometry is redesigned and re-evaluated.
+Schedule human playtest starting with **`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html`**, then **10-bead**, **7-bead**, and **6-bead (3×5)**. Web cannot grant KEEP without human sign-off.
 
 ---
 

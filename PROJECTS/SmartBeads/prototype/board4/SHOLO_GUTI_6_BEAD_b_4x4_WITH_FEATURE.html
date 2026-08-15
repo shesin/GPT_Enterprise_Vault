@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sholo Guti 6 Bead With Features</title>
+  <title>Sholo Guti 6 Bead 4×4 Full Box Cross With Features</title>
   <style>
     :root {
       --bg: #0f2019;
@@ -237,9 +237,19 @@
           <label>Center rule</label>
           <select id="center-rule-select">
             <option value="off" selected>Off</option>
+            <option value="cumulative">Cumulative</option>
             <option value="endgame">End-Game</option>
           </select>
-          <div class="tiny">3×5 · 6 vs 6. Ebony top (rows 1–2) · Row 3 amber centre · Ivory bottom (rows 4–5). You play from the bottom.</div>
+          <div class="tiny">4×4 · full box crosses (X in every 2×2 cell) · 6 vs 6. Ivory bottom · Ebony top · Amber centre nodes (5, 6, 9, 10).</div>
+        </div>
+        <div class="setting">
+          <label>Max moves</label>
+          <select id="max-move-select">
+            <option value="20">20 moves</option>
+            <option value="40">40 moves</option>
+            <option value="60">60 moves</option>
+            <option value="0" selected>Unlimited</option>
+          </select>
         </div>
         <div class="setting">
           <label>Move highlight</label>
@@ -305,9 +315,13 @@
   const P1 = 1, P2 = 2;
   const STATE = { IDLE: 'IDLE', SELECTED: 'SELECTED', CHAIN_JUMPING: 'CHAIN_JUMPING', GAME_OVER: 'GAME_OVER' };
 
-  // 3×5 lattice — 6-bead slice: rows 1–2 Ebony top, row 3 empty + amber centre, rows 4–5 Ivory bottom.
-  const COLS = 3;
-  const ROWS = 5;
+  const BEADS = 6;
+  const CENTER_IDX = [5, 6, 9, 10];
+  const CONFIG = { CANVAS_SIZE: 560, P1: 1, P2: 2, CENTER_NODES: CENTER_IDX };
+
+  // 4×4 grid — full box crosses: both diagonals in every 2×2 cell (3×3 cells), not long board rays.
+  const COLS = 4;
+  const ROWS = 4;
   const NODES = [];
   const NODE_INDEX = Object.create(null);
   function addNode(id, x, y) {
@@ -317,54 +331,55 @@
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) addNode('A' + r + c, 2 * c, 2 * r);
   const N = NODES.length;
   const ADJ = Array.from({ length: N }, () => []);
-  function link(a, b) {
-    const i = NODE_INDEX[a], j = NODE_INDEX[b];
+  function link(i, j) {
     if (!ADJ[i].includes(j)) ADJ[i].push(j);
     if (!ADJ[j].includes(i)) ADJ[j].push(i);
   }
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
-        const r2 = r + dr, c2 = c + dc;
-        if (r2 < 0 || r2 >= ROWS || c2 < 0 || c2 >= COLS) continue;
-        link('A' + r + c, 'A' + r2 + c2);
-      }
+      const u = r * COLS + c;
+      if (c < COLS - 1) link(u, u + 1);
+      if (r < ROWS - 1) link(u, u + COLS);
     }
+  }
+  for (let r = 0; r < ROWS - 1; r++) {
+    for (let c = 0; c < COLS - 1; c++) {
+      const tl = r * COLS + c;
+      const tr = tl + 1;
+      const bl = tl + COLS;
+      const br = bl + 1;
+      link(tl, br);
+      link(tr, bl);
+    }
+  }
+  const JUMPS = [];
+  for (let from = 0; from < N; from++) {
+    ADJ[from].forEach((over) => {
+      const r1 = Math.floor(from / COLS), c1 = from % COLS;
+      const r2 = Math.floor(over / COLS), c2 = over % COLS;
+      const tr = r2 + (r2 - r1), tc = c2 + (c2 - c1);
+      if (tr >= 0 && tr < ROWS && tc >= 0 && tc < COLS) {
+        const to = tr * COLS + tc;
+        if (ADJ[over].includes(to)) JUMPS.push([from, over, to]);
+      }
+    });
   }
 
   function isEndgameCenterNode(node) {
-    // Row 3 (y=4): single centre node only.
-    return node.y === 4 && node.x === 2;
+    return CENTER_IDX.includes(NODE_INDEX[node.id]);
   }
 
   function startingBoard() {
-    const b = new Array(N).fill(0);
-    // 6 vs 6: P2 (Ebony) rows 1–2 top; row 3 empty; P1 (Ivory) rows 4–5 bottom.
-    for (let i = 0; i < N; i++) {
-      const p = NODES[i];
-      if (p.y === 0 || p.y === 2) b[i] = P2;
-      else if (p.y === 6 || p.y === 8) b[i] = P1;
-    }
-    return b;
+    return [1, 1, 1, 1, 1, 0, 0, 1, 2, 0, 0, 2, 2, 2, 2, 2];
   }
 
-  function sameDir(dx, dy, ex, ey) { return dx * ey === dy * ex && dx * ex + dy * ey > 0; }
-  function continueCollinear(from, over) {
-    const a = NODES[from], b = NODES[over];
-    const dx = b.x - a.x, dy = b.y - a.y;
-    for (const k of ADJ[over]) {
-      const c = NODES[k];
-      if (sameDir(dx, dy, c.x - b.x, c.y - b.y)) return k;
-    }
-    return -1;
-  }
   function getMovesForNode(currBoard, node, player) {
     const moves = [];
     for (const to of ADJ[node]) if (currBoard[to] === 0) moves.push({ from: node, to, captured: null });
-    for (const over of ADJ[node]) {
-      if (!currBoard[over] || currBoard[over] === player) continue;
-      const land = continueCollinear(node, over);
-      if (land >= 0 && currBoard[land] === 0) moves.push({ from: node, to: land, captured: over });
+    for (const [from, over, to] of JUMPS) {
+      if (from === node && currBoard[over] !== 0 && currBoard[over] !== player && currBoard[to] === 0) {
+        moves.push({ from: node, to, captured: over });
+      }
     }
     return moves;
   }
@@ -528,6 +543,7 @@
   let turnPulse = 0;
   let rafId = 0;
   let moveHighlight = true;
+  let maxMoveLimit = 0;
 
   const canvas = document.getElementById('board');
   const ctx = canvas.getContext('2d');
@@ -635,6 +651,8 @@
   function applySettings() {
     mode = document.getElementById('game-mode-select').value;
     centerRule = document.getElementById('center-rule-select').value;
+    const maxEl = document.getElementById('max-move-select');
+    maxMoveLimit = maxEl ? parseInt(maxEl.value, 10) : 0;
     matchMode = document.getElementById('match-timer-select').value;
     const shotVal = document.getElementById('shot-clock-select').value;
     shotLimit = shotVal === 'off' ? 0 : parseInt(shotVal, 10);
@@ -730,16 +748,6 @@
       }
     }
 
-    // Amber centre square at row 3, centre node (lattice x=2,y=4).
-    {
-      const [cx, cy] = toXY(2, 4);
-      ctx.fillStyle = 'rgba(232,168,60,0.35)';
-      ctx.fillRect(cx - 14, cy - 14, 28, 28);
-      ctx.strokeStyle = 'rgba(232,168,60,0.95)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(cx - 14, cy - 14, 28, 28);
-    }
-
     const hideFrom = anim ? anim.from : -1;
     const hideCap = anim && anim.captured != null ? anim.captured : -1;
 
@@ -812,14 +820,20 @@
     document.getElementById('p2-caps').textContent = String(p2Captures);
     document.getElementById('turn-count').textContent = String(moveCount);
     let c1 = 0, c2 = 0;
-    if (centerRule === 'endgame') {
+    if (centerRule === 'cumulative') {
+      document.getElementById('p1-center').textContent = String(p1Center);
+      document.getElementById('p2-center').textContent = String(p2Center);
+    } else if (centerRule === 'endgame') {
       for (let i = 0; i < N; i++) {
         if (board[i] === P1 && isEndgameCenterNode(NODES[i])) c1++;
         if (board[i] === P2 && isEndgameCenterNode(NODES[i])) c2++;
       }
+      document.getElementById('p1-center').textContent = String(c1);
+      document.getElementById('p2-center').textContent = String(c2);
+    } else {
+      document.getElementById('p1-center').textContent = 'Off';
+      document.getElementById('p2-center').textContent = 'Off';
     }
-    document.getElementById('p1-center').textContent = centerRule === 'off' ? 'Off' : String(c1);
-    document.getElementById('p2-center').textContent = centerRule === 'off' ? 'Off' : String(c2);
     document.getElementById('pill-p1').classList.toggle('active', currentTurn === P1 && currentState !== STATE.GAME_OVER);
     document.getElementById('pill-p2').classList.toggle('active', currentTurn === P2 && currentState !== STATE.GAME_OVER);
     document.getElementById('finish-btn').style.display =
@@ -913,9 +927,16 @@
     currentState = STATE.IDLE;
     selected = null;
     validMoves = [];
+    if (centerRule === 'cumulative') {
+      CENTER_IDX.forEach((idx) => {
+        if (board[idx] === P1) p1Center++;
+        if (board[idx] === P2) p2Center++;
+      });
+    }
     moveCount++;
-    if (count(board, P1) === 0) return endGame(P2, 'P2 captured all pieces.');
-    if (count(board, P2) === 0) return endGame(P1, 'P1 captured all pieces.');
+    if (count(board, P1) === 0) return endGame(P2, 'Ebony captured all Ivory pieces.');
+    if (count(board, P2) === 0) return endGame(P1, 'Ivory captured all Ebony pieces.');
+    if (maxMoveLimit > 0 && moveCount >= maxMoveLimit) return evaluateScoreAndEnd('Max moves reached — ');
     const key = positionKey(board, currentTurn);
     history[key] = (history[key] || 0) + 1;
     if (history[key] >= 3) return endGame(0, 'Draw — 3-fold repetition.');
@@ -1168,6 +1189,8 @@
   document.getElementById('match-timer-select').addEventListener('change', resetGame);
   document.getElementById('shot-clock-select').addEventListener('change', resetGame);
   document.getElementById('ai-level-select').addEventListener('change', resetGame);
+  const maxMoveEl = document.getElementById('max-move-select');
+  if (maxMoveEl) maxMoveEl.addEventListener('change', resetGame);
   document.getElementById('move-highlight-select').addEventListener('change', () => {
     const hlEl = document.getElementById('move-highlight-select');
     if (hlEl) hlEl.dataset.userSet = '1';
@@ -1232,6 +1255,48 @@
       return path;
     },
     completeTurn,
+  };
+
+  window.__CURSOR_INDEX__ = {
+    BEADS, CONFIG, STATE,
+    getBoard: () => board.slice(),
+    getTurn: () => currentTurn,
+    getState: () => currentState,
+    resetGame,
+    selectAIMove() {
+      const path = selectAITurn(parseInt(document.getElementById('ai-level-select').value, 10), board);
+      return path && path.length ? path[0] : null;
+    },
+    getAllLegalMoves: (b, p) => getAllLegalMoves(b || board, p || currentTurn),
+    evaluateBoard: (b) => evaluate(b || board),
+    makeAIMove() {
+      const path = selectAITurn(parseInt(document.getElementById('ai-level-select').value, 10), board);
+      if (!path || !path.length) { endGame(P1, 'AI has no legal moves.'); return; }
+      for (let i = 0; i < path.length; i++) applyMoveImmediate(path[i], P2);
+      completeTurn();
+    },
+    executeMove(move) {
+      applyMoveImmediate(move, currentTurn);
+      if (move.captured !== null) {
+        const follow = getFollowUpJumps(board, move.to, currentTurn);
+        if (follow.length) {
+          currentState = STATE.CHAIN_JUMPING;
+          selected = move.to;
+          validMoves = follow;
+          updateUI();
+          drawBoard();
+          return;
+        }
+      }
+      completeTurn();
+    },
+    completeTurn,
+    getMovesForNode: (b, n, p) => getMovesForNode(b || board, n, p),
+    isAiThinking: () => aiThinking,
+    setAiTestSeed() { return null; },
+    clearAiTestSeed() {},
+    getAiTestSeed() { return null; },
+    aiRandom: () => Math.random(),
   };
 
   resetGame();
