@@ -237,6 +237,7 @@
           <label>Center rule</label>
           <select id="center-rule-select">
             <option value="off" selected>Off</option>
+            <option value="cumulative">Cumulative</option>
             <option value="endgame">End-Game</option>
           </select>
           <div class="tiny">4 columns × 5 rows · 7 vs 7. Amber centre line at row 3 between col 2 and col 3 (endgame zone).</div>
@@ -818,14 +819,20 @@
     document.getElementById('p2-caps').textContent = String(p2Captures);
     document.getElementById('turn-count').textContent = String(moveCount);
     let c1 = 0, c2 = 0;
-    if (centerRule === 'endgame') {
+    if (centerRule === 'cumulative') {
+      document.getElementById('p1-center').textContent = String(p1Center);
+      document.getElementById('p2-center').textContent = String(p2Center);
+    } else if (centerRule === 'endgame') {
       for (let i = 0; i < N; i++) {
         if (board[i] === P1 && isEndgameCenterNode(NODES[i])) c1++;
         if (board[i] === P2 && isEndgameCenterNode(NODES[i])) c2++;
       }
+      document.getElementById('p1-center').textContent = String(c1);
+      document.getElementById('p2-center').textContent = String(c2);
+    } else {
+      document.getElementById('p1-center').textContent = 'Off';
+      document.getElementById('p2-center').textContent = 'Off';
     }
-    document.getElementById('p1-center').textContent = centerRule === 'off' ? 'Off' : String(c1);
-    document.getElementById('p2-center').textContent = centerRule === 'off' ? 'Off' : String(c2);
     document.getElementById('pill-p1').classList.toggle('active', currentTurn === P1 && currentState !== STATE.GAME_OVER);
     document.getElementById('pill-p2').classList.toggle('active', currentTurn === P2 && currentState !== STATE.GAME_OVER);
     document.getElementById('finish-btn').style.display =
@@ -919,6 +926,14 @@
     currentState = STATE.IDLE;
     selected = null;
     validMoves = [];
+    if (centerRule === 'cumulative') {
+      for (let i = 0; i < N; i++) {
+        if (isEndgameCenterNode(NODES[i])) {
+          if (board[i] === P1) p1Center++;
+          if (board[i] === P2) p2Center++;
+        }
+      }
+    }
     moveCount++;
     if (count(board, P1) === 0) return endGame(P2, 'P2 captured all pieces.');
     if (count(board, P2) === 0) return endGame(P1, 'P1 captured all pieces.');

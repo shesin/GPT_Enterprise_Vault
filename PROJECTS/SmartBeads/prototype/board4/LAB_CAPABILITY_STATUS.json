@@ -15,49 +15,69 @@
     "Reproducible seeded RNG",
     "Comparison protocol blocks ranking by misleading D3 elimination%",
     "Draws/repetitions treated as legitimate outcomes",
-    "Cursor Index 4×4: dual geometry (rays vs fullBoxCross) with playable ↔ lab parity checks",
-    "Authoritative evaluator runs INDEX_6 and INDEX_6_B on same sholo-lab-protocol batch"
+    "4×4 selection finalized: full box cross is sole active playable"
   ],
   "whatLabCanDoNow": [
     "Measure standard 16-bead Sholo Guti game quality metrics under comparisonProtocol",
     "Compare ladder candidates (4/5/6/7/8/10-bead) via evaluate-ladder-lab.cjs",
-    "Evaluate 4×4 Cursor Index playables: SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE (rays) and SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE (fullBoxCross)",
-    "Refuse unsafe metric compares"
+    "Evaluate active 4×4 playable SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html (fullBoxCross)",
+    "Refuse unsafe metric compares",
+    "Run Feature Test batches on registered KEEP boards (evaluate-feature-test-lab.cjs)"
   ],
   "whatLabCannotDoYet": [
     "Grant KEEP without human playtest sign-off",
     "Auto-suggest the single best product game without human judgment",
     "Score timers/BGM/UX polish as game-strength metrics"
   ],
+  "featureTest": {
+    "status": "COMPLETE",
+    "evaluator": "evaluate-feature-test-lab.cjs",
+    "centreRuleEvaluator": "evaluate-centre-rule-feature-test.cjs",
+    "registry": "FEATURE_TEST_KEEP_REGISTRY.json",
+    "artifact": "FEATURE_TEST_EVALUATION.json",
+    "centreRuleArtifact": "FEATURE_TEST_CENTRE_RULE_EVALUATION.json",
+    "report": "WEB_FEATURE_TEST_05P.md",
+    "humanConfirmedKeepCount": 4,
+    "evaluatedAt": "2026-08-15",
+    "centreRulePerBoard": {
+      "INDEX_6_ACTIVE": "endgame",
+      "LADDER_10": "INSUFFICIENT_EVIDENCE",
+      "LADDER_7": "cumulative (Lab projection)",
+      "LADDER_6_3x5": "cumulative (Lab projection, low confidence)"
+    }
+  },
   "cursorIndex4x4": {
+    "activePlayable": "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html",
+    "activeGeometry": "fullBoxCross",
+    "selectionFinalized": "2026-08-15",
+    "removedPlayables": [
+      "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html (rays — pre-selection file)",
+      "SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html (renamed into active file)"
+    ],
     "evaluator": "evaluate-cursor-index-lab.cjs",
     "engine": "cursor-index-fullturn-engine.cjs",
     "protocol": "sholo-lab-protocol.cjs (N=30, move-cap 120)",
-    "variants": [
-      {
-        "id": "INDEX_6",
-        "playable": "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html",
+    "auditTrail": {
+      "INDEX_6": {
+        "artifact": "CURSOR_INDEX_6_LAB_EVAL.json",
         "geometry": "rays",
         "selectionVerdict": "NEEDS FURTHER TESTING",
-        "failedGates": []
+        "note": "Historical — playable removed"
       },
-      {
-        "id": "INDEX_6_B",
-        "playable": "SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html",
+      "INDEX_6_B": {
+        "artifact": "CURSOR_INDEX_6_B_LAB_EVAL.json",
         "geometry": "fullBoxCross",
         "selectionVerdict": "NEEDS FURTHER TESTING",
-        "failedGates": [],
-        "humanPlaytestPriority": 1
+        "note": "Historical — was SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html; metrics apply to active playable"
       }
-    ],
-    "evaluatedAt": "2026-08-15",
-    "recommendation": "Prefer INDEX_6_B for first human playtest (better D1 balance, higher D1 captures, milder D3 skew)"
+    },
+    "activeWebVerdict": "NEEDS FURTHER TESTING (from INDEX_6_B audit — G1–G9 pass)"
   },
   "lastCandidateCompare": {
     "file": "CURSOR_INDEX_LAB_EVALUATION.json",
-    "verdict": "INDEX_6: NEEDS FURTHER TESTING; INDEX_6_B: NEEDS FURTHER TESTING (prefer 6-b)"
+    "verdict": "INDEX_6 rays + INDEX_6_B cross compared 2026-08-15; cross selected as active playable"
   },
-  "nextRequiredBuild": "Human playtest of 4×4 6-bead-b, then 10/7/6-bead (3×5); optional longer move-cap / larger N before KEEP",
+  "nextRequiredBuild": "Human timer defaults (match + shot clock) from Feature Test viable ranges",
   "primaryCompareDepth": 2,
   "secondaryDepth": 3
 }

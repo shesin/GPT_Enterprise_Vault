@@ -281,6 +281,20 @@ The seven rulers diagnose health. **Board selection** adds mandatory gates, comp
 
 **PASS ≠ KEEP.** PASS means “keep testing.” KEEP means “we are willing to ship this geometry pending final human ladder choice.”
 
+### Feature Test (product settings — after KEEP)
+
+**Separate from board selection.** Once a board has **human-confirmed KEEP** (not Web NEEDS FURTHER TESTING alone), run **`evaluate-feature-test-lab.cjs`** on entries in **`FEATURE_TEST_KEEP_REGISTRY.json`**.
+
+| # | Feature | Lab output |
+|---|---------|------------|
+| 1 | Centre rule | AI recommendation from measurable batches (D1/D2/D3, N=30, seeds 101/202/303) |
+| 2 | Cumulative capture rule | AI recommendation (same protocol) |
+| 3 | End condition — max moves / unlimited | AI recommendation (same protocol) |
+| 4 | Match timer | **Technically viable range only** — no final minutes value |
+| 5 | Shot clock | **Technically viable range only** — no final seconds value |
+
+**Out of scope:** resignation (`not yet decided`). **16-bead** is REFERENCE ANCHOR — not a KEEP Feature Test target. Report: **`WEB_FEATURE_TEST_05P.md`**.
+
 ### Mandatory gates (all must pass for PASS)
 
 Each gate is evaluated at **primary depth D2** unless noted. Use 16-bead reference bands where indicated.
@@ -304,6 +318,7 @@ Use the method already proven on 16-bead (`final-validate-sholo-lab.cjs`):
 - **When games with a winner exist (D2 or D1 sample):** first-player win rate among winners should not diverge wildly between “P1 moves first” and “P2 moves first” batches — use the same **±35 pp** symmetry check as the trust gate, or report FPA and flag for human review if sample is tiny (< 10 winners).
 - **When almost no winners (common at D2 on 16-bead):** compare **avgCaptures** between first-P1 and first-P2 batches — reference allowed **±3 captures** on 16-bead; candidates should be **within the same absolute band** unless bead count explains a difference.
 - **Automatic REJECT for fairness:** P1 wins ~100% of all games at D2 with large N, **or** first-player capture volume double second-player with no bead-layout explanation.
+- **D1 greedy bound (implemented in `sholo-lab-gates.cjs`):** `|firstPlayerAdvantagePp| > 35` with ≥30 winners fails G2. Example: 7-bead D1 20%/80% (FPA −30) **PASS**; 4/5-bead D1 0%/100% (FPA −50) **REJECT**. D2 remains the primary contested depth. Swap FPA comparison applies only when **both** swap arms have ≥10 winners.
 
 #### Length rule (G7) — anchored to 16-bead, not a universal turn cap
 
@@ -496,6 +511,8 @@ Reference validation, compare scripts, and `evaluate-ladder-lab.cjs` G9 must all
 | `LAB_TERMINOLOGY_05P.md` | Glossary + board-quality ruler (this file) |
 | `WEB_REPORT_16_BEAD_05P.md` | 16-bead baseline board-quality report |
 | `WEB_REPORT_All_BEAD_05P.md` | All-board ladder + Cursor Index verdicts |
+| `WEB_FEATURE_TEST_05P.md` | Feature Test (KEEP boards only) — settings & timer viable ranges |
+| `BOARD_DISCOVERY_05P.md` | Discovery shortlist + C1–C4 / Baro Lab outcomes |
 
 **Lab harness (`prototype/board4/`):**
 
@@ -508,13 +525,18 @@ Reference validation, compare scripts, and `evaluate-ladder-lab.cjs` G9 must all
 | `sholo-lab-protocol.cjs` | Canonical N/seeds/depths + playable-vs-Lab depth documentation |
 | `sholo-lab-gates.cjs` | Shared G1–G9 gate logic + authoritative `ladderVerdict()` |
 | `evaluate-ladder-lab.cjs` | Authoritative Sholo ladder G1–G9 **selectionVerdict** |
-| `evaluate-cursor-index-lab.cjs` | Authoritative Cursor Index G1–G9 **selectionVerdict** (INDEX_6 + INDEX_6_B) |
-| `cursor-index-fullturn-engine.cjs` | 4×4 headless engine (`rays` / `fullBoxCross`) |
-| `CURSOR_INDEX_LAB_EVALUATION.json` | Combined Cursor Index verdicts |
-| `CURSOR_INDEX_6_LAB_EVAL.json` / `CURSOR_INDEX_6_B_LAB_EVAL.json` | Per-playable eval artifacts |
-| `verify-cursor-index.cjs` | Playable smoke (both 4×4 feature shells) |
+| `evaluate-cursor-index-lab.cjs` | Authoritative Cursor Index G1–G9 **selectionVerdict** (active playable; audit in combined JSON) |
+| `cursor-index-fullturn-engine.cjs` | 4×4 headless engine (`rays` audit / `fullBoxCross` active) |
+| `CURSOR_INDEX_LAB_EVALUATION.json` | Combined Cursor Index verdicts + audit trail |
+| `CURSOR_INDEX_6_LAB_EVAL.json` | INDEX_6 rays audit (2026-08-15) |
+| `CURSOR_INDEX_6_B_LAB_EVAL.json` | INDEX_6_B cross audit (2026-08-15) |
+| `verify-cursor-index.cjs` | Playable smoke — active `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html` only |
 | `audit-lab-verdict-paths.cjs` | Static audit — one verdict path per family |
 | `compare-sholo-*-vs-16-lab.cjs` | Same-protocol candidate compare — **metrics only** (no board verdict) |
+| `evaluate-feature-test-lab.cjs` | Feature Test evaluator — **KEEP boards only** |
+| `FEATURE_TEST_KEEP_REGISTRY.json` | Human-confirmed KEEP gate |
+| `FEATURE_TEST_EVALUATION.json` | Feature Test artifact |
+| `evaluate-c1-c4-lab.cjs` / `complete-c3-lab.cjs` / `evaluate-12-bead-baro-lab.cjs` | Discovery G1–G9 (do not change KEEP/REJECT on existing boards) |
 
 ---
 

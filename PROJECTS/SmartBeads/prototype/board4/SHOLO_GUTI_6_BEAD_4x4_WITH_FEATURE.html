@@ -240,7 +240,7 @@
             <option value="cumulative">Cumulative</option>
             <option value="endgame">End-Game</option>
           </select>
-          <div class="tiny">4×4 · 6 vs 6. Ivory bottom · Ebony top · Amber centre nodes (5, 6, 9, 10).</div>
+          <div class="tiny">4×4 · full box crosses (X in every 2×2 cell) · 6 vs 6. Ivory bottom · Ebony top · Amber centre nodes (5, 6, 9, 10).</div>
         </div>
         <div class="setting">
           <label>Max moves</label>
@@ -319,7 +319,7 @@
   const CENTER_IDX = [5, 6, 9, 10];
   const CONFIG = { CANVAS_SIZE: 560, P1: 1, P2: 2, CENTER_NODES: CENTER_IDX };
 
-  // 4×4 grid — 6 vs 6. Ivory bottom two rows; Ebony top two rows; centre 2×2 empty.
+  // 4×4 grid — full box crosses: both diagonals in every 2×2 cell (3×3 cells), not long board rays.
   const COLS = 4;
   const ROWS = 4;
   const NODES = [];
@@ -342,10 +342,16 @@
       if (r < ROWS - 1) link(u, u + COLS);
     }
   }
-  const DIAGONAL_RAYS = [[0, 5, 10, 15], [3, 6, 9, 12], [1, 6, 11], [4, 9, 14], [2, 5, 8], [7, 10, 13]];
-  DIAGONAL_RAYS.forEach((ray) => {
-    for (let i = 0; i < ray.length - 1; i++) link(ray[i], ray[i + 1]);
-  });
+  for (let r = 0; r < ROWS - 1; r++) {
+    for (let c = 0; c < COLS - 1; c++) {
+      const tl = r * COLS + c;
+      const tr = tl + 1;
+      const bl = tl + COLS;
+      const br = bl + 1;
+      link(tl, br);
+      link(tr, bl);
+    }
+  }
   const JUMPS = [];
   for (let from = 0; from < N; from++) {
     ADJ[from].forEach((over) => {

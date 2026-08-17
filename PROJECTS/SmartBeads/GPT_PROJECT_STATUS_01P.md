@@ -16,13 +16,19 @@ Target: 01P (~1 page)
 
 ## Current Phase
 
-Sholo ladder Web evaluation & human playtest scheduling
+Sholo ladder — human KEEP confirmed; Feature Test complete (timer finals pending)
 
 ---
 
 ## Current Focus
 
-Headless G1–G9 board selection on the Sholo Guti ladder (4–16 bead variants + Cursor Index 4×4), with human playtest sign-off for boards that pass all Web gates. **4×4 6-bead vs 6-bead-b comparison complete (2026-08-15)** — prefer **6-b** for first human session.
+1. **Human playtest C3** (8-bead 5×5 thinned) — Lab G1–G9 complete at N=100/seed (`C3_LAB_COMPLETE.json`).  
+2. **Match timer, shot clock, and per-board centre defaults** — pick from Feature Test ranges (`WEB_FEATURE_TEST_05P.md`).  
+3. **Resignation rule** — not yet decided.
+
+**Human KEEP (2026-08-15):** all four active ladder playables registered in `FEATURE_TEST_KEEP_REGISTRY.json`.  
+**Feature Test:** **COMPLETE** — `FEATURE_TEST_EVALUATION.json`.  
+**Discovery C1–C4:** Lab complete 2026-08-16 — see `C1_C4_LAB_EVALUATION.json`.
 
 ---
 
@@ -37,34 +43,40 @@ Headless G1–G9 board selection on the Sholo Guti ladder (4–16 bead variants 
 - **Sholo ladder G1–G9 (authoritative):** `evaluate-ladder-lab.cjs` → `LADDER_LAB_EVALUATION.json`; consolidated verdicts in `WEB_REPORT_All_BEAD_05P.md`.
 - **4-bead & 5-bead (3×5 sketch):** evaluated 2026-08-14 — both **REJECT** (G2); playables removed.
 - **8-bead, Cursor Index 4:** **REJECT** (G2); playables removed.
-- **10, 7, 6-bead (3×5):** **NEEDS FURTHER TESTING** — human playtest pending.
-- **4×4 6-bead (2026-08-15):** `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html` (long diagonal rays) — **NEEDS FURTHER TESTING**; G1–G9 pass; playable + lab parity confirmed.
-- **4×4 6-bead-b (2026-08-15):** `SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html` (full box crosses) — **NEEDS FURTHER TESTING**; G1–G9 pass; **preferred lab profile** vs rays variant (better D1 balance, higher D1 captures, milder D3 skew).
-- **Cursor Index lab engine:** `cursor-index-fullturn-engine.cjs` supports geometry `rays` | `fullBoxCross`; evaluator `evaluate-cursor-index-lab.cjs` runs both INDEX_6 and INDEX_6_B.
-- **4×4 playables:** feature shell (Ivory/Ebony, undo, animations, settings); centre highlight = per-node amber rings on nodes 5, 6, 9, 10.
+- **10, 7, 6-bead (3×5):** **NEEDS FURTHER TESTING** (Web) · **KEEP** (human playtest 2026-08-15).
+- **4×4 6-bead (2026-08-15):** Side-by-side Web run (rays vs full box cross). **Selected:** full box cross → `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html`. **Removed:** rays variant. Audit: `CURSOR_INDEX_6_LAB_EVAL.json` (INDEX_6 rays), `CURSOR_INDEX_6_B_LAB_EVAL.json` (INDEX_6_B cross).
+- **4×4 active Web verdict:** **NEEDS FURTHER TESTING** (G1–G9 pass) · **KEEP** (human playtest 2026-08-15).
 - **3-bead sketch:** dropped — playable removed (not Web-evaluated).
-- **Removed superseded files:** `CURSOR_INDEX_6.html`, `GEMINI_INDEX_4.html`, `GEMINI_INDEX_6.html`.
-- Web documentation at SmartBeads root: `LAB_TERMINOLOGY_05P.md`, `WEB_REPORT_16_BEAD_05P.md`, `WEB_REPORT_All_BEAD_05P.md`.
+- Web documentation at SmartBeads root: `LAB_TERMINOLOGY_05P.md`, `WEB_REPORT_16_BEAD_05P.md`, `WEB_REPORT_All_BEAD_05P.md`, **`WEB_FEATURE_TEST_05P.md`**.
+- **Feature Test (2026-08-15):** **COMPLETE** — four KEEP boards; artifacts `FEATURE_TEST_EVALUATION.json`, `FEATURE_TEST_CENTRE_RULE_EVALUATION.json`. Per-board centre rule: **4×4 End-Game**, **10-bead inconclusive**, **7/6-bead cumulative**. **UI parity (2026-08-15):** Cumulative + End-Game enabled on all KEEP playables. Report: **`WEB_FEATURE_TEST_05P.md`**.
+- **C1–C4 discovery Lab (2026-08-16):** `evaluate-c1-c4-lab.cjs` → `C1_C4_LAB_EVALUATION.json`. **C1/C2/C4 REJECT (G2)**. **C3** Lab closed at N=100 (`C3_LAB_COMPLETE.json`) — all G1–G9 pass; human playtest remaining. See `BOARD_DISCOVERY_05P.md`.
+- **Baro Guti 12-bead (2026-08-16):** traditional 5×5 Alquerque rank camps — **REJECT (G2)** (`BARO_12_LAB_EVALUATION.json`). Distinct from C4 mini-wings. Do not promote.
+- **7-bead Lab review (2026-08-17):** D1 20%/80% (FPA −30 pp) is greedy-depth lean **inside** G2 (±35 pp). D2 captures balanced. **KEEP** — no Lab recheck, no geometry change.
 
 ---
 
 ## Open Items
 
-Human playtest (Gameplay / UX Review) — not an engineering blocker:
+**Human KEEP confirmed (2026-08-15):**
 
-| Priority | Board | Web verdict |
-|----------|-------|-------------|
-| 1 | **4×4 6-bead-b** (`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`) | NEEDS FURTHER TESTING |
-| 2 | 10-bead, 7-bead, 6-bead (3×5) | NEEDS FURTHER TESTING |
-| 3 | 4×4 6-bead rays (`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`) | NEEDS FURTHER TESTING (alternate geometry) |
+| Playable | Web verdict | Human KEEP | Feature Test |
+|----------|-------------|------------|--------------|
+| `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html` | NEEDS FURTHER TESTING | **KEEP** | Complete |
+| `SHOLO_GUTI_10_BEAD_WITH_FEATURE.html` | NEEDS FURTHER TESTING | **KEEP** | Complete |
+| `SHOLO_GUTI_7_BEAD_WITH_FEATURE.html` | NEEDS FURTHER TESTING | **KEEP** | Complete |
+| `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html` | NEEDS FURTHER TESTING | **KEEP** | Complete |
 
-Do not promote **4-bead**, **5-bead (3×5)**, **8-bead**, or **Cursor Index 4** until geometry is redesigned and re-evaluated.
+**Pending human decision:** match timer, shot clock, per-board centre **defaults** (UI already has Off/Cumulative/End-Game), resignation rule.
+
+**Do not promote:** 4-bead, 5-bead 3×5 sketch, 8-bead 4×5, Cursor Index 4, **C1, C2, C4, Baro 12**. C3 is Lab-pass only until human playtest.
 
 ---
 
 ## Next Step
 
-Schedule human playtest starting with **`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html`**, then **10-bead**, **7-bead**, and **6-bead (3×5)**. Web cannot grant KEEP without human sign-off.
+1. Human playtest **C3** (`SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html`).  
+2. Set KEEP-board **defaults**: 4×4 End-Game; 7-bead and 6-bead 3×5 Cumulative; 10-bead human choice; timers from Feature Test ranges.  
+3. Decide **resignation** when ready. Optional later: long stall-resolution for 7-bead / 4×4 only — not a KEEP condition.
 
 ---
 

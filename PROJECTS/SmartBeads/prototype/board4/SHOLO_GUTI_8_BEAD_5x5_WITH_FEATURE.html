@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sholo Guti 10 Bead With Features</title>
+  <title>Sholo Guti 8 Bead 5×5 (C3)</title>
   <style>
     :root {
       --bg: #0f2019;
@@ -167,8 +167,8 @@
         </div>
         <div class="timer" id="p2-clock">--:--</div>
       </div>
-      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">10</span></div>
-      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">10</span></div>
+      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">8</span></div>
+      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">8</span></div>
       <div class="stat"><span>P1 captures</span><span class="val" id="p1-caps">0</span></div>
       <div class="stat"><span>P2 captures</span><span class="val" id="p2-caps">0</span></div>
       <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
@@ -233,7 +233,7 @@
             <option value="cumulative">Cumulative</option>
             <option value="endgame">End-Game</option>
           </select>
-          <div class="tiny">5×5 · 10 vs 10. Amber centre square at middle node (centre column, row 3) — same style as 6-bead.</div>
+          <div class="tiny">C3 discovery · 5×5 Alquerque · 8 vs 8. 10-bead two-file camps with outer-file far corners removed. Empty centre file. Amber = middle node. Off / Cumulative / End-Game.</div>
         </div>
         <div class="setting">
           <label>Move highlight</label>
@@ -330,9 +330,11 @@
     const b = new Array(N).fill(0);
     for (let i = 0; i < N; i++) {
       const p = NODES[i];
-      // 10 vs 10 on remaining columns: P1 left two columns, P2 right two; center empty.
-      if (p.x === 0 || p.x === 2) b[i] = P1;
-      else if (p.x === 6 || p.x === 8) b[i] = P2;
+      // 10-bead two-file start, minus outer-file far corners (P1 x=0 y=0/8, P2 x=8 y=0/8).
+      const p1OuterCorner = p.x === 0 && (p.y === 0 || p.y === 8);
+      const p2OuterCorner = p.x === 8 && (p.y === 0 || p.y === 8);
+      if ((p.x === 0 || p.x === 2) && !p1OuterCorner) b[i] = P1;
+      else if ((p.x === 6 || p.x === 8) && !p2OuterCorner) b[i] = P2;
     }
     return b;
   }
@@ -1169,7 +1171,7 @@
   });
   canvas.addEventListener('click', handleCanvasClick);
 
-  window.__SHOLO_GUTI_10_FEATURE__ = {
+  window.__SHOLO_GUTI_C3_8_5x5_FEATURE__ = {
     P1, P2, STATE, N, NODES, ADJ, NODE_INDEX,
     getBoard: () => board.slice(),
     getTurn: () => currentTurn,

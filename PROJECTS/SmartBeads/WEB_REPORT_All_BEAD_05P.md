@@ -1,6 +1,6 @@
 # Web Report: All Board Families (Sholo Ladder + Cursor Index 4×4)
 
-**Date:** 2026-08-15 (4×4 6-bead vs 6-bead-b re-run) · prior sections 2026-08-14  
+**Date:** 2026-08-15 (4×4 selection finalized) · comparison run same day · prior sections 2026-08-14  
 **Location:** SmartBeads root — Web JSON/engines in `prototype/board4/`  
 **Methodology:** `LAB_TERMINOLOGY_05P.md` (G1–G9 gates, no new thresholds)  
 **Reference anchor:** 16-bead Sholo — **FULLY CERTIFIED** — `WEB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`  
@@ -25,7 +25,8 @@
 | Ladder G1–G9 — boards **10, 7, 6, 8** | **UNCHANGED** | Prior verdicts in `LADDER_LAB_EVALUATION.json` |
 | **3-bead (3×5 sketch)** | **NOT TESTED** | Dropped from ladder — not evaluated |
 | Cursor Index G1–G9 — **6, 6-b** | **PASS (evaluator)** | `evaluate-cursor-index-lab.cjs` 2026-08-15 → both **NEEDS FURTHER TESTING** (G1–G9 pass) |
-| Cursor Index playable smoke | **PASS** | `verify-cursor-index.cjs` → both 4×4 feature shells |
+| **4×4 playable selection** | **FINALIZED** | **Cross variant kept** → `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html`; rays removed; `_b_` filename retired |
+| Cursor Index playable smoke | **PASS** | `verify-cursor-index.cjs` → active 4×4 feature shell |
 | Cursor Index G1–G9 — **4** | **UNCHANGED** | INDEX_4 **REJECT** (G2) |
 | Compare batches (3×5) | **PASS** | `SHOLO_4_VS_16_LAB_COMPARE.json`, `SHOLO_5_VS_16_LAB_COMPARE.json` |
 | Human playtest | **NOT APPLICABLE** | Gameplay / UX Review — out of Web scope |
@@ -44,10 +45,15 @@
 | **4** (3×5 sketch) | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **100%** (P1 **0%** / P2 **100%**). |
 | **8** | **REJECT** | **G2** | **D2**, P1 opens: second mover wins **67.8%** (P1 **0%** / P2 **67.8%**); D2 capture ratio also fails G2. Swap: second mover wins **100%** of games with a winner either way. |
 | **Cursor Index 4** | **REJECT** | **G2** | **D1**, P1 opens: second mover wins **85.6%** (P1 **14.4%** / P2 **85.6%**). Exceeds G2 ±35 pp limit → `g2_fairness_fail`. |
-| **Cursor Index 6** (`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`) | **NEEDS FURTHER TESTING** | none | Long diagonal rays. All G1–G9 pass. D3 P1 **95.6%** / P2 **0%** (not G2 input). Human playtest pending. |
-| **Cursor Index 6-b** (`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`) | **NEEDS FURTHER TESTING** | none | Full box crosses (X in every 2×2 cell). All G1–G9 pass. D3 P1 **68.9%** / P2 **0%** (not G2 input). **Preferred lab profile** vs 6 — see comparison below. |
+| **Cursor Index 6** (`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`) | **NEEDS FURTHER TESTING** | none | **Active playable (2026-08-15):** full box crosses. Web verdict from INDEX_6_B audit. Rays variant removed. |
+| **Cursor Index 6 (rays — audit)** | **NEEDS FURTHER TESTING** | none | Historical INDEX_6 run only — `CURSOR_INDEX_6_LAB_EVAL.json`. Playable removed. |
+| **Cursor Index 6-b (cross — audit)** | **NEEDS FURTHER TESTING** | none | Historical INDEX_6_B run — `CURSOR_INDEX_6_B_LAB_EVAL.json`. Merged into active filename. |
 
-**No board receives KEEP** — KEEP requires human playtest per methodology.
+**No board receives Web KEEP from Lab alone** — human playtest sign-off required.
+
+**Human KEEP (2026-08-15):** `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html`, `SHOLO_GUTI_10_BEAD_WITH_FEATURE.html`, `SHOLO_GUTI_7_BEAD_WITH_FEATURE.html`, `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html` — registered in `FEATURE_TEST_KEEP_REGISTRY.json`. Web G1–G9 verdicts below unchanged.
+
+**Feature Test (2026-08-15):** **COMPLETE** — per-board centre study `FEATURE_TEST_CENTRE_RULE_EVALUATION.json`. Report **`WEB_FEATURE_TEST_05P.md`**.
 
 ---
 
@@ -123,7 +129,7 @@ All G1–G9 **PASS**. D2 capture rate matches 16-bead reference spirit (~12/game
 | D2 | 8.6 | 113.3 | 12.2% | 87.8% | 3% / 9% |
 | D3 | 11.2 | 100.1 | 42.2% | 57.8% | 3% / 39% |
 
-All G1–G9 **PASS**. **D1**, P1 opens: first mover **20%**, second mover **80%** — second mover wins more, but within G2 limit. **Pending gate:** none (Web). **Remaining test:** human playtest sign-off.
+All G1–G9 **PASS**. **D1**, P1 opens: first mover **20%**, second mover **80%** (FPA **−30 pp**) — second mover wins more, **inside** G2’s D1 bound (`|FPA| > 35` fails; 4/5-bead REJECT was 0/100). **D2** (primary) captures 4.12 vs 4.47 (ratio 1.08×). Human **KEEP** 2026-08-15. Review 2026-08-17: **KEEP** — do not recheck Lab, do not change geometry.
 
 ---
 
@@ -135,7 +141,7 @@ All G1–G9 **PASS**. **D1**, P1 opens: first mover **20%**, second mover **80%*
 | D2 | 6.0 | 110.9 | 34.4% | 65.6% | 20% / 14% |
 | D3 | 9.2 | 107.1 | 26.7% | 73.3% | 1% / 26% |
 
-All G1–G9 **PASS**. D2 captures below 16-bead reference (~12) but above alive floor. Swap capture symmetry within ±3. Human playtest needed.
+All G1–G9 **PASS**. D2 captures below 16-bead reference (~12) but above alive floor. Swap capture symmetry within ±3. Human **KEEP** 2026-08-15.
 
 ---
 
@@ -265,19 +271,23 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 **6-b has less extreme D3 first-mover skew** (still P2 **0%** at D3 — flag for human review on both).
 
-### Recommendation (Web → product)
+### Recommendation (Web → product) — **selection finalized 2026-08-15**
 
 | Action | Board |
 |--------|-------|
-| **Schedule human playtest first** | **`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`** — better D1 balance, higher D1 captures, milder D3 skew, matches requested full-cross geometry |
-| **Keep as alternate / do not reject** | **`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`** — passes all gates but weaker D1 balance and harsher D3 skew; useful if human prefers long-ray feel |
-| **Web REJECT** | **Neither** |
+| **Active playable** | **`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html`** (full box crosses — was 6-b) |
+| **Removed** | Rays variant (former file at same path); `SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html` |
+| **Audit preserved** | `CURSOR_INDEX_6_LAB_EVAL.json` (rays), `CURSOR_INDEX_6_B_LAB_EVAL.json` (cross) — metrics unchanged |
+| **Web REJECT** | Neither geometry variant |
+| **Human playtest next** | Active 4×4 file above |
 
 ---
 
-## Cursor Index 6 (4×4, 6 vs 6) — detail (`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`)
+## Cursor Index 6 (4×4, 6 vs 6) — active playable detail
 
-**Sources:** `cursor-index-fullturn-engine.cjs` (geometry `rays`), `CURSOR_INDEX_6_LAB_EVAL.json`.
+**File:** `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html` · **Geometry:** full box crosses · **Web verdict:** **NEEDS FURTHER TESTING** (from INDEX_6_B audit, G1–G9 pass).
+
+**Sources:** `cursor-index-fullturn-engine.cjs` (geometry `fullBoxCross`), `CURSOR_INDEX_6_B_LAB_EVAL.json`.
 
 | Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
 |-------|-------------|-----------|-------------|---------------|-------------|
@@ -299,13 +309,13 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 **Failed gate:** none — all G1–G9 **PASS**.
 
-**Remaining test before KEEP:** human playtest sign-off. Prefer **6-b** for first human session (see comparison above).
+**Remaining test before KEEP:** human playtest sign-off on the active 4×4 file.
 
 ---
 
-## Cursor Index 6-b (4×4, full box crosses) — detail (`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`)
+## Cursor Index 6 (rays — audit only)
 
-**Sources:** `cursor-index-fullturn-engine.cjs` (geometry `fullBoxCross`), `CURSOR_INDEX_6_B_LAB_EVAL.json`.
+**Sources:** `CURSOR_INDEX_6_LAB_EVAL.json` · geometry `rays` · playable **removed** 2026-08-15.
 
 | Depth | avgCaptures | avgLength | elimination | move-cap draw | P1 / P2 win |
 |-------|-------------|-----------|-------------|---------------|-------------|
@@ -323,7 +333,7 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 **D2 capture activity vs 16-bead reference (~11.7):** 10-bead 12.0 ✓ · 8-bead 9.1 · 7-bead 8.6 · 6-bead 6.0 · **5-bead (3×5) 4.9** · **4-bead (3×5) 3.4**.
 
-**Fairness:** **4-bead** and **5-bead (3×5 sketch)** both **REJECT** on **G2** at **D1**. **8-bead** **REJECT** at **D2**. Cursor Index 4 **REJECT** at **D1**. **Both 4×4 6-bead variants** pass all gates — human playtest pending; **prefer 6-b** for first session.
+**Fairness:** **4-bead** and **5-bead (3×5 sketch)** both **REJECT** on **G2** at **D1**. **8-bead** **REJECT** at **D2**. Cursor Index 4 **REJECT** at **D1**. **Active 4×4 6-bead** (full box cross) human **KEEP**. **7-bead D1 20/80** is inside G2, not a retest trigger.
 
 ---
 
@@ -333,16 +343,18 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 | Continue? | Boards |
 |-----------|--------|
-| **Yes — schedule human playtest** | **10-bead**, **7-bead**, **Sholo 6-bead (3×5)** |
-| **No — Web REJECT (G2)** | **8-bead**, **5-bead (3×5)**, **4-bead (3×5)** — playables removed |
+| **Yes — human KEEP (2026-08-15)** | **10-bead**, **7-bead**, **Sholo 6-bead (3×5)** |
+| **Yes — Lab pass, human playtest remaining** | **C3** 8-bead 5×5 thinned (`C3_LAB_COMPLETE.json`) |
+| **No — Web REJECT (G2)** | **8-bead 4×5**, **5-bead (3×5 sketch)**, **4-bead (3×5)** — playables removed |
+| **No — discovery REJECT (G2)** | **C1**, **C2**, **C4**, **Baro Guti 12** |
 | **Reference only** | **16-bead** |
 
 ### Cursor Index 4×4
 
 | Continue? | Boards |
 |-----------|--------|
-| **Yes — schedule human playtest (prefer first)** | **`SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE`** (full box crosses) |
-| **Yes — alternate geometry** | **`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`** (long diagonal rays) |
+| **Yes — human KEEP (2026-08-15)** | **`SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE`** (full box crosses — selected) |
+| **Removed — audit only** | Rays variant; former `_b_` filename |
 | **No — Web REJECT (G2)** | **Cursor Index 4** — playable removed |
 
 ---
@@ -351,22 +363,72 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 | | Technical Verification (Web) | Gameplay / UX Review (human) |
 |--|---------------------------|------------------------------|
-| **Sholo 10, 7, 6** | NEEDS FURTHER TESTING — **remaining: human playtest** | Not started |
+| **Sholo 10, 7, 6** | NEEDS FURTHER TESTING (G1–G9 pass) | **KEEP** 2026-08-15 |
 | **Sholo 8, 5, 4** | **REJECT** (G2) | N/A until redesign |
-| **Cursor Index 6 / 6-b** | NEEDS FURTHER TESTING — **remaining: human playtest** (prefer **6-b** first) | Not started |
+| **Cursor Index 6 (4×4)** | NEEDS FURTHER TESTING (G1–G9 pass) | **KEEP** 2026-08-15 |
 | **Cursor Index 4** | **REJECT** (G2) | N/A until redesign |
+| **C3 8-bead 5×5** | G1–G9 **PASS** (`C3_LAB_COMPLETE.json`) | **Remaining** |
+| **C1, C2, C4, Baro 12** | **REJECT** (G2) | N/A |
 | **16-bead** | REFERENCE | N/A |
 
 ---
 
-## Artifacts (2026-08-15 — 4×4 6 vs 6-b)
+## Feature Test (product settings — KEEP boards only)
+
+**Status (2026-08-15):** **COMPLETE** — four human-confirmed KEEP boards tested.
+
+| Feature | Result summary |
+|---------|----------------|
+| Centre rule (per-board) | **4×4:** End-Game · **10:** inconclusive · **7/6:** cumulative — all KEEP playables have Off/Cumulative/End-Game in UI — see `FEATURE_TEST_CENTRE_RULE_EVALUATION.json` |
+| Cumulative vs endgame | Per-board study; **not** universal |
+| Max moves | **4×4:** Unlimited · others n/a |
+| Match timer | Viable ranges per board — no final value |
+| Shot clock | Viable ranges per board — no final value |
+| Resignation | Not tested |
+
+Full report: **`WEB_FEATURE_TEST_05P.md`**. Evaluators: `evaluate-feature-test-lab.cjs`, `evaluate-centre-rule-feature-test.cjs`.
+
+---
+
+## Discovery boards (2026-08-16) — not KEEP
+
+New geometries, not promotions of REJECT 4/5/8. Protocol: D1/D2/D3 · seeds 101/202/303 · move-cap 120. Authoritative: `evaluate-c1-c4-lab.cjs`, `complete-c3-lab.cjs`, `evaluate-12-bead-baro-lab.cjs`. KEEP boards unchanged.
+
+| Board | Geometry | Lab | Next |
+|-------|----------|-----|------|
+| **C1** | 5 vs 5, 3×5 left–right | **REJECT (G2)** | stop |
+| **C2** | 5 vs 5, 4×4 full box cross | **REJECT (G2)** | stop |
+| **C3** | 8 vs 8, 5×5 thinned 10-bead | **G1–G9 PASS** (N=100) | **human playtest** |
+| **C4** | 12 vs 12, 5×5 mini-wings | **REJECT (G2)** | stop |
+| **Baro 12** | traditional 5×5 Alquerque rank camps | **REJECT (G2)** D1 0/100 | stop |
+
+C6 6×5 stretch remains untested and is a separate hypothesis. See `BOARD_DISCOVERY_05P.md`.
+
+---
+
+## Artifacts (2026-08-15 — 4×4 selection finalized)
 
 | File | Content |
 |------|---------|
-| `CURSOR_INDEX_LAB_EVALUATION.json` | Fresh G1–G9 for INDEX_6 + INDEX_6_B |
-| `CURSOR_INDEX_6_LAB_EVAL.json` | `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE` eval |
-| `CURSOR_INDEX_6_B_LAB_EVAL.json` | `SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE` eval |
-| `CURSOR_INDEX_VERIFY_SMOKE.json` | Playable smoke (both 4×4 files) |
+| `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html` | **Active** playable (full box crosses) |
+| `CURSOR_INDEX_LAB_EVALUATION.json` | Combined eval incl. INDEX_6 + INDEX_6_B audit |
+| `CURSOR_INDEX_6_LAB_EVAL.json` | INDEX_6 rays audit (unchanged) |
+| `CURSOR_INDEX_6_B_LAB_EVAL.json` | INDEX_6_B cross audit (unchanged) |
+| `CURSOR_INDEX_VERIFY_SMOKE.json` | Active playable smoke |
+| `FEATURE_TEST_KEEP_REGISTRY.json` | Human-confirmed KEEP gate for Feature Test |
+| `FEATURE_TEST_EVALUATION.json` | Feature Test artifact — **COMPLETE** (2026-08-15, 4 KEEP boards) |
+| `FEATURE_TEST_CENTRE_RULE_EVALUATION.json` | Per-board End-Game vs Cumulative centre study |
+
+## Artifacts (2026-08-16 — discovery + Baro)
+
+| File | Content |
+|------|---------|
+| `C1_C4_LAB_EVALUATION.json` | C1–C4 G1–G9 (N=30) |
+| `C3_LAB_COMPLETE.json` | C3 close-out D1/D2/D3 N=100 — G1–G9 pass |
+| `BARO_12_LAB_EVALUATION.json` | Baro Guti 12 — REJECT G2 |
+| `BOARD_DISCOVERY_05P.md` | Discovery shortlist + Lab outcomes |
+
+---
 
 ## Artifacts (2026-08-14)
 
@@ -384,4 +446,4 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
 ---
 
-*SmartBeads Web — 4×4 6-bead vs 6-bead-b evaluation 2026-08-15 (`evaluate-cursor-index-lab.cjs`). Prior 4-bead & 5-bead 3×5 sketch evaluation 2026-08-14.*
+*SmartBeads Web — discovery Lab 2026-08-16 (C3 pass / C1 C2 C4 Baro REJECT). 4×4 cross selected 2026-08-15. Human KEEP four boards 2026-08-15.*

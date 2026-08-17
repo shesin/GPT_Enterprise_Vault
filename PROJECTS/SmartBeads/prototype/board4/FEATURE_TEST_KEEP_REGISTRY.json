@@ -1,0 +1,45 @@
+{
+  "purpose": "Human-confirmed KEEP boards eligible for Feature Test (evaluate-feature-test-lab.cjs).",
+  "updated": "2026-08-15",
+  "humanConfirmedKeep": [
+    {
+      "id": "INDEX_6_ACTIVE",
+      "playable": "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html",
+      "geometry": "fullBoxCross",
+      "humanKeepConfirmedAt": "2026-08-15",
+      "humanKeepNote": "human playtest confirmed 2026-08-15"
+    },
+    {
+      "id": "LADDER_10",
+      "playable": "SHOLO_GUTI_10_BEAD_WITH_FEATURE.html",
+      "humanKeepConfirmedAt": "2026-08-15",
+      "humanKeepNote": "human playtest confirmed 2026-08-15"
+    },
+    {
+      "id": "LADDER_7",
+      "playable": "SHOLO_GUTI_7_BEAD_WITH_FEATURE.html",
+      "humanKeepConfirmedAt": "2026-08-15",
+      "humanKeepNote": "human playtest confirmed 2026-08-15"
+    },
+    {
+      "id": "LADDER_6_3x5",
+      "playable": "SHOLO_GUTI_6_BEAD_WITH_FEATURE.html",
+      "humanKeepConfirmedAt": "2026-08-15",
+      "humanKeepNote": "human playtest confirmed 2026-08-15"
+    }
+  ],
+  "pendingNotEligible": [],
+  "referenceNotKeep": [
+    {
+      "playable": "SHOLO_GUTI_WITH_FEATURE.html",
+      "role": "16-bead REFERENCE ANCHOR — not a ladder KEEP candidate"
+    }
+  ],
+  "addKeepEntryFormat": {
+    "id": "string — e.g. INDEX_6_ACTIVE",
+    "playable": "SHOLO_*.html",
+    "geometry": "optional",
+    "humanKeepConfirmedAt": "ISO date",
+    "humanKeepNote": "who signed off"
+  }
+}

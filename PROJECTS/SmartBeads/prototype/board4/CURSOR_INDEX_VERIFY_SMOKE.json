@@ -10,24 +10,7 @@
       "captured": null
     },
     "fullGame": {
-      "humanPlies": 6,
-      "finished": true,
-      "winnerText": "Ivory wins",
-      "reason": "AI has no legal moves.",
-      "modal": "flex"
-    }
-  },
-  "r6b": {
-    "file": "SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html",
-    "beads": 6,
-    "ok": true,
-    "humanMove": {
-      "from": 0,
-      "to": 5,
-      "captured": null
-    },
-    "fullGame": {
-      "humanPlies": 6,
+      "humanPlies": 11,
       "finished": true,
       "winnerText": "Ivory wins",
       "reason": "AI has no legal moves.",
@@ -35,6 +18,5 @@
     }
   },
   "playable": "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html",
-  "playableB": "SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html",
-  "at": "2026-08-15T09:57:21.858Z"
+  "at": "2026-08-15T11:47:42.537Z"
 }

@@ -1,0 +1,218 @@
+{
+  "board": "Baro Guti 12-bead",
+  "playable": "SHOLO_GUTI_12_BEAD_BARO_WITH_FEATURE.html",
+  "engine": "sholo-12-bead-baro-fullturn-engine.cjs",
+  "geometry": "5×5 Alquerque · classic rank camps · centre A22 empty",
+  "traditionalSources": [
+    "Murray 1951 / Ludii Bára Guti",
+    "OMerkel Alquerque README",
+    "Bead 12 / Baro Guti apps"
+  ],
+  "allOk": true,
+  "checks": [
+    {
+      "name": "N_25",
+      "ok": true,
+      "detail": {
+        "N": 25
+      }
+    },
+    {
+      "name": "beads_12_each",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "occupancy_24_of_25",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "start_pattern",
+      "ok": true,
+      "detail": {
+        "play": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          0,
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "lab": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          0,
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "expected": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          0,
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "name": "matches_alquerque_reference",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "node_coords",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "edge_count",
+      "ok": true,
+      "detail": {
+        "play": 72,
+        "lab": 72
+      }
+    },
+    {
+      "name": "centre_A22_empty",
+      "ok": true,
+      "detail": {
+        "centreIdx": 12
+      }
+    },
+    {
+      "name": "opening_moves_match",
+      "ok": true,
+      "detail": {
+        "openPlay": 4,
+        "openLab": 4
+      }
+    },
+    {
+      "name": "opening_captures_zero",
+      "ok": true,
+      "detail": {
+        "captures": []
+      }
+    },
+    {
+      "name": "pvp_mode",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "endgame_centre",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "cumulative_centre",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "ai_turn",
+      "ok": true,
+      "detail": {
+        "pathLen": 1
+      }
+    },
+    {
+      "name": "search_unit",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "eval_noise_off",
+      "ok": true,
+      "detail": {}
+    }
+  ],
+  "startPattern": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    0,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "verifiedAt": "2026-08-16T17:37:49.195Z"
+}

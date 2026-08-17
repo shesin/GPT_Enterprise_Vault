@@ -21,6 +21,48 @@ const SEARCH_LIMITS = {
 
 const REP_SOFT = 25;
 
+/** 6-bead 4×4 centre nodes (full box cross playable). */
+const CENTER_NODES_6 = [5, 6, 9, 10];
+
+function countCenterNodes(board, centerNodes) {
+  let c1 = 0;
+  let c2 = 0;
+  for (let i = 0; i < centerNodes.length; i++) {
+    const idx = centerNodes[i];
+    if (board[idx] === P1) c1++;
+    else if (board[idx] === P2) c2++;
+  }
+  return { c1, c2 };
+}
+
+function resolveFeatureEnd(
+  board,
+  p1Captures,
+  p2Captures,
+  p1CenterPts,
+  p2CenterPts,
+  centerRule,
+  centerNodes
+) {
+  if (p1Captures > p2Captures) return 'P1';
+  if (p2Captures > p1Captures) return 'P2';
+  let c1 = p1CenterPts;
+  let c2 = p2CenterPts;
+  if (centerRule === 'endgame') {
+    const live = countCenterNodes(board, centerNodes);
+    c1 = live.c1;
+    c2 = live.c2;
+  }
+  if (centerRule !== 'off') {
+    if (c1 > c2) return 'P1';
+    if (c2 > c1) return 'P2';
+  }
+  const p1Pieces = count(board, P1);
+  const p2Pieces = count(board, P2);
+  if (p1Pieces === p2Pieces) return 'draw';
+  return p1Pieces > p2Pieces ? 'P1' : 'P2';
+}
+
 let aiTestSeed = null;
 let aiTestRng = null;
 
@@ -129,6 +171,10 @@ function startingBoard(beadsPerSide) {
       b[12 + c] = P2;
     }
     return b;
+  }
+  if (beadsPerSide === 5) {
+    // C2 discovery: empty back-rank 1/14, empty 2×2 centre — no opening jump.
+    return [1, 0, 1, 1, 1, 0, 0, 1, 2, 0, 0, 2, 2, 2, 0, 2];
   }
   if (beadsPerSide === 6) {
     [0, 1, 2, 3, 4, 7].forEach((i) => { b[i] = P1; });
@@ -378,10 +424,13 @@ function describeSearchSemantics(requestedDepth) {
 }
 
 function createEngine(beadsPerSide, options) {
-  if (beadsPerSide !== 4 && beadsPerSide !== 6) {
-    throw new Error('cursor-index-fullturn-engine supports beadsPerSide 4 or 6 only');
+  if (beadsPerSide !== 4 && beadsPerSide !== 5 && beadsPerSide !== 6) {
+    throw new Error('cursor-index-fullturn-engine supports beadsPerSide 4, 5, or 6 only');
   }
   const geometry = options && options.geometry === 'fullBoxCross' ? 'fullBoxCross' : 'rays';
+  const centerRule = (options && options.centerRule) || 'off';
+  const maxMoveLimit = options && options.maxMoveLimit != null ? options.maxMoveLimit : 0;
+  const centerNodes = beadsPerSide === 5 || beadsPerSide === 6 ? CENTER_NODES_6 : [];
   const adj = buildAdjacency(geometry);
   const jumps = buildJumps(adj);
 
@@ -402,6 +451,8 @@ function createEngine(beadsPerSide, options) {
       let totalCaptures = 0;
       let p1Captures = 0;
       let p2Captures = 0;
+      let p1CenterPts = 0;
+      let p2CenterPts = 0;
       let maxChain = 0;
       while (moves < moveCap) {
         const legal = getAllLegalMoves(sim, turn, adj, jumps);
@@ -420,6 +471,13 @@ function createEngine(beadsPerSide, options) {
         totalCaptures += turnRes.captures;
         if (turn === P1) p1Captures += turnRes.captures;
         else p2Captures += turnRes.captures;
+        if (centerRule === 'cumulative' && centerNodes.length) {
+          for (let ci = 0; ci < centerNodes.length; ci++) {
+            const idx = centerNodes[ci];
+            if (sim[idx] === P1) p1CenterPts++;
+            if (sim[idx] === P2) p2CenterPts++;
+          }
+        }
         if (turnRes.hops > maxChain) maxChain = turnRes.hops;
         if (count(sim, P1) === 0) {
           clearAiTestSeed();
@@ -428,6 +486,11 @@ function createEngine(beadsPerSide, options) {
         if (count(sim, P2) === 0) {
           clearAiTestSeed();
           return finish(resolvedSeed, 'P1', 'elimination', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
+        }
+        if (maxMoveLimit > 0 && moves >= maxMoveLimit) {
+          clearAiTestSeed();
+          const w = resolveFeatureEnd(sim, p1Captures, p2Captures, p1CenterPts, p2CenterPts, centerRule, centerNodes);
+          return finish(resolvedSeed, w, 'max_moves', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
         }
         const key = positionKey(sim, turn);
         hist[key] = (hist[key] || 0) + 1;
@@ -438,7 +501,12 @@ function createEngine(beadsPerSide, options) {
         turn = turn === P1 ? P2 : P1;
       }
       clearAiTestSeed();
-      return finish(resolvedSeed, 'draw', 'move_cap_lab_safety', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
+      if (centerRule === 'off' && !maxMoveLimit) {
+        return finish(resolvedSeed, 'draw', 'move_cap_lab_safety', moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
+      }
+      const w = resolveFeatureEnd(sim, p1Captures, p2Captures, p1CenterPts, p2CenterPts, centerRule, centerNodes);
+      const endReason = w === 'draw' ? 'move_cap_lab_safety' : 'score_decision';
+      return finish(resolvedSeed, w, endReason, moves, totalCaptures, p1Captures, p2Captures, maxChain, first, sem);
     } catch (e) {
       clearAiTestSeed();
       throw e;
@@ -448,6 +516,9 @@ function createEngine(beadsPerSide, options) {
   return {
     beadsPerSide,
     geometry,
+    centerRule,
+    maxMoveLimit,
+    centerNodes,
     P1,
     P2,
     N,

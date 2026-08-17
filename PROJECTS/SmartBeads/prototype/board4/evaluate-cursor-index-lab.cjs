@@ -1,7 +1,11 @@
 'use strict';
 /**
- * Authoritative G1-G9 verdict evaluator for Cursor Index 4×4.
+ * Authoritative G1-G9 verdict evaluator for Cursor Index 4×4 active playable.
  * Uses certified complete-turn engine + sholo-lab-protocol.cjs (same as 16-bead reference).
+ *
+ * Audit trail (2026-08-15 comparison — do not overwrite):
+ *   INDEX_6 / CURSOR_INDEX_6_LAB_EVAL.json — rays geometry (removed playable)
+ *   INDEX_6_B / CURSOR_INDEX_6_B_LAB_EVAL.json — fullBoxCross (was _b_ filename)
  */
 const fs = require('fs');
 const path = require('path');
@@ -11,22 +15,16 @@ const metrics = require('./sholo-lab-metrics.cjs');
 const gates = require('./sholo-lab-gates.cjs');
 const protocol = require('./sholo-lab-protocol.cjs');
 
+const ACTIVE_PLAYABLE = 'SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html';
+
 const CANDIDATES = [
   {
-    id: 'INDEX_6',
+    id: 'INDEX_6_ACTIVE',
     beads: 6,
-    html: 'SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html',
-    smokeOut: 'CURSOR_INDEX_6_LAB_EVAL.json',
-    geometry: 'rays',
-    label: '6-bead 4×4 (long diagonal rays)',
-  },
-  {
-    id: 'INDEX_6_B',
-    beads: 6,
-    html: 'SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html',
-    smokeOut: 'CURSOR_INDEX_6_B_LAB_EVAL.json',
+    html: ACTIVE_PLAYABLE,
+    smokeOut: 'CURSOR_INDEX_6_ACTIVE_LAB_EVAL.json',
     geometry: 'fullBoxCross',
-    label: '6-bead 4×4 b (full box crosses)',
+    label: '6-bead 4×4 (full box crosses — selected playable)',
   },
 ];
 
@@ -53,9 +51,7 @@ function parityCheck(engine, beads, playableFile) {
     d2: engine.describeSearchSemantics(2),
   });
   g('eval_noise_off', engine.describeSearchSemantics(2).evalNoise === false, {});
-  g('geometry_mode', engine.geometry === (playableFile.includes('_b_') ? 'fullBoxCross' : 'rays'), {
-    engine: engine.geometry,
-  });
+  g('geometry_mode', engine.geometry === 'fullBoxCross', { engine: engine.geometry });
   return { allOk: checks.every((c) => c.ok), checks };
 }
 
@@ -99,6 +95,12 @@ function main() {
     authoritativeEvaluator: 'evaluate-cursor-index-lab.cjs',
     headlessEngine: 'cursor-index-fullturn-engine.cjs',
     protocol: batchProtocol,
+    activePlayable: ACTIVE_PLAYABLE,
+    activeGeometry: 'fullBoxCross',
+    auditTrail: {
+      INDEX_6: 'CURSOR_INDEX_6_LAB_EVAL.json — rays geometry (2026-08-15, playable removed)',
+      INDEX_6_B: 'CURSOR_INDEX_6_B_LAB_EVAL.json — fullBoxCross (2026-08-15, was SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html)',
+    },
     boards: prior.boards ? { ...prior.boards } : {},
     evaluatedAt: new Date().toISOString(),
   };
@@ -156,6 +158,7 @@ function main() {
   console.log(JSON.stringify({
     out: combinedPath,
     authoritativeEvaluator: 'evaluate-cursor-index-lab.cjs',
+    activePlayable: ACTIVE_PLAYABLE,
     boards: Object.fromEntries(Object.entries(out.boards).map(([k, v]) => [k, v.selectionVerdict || v.playable])),
   }, null, 2));
   process.exit(0);

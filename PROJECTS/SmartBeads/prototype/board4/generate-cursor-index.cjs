@@ -416,23 +416,31 @@ ${bgmOptions}
     POSITIONS.push({ x: CONFIG.OFFSET + c * CONFIG.SPACING, y: CONFIG.OFFSET + r * CONFIG.SPACING });
   }
   const DIAGONAL_RAYS = [[0,5,10,15],[3,6,9,12],[1,6,11],[4,9,14],[2,5,8],[7,10,13]];
-  function buildGraph() {
+  function buildGraph(useFullBoxCross) {
     const adj = {}; for (let i = 0; i < 16; i++) adj[i] = [];
     for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
       const u = r * 4 + c;
       if (c < 3) { const v = r * 4 + c + 1; adj[u].push(v); adj[v].push(u); }
       if (r < 3) { const v = (r + 1) * 4 + c; adj[u].push(v); adj[v].push(u); }
     }
-    DIAGONAL_RAYS.forEach((ray) => {
-      for (let i = 0; i < ray.length - 1; i++) {
-        const u = ray[i], v = ray[i + 1];
-        if (!adj[u].includes(v)) adj[u].push(v);
-        if (!adj[v].includes(u)) adj[v].push(u);
+    if (useFullBoxCross) {
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+        const tl = r * 4 + c, tr = tl + 1, bl = tl + 4, br = bl + 1;
+        if (!adj[tl].includes(br)) { adj[tl].push(br); adj[br].push(tl); }
+        if (!adj[tr].includes(bl)) { adj[tr].push(bl); adj[bl].push(tr); }
       }
-    });
+    } else {
+      DIAGONAL_RAYS.forEach((ray) => {
+        for (let i = 0; i < ray.length - 1; i++) {
+          const u = ray[i], v = ray[i + 1];
+          if (!adj[u].includes(v)) adj[u].push(v);
+          if (!adj[v].includes(u)) adj[v].push(u);
+        }
+      });
+    }
     return adj;
   }
-  const ADJACENCY = buildGraph();
+  const ADJACENCY = buildGraph(true);
   function generateValidJumps() {
     const jumps = [];
     for (let from = 0; from < 16; from++) {
@@ -1154,6 +1162,11 @@ const variants = [
 for (const v of variants) {
   if (v.bgmTracks.length !== 20) {
     throw new Error(v.file + ' must have exactly 20 BGM tracks, got ' + v.bgmTracks.length);
+  }
+  const outPath = path.join(outDir, v.file);
+  if (fs.existsSync(outPath) && fs.readFileSync(outPath, 'utf8').includes('link(tl, br)')) {
+    console.warn('Skip', v.file, '— feature-shell playable is hand-maintained (full box cross)');
+    continue;
   }
   const html = buildHtml(v);
   const cleaned = html.replace(/--muted: #9 Panela3b0;\s*/g, '');

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sholo Guti 10 Bead With Features</title>
+  <title>Sholo Guti 12 Bead Mini-Wing (C4)</title>
   <style>
     :root {
       --bg: #0f2019;
@@ -167,8 +167,8 @@
         </div>
         <div class="timer" id="p2-clock">--:--</div>
       </div>
-      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">10</span></div>
-      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">10</span></div>
+      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">12</span></div>
+      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">12</span></div>
       <div class="stat"><span>P1 captures</span><span class="val" id="p1-caps">0</span></div>
       <div class="stat"><span>P2 captures</span><span class="val" id="p2-caps">0</span></div>
       <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
@@ -233,7 +233,7 @@
             <option value="cumulative">Cumulative</option>
             <option value="endgame">End-Game</option>
           </select>
-          <div class="tiny">5×5 · 10 vs 10. Amber centre square at middle node (centre column, row 3) — same style as 6-bead.</div>
+          <div class="tiny">C4 discovery · 5×5 Alquerque + inner-wing triangles (LIT+LIM / RIT+RIM from 16-bead). 12 vs 12. Amber = middle node of the empty centre file. Off / Cumulative / End-Game.</div>
         </div>
         <div class="setting">
           <label>Move highlight</label>
@@ -296,7 +296,7 @@
   const P1 = 1, P2 = 2;
   const STATE = { IDLE: 'IDLE', SELECTED: 'SELECTED', CHAIN_JUMPING: 'CHAIN_JUMPING', GAME_OVER: 'GAME_OVER' };
 
-  // 5×5 lattice only — left/right triangle wings removed (Vision 10-bead slice parent).
+  // C4: 5×5 Alquerque + inner-wing triangles from 16-bead (LIT+LIM, RIT+RIM).
   const NODES = [];
   const NODE_INDEX = Object.create(null);
   function addNode(id, x, y) {
@@ -304,6 +304,10 @@
     NODES.push({ id, x, y });
   }
   for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) addNode('A' + r + c, 2 * c, 2 * r);
+  [
+    ['LIT', -1, 2], ['LIM', -1, 4],
+    ['RIT', 9, 2], ['RIM', 9, 4],
+  ].forEach(([id, x, y]) => addNode(id, x, y));
   const N = NODES.length;
   const ADJ = Array.from({ length: N }, () => []);
   function link(a, b) {
@@ -320,6 +324,10 @@
       }
     }
   }
+  [
+    ['LIT', 'LIM'], ['LIT', 'A20'], ['A20', 'LIM'],
+    ['RIT', 'RIM'], ['RIT', 'A24'], ['A24', 'RIM'],
+  ].forEach(([a, b]) => link(a, b));
 
   function isEndgameCenterNode(node) {
     // Middle row centre node (lattice x=4,y=4) — same single-node pattern as 6-bead row 3.
@@ -330,9 +338,8 @@
     const b = new Array(N).fill(0);
     for (let i = 0; i < N; i++) {
       const p = NODES[i];
-      // 10 vs 10 on remaining columns: P1 left two columns, P2 right two; center empty.
-      if (p.x === 0 || p.x === 2) b[i] = P1;
-      else if (p.x === 6 || p.x === 8) b[i] = P2;
+      if (p.id.startsWith('L') || (p.id.startsWith('A') && (p.x === 0 || p.x === 2))) b[i] = P1;
+      else if (p.id.startsWith('R') || (p.id.startsWith('A') && (p.x === 6 || p.x === 8))) b[i] = P2;
     }
     return b;
   }
@@ -528,10 +535,11 @@
   }
 
   function toXY(x, y) {
-    // Square 5×5 lattice: x,y in {0,2,4,6,8}
+    // 10-bead orientation (Ivory left-file at bottom) with room for inner wings x=-1 and x=9.
     const pad = 44;
-    const px = pad + (y / 8) * (canvas.width - pad * 2);
-    const py = pad + ((8 - x) / 8) * (canvas.height - pad * 2);
+    const minX = -1, maxX = 9, minY = 0, maxY = 8;
+    const px = pad + ((y - minY) / (maxY - minY)) * (canvas.width - pad * 2);
+    const py = pad + ((maxX - x) / (maxX - minX)) * (canvas.height - pad * 2);
     return [px, py];
   }
   function fmtClock(sec) {
@@ -1169,7 +1177,7 @@
   });
   canvas.addEventListener('click', handleCanvasClick);
 
-  window.__SHOLO_GUTI_10_FEATURE__ = {
+  window.__SHOLO_GUTI_C4_12_MINIWING_FEATURE__ = {
     P1, P2, STATE, N, NODES, ADJ, NODE_INDEX,
     getBoard: () => board.slice(),
     getTurn: () => currentTurn,
