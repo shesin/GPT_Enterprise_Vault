@@ -69,14 +69,11 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **SHOLO_GUTI_7_BEAD_WITH_FEATURE.html** — 7 vs 7 on 4×5 hourglass (5+2+2+5). Human **KEEP**. D1 greedy 20/80 is inside G2; do not retest Lab or change geometry.
 - **SHOLO_GUTI_6_BEAD_WITH_FEATURE.html** — 6 vs 6 on 3×5 (sketch geometry). Rows 1–2 Ebony top, row 3 empty + single amber centre node, rows 4–5 Ivory bottom. Square board, P1 at bottom.
 - **BOARD_DISCOVERY_05P.md** — Evidence-based new-board shortlist (C1–C6). Not a verdict document.
-- **SHOLO_GUTI_5_BEAD_3x5_LR_WITH_FEATURE.html** — **C1 discovery**. 5 vs 5 on 3×5 left–right. Lab: **REJECT (G2)**.
-- **SHOLO_GUTI_5_BEAD_4x4_WITH_FEATURE.html** — **C2 discovery**. 5 vs 5 on 4×4 full box crosses. Lab: **REJECT (G2)**.
-- **SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html** — **C3 discovery**. 8 vs 8 on 5×5 Alquerque (thinned 10-bead), **not** the REJECT 4×5 8-bead. Lab: all G1–G9 pass (`C3_LAB_COMPLETE.json`); human playtest remaining.
-- **SHOLO_GUTI_12_BEAD_MINIWING_WITH_FEATURE.html** — **C4 discovery**. 12 vs 12 on 5×5 + inner-wing triangles. Lab: **REJECT (G2)**.
-- **SHOLO_GUTI_12_BEAD_BARO_WITH_FEATURE.html** — traditional Baro Guti 12 vs 12 on 5×5 Alquerque rank camps. Lab: **REJECT (G2)**. Distinct from C4.
-- **verify-sholo-c1-c4-feature.cjs** / **evaluate-c1-c4-lab.cjs** / **complete-c3-lab.cjs** / **evaluate-12-bead-baro-lab.cjs** — discovery smoke + G1–G9. Artifacts: `C1_C4_LAB_EVALUATION.json`, `C3_LAB_COMPLETE.json`, `BARO_12_LAB_EVALUATION.json`.
-- **Discovery round 2 (D1–D5, 2026-08-17):** `generate-discovery-round2.cjs` · `verify-sholo-d1-d5-feature.cjs` · `evaluate-d1-d5-lab.cjs` · playables `SHOLO_GUTI_9_BEAD_5x5` … `SHOLO_GUTI_4_BEAD_3x5_REAR` · engines `sholo-d1-*` … `sholo-d5-*` · `D1_D5_LAB_EVALUATION.json`.
-- **Final round (F1b–F5b, 2026-08-17):** `generate-final-round.cjs` · `verify-final-round-feature.cjs` · `evaluate-final-round-lab.cjs` · playables `SHOLO_GUTI_5_BEAD_4x3_HOURGLASS` … `SHOLO_GUTI_12_BEAD_4x7_HOURGLASS` · engines `sholo-f1b-*` … `sholo-f5b-*` · `FINAL_ROUND_LAB_EVALUATION.json` · `ALL_NON_REJECT_LAB_RANKING.json`.
+- **SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html** — 8 vs 8 on 5×5 Alquerque (thinned 10-bead). Lab: G1–G9 pass (`8_BEAD_5x5_LAB_COMPLETE.json`); human playtest remaining.
+- **Discovery NFT playables (7):** `SHOLO_GUTI_7_BEAD_4x4_DENSE` … `SHOLO_GUTI_4_BEAD_3x5_REAR` — see `ALL_NON_REJECT_LAB_RANKING.json`. Web REJECT playables **removed** 2026-08-17; Lab audit JSON kept.
+- **verify-discovery-nft-feature.cjs** / **complete-c3-lab.cjs** / **evaluate-d1-d5-lab.cjs** (survivors) / **evaluate-final-round-lab.cjs** (survivors) — discovery smoke + G1–G9. Artifacts: `LAB_EVALUATION_5_5_8_12_BEAD_DISCOVERY_SET.json`, `8_BEAD_5x5_LAB_COMPLETE.json`, `BARO_12_LAB_EVALUATION.json`, `SHOLO_DISCOVERY_NFT_FEATURE_SMOKE.json`.
+- **board-lab-artifacts.cjs** / **migrate-board-lab-names.cjs** — canonical bead+board keys for Lab JSON artifacts.
+- **Discovery generators (archival):** `generate-discovery-round2.cjs` · `generate-final-round.cjs` — can rebuild removed REJECT boards if needed; active playables are NFT survivors only.
 - **discovery-playable-loader.cjs** — VM loader for discovery/final-round playables (parity checks).
 - **SHOLO_3x5_BEAD_LAYOUTS.html** — Static 3/4/5-bead layout diagrams only (no playables for 3/4/5). **Removed playables:** 3-bead (not tested), 4/5/8-bead (Web REJECT G2).
 - **sholo-10-bead-fullturn-engine.cjs** / **compare-sholo-10-vs-16-lab.cjs** — Headless Lab for the 10-bead candidate + protocol compare vs 16-bead. Output: `SHOLO_10_VS_16_LAB_COMPARE.json`.

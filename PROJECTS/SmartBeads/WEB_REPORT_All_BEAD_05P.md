@@ -53,9 +53,9 @@
 
 **Human KEEP (2026-08-15):** `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html`, `SHOLO_GUTI_10_BEAD_WITH_FEATURE.html`, `SHOLO_GUTI_7_BEAD_WITH_FEATURE.html`, `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html` — registered in `FEATURE_TEST_KEEP_REGISTRY.json`. Web G1–G9 verdicts below unchanged.
 
-**Discovery D1–D5 (2026-08-17):** `evaluate-d1-d5-lab.cjs` → `D1_D5_LAB_EVALUATION.json`. **D1/D3 REJECT (G2)** · **D2/D4/D5 NEEDS FURTHER TESTING**.
+**9/7/5/12/4-bead discovery set (2026-08-17):** `evaluate-d1-d5-lab.cjs` → `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json`. **9-bead 5×5** and **5-bead 3×5 rear thin** **REJECT (G2)** · **7-bead 5×5**, **12-bead 6×5**, **4-bead 3×5 rear** **NEEDS FURTHER TESTING**.
 
-**Final round F1b–F5b (2026-08-17):** `evaluate-final-round-lab.cjs` → `FINAL_ROUND_LAB_EVALUATION.json`. Skipped C5/F3a/F5a/F4a. **F1b/F3b/F4b/F5b REJECT (G2)** · **F1a/F2a/F2b NEEDS FURTHER TESTING**.
+**5/7/8/10/12-bead compact set (2026-08-17):** `evaluate-final-round-lab.cjs` → `LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json`. Skipped **4-bead 3×4 LR**, **6-bead 5×5**, **5-bead 5×5**, **10-bead 6×5**. **5-bead 4×3 hourglass**, **8-bead 5×4**, **10-bead 4×6 hourglass**, **12-bead 4×7 hourglass** **REJECT (G2)** · **7-bead 4×4 dense**, **8-bead 4×6 hourglass**, **12-bead 5×7** **NEEDS FURTHER TESTING**.
 
 **Combined non-REJECT ranking:** `ALL_NON_REJECT_LAB_RANKING.json`.
 
@@ -350,10 +350,10 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 | Continue? | Boards |
 |-----------|--------|
 | **Yes — human KEEP (2026-08-15)** | **10-bead**, **7-bead**, **Sholo 6-bead (3×5)**, **6-bead 4×4 cross** |
-| **Yes — Lab pass, human playtest remaining** | **C3** · **F2b** (best final-round) · **D2** · **D4** · **F1a** · **F2a** · **D5** (lowest priority) |
+| **Yes — Lab pass, human playtest remaining** | **8-bead 5×5** · **7-bead 4×4 dense** (best compact set) · **7-bead 5×5** · **12-bead 6×5** · **8-bead 4×6 hourglass** · **12-bead 5×7** · **4-bead 3×5 rear** (lowest priority) |
 | **No — Web REJECT (G2)** | **8-bead 4×5**, **5-bead (3×5 sketch)**, **4-bead (3×5)** — playables removed |
-| **No — discovery REJECT (G2)** | **C1**, **C2**, **C4**, **Baro Guti 12**, **D1**, **D3**, **F1b**, **F3b**, **F4b**, **F5b** |
-| **Not built (skipped)** | **C5**, **F3a**, **F5a**, **F4a** |
+| **No — discovery REJECT (G2)** | **5-bead 3×5 LR**, **5-bead 4×4**, **12-bead miniwing**, **12-bead Baro**, **9-bead 5×5**, **5-bead 3×5 rear thin**, **5-bead 4×3 hourglass**, **8-bead 5×4**, **10-bead 4×6 hourglass**, **12-bead 4×7 hourglass** |
+| **Not built (skipped)** | **4-bead 3×4 LR**, **6-bead 5×5**, **5-bead 5×5**, **10-bead 6×5** |
 | **Reference only** | **16-bead** |
 
 ### Cursor Index 4×4
@@ -374,9 +374,9 @@ G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 | **Sholo 8, 5, 4** | **REJECT** (G2) | N/A until redesign |
 | **Cursor Index 6 (4×4)** | NEEDS FURTHER TESTING (G1–G9 pass) | **KEEP** 2026-08-15 |
 | **Cursor Index 4** | **REJECT** (G2) | N/A until redesign |
-| **C3 8-bead 5×5** | G1–G9 **PASS** (`C3_LAB_COMPLETE.json`) | **Remaining** (rank #10 NFT) |
-| **C1, C2, C4, Baro 12, D1, D3, F1b, F3b, F4b, F5b** | **REJECT** (G2) | N/A |
-| **D2, D4, D5, F1a, F2a, F2b** | **NEEDS FURTHER TESTING** | Optional human playtest — see ranking |
+| **8-bead 5×5** | G1–G9 **PASS** (`8_BEAD_5x5_LAB_COMPLETE.json`) | **Remaining** (rank #10 NFT) |
+| **5-bead 3×5 LR, 5-bead 4×4, 12-bead miniwing, 12-bead Baro, 9-bead 5×5, 5-bead 3×5 rear thin, 5-bead 4×3 hourglass, 8-bead 5×4, 10-bead 4×6 hourglass, 12-bead 4×7 hourglass** | **REJECT** (G2) | N/A |
+| **7-bead 5×5, 12-bead 6×5, 4-bead 3×5 rear, 8-bead 4×6 hourglass, 12-bead 5×7, 7-bead 4×4 dense** | **NEEDS FURTHER TESTING** | Optional human playtest — see ranking |
 | **16-bead** | REFERENCE | N/A |
 
 ---
@@ -404,13 +404,13 @@ New geometries, not promotions of REJECT 4/5/8. Protocol: D1/D2/D3 · seeds 101/
 
 | Board | Geometry | Lab | Next |
 |-------|----------|-----|------|
-| **C1** | 5 vs 5, 3×5 left–right | **REJECT (G2)** | stop |
-| **C2** | 5 vs 5, 4×4 full box cross | **REJECT (G2)** | stop |
-| **C3** | 8 vs 8, 5×5 thinned 10-bead | **G1–G9 PASS** (N=100) | **human playtest** |
-| **C4** | 12 vs 12, 5×5 mini-wings | **REJECT (G2)** | stop |
-| **Baro 12** | traditional 5×5 Alquerque rank camps | **REJECT (G2)** D1 0/100 | stop |
+| **5-bead 3×5 LR** | 5 vs 5, 3×5 left–right | **REJECT (G2)** | stop |
+| **5-bead 4×4** | 5 vs 5, 4×4 full box cross | **REJECT (G2)** | stop |
+| **8-bead 5×5** | 8 vs 8, 5×5 thinned 10-bead | **G1–G9 PASS** (N=100) | **human playtest** |
+| **12-bead miniwing** | 12 vs 12, 5×5 mini-wings | **REJECT (G2)** | stop |
+| **12-bead Baro** | traditional 5×5 Alquerque rank camps | **REJECT (G2)** D1 0/100 | stop |
 
-C6 was tested as **D4** (round 2). Final round F1a–F5b complete — see sections below.
+12-bead 6×5 two-file was tested in the 9/7/5/12/4-bead set. Compact 5/7/8/10/12-bead set complete — see sections below.
 
 ---
 
@@ -429,35 +429,35 @@ C6 was tested as **D4** (round 2). Final round F1a–F5b complete — see sectio
 
 ---
 
-## Discovery round 2 — D1–D5 (2026-08-17)
+## 9/7/5/12/4-bead discovery set (2026-08-17)
 
-**Evaluator:** `evaluate-d1-d5-lab.cjs` → `D1_D5_LAB_EVALUATION.json` · protocol N=30/seed · move-cap 120.
+**Evaluator:** `evaluate-d1-d5-lab.cjs` → `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json` · protocol N=30/seed · move-cap 120.
 
-| ID | Board | Verdict | D2 FPA | D2 move-cap% | D2 elim% |
-|----|-------|---------|--------|--------------|----------|
-| D1 | 9-bead 5×5 one-corner thin | **REJECT G2** | +41 pp | 33% | 33% |
-| D2 | 7-bead 5×5 thin hourglass | **NEEDS FURTHER TESTING** | null | **100%** | 0% |
-| D3 | 5-bead 3×5 rear-wing thin | **REJECT G2** | +36 pp | 32% | 34% |
-| D4 | 12-bead 6×5 two-file (= C6) | **NEEDS FURTHER TESTING** | +50 pp* | 92% | 7.8% |
-| D5 | 4-bead 3×5 rear corners | **NEEDS FURTHER TESTING** | −50 pp* | 99% | 1.1% |
+| Board | Verdict | D2 FPA | D2 move-cap% | D2 elim% |
+|-------|---------|--------|--------------|----------|
+| 9-bead 5×5 one-corner thin | **REJECT G2** | +41 pp | 33% | 33% |
+| 7-bead 5×5 thin hourglass | **NEEDS FURTHER TESTING** | null | **100%** | 0% |
+| 5-bead 3×5 rear-wing thin | **REJECT G2** | +36 pp | 32% | 34% |
+| 12-bead 6×5 two-file | **NEEDS FURTHER TESTING** | +50 pp* | 92% | 7.8% |
+| 4-bead 3×5 rear corners | **NEEDS FURTHER TESTING** | −50 pp* | 99% | 1.1% |
 
 \*Among games with a winner; most D2 games are move-cap draws.
 
 ---
 
-## Final round — F1b–F5b (2026-08-17)
+## 5/7/8/10/12-bead compact set (2026-08-17)
 
-**Evaluator:** `evaluate-final-round-lab.cjs` → `FINAL_ROUND_LAB_EVALUATION.json`. **Skipped:** C5, F3a, F5a, F4a (repeat failure classes).
+**Evaluator:** `evaluate-final-round-lab.cjs` → `LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json`. **Skipped:** 4-bead 3×4 LR, 6-bead 5×5, 5-bead 5×5, 10-bead 6×5 (repeat failure classes).
 
-| ID | Board | Verdict | D2 FPA | D2 move-cap% | D2 elim% |
-|----|-------|---------|--------|--------------|----------|
-| F1b | 5-bead 4×3 hourglass | **REJECT G2** | +38 pp | 33% | 24% |
-| F2b | 7-bead 4×4 dense cross | **NEEDS FURTHER TESTING** | −36 pp | 77% | **23%** |
-| F3b | 8-bead 5×4 two-file | **REJECT G2** | −50 pp | 32% | 34% |
-| F1a | 8-bead 4×6 hourglass | **NEEDS FURTHER TESTING** | **0 pp** | 98% | 2.2% |
-| F2a | 12-bead 5×7 C3 corners | **NEEDS FURTHER TESTING** | **0 pp** | 98% | 2.2% |
-| F4b | 10-bead 4×6 hourglass | **REJECT G2** | −30 pp | 94% | 1.1% |
-| F5b | 12-bead 4×7 hourglass | **REJECT G2** | +17 pp | 97% | 2.2% |
+| Board | Verdict | D2 FPA | D2 move-cap% | D2 elim% |
+|-------|---------|--------|--------------|----------|
+| 5-bead 4×3 hourglass | **REJECT G2** | +38 pp | 33% | 24% |
+| 7-bead 4×4 dense cross | **NEEDS FURTHER TESTING** | −36 pp | 77% | **23%** |
+| 8-bead 5×4 two-file | **REJECT G2** | −50 pp | 32% | 34% |
+| 8-bead 4×6 hourglass | **NEEDS FURTHER TESTING** | **0 pp** | 98% | 2.2% |
+| 12-bead 5×7 thinned corners | **NEEDS FURTHER TESTING** | **0 pp** | 98% | 2.2% |
+| 10-bead 4×6 hourglass | **REJECT G2** | −30 pp | 94% | 1.1% |
+| 12-bead 4×7 hourglass | **REJECT G2** | +17 pp | 97% | 2.2% |
 
 ---
 
@@ -471,41 +471,43 @@ Authoritative artifact: `ALL_NON_REJECT_LAB_RANKING.json`. **Human KEEP** and **
 | 2 | **6-bead 4×4 cross** | Human KEEP | 14.4% | 85.6% | ±4 pp |
 | 3 | **7-bead hourglass** | Human KEEP | 12.2% | 87.8% | −23 pp |
 | 4 | **10-bead 5×5** | Human KEEP | 8.9% | 91.1% | +50 pp* |
-| 5 | **F2b** 7×4×4 dense | NFT | **23.3%** | 76.7% | −36 pp |
-| 6 | **D2** 7×5×5 thin | NFT | 0% | 100% | null |
-| 7 | **D4** 12×6×5 (= C6) | NFT | 7.8% | 92.2% | +50 pp* |
-| 8 | **F2a** 12×5×7 | NFT | 2.2% | 97.8% | **0 pp** |
-| 9 | **F1a** 8×4×6 hourglass | NFT | 2.2% | 97.8% | **0 pp** |
-| 10 | **C3** 8×5×5 thinned | NFT | 1.7% | 98.3% | +50 pp* |
-| 11 | **D5** 4×3×5 rear | NFT | 1.1% | 98.9% | −50 pp* |
+| 5 | **7-bead 4×4 dense** | NFT | **23.3%** | 76.7% | −36 pp |
+| 6 | **7-bead 5×5 thin** | NFT | 0% | 100% | null |
+| 7 | **12-bead 6×5** | NFT | 7.8% | 92.2% | +50 pp* |
+| 8 | **12-bead 5×7** | NFT | 2.2% | 97.8% | **0 pp** |
+| 9 | **8-bead 4×6 hourglass** | NFT | 2.2% | 97.8% | **0 pp** |
+| 10 | **8-bead 5×5 thinned** | NFT | 1.7% | 98.3% | +50 pp* |
+| 11 | **4-bead 3×5 rear** | NFT | 1.1% | 98.9% | −50 pp* |
 
 \*FPA among games with a winner. **16-bead** is REFERENCE only (not ranked).
 
-**Next human playtest priority:** **F2b** (most alive new board) then **C3** (N=100 confirmed).
+**Next human playtest priority:** **7-bead 4×4 dense** (most alive new board) then **8-bead 5×5** (N=100 confirmed).
 
 ---
 
-## Artifacts (2026-08-17 — D1–D5 + final round)
+## Artifacts (2026-08-17 — discovery sets)
 
 | File | Content |
 |------|---------|
-| `D1_D5_LAB_EVALUATION.json` | Discovery round-2 G1–G9 (N=30) |
-| `D1_LAB_EVAL.json` … `D5_LAB_EVAL.json` | Per-board D-round artifacts |
-| `FINAL_ROUND_LAB_EVALUATION.json` | Final round G1–G9 (7 built; 4 skipped) |
-| `F1b_LAB_EVAL.json` … `F5b_LAB_EVAL.json` | Per-board F-round artifacts |
+| `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json` | 9/7/5/12/4-bead set G1–G9 (N=30) |
+| `9_BEAD_5x5_LAB_EVAL.json` … `4_BEAD_3x5_REAR_LAB_EVAL.json` | Per-board artifacts |
+| `LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json` | Compact set G1–G9 (7 built; 4 skipped) |
+| `5_BEAD_4x3_HOURGLASS_LAB_EVAL.json` … `12_BEAD_4x7_HOURGLASS_LAB_EVAL.json` | Per-board compact-set artifacts |
 | `ALL_NON_REJECT_LAB_RANKING.json` | Combined ranking of non-REJECT boards |
+| `board-lab-artifacts.cjs` | Canonical bead+board keys from playable filenames |
+| `migrate-board-lab-names.cjs` | One-time legacy round-code → bead+board rename |
 | `generate-final-round.cjs` | Playable + engine generator |
-| `verify-final-round-feature.cjs` | Final-round smoke |
-| `evaluate-final-round-lab.cjs` | Final-round Lab evaluator |
-| `SHOLO_FINAL_ROUND_FEATURE_SMOKE.json` | Final-round smoke results |
-| `SHOLO_D1_D5_FEATURE_SMOKE.json` | D-round smoke results |
+| `verify-final-round-feature.cjs` | Compact-set smoke |
+| `evaluate-final-round-lab.cjs` | Compact-set Lab evaluator |
+| `SHOLO_5_7_8_10_12_BEAD_COMPACT_FEATURE_SMOKE.json` | Compact-set smoke results |
+| `SHOLO_9_7_5_12_4_BEAD_FEATURE_SMOKE.json` | 9/7/5/12/4-bead smoke results |
 
 ## Artifacts (2026-08-16 — discovery + Baro)
 
 | File | Content |
 |------|---------|
-| `C1_C4_LAB_EVALUATION.json` | C1–C4 G1–G9 (N=30) |
-| `C3_LAB_COMPLETE.json` | C3 close-out D1/D2/D3 N=100 — G1–G9 pass |
+| `LAB_EVALUATION_5_5_8_12_BEAD_DISCOVERY_SET.json` | 5/5/8/12-bead discovery G1–G9 (N=30) |
+| `8_BEAD_5x5_LAB_COMPLETE.json` | 8-bead 5×5 close-out D1/D2/D3 N=100 — G1–G9 pass |
 | `BARO_12_LAB_EVALUATION.json` | Baro Guti 12 — REJECT G2 |
 | `BOARD_DISCOVERY_05P.md` | Discovery shortlist + Lab outcomes |
 

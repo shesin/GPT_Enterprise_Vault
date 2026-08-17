@@ -1,0 +1,119 @@
+{
+  "purpose": "Active discovery NFT playables — Web REJECT boards removed",
+  "evaluatedAt": "2026-08-17T14:49:41.217Z",
+  "boards": [
+    {
+      "id": "8_BEAD_5x5",
+      "boardKey": "8_BEAD_5x5",
+      "label": "8-bead 5×5",
+      "file": "SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html",
+      "engine": "sholo-c3-8-5x5-fullturn-engine.cjs",
+      "n": 25,
+      "start": {
+        "p1": 8,
+        "p2": 8
+      },
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "ok": true
+    },
+    {
+      "id": "7_BEAD_4x4_DENSE",
+      "boardKey": "7_BEAD_4x4_DENSE",
+      "label": "7-bead 4×4 DENSE",
+      "file": "SHOLO_GUTI_7_BEAD_4x4_DENSE_WITH_FEATURE.html",
+      "engine": "sholo-f2b-7-4x4-fullturn-engine.cjs",
+      "n": 16,
+      "start": {
+        "p1": 7,
+        "p2": 7
+      },
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "ok": true
+    },
+    {
+      "id": "8_BEAD_4x6_HOURGLASS",
+      "boardKey": "8_BEAD_4x6_HOURGLASS",
+      "label": "8-bead 4×6 HOURGLASS",
+      "file": "SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html",
+      "engine": "sholo-f1a-8-4x6-fullturn-engine.cjs",
+      "n": 24,
+      "start": {
+        "p1": 8,
+        "p2": 8
+      },
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "ok": true
+    },
+    {
+      "id": "12_BEAD_5x7",
+      "boardKey": "12_BEAD_5x7",
+      "label": "12-bead 5×7",
+      "file": "SHOLO_GUTI_12_BEAD_5x7_WITH_FEATURE.html",
+      "engine": "sholo-f2a-12-5x7-fullturn-engine.cjs",
+      "n": 35,
+      "start": {
+        "p1": 12,
+        "p2": 12
+      },
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "ok": true
+    },
+    {
+      "id": "7_BEAD_5x5",
+      "boardKey": "7_BEAD_5x5",
+      "label": "7-bead 5×5",
+      "file": "SHOLO_GUTI_7_BEAD_5x5_WITH_FEATURE.html",
+      "engine": "sholo-d2-7-5x5-fullturn-engine.cjs",
+      "n": 25,
+      "start": {
+        "p1": 7,
+        "p2": 7
+      },
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "ok": true
+    },
+    {
+      "id": "12_BEAD_6x5",
+      "boardKey": "12_BEAD_6x5",
+      "label": "12-bead 6×5",
+      "file": "SHOLO_GUTI_12_BEAD_6x5_WITH_FEATURE.html",
+      "engine": "sholo-d4-12-6x5-fullturn-engine.cjs",
+      "n": 30,
+      "start": {
+        "p1": 12,
+        "p2": 12
+      },
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "ok": true
+    },
+    {
+      "id": "4_BEAD_3x5_REAR",
+      "boardKey": "4_BEAD_3x5_REAR",
+      "label": "4-bead 3×5 REAR",
+      "file": "SHOLO_GUTI_4_BEAD_3x5_REAR_WITH_FEATURE.html",
+      "engine": "sholo-d5-4-3x5-fullturn-engine.cjs",
+      "n": 15,
+      "start": {
+        "p1": 4,
+        "p2": 4
+      },
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "ok": true
+    }
+  ],
+  "allOk": true
+}

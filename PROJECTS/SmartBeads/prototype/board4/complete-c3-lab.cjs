@@ -1,7 +1,7 @@
 'use strict';
 /**
- * C3 Lab completion — authoritative G1–G9 at confirmation strength (N=100/seed).
- * Reuses verified D1/D2 from C3_LAB_CONFIRMATION.json (same seeds/protocol; no geometry change).
+ * 8-bead 5×5 Lab completion — authoritative G1–G9 at confirmation strength (N=100/seed).
+ * Reuses verified D1/D2 from 8_BEAD_5x5_LAB_CONFIRMATION.json (same seeds/protocol; no geometry change).
  * Runs fresh D3 at N=100, swap/crash/repro, 16-bead + 10-bead reference compare.
  */
 const fs = require('fs');
@@ -15,10 +15,11 @@ const protocol = require('./sholo-lab-protocol.cjs');
 
 const ROOT = __dirname;
 const N_CONFIRM = 100;
-const CONF_PATH = path.join(ROOT, 'C3_LAB_CONFIRMATION.json');
-const PRIOR_PATH = path.join(ROOT, 'C3_LAB_EVAL.json');
+const CONF_PATH = path.join(ROOT, '8_BEAD_5x5_LAB_CONFIRMATION.json');
+const PRIOR_PATH = path.join(ROOT, '8_BEAD_5x5_LAB_EVAL.json');
 const REF16_PATH = path.join(ROOT, 'LAB_16_BEAD_REFERENCE_VALIDATION.json');
-const OUT_PATH = path.join(ROOT, 'C3_LAB_COMPLETE.json');
+const OUT_PATH = path.join(ROOT, '8_BEAD_5x5_LAB_COMPLETE.json');
+const BOARD_KEY = '8_BEAD_5x5';
 
 function runBatch(engine, depth, seed, n, first) {
   const games = [];
@@ -113,7 +114,7 @@ function main() {
     nPerSeed: N_CONFIRM,
     nPerSeedPerDepth: N_CONFIRM,
     gamesPerBoard: N_CONFIRM * protocol.SEEDS.length * protocol.DEPTHS.length,
-    note: 'Confirmation strength N=100/seed; D1/D2 from C3_LAB_CONFIRMATION.json',
+    note: 'Confirmation strength N=100/seed; D1/D2 from 8_BEAD_5x5_LAB_CONFIRMATION.json',
   };
   const protocolCheck = protocol.matchesCanonical({
     ...batchProtocol,
@@ -123,19 +124,20 @@ function main() {
   });
   protocolCheck.ok = true;
   protocolCheck.issues = [];
-  protocolCheck.note = 'Depths/seeds/move-cap match canonical; N raised to 100 for C3 completion only';
+  protocolCheck.note = 'Depths/seeds/move-cap match canonical; N raised to 100 for 8-bead 5×5 completion only';
 
   const geoOk = prior.parity && prior.parity.allOk;
   const ev = gates.applyGates(d1, d2, d3, geoOk, crash, swap, reproducible, protocolCheck);
   const selectionVerdict = gates.ladderVerdict(ev.allPass, ev.rejectTriggers, ev.failed);
 
-  process.stderr.write('C3 complete — 10-bead compare at N=100 (reference family) …\n');
+  process.stderr.write('8-bead 5×5 complete — 10-bead compare at N=100 (reference family) …\n');
   const compare10 = compareDepths(eng, eng10, N_CONFIRM);
 
   const out = {
-    purpose: 'C3 Lab completion — full D1/D2/D3 at N=100/seed with G1–G9 and reference compare',
+    purpose: '8-bead 5×5 Lab completion — full D1/D2/D3 at N=100/seed with G1–G9 and reference compare',
     candidate: {
-      id: 'C3',
+      id: BOARD_KEY,
+      boardKey: BOARD_KEY,
       label: '8-bead 5×5 thinned 10-bead',
       playable: 'SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html',
       engine: 'sholo-c3-8-5x5-fullturn-engine.cjs',
@@ -143,27 +145,27 @@ function main() {
     },
     protocol: batchProtocol,
     components: {
-      d1Source: 'C3_LAB_CONFIRMATION.json (reused — identical seeds/protocol; N=100 already run)',
-      d2Source: 'C3_LAB_CONFIRMATION.json (reused)',
+      d1Source: '8_BEAD_5x5_LAB_CONFIRMATION.json (reused — identical seeds/protocol; N=100 already run)',
+      d2Source: '8_BEAD_5x5_LAB_CONFIRMATION.json (reused)',
       d3Source: 'fresh run this session',
-      paritySource: 'C3_LAB_EVAL.json (reused — geometry unchanged)',
+      paritySource: '8_BEAD_5x5_LAB_EVAL.json (reused — geometry unchanged)',
       swapSource: 'fresh run this session',
       ref16Source: 'LAB_16_BEAD_REFERENCE_VALIDATION.json (canonical N=30 anchor — not rerun)',
-      ref10Compare: 'fresh C3 vs 10-bead at N=100 this session',
+      ref10Compare: 'fresh 8-bead 5×5 vs 10-bead at N=100 this session',
       skippedReruns: [
-        'D1/D2 N=100 — already in C3_LAB_CONFIRMATION.json',
-        'Playable↔Lab parity — unchanged since C3_LAB_EVAL.json',
+        'D1/D2 N=100 — already in 8_BEAD_5x5_LAB_CONFIRMATION.json',
+        'Playable↔Lab parity — unchanged since 8_BEAD_5x5_LAB_EVAL.json',
         '16-bead reference batch — fixed anchor at N=30 per WEB_REPORT_16_BEAD_05P.md',
       ],
     },
     priorDiscoveryBatch: {
-      source: 'C3_LAB_EVAL.json',
+      source: '8_BEAD_5x5_LAB_EVAL.json',
       nPerSeed: protocol.N_PER_SEED,
       selectionVerdict: prior.selectionVerdict,
       perDepth: prior.perDepth,
     },
     confirmationBatch: {
-      source: 'C3_LAB_CONFIRMATION.json',
+      source: '8_BEAD_5x5_LAB_CONFIRMATION.json',
       d1Fpa: d1.firstPlayerAdvantagePp,
       d2Fpa: d2.firstPlayerAdvantagePp,
       g2WouldPass: confirm.g2WouldPass,

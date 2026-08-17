@@ -30,17 +30,21 @@ Consolidated report: **`WEB_REPORT_All_BEAD_05P.md`** (SmartBeads root).
 
 **Feature Test (2026-08-15):** **COMPLETE** — per-board centre study in `FEATURE_TEST_CENTRE_RULE_EVALUATION.json`. See **`WEB_FEATURE_TEST_05P.md`**.
 
-**Discovery C1–C4 playables (2026-08-16):** Lab complete — `evaluate-c1-c4-lab.cjs` → `C1_C4_LAB_EVALUATION.json`. **C3 Lab validation complete** (`C3_LAB_COMPLETE.json`, N=100/seed) — **all G1–G9 pass** · human playtest only remaining · **C1/C2/C4 REJECT (G2)**. KEEP boards unchanged.
-
-**Baro Guti 12-bead (2026-08-16):** Traditional 5×5 Alquerque rank camps — `SHOLO_GUTI_12_BEAD_BARO_WITH_FEATURE.html`. Lab → `BARO_12_LAB_EVALUATION.json` — **REJECT (G2)** second-mover skew. Distinct from C4 mini-wings. Do not promote.
+**Discovery NFT playables (2026-08-17):** Web **REJECT (G2)** playables **removed** from disk. Lab audit JSON retained. Active discovery playables:
 
 | Playable | Role |
 |----------|------|
-| `SHOLO_GUTI_5_BEAD_3x5_LR_WITH_FEATURE.html` | C1 — 5 vs 5, 3×5 left–right |
-| `SHOLO_GUTI_5_BEAD_4x4_WITH_FEATURE.html` | C2 — 5 vs 5, 4×4 full box cross |
-| `SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html` | C3 — 8 vs 8, 5×5 thinned 10-bead |
-| `SHOLO_GUTI_12_BEAD_MINIWING_WITH_FEATURE.html` | C4 — 12 vs 12, 5×5 + inner wings |
-| `SHOLO_GUTI_12_BEAD_BARO_WITH_FEATURE.html` | Baro Guti — traditional 12 vs 12, 5×5 Alquerque rank camps · **REJECT G2** |
+| `SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html` | 8-bead 5×5 thinned — Lab G1–G9 pass (`8_BEAD_5x5_LAB_COMPLETE.json`) · human playtest |
+| `SHOLO_GUTI_7_BEAD_4x4_DENSE_WITH_FEATURE.html` | 7-bead 4×4 dense — NFT · best new board |
+| `SHOLO_GUTI_7_BEAD_5x5_WITH_FEATURE.html` | 7-bead 5×5 thin hourglass — NFT |
+| `SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html` | 8-bead 4×6 hourglass — NFT |
+| `SHOLO_GUTI_12_BEAD_5x7_WITH_FEATURE.html` | 12-bead 5×7 two-file — NFT |
+| `SHOLO_GUTI_12_BEAD_6x5_WITH_FEATURE.html` | 12-bead 6×5 two-file — NFT |
+| `SHOLO_GUTI_4_BEAD_3x5_REAR_WITH_FEATURE.html` | 4-bead 3×5 rear — NFT (lowest priority) |
+
+Smoke: `verify-discovery-nft-feature.cjs` → `SHOLO_DISCOVERY_NFT_FEATURE_SMOKE.json`.
+
+**Removed playables (REJECT G2):** 5-bead 3×5 LR, 5-bead 4×4, 12-bead miniwing, 12-bead Baro, 9-bead 5×5, 5-bead 3×5 rear thin, 5-bead 4×3 hourglass, 8-bead 5×4, 10-bead 4×6 hourglass, 12-bead 4×7 hourglass — plus legacy 4/5/8-bead sketch and Cursor Index 4 (removed earlier).
 
 ---
 
@@ -78,6 +82,6 @@ Nothing ported yet. A rule should only move from prototype to the real engine af
 
 ## Next session
 
-1. Human playtest **C3** — `SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html`.
+1. Human playtest **8-bead 5×5** — `SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html`.
 2. Set KEEP-board centre/timer **defaults** (`WEB_FEATURE_TEST_05P.md`).
 3. Do not retest 7-bead Lab; do not promote C1/C2/C4/Baro 12.

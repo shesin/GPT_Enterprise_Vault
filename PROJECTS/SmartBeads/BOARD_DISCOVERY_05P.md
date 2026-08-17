@@ -513,33 +513,33 @@ Traditional pedigree did **not** imply Lab pass. Rank-camp occupancy on 5×5 beh
 
 ---
 
-## Discovery round 2 — D1–D5 (2026-08-17)
+## 9/7/5/12/4-bead discovery set (2026-08-17)
 
-Built + Lab: `generate-discovery-round2.cjs` · `evaluate-d1-d5-lab.cjs` → `D1_D5_LAB_EVALUATION.json`.
+Built + Lab: `generate-discovery-round2.cjs` · `evaluate-d1-d5-lab.cjs` → `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json`.
 
-| ID | Beads | Lattice | Verdict |
-|----|-------|---------|---------|
-| D1 | 9 | 5×5 one-corner thin | **REJECT G2** |
-| D2 | 7 | 5×5 thin hourglass | **NEEDS FURTHER TESTING** |
-| D3 | 5 | 3×5 rear-wing thin | **REJECT G2** |
-| D4 | 12 | 6×5 two-file (= C6) | **NEEDS FURTHER TESTING** |
-| D5 | 4 | 3×5 rear corners | **NEEDS FURTHER TESTING** |
+| Board | Beads | Lattice | Verdict |
+|-------|-------|---------|---------|
+| 9-bead 5×5 one-corner thin | 9 | 5×5 | **REJECT G2** |
+| 7-bead 5×5 thin hourglass | 7 | 5×5 | **NEEDS FURTHER TESTING** |
+| 5-bead 3×5 rear-wing thin | 5 | 3×5 | **REJECT G2** |
+| 12-bead 6×5 two-file | 12 | 6×5 | **NEEDS FURTHER TESTING** |
+| 4-bead 3×5 rear corners | 4 | 3×5 | **NEEDS FURTHER TESTING** |
 
 ---
 
-## Final round — F1b–F5b (2026-08-17)
+## 5/7/8/10/12-bead compact set (2026-08-17)
 
-Built 7 of 11 proposed; skipped **C5, F3a, F5a, F4a**. Lab: `evaluate-final-round-lab.cjs` → `FINAL_ROUND_LAB_EVALUATION.json`.
+Built 7 of 11 proposed; skipped **4-bead 3×4 LR**, **6-bead 5×5**, **5-bead 5×5**, **10-bead 6×5**. Lab: `evaluate-final-round-lab.cjs` → `LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json`.
 
-| ID | Beads | Lattice | Verdict |
-|----|-------|---------|---------|
-| F1b | 5 | 4×3 hourglass | **REJECT G2** |
-| F2b | 7 | 4×4 dense cross | **NEEDS FURTHER TESTING** — best new board |
-| F3b | 8 | 5×4 two-file | **REJECT G2** |
-| F1a | 8 | 4×6 hourglass | **NEEDS FURTHER TESTING** |
-| F2a | 12 | 5×7 C3 corners | **NEEDS FURTHER TESTING** |
-| F4b | 10 | 4×6 hourglass | **REJECT G2** |
-| F5b | 12 | 4×7 hourglass | **REJECT G2** |
+| Board | Beads | Lattice | Verdict |
+|-------|-------|---------|---------|
+| 5-bead 4×3 hourglass | 5 | 4×3 | **REJECT G2** |
+| 7-bead 4×4 dense cross | 7 | 4×4 | **NEEDS FURTHER TESTING** — best new board |
+| 8-bead 5×4 two-file | 8 | 5×4 | **REJECT G2** |
+| 8-bead 4×6 hourglass | 8 | 4×6 | **NEEDS FURTHER TESTING** |
+| 12-bead 5×7 thinned corners | 12 | 5×7 | **NEEDS FURTHER TESTING** |
+| 10-bead 4×6 hourglass | 10 | 4×6 | **REJECT G2** |
+| 12-bead 4×7 hourglass | 12 | 4×7 | **REJECT G2** |
 
 Combined non-REJECT ranking: `ALL_NON_REJECT_LAB_RANKING.json` · full tables in `WEB_REPORT_All_BEAD_05P.md`.
 

@@ -1,39 +1,26 @@
 'use strict';
 /**
- * Authoritative G1–G9 Lab for final-round candidates (7 boards worth testing).
+ * Authoritative G1–G9 Lab for active 7/8/12-bead compact survivors (Web REJECT boards removed).
  * Protocol: D1/D2/D3 · seeds 101/202/303 · N=30/seed · move-cap 120 · 16-bead anchor.
  */
 const fs = require('fs');
 const path = require('path');
 const eng16 = require('./sholo-guti-fullturn-engine.cjs');
-const engF1b = require('./sholo-f1b-5-4x3-fullturn-engine.cjs');
 const engF2b = require('./sholo-f2b-7-4x4-fullturn-engine.cjs');
-const engF3b = require('./sholo-f3b-8-5x4-fullturn-engine.cjs');
 const engF1a = require('./sholo-f1a-8-4x6-fullturn-engine.cjs');
 const engF2a = require('./sholo-f2a-12-5x7-fullturn-engine.cjs');
-const engF4b = require('./sholo-f4b-10-4x6-fullturn-engine.cjs');
-const engF5b = require('./sholo-f5b-12-4x7-fullturn-engine.cjs');
 const { loadDiscoveryPlayable, ROOT } = require('./discovery-playable-loader.cjs');
 const metrics = require('./sholo-lab-metrics.cjs');
 const gates = require('./sholo-lab-gates.cjs');
 const protocol = require('./sholo-lab-protocol.cjs');
 
+const { boardKeyFromPlayable, labEvalPath, labelFromBoardKey } = require('./board-lab-artifacts.cjs');
+
 const REF_PATH = path.join(ROOT, 'LAB_16_BEAD_REFERENCE_VALIDATION.json');
-const OUT_PATH = path.join(ROOT, 'FINAL_ROUND_LAB_EVALUATION.json');
+const OUT_PATH = path.join(ROOT, 'LAB_EVALUATION_7_8_12_BEAD_SURVIVOR_SET.json');
 
 const CANDIDATES = [
   {
-    id: 'F1b',
-    label: '5-bead 4×3 hourglass',
-    playable: 'SHOLO_GUTI_5_BEAD_4x3_HOURGLASS_WITH_FEATURE.html',
-    engine: engF1b,
-    engineFile: 'sholo-f1b-5-4x3-fullturn-engine.cjs',
-    beads: 5,
-    expectedN: 12,
-  },
-  {
-    id: 'F2b',
-    label: '7-bead 4×4 dense full-cross',
     playable: 'SHOLO_GUTI_7_BEAD_4x4_DENSE_WITH_FEATURE.html',
     engine: engF2b,
     engineFile: 'sholo-f2b-7-4x4-fullturn-engine.cjs',
@@ -41,17 +28,6 @@ const CANDIDATES = [
     expectedN: 16,
   },
   {
-    id: 'F3b',
-    label: '8-bead 5×4 two-file (short KEEP-10)',
-    playable: 'SHOLO_GUTI_8_BEAD_5x4_WITH_FEATURE.html',
-    engine: engF3b,
-    engineFile: 'sholo-f3b-8-5x4-fullturn-engine.cjs',
-    beads: 8,
-    expectedN: 20,
-  },
-  {
-    id: 'F1a',
-    label: '8-bead 4×6 hourglass',
     playable: 'SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html',
     engine: engF1a,
     engineFile: 'sholo-f1a-8-4x6-fullturn-engine.cjs',
@@ -59,33 +35,17 @@ const CANDIDATES = [
     expectedN: 24,
   },
   {
-    id: 'F2a',
-    label: '12-bead 5×7 two-file C3 corners',
     playable: 'SHOLO_GUTI_12_BEAD_5x7_WITH_FEATURE.html',
     engine: engF2a,
     engineFile: 'sholo-f2a-12-5x7-fullturn-engine.cjs',
     beads: 12,
     expectedN: 35,
   },
-  {
-    id: 'F4b',
-    label: '10-bead 4×6 hourglass',
-    playable: 'SHOLO_GUTI_10_BEAD_4x6_HOURGLASS_WITH_FEATURE.html',
-    engine: engF4b,
-    engineFile: 'sholo-f4b-10-4x6-fullturn-engine.cjs',
-    beads: 10,
-    expectedN: 24,
-  },
-  {
-    id: 'F5b',
-    label: '12-bead 4×7 hourglass',
-    playable: 'SHOLO_GUTI_12_BEAD_4x7_HOURGLASS_WITH_FEATURE.html',
-    engine: engF5b,
-    engineFile: 'sholo-f5b-12-4x7-fullturn-engine.cjs',
-    beads: 12,
-    expectedN: 28,
-  },
-];
+].map((c) => ({
+  ...c,
+  boardKey: boardKeyFromPlayable(c.playable),
+  label: labelFromBoardKey(boardKeyFromPlayable(c.playable)),
+}));
 
 function runBatch(engine, depth, seed, n, first) {
   const games = [];
@@ -219,13 +179,13 @@ function main() {
   const ref = JSON.parse(fs.readFileSync(REF_PATH, 'utf8'));
   const batchProtocol = protocol.protocolMeta();
   const out = {
-    purpose: 'Final-round G1–G9 evaluation (7 boards); C5/F3a/F5a/F4a skipped as low-value repeats',
-    dropped: {
-      C5: '1-file 3×4 — C1 already REJECT G2',
-      F3a: '6-bead 5×5 sparse empty ends (~48% occupancy)',
-      F5a: '5-bead 5×5 — C1/C2/D3/old5 all failed',
-      F4a: '10-bead 6×5 wide buffer — F4b is compact alternative',
-    },
+    purpose: 'Active 7/8/12-bead compact survivors G1–G9 evaluation',
+    removedRejectPlayables: [
+      '5_BEAD_4x3_HOURGLASS',
+      '8_BEAD_5x4',
+      '10_BEAD_4x6_HOURGLASS',
+      '12_BEAD_4x7_HOURGLASS',
+    ],
     authoritativeEvaluator: 'evaluate-final-round-lab.cjs',
     protocol: batchProtocol,
     reference16: {
@@ -238,11 +198,11 @@ function main() {
   };
 
   for (const c of CANDIDATES) {
-    process.stderr.write('\n=== ' + c.id + ' ' + c.label + ' ===\n');
+    process.stderr.write('\n=== ' + c.boardKey + ' ' + c.label + ' ===\n');
     const engine = c.engine;
     const parity = parityCheck(c, engine);
     if (!parity.allOk) {
-      process.stderr.write(c.id + ' parity FAIL: ' + parity.checks.filter((x) => !x.ok).map((x) => x.name).join(', ') + '\n');
+      process.stderr.write(c.boardKey + ' parity FAIL: ' + parity.checks.filter((x) => !x.ok).map((x) => x.name).join(', ') + '\n');
     }
     const compare = compareDepths(engine, eng16);
     const crash = crashFree(engine);
@@ -256,8 +216,9 @@ function main() {
     const d3 = compare.perDepthCandidate[3];
     const ev = gates.applyGates(d1, d2, d3, parity.allOk, crash, swap, reproducible, protocolCheck);
     const selection = gates.ladderVerdict(ev.allPass, ev.rejectTriggers, ev.failed);
-    out.boards[c.id] = {
-      id: c.id,
+    out.boards[c.boardKey] = {
+      id: c.boardKey,
+      boardKey: c.boardKey,
       label: c.label,
       playable: c.playable,
       engine: c.engineFile,
@@ -284,9 +245,9 @@ function main() {
       selectionVerdict: selection,
       totalGamesCompared: compare.totalGames,
     };
-    fs.writeFileSync(path.join(ROOT, c.id + '_LAB_EVAL.json'), JSON.stringify(out.boards[c.id], null, 2));
+    fs.writeFileSync(labEvalPath(ROOT, c.playable), JSON.stringify(out.boards[c.boardKey], null, 2));
     process.stderr.write(
-      c.id +
+      c.boardKey +
         ' selection=' +
         selection +
         ' failed=' +
@@ -306,7 +267,7 @@ function main() {
     JSON.stringify(
       {
         out: OUT_PATH,
-        dropped: Object.keys(out.dropped),
+        removedRejectPlayables: out.removedRejectPlayables,
         boards: Object.fromEntries(
           Object.entries(out.boards).map(([k, v]) => [
             k,

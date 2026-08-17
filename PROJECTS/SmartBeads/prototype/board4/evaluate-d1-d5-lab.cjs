@@ -1,14 +1,12 @@
 'use strict';
 /**
- * Authoritative G1–G9 Lab evaluation for discovery round-2 candidates D1–D5.
+ * Authoritative G1–G9 Lab for active 7/12/4-bead discovery survivors (Web REJECT boards removed).
  * Protocol: D1/D2/D3 · seeds 101/202/303 · N=30/seed · move-cap 120 · 16-bead anchor.
  */
 const fs = require('fs');
 const path = require('path');
 const eng16 = require('./sholo-guti-fullturn-engine.cjs');
-const engD1 = require('./sholo-d1-9-5x5-fullturn-engine.cjs');
 const engD2 = require('./sholo-d2-7-5x5-fullturn-engine.cjs');
-const engD3 = require('./sholo-d3-5-3x5-fullturn-engine.cjs');
 const engD4 = require('./sholo-d4-12-6x5-fullturn-engine.cjs');
 const engD5 = require('./sholo-d5-4-3x5-fullturn-engine.cjs');
 const { loadDiscoveryPlayable, ROOT } = require('./discovery-playable-loader.cjs');
@@ -16,22 +14,13 @@ const metrics = require('./sholo-lab-metrics.cjs');
 const gates = require('./sholo-lab-gates.cjs');
 const protocol = require('./sholo-lab-protocol.cjs');
 
+const { boardKeyFromPlayable, labEvalPath, labelFromBoardKey } = require('./board-lab-artifacts.cjs');
+
 const REF_PATH = path.join(ROOT, 'LAB_16_BEAD_REFERENCE_VALIDATION.json');
-const OUT_PATH = path.join(ROOT, 'D1_D5_LAB_EVALUATION.json');
+const OUT_PATH = path.join(ROOT, 'LAB_EVALUATION_7_12_4_BEAD_SURVIVOR_SET.json');
 
 const CANDIDATES = [
   {
-    id: 'D1',
-    label: '9-bead 5×5 one-corner thin (KEEP-10 −1/side 180°)',
-    playable: 'SHOLO_GUTI_9_BEAD_5x5_WITH_FEATURE.html',
-    engine: engD1,
-    engineFile: 'sholo-d1-9-5x5-fullturn-engine.cjs',
-    beads: 9,
-    expectedN: 25,
-  },
-  {
-    id: 'D2',
-    label: '7-bead 5×5 thin hourglass',
     playable: 'SHOLO_GUTI_7_BEAD_5x5_WITH_FEATURE.html',
     engine: engD2,
     engineFile: 'sholo-d2-7-5x5-fullturn-engine.cjs',
@@ -39,17 +28,6 @@ const CANDIDATES = [
     expectedN: 25,
   },
   {
-    id: 'D3',
-    label: '5-bead 3×5 rear-wing thin',
-    playable: 'SHOLO_GUTI_5_BEAD_3x5_REAR_THIN_WITH_FEATURE.html',
-    engine: engD3,
-    engineFile: 'sholo-d3-5-3x5-fullturn-engine.cjs',
-    beads: 5,
-    expectedN: 15,
-  },
-  {
-    id: 'D4',
-    label: '12-bead 6×5 two-file rank camps',
     playable: 'SHOLO_GUTI_12_BEAD_6x5_WITH_FEATURE.html',
     engine: engD4,
     engineFile: 'sholo-d4-12-6x5-fullturn-engine.cjs',
@@ -57,15 +35,17 @@ const CANDIDATES = [
     expectedN: 30,
   },
   {
-    id: 'D5',
-    label: '4-bead 3×5 rear corners',
     playable: 'SHOLO_GUTI_4_BEAD_3x5_REAR_WITH_FEATURE.html',
     engine: engD5,
     engineFile: 'sholo-d5-4-3x5-fullturn-engine.cjs',
     beads: 4,
     expectedN: 15,
   },
-];
+].map((c) => ({
+  ...c,
+  boardKey: boardKeyFromPlayable(c.playable),
+  label: labelFromBoardKey(boardKeyFromPlayable(c.playable)),
+}));
 
 function runBatch(engine, depth, seed, n, first) {
   const games = [];
@@ -199,7 +179,7 @@ function main() {
   const ref = JSON.parse(fs.readFileSync(REF_PATH, 'utf8'));
   const batchProtocol = protocol.protocolMeta();
   const out = {
-    purpose: 'Authoritative D1–D5 discovery round-2 G1–G9 evaluation with 16-bead reference anchor',
+    purpose: 'Active 7/12/4-bead discovery survivors G1–G9 evaluation with 16-bead reference anchor',
     authoritativeEvaluator: 'evaluate-d1-d5-lab.cjs',
     protocol: batchProtocol,
     reference16: {
@@ -212,11 +192,11 @@ function main() {
   };
 
   for (const c of CANDIDATES) {
-    process.stderr.write('\n=== ' + c.id + ' ' + c.label + ' ===\n');
+    process.stderr.write('\n=== ' + c.boardKey + ' ' + c.label + ' ===\n');
     const engine = c.engine;
     const parity = parityCheck(c, engine);
     if (!parity.allOk) {
-      process.stderr.write(c.id + ' parity FAIL: ' + parity.checks.filter((x) => !x.ok).map((x) => x.name).join(', ') + '\n');
+      process.stderr.write(c.boardKey + ' parity FAIL: ' + parity.checks.filter((x) => !x.ok).map((x) => x.name).join(', ') + '\n');
     }
     const compare = compareDepths(engine, eng16);
     const crash = crashFree(engine);
@@ -230,8 +210,9 @@ function main() {
     const d3 = compare.perDepthCandidate[3];
     const ev = gates.applyGates(d1, d2, d3, parity.allOk, crash, swap, reproducible, protocolCheck);
     const selection = gates.ladderVerdict(ev.allPass, ev.rejectTriggers, ev.failed);
-    out.boards[c.id] = {
-      id: c.id,
+    out.boards[c.boardKey] = {
+      id: c.boardKey,
+      boardKey: c.boardKey,
       label: c.label,
       playable: c.playable,
       engine: c.engineFile,
@@ -258,9 +239,9 @@ function main() {
       selectionVerdict: selection,
       totalGamesCompared: compare.totalGames,
     };
-    fs.writeFileSync(path.join(ROOT, c.id + '_LAB_EVAL.json'), JSON.stringify(out.boards[c.id], null, 2));
+    fs.writeFileSync(labEvalPath(ROOT, c.playable), JSON.stringify(out.boards[c.boardKey], null, 2));
     process.stderr.write(
-      c.id +
+      c.boardKey +
         ' selection=' +
         selection +
         ' failed=' +

@@ -1,24 +1,26 @@
 {
-  "purpose": "Combined Lab ranking of every board that is NOT Web REJECT (G2). Human KEEP and REFERENCE tiers listed separately.",
+  "purpose": "Combined Lab ranking of every board that is NOT Web REJECT (G2). Human KEEP and REFERENCE tiers listed separately. Board keys are bead+geometry only.",
   "generatedAt": "2026-08-17",
-  "protocol": "D1/D2/D3 · seeds 101/202/303 · N=30/seed (C3 N=100) · move-cap 120 · primary depth D2",
+  "protocol": "D1/D2/D3 · seeds 101/202/303 · N=30/seed (8-bead 5×5 N=100) · move-cap 120 · primary depth D2",
   "sources": [
     "LADDER_LAB_EVALUATION.json",
     "CURSOR_INDEX_LAB_EVALUATION.json",
-    "C3_LAB_COMPLETE.json",
-    "C1_C4_LAB_EVALUATION.json",
-    "D1_D5_LAB_EVALUATION.json",
-    "FINAL_ROUND_LAB_EVALUATION.json"
+    "8_BEAD_5x5_LAB_COMPLETE.json",
+    "LAB_EVALUATION_5_5_8_12_BEAD_DISCOVERY_SET.json",
+    "LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json",
+    "LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json"
   ],
   "referenceAnchor": {
-    "id": "16-bead",
+    "id": "16_BEAD_5x5",
     "verdict": "REFERENCE ANCHOR",
     "note": "Calibration only — not a product candidate. D2 is 98.9% move-cap draws."
   },
   "humanKeep": [
     {
       "rank": 1,
-      "id": "6-bead-3x5",
+      "id": "6_BEAD_3x5",
+      "boardKey": "6_BEAD_3x5",
+      "label": "6-bead 3×5",
       "playable": "SHOLO_GUTI_6_BEAD_WITH_FEATURE.html",
       "verdict": "NEEDS FURTHER TESTING + Human KEEP",
       "d2": { "elimPct": 34.4, "moveCapDrawPct": 65.6, "fpaPp": 8.1, "p1WinPct": 20.0, "p2WinPct": 14.4, "avgCaptures": 6.0, "avgLength": 110.9 },
@@ -26,7 +28,9 @@
     },
     {
       "rank": 2,
-      "id": "6-bead-4x4-cross",
+      "id": "6_BEAD_4x4",
+      "boardKey": "6_BEAD_4x4",
+      "label": "6-bead 4×4 cross",
       "playable": "SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html",
       "verdict": "NEEDS FURTHER TESTING + Human KEEP",
       "d2": { "elimPct": 14.4, "moveCapDrawPct": 85.6, "fpaPp": 3.8, "p1WinPct": 7.8, "p2WinPct": 6.7, "avgCaptures": 6.6, "avgLength": 116.0 },
@@ -34,7 +38,9 @@
     },
     {
       "rank": 3,
-      "id": "7-bead-4x5-hourglass",
+      "id": "7_BEAD_4x5",
+      "boardKey": "7_BEAD_4x5",
+      "label": "7-bead 4×5 hourglass",
       "playable": "SHOLO_GUTI_7_BEAD_WITH_FEATURE.html",
       "verdict": "NEEDS FURTHER TESTING + Human KEEP",
       "d2": { "elimPct": 12.2, "moveCapDrawPct": 87.8, "fpaPp": -22.7, "p1WinPct": 3.3, "p2WinPct": 8.9, "avgCaptures": 8.6, "avgLength": 113.3 },
@@ -42,81 +48,105 @@
     },
     {
       "rank": 4,
-      "id": "10-bead-5x5",
+      "id": "10_BEAD_5x5",
+      "boardKey": "10_BEAD_5x5",
+      "label": "10-bead 5×5",
       "playable": "SHOLO_GUTI_10_BEAD_WITH_FEATURE.html",
       "verdict": "NEEDS FURTHER TESTING + Human KEEP",
       "d2": { "elimPct": 8.9, "moveCapDrawPct": 91.1, "fpaPp": 50.0, "p1WinPct": 8.9, "p2WinPct": 0.0, "avgCaptures": 12.0, "avgLength": 117.4 },
-      "why": "Parent slice for C3/F3b; high capture density but D2 stalls like 16-bead."
+      "why": "Parent slice for thinned 8-bead 5×5; high capture density but D2 stalls like 16-bead."
     }
   ],
   "discoveryNeedsFurtherTesting": [
     {
       "rank": 5,
-      "id": "F2b",
+      "id": "7_BEAD_4x4_DENSE",
+      "boardKey": "7_BEAD_4x4_DENSE",
       "label": "7-bead 4×4 dense full-cross",
       "playable": "SHOLO_GUTI_7_BEAD_4x4_DENSE_WITH_FEATURE.html",
-      "source": "FINAL_ROUND_LAB_EVALUATION.json",
+      "source": "LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json",
       "d2": { "elimPct": 23.3, "moveCapDrawPct": 76.7, "fpaPp": -35.7, "p1WinPct": 3.3, "p2WinPct": 20.0, "avgCaptures": 9.1, "avgLength": 108.7 },
-      "why": "Best final-round survivor — most D2 eliminations; human playtest candidate before C3/F1a."
+      "why": "Best compact-set survivor — most D2 eliminations; human playtest candidate before 8-bead 5×5."
     },
     {
       "rank": 6,
-      "id": "D2",
+      "id": "7_BEAD_5x5",
+      "boardKey": "7_BEAD_5x5",
       "label": "7-bead 5×5 thin hourglass",
       "playable": "SHOLO_GUTI_7_BEAD_5x5_WITH_FEATURE.html",
-      "source": "D1_D5_LAB_EVALUATION.json",
+      "source": "LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json",
       "d2": { "elimPct": 0.0, "moveCapDrawPct": 100.0, "fpaPp": null, "p1WinPct": 0.0, "p2WinPct": 0.0, "avgCaptures": 9.4, "avgLength": 120.0 },
-      "why": "All G1–G9 pass but D2 is 100% move-cap — same stall class as C3; D1 was contestable."
+      "why": "All G1–G9 pass but D2 is 100% move-cap — same stall class as 8-bead 5×5; D1 was contestable."
     },
     {
       "rank": 7,
-      "id": "D4",
-      "label": "12-bead 6×5 two-file (= old C6)",
+      "id": "12_BEAD_6x5",
+      "boardKey": "12_BEAD_6x5",
+      "label": "12-bead 6×5 two-file rank camps",
       "playable": "SHOLO_GUTI_12_BEAD_6x5_WITH_FEATURE.html",
-      "source": "D1_D5_LAB_EVALUATION.json",
+      "source": "LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json",
       "d2": { "elimPct": 7.8, "moveCapDrawPct": 92.2, "fpaPp": 50.0, "p1WinPct": 7.8, "p2WinPct": 0.0, "avgCaptures": 13.3, "avgLength": 117.2 },
-      "why": "C6 hypothesis tested; gates pass but heavy D2 stall."
+      "why": "Two-file wide hypothesis tested; gates pass but heavy D2 stall."
     },
     {
       "rank": 8,
-      "id": "F2a",
-      "label": "12-bead 5×7 two-file C3 corners",
+      "id": "12_BEAD_5x7",
+      "boardKey": "12_BEAD_5x7",
+      "label": "12-bead 5×7 two-file thinned corners",
       "playable": "SHOLO_GUTI_12_BEAD_5x7_WITH_FEATURE.html",
-      "source": "FINAL_ROUND_LAB_EVALUATION.json",
+      "source": "LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json",
       "d2": { "elimPct": 2.2, "moveCapDrawPct": 97.8, "fpaPp": 0.0, "p1WinPct": 1.1, "p2WinPct": 1.1, "avgCaptures": 12.9, "avgLength": 119.6 },
       "why": "Perfect D2 FPA among winners; ~98% move-cap draws."
     },
     {
       "rank": 9,
-      "id": "F1a",
+      "id": "8_BEAD_4x6_HOURGLASS",
+      "boardKey": "8_BEAD_4x6_HOURGLASS",
       "label": "8-bead 4×6 hourglass",
       "playable": "SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html",
-      "source": "FINAL_ROUND_LAB_EVALUATION.json",
+      "source": "LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json",
       "d2": { "elimPct": 2.2, "moveCapDrawPct": 97.8, "fpaPp": 0.0, "p1WinPct": 1.1, "p2WinPct": 1.1, "avgCaptures": 9.5, "avgLength": 119.1 },
-      "why": "Same stall profile as F2a; hourglass on even width survives G2 but does not end."
+      "why": "Same stall profile as 12-bead 5×7; hourglass on even width survives G2 but does not end."
     },
     {
       "rank": 10,
-      "id": "C3",
+      "id": "8_BEAD_5x5",
+      "boardKey": "8_BEAD_5x5",
       "label": "8-bead 5×5 thinned 10-bead",
       "playable": "SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html",
-      "source": "C3_LAB_COMPLETE.json",
+      "source": "8_BEAD_5x5_LAB_COMPLETE.json",
       "d2": { "elimPct": 1.7, "moveCapDrawPct": 98.3, "fpaPp": 50.0, "p1WinPct": 1.7, "p2WinPct": 0.0, "avgCaptures": 9.9, "avgLength": 119.7 },
       "why": "N=100 confirmation; human playtest queue — Lab fair but almost no D2 eliminations."
     },
     {
       "rank": 11,
-      "id": "D5",
+      "id": "4_BEAD_3x5_REAR",
+      "boardKey": "4_BEAD_3x5_REAR",
       "label": "4-bead 3×5 rear corners",
       "playable": "SHOLO_GUTI_4_BEAD_3x5_REAR_WITH_FEATURE.html",
-      "source": "D1_D5_LAB_EVALUATION.json",
+      "source": "LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json",
       "d2": { "elimPct": 1.1, "moveCapDrawPct": 98.9, "fpaPp": -50.0, "p1WinPct": 0.0, "p2WinPct": 1.1, "avgCaptures": 3.7, "avgLength": 119.4 },
       "why": "Gates pass on tiny board; extreme stall — lowest priority."
     }
   ],
   "excludedFromRanking": {
-    "rejected": ["4-bead-3x5-sketch", "5-bead-3x5-sketch", "8-bead-4x5", "INDEX_4", "C1", "C2", "C4", "Baro-12", "D1", "D3", "F1b", "F3b", "F4b", "F5b"],
-    "notBuiltNotLab": ["C5", "F3a", "F5a", "F4a"],
-    "auditOnly": ["INDEX_6-rays — playable removed; merged into 6-bead-4x4-cross"]
+    "rejected": [
+      "4-bead-3x5-sketch",
+      "5-bead-3x5-sketch",
+      "8_BEAD_4x5",
+      "CURSOR_INDEX_4",
+      "5_BEAD_3x5_LR",
+      "5_BEAD_4x4",
+      "12_BEAD_MINIWING",
+      "12_BEAD_BARO",
+      "9_BEAD_5x5",
+      "5_BEAD_3x5_REAR_THIN",
+      "5_BEAD_4x3_HOURGLASS",
+      "8_BEAD_5x4",
+      "10_BEAD_4x6_HOURGLASS",
+      "12_BEAD_4x7_HOURGLASS"
+    ],
+    "notBuiltNotLab": ["4_BEAD_3x4_LR", "6_BEAD_5x5", "5_BEAD_5x5", "10_BEAD_6x5"],
+    "auditOnly": ["6_BEAD_6-rays — playable removed; merged into 6_BEAD_4x4"]
   }
 }
