@@ -75,6 +75,9 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **SHOLO_GUTI_12_BEAD_MINIWING_WITH_FEATURE.html** — **C4 discovery**. 12 vs 12 on 5×5 + inner-wing triangles. Lab: **REJECT (G2)**.
 - **SHOLO_GUTI_12_BEAD_BARO_WITH_FEATURE.html** — traditional Baro Guti 12 vs 12 on 5×5 Alquerque rank camps. Lab: **REJECT (G2)**. Distinct from C4.
 - **verify-sholo-c1-c4-feature.cjs** / **evaluate-c1-c4-lab.cjs** / **complete-c3-lab.cjs** / **evaluate-12-bead-baro-lab.cjs** — discovery smoke + G1–G9. Artifacts: `C1_C4_LAB_EVALUATION.json`, `C3_LAB_COMPLETE.json`, `BARO_12_LAB_EVALUATION.json`.
+- **Discovery round 2 (D1–D5, 2026-08-17):** `generate-discovery-round2.cjs` · `verify-sholo-d1-d5-feature.cjs` · `evaluate-d1-d5-lab.cjs` · playables `SHOLO_GUTI_9_BEAD_5x5` … `SHOLO_GUTI_4_BEAD_3x5_REAR` · engines `sholo-d1-*` … `sholo-d5-*` · `D1_D5_LAB_EVALUATION.json`.
+- **Final round (F1b–F5b, 2026-08-17):** `generate-final-round.cjs` · `verify-final-round-feature.cjs` · `evaluate-final-round-lab.cjs` · playables `SHOLO_GUTI_5_BEAD_4x3_HOURGLASS` … `SHOLO_GUTI_12_BEAD_4x7_HOURGLASS` · engines `sholo-f1b-*` … `sholo-f5b-*` · `FINAL_ROUND_LAB_EVALUATION.json` · `ALL_NON_REJECT_LAB_RANKING.json`.
+- **discovery-playable-loader.cjs** — VM loader for discovery/final-round playables (parity checks).
 - **SHOLO_3x5_BEAD_LAYOUTS.html** — Static 3/4/5-bead layout diagrams only (no playables for 3/4/5). **Removed playables:** 3-bead (not tested), 4/5/8-bead (Web REJECT G2).
 - **sholo-10-bead-fullturn-engine.cjs** / **compare-sholo-10-vs-16-lab.cjs** — Headless Lab for the 10-bead candidate + protocol compare vs 16-bead. Output: `SHOLO_10_VS_16_LAB_COMPARE.json`.
 - **record-sholo-16-feature-baseline.cjs** — Programmatic verification script for feature semantics and 16-bead feature baseline recording.

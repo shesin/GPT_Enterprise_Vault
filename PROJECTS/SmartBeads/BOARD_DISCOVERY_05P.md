@@ -509,7 +509,39 @@ Protocol: D1/D2/D3 · seeds 101/202/303 · N=30/seed · move-cap 120 · parity *
 
 \*Among games with a winner; most reference/10-bead D2 games are move-cap draws.
 
-Traditional pedigree did **not** imply Lab pass. Rank-camp occupancy on 5×5 behaves unlike the KEEP empty-centre-file slice. **Do not promote.** C6 (6×5 stretch) remains untested and is a separate hypothesis.
+Traditional pedigree did **not** imply Lab pass. Rank-camp occupancy on 5×5 behaves unlike the KEEP empty-centre-file slice. **Do not promote.** C6 (6×5 stretch) was tested as **D4** in round 2 — NFT, heavy D2 stall.
+
+---
+
+## Discovery round 2 — D1–D5 (2026-08-17)
+
+Built + Lab: `generate-discovery-round2.cjs` · `evaluate-d1-d5-lab.cjs` → `D1_D5_LAB_EVALUATION.json`.
+
+| ID | Beads | Lattice | Verdict |
+|----|-------|---------|---------|
+| D1 | 9 | 5×5 one-corner thin | **REJECT G2** |
+| D2 | 7 | 5×5 thin hourglass | **NEEDS FURTHER TESTING** |
+| D3 | 5 | 3×5 rear-wing thin | **REJECT G2** |
+| D4 | 12 | 6×5 two-file (= C6) | **NEEDS FURTHER TESTING** |
+| D5 | 4 | 3×5 rear corners | **NEEDS FURTHER TESTING** |
+
+---
+
+## Final round — F1b–F5b (2026-08-17)
+
+Built 7 of 11 proposed; skipped **C5, F3a, F5a, F4a**. Lab: `evaluate-final-round-lab.cjs` → `FINAL_ROUND_LAB_EVALUATION.json`.
+
+| ID | Beads | Lattice | Verdict |
+|----|-------|---------|---------|
+| F1b | 5 | 4×3 hourglass | **REJECT G2** |
+| F2b | 7 | 4×4 dense cross | **NEEDS FURTHER TESTING** — best new board |
+| F3b | 8 | 5×4 two-file | **REJECT G2** |
+| F1a | 8 | 4×6 hourglass | **NEEDS FURTHER TESTING** |
+| F2a | 12 | 5×7 C3 corners | **NEEDS FURTHER TESTING** |
+| F4b | 10 | 4×6 hourglass | **REJECT G2** |
+| F5b | 12 | 4×7 hourglass | **REJECT G2** |
+
+Combined non-REJECT ranking: `ALL_NON_REJECT_LAB_RANKING.json` · full tables in `WEB_REPORT_All_BEAD_05P.md`.
 
 ---
 

@@ -1,0 +1,1264 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sholo Guti 8 Bead 4×6 Hourglass (F1a)</title>
+  <style>
+    :root {
+      --bg: #0f2019;
+      --panel: #1a3128;
+      --panel-2: #234036;
+      --line: #45695b;
+      --text: #e8f0ea;
+      --muted: #9bb5a6;
+      --gold: #d4a84b;
+      --red: #d64545;
+      --blue: #3d8fd1;
+      --ok: #3cb89a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(ellipse at top, #284b3d, transparent 60%), linear-gradient(165deg, #12281f, #0b1813);
+      color: var(--text);
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+    }
+    .shell {
+      width: min(1280px, 100%);
+      display: grid;
+      grid-template-columns: minmax(200px, 220px) minmax(280px, 1fr) minmax(200px, 240px) minmax(160px, 200px);
+      gap: 14px;
+      align-items: start;
+    }
+    .card {
+      background: rgba(18, 38, 30, 0.92);
+      border: 1px solid rgba(212,168,75,0.22);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .left h2, .right h2 {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    .setting-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .setting {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .setting label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+    select, button {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid rgba(212,168,75,0.34);
+      border-radius: 8px;
+      padding: 7px 9px;
+      font: inherit;
+    }
+    select:disabled { opacity: 0.45; cursor: not-allowed; }
+    button { cursor: pointer; font-weight: 700; }
+    .board-frame {
+      width: min(100%, calc((100vh - 100px) * 0.92));
+      height: min(calc(100vh - 100px), 760px);
+      background: linear-gradient(180deg, #214b37, #123326);
+      border-radius: 16px;
+      padding: 10px;
+      border: 1px solid rgba(212,168,75,0.22);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 10px;
+      background: #173b2d;
+      cursor: pointer;
+    }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .finish { background: #2f8c66; color: #06261b; display: none; }
+    #undo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .stat { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .val { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .pill { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 10px; border: 1px solid transparent; margin-bottom: 8px; }
+    .pill.active { border-color: rgba(212,168,75,0.7); background: rgba(212,168,75,0.1); }
+    .pill.red { border-left: 4px solid var(--red); }
+    .pill.blue { border-left: 4px solid var(--blue); }
+    .tiny { font-size: 0.74rem; color: var(--muted); }
+    .timer { font-family: ui-monospace, monospace; font-weight: 700; color: var(--gold); }
+    .modal { display:none; position: fixed; inset:0; background: rgba(0,0,0,0.7); align-items:center; justify-content:center; padding: 12px; z-index: 30; }
+    .modal-card { width: min(360px, 100%); background: #152a22; border: 1px solid var(--gold); border-radius: 14px; padding: 20px; text-align: center; }
+    .modal-card h3 { font-size: 1.4rem; margin-bottom: 8px; }
+    .modal-card p { color: var(--muted); margin-bottom: 12px; }
+
+    /* BGM panel — right column (matches snapshot) */
+    .bgm-panel h2 {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .bgm-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bgm-controls {
+      display: flex;
+      gap: 6px;
+    }
+    .bgm-controls button {
+      flex: 1;
+      padding: 6px;
+      font-size: 0.8rem;
+    }
+    #bgm-play { background: var(--ok); color: #06261b; border: none; }
+    #bgm-pause { background: var(--red); color: #fff; border: none; }
+    .bgm-vol-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #bgm-vol {
+      flex: 1;
+      accent-color: var(--gold);
+    }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .board-frame { height: min(65vh, 620px); width: min(100%, calc(65vh * 0.74)); }
+      .bgm-panel { order: 4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- Left Panel: Players & Match Info -->
+    <aside class="card left">
+      <h2>Players</h2>
+      <div class="pill red" id="pill-p1">
+        <div>
+          <div><strong>Ivory (P1)</strong></div>
+          <div class="tiny" id="p1-role">(Human)</div>
+        </div>
+        <div class="timer" id="p1-clock">--:--</div>
+      </div>
+      <div class="pill blue" id="pill-p2">
+        <div>
+          <div><strong>Ebony (P2)</strong></div>
+          <div class="tiny" id="p2-role">(AI)</div>
+        </div>
+        <div class="timer" id="p2-clock">--:--</div>
+      </div>
+      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">8</span></div>
+      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">8</span></div>
+      <div class="stat"><span>P1 captures</span><span class="val" id="p1-caps">0</span></div>
+      <div class="stat"><span>P2 captures</span><span class="val" id="p2-caps">0</span></div>
+      <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
+      <div class="stat"><span>Starts</span><span class="val" id="starts-label">Ivory</span></div>
+      <div class="stat"><span>Shot clock</span><span class="val" id="shot-clock-val">OFF</span></div>
+      <div class="stat"><span>Match timer</span><span class="val" id="match-clock-val">OFF</span></div>
+      <div class="stat"><span>P1 center</span><span class="val" id="p1-center">0</span></div>
+      <div class="stat"><span>P2 center</span><span class="val" id="p2-center">0</span></div>
+    </aside>
+
+    <!-- Center Main: Board Full Stretch -->
+    <main class="main">
+      <div class="board-frame"><canvas id="board" width="560" height="560"></canvas></div>
+      <div class="controls">
+        <button class="finish" id="finish-btn">Finish chain</button>
+        <button id="undo-btn" type="button">Undo</button>
+        <button id="restart-btn">New game</button>
+      </div>
+    </main>
+
+    <!-- Right Panel: Settings -->
+    <aside class="card right">
+      <h2>Settings</h2>
+      <div class="setting-list">
+        <div class="setting">
+          <label>Game mode</label>
+          <select id="game-mode-select">
+            <option value="pve" selected>Human vs AI</option>
+            <option value="pvp">Human vs Human</option>
+          </select>
+        </div>
+        <div class="setting" id="ai-level-container">
+          <label>AI level</label>
+          <select id="ai-level-select">
+            <option value="1">Easy</option>
+            <option value="2" selected>Medium</option>
+            <option value="3">Hard</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>Match timer</label>
+          <select id="match-timer-select">
+            <option value="off" selected>Off</option>
+            <option value="5">5 min</option>
+            <option value="10">10 min</option>
+            <option value="15">15 min</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>Turn shot clock</label>
+          <select id="shot-clock-select">
+            <option value="off" selected>Off</option>
+            <option value="15">15 sec</option>
+            <option value="25">25 sec</option>
+            <option value="35">35 sec</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>Center rule</label>
+          <select id="center-rule-select">
+            <option value="off" selected>Off</option>
+            <option value="cumulative">Cumulative</option>
+            <option value="endgame">End-Game</option>
+          </select>
+          <div class="tiny">F1a final · 4×6 hourglass · 8 vs 8. Waist 2×2 amber. You play from the bottom.</div>
+        </div>
+        <div class="setting">
+          <label>Move highlight</label>
+          <select id="move-highlight-select">
+            <option value="off">Off</option>
+            <option value="on" selected>On</option>
+          </select>
+          <div class="tiny">PvP defaults Off — legal targets are not shown (not chess).</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- BGM — far right column (snapshot layout) -->
+    <aside class="card bgm-panel">
+      <h2>BGM Music</h2>
+      <div class="bgm-section">
+        <select id="bgm-select">
+          <option value="">— Select Music —</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler.mp3">Bubble Gum Puzzler</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler-2.mp3">Bubble Gum Puzzler 2</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/07/Cool-Puzzler.mp3">Cool Puzzler</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/06/Sky-Puzzle.mp3">Sky Puzzle</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/06/Mind-Bender.mp3">Mind Bender</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams.mp3">Puzzle Dreams</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams-3.mp3">Puzzle Dreams 3</option>
+          <option value="http://soundimage.org/wp-content/uploads/2014/10/Mysterious-Puzzle.mp3">Mysterious Puzzle</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/03/8-Bit-Puzzler.mp3">8-Bit Puzzler</option>
+          <option value="http://soundimage.org/wp-content/uploads/2014/12/Puzzle-Game-5.mp3">Puzzle Game 5</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/09/Happy-Puzzler.mp3">Happy Puzzler</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/08/Puzzle-Action.mp3">Puzzle Action</option>
+          <option value="https://soundimage.org/wp-content/uploads/2021/11/Puzzle-Technica.mp3">Puzzle Technica</option>
+          <option value="https://soundimage.org/wp-content/uploads/2021/08/Cool-Puzzle-Groovin-2.mp3">Cool Puzzle Groovin' 2</option>
+          <option value="https://soundimage.org/wp-content/uploads/2021/08/Quirky-Quarks.mp3">Quirky Quarks</option>
+          <option value="http://soundimage.org/wp-content/uploads/2018/01/Drifting-Things.mp3">Drifting Things</option>
+          <option value="http://soundimage.org/wp-content/uploads/2018/01/Wind-Up-Things.mp3">Wind Up Things</option>
+          <option value="http://soundimage.org/wp-content/uploads/2018/07/Carnival-Games.mp3">Carnival Games</option>
+          <option value="http://soundimage.org/wp-content/uploads/2018/07/Far-Away-Puzzle-Places.mp3">Far Away Puzzle Places</option>
+          <option value="http://soundimage.org/wp-content/uploads/2017/09/Thought-Puzzles.mp3">Thought Puzzles</option>
+        </select>
+        <div class="bgm-controls">
+          <button type="button" id="bgm-play">▶ Play</button>
+          <button type="button" id="bgm-pause">⏸ Pause</button>
+        </div>
+        <div class="bgm-vol-row">
+          <span class="tiny">Volume</span>
+          <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.3">
+        </div>
+      </div>
+      <audio id="bgm-audio" loop></audio>
+    </aside>
+  </div>
+
+  <div class="modal" id="result-modal">
+    <div class="modal-card">
+      <h3 id="result-title">Game Over</h3>
+      <p id="result-desc"></p>
+      <button id="play-again-btn">Play again</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const P1 = 1, P2 = 2;
+  const STATE = { IDLE: 'IDLE', SELECTED: 'SELECTED', CHAIN_JUMPING: 'CHAIN_JUMPING', GAME_OVER: 'GAME_OVER' };
+
+  // 4×5 lattice — 7-bead slice (column layout 5+2+2+5). Endgame centre = row 3 nodes at col 2 & col 3.
+  const COLS = 4;
+  const ROWS = 6;
+  const NODES = [];
+  const NODE_INDEX = Object.create(null);
+  function addNode(id, x, y) {
+    NODE_INDEX[id] = NODES.length;
+    NODES.push({ id, x, y });
+  }
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) addNode('A' + r + c, 2 * c, 2 * r);
+  const N = NODES.length;
+  const ADJ = Array.from({ length: N }, () => []);
+  function link(a, b) {
+    const i = NODE_INDEX[a], j = NODE_INDEX[b];
+    if (!ADJ[i].includes(j)) ADJ[i].push(j);
+    if (!ADJ[j].includes(i)) ADJ[j].push(i);
+  }
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
+        const r2 = r + dr, c2 = c + dc;
+        if (r2 < 0 || r2 >= ROWS || c2 < 0 || c2 >= COLS) continue;
+        link('A' + r + c, 'A' + r2 + c2);
+      }
+    }
+  }
+
+  function isEndgameCenterNode(node) {
+    return (node.x === 2 || node.x === 4) && (node.y === 4 || node.y === 6);
+  }
+
+  function startingBoard() {
+    const layout = [
+      [P1, P1, P2, P2],
+      [P1, 0, 0, P2],
+      [P1, 0, 0, P2],
+      [P1, 0, 0, P2],
+      [P1, 0, 0, P2],
+      [P1, P1, P2, P2]
+    ];
+    const b = new Array(N).fill(0);
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) b[r * COLS + c] = layout[r][c];
+    return b;
+  }
+
+  function sameDir(dx, dy, ex, ey) { return dx * ey === dy * ex && dx * ex + dy * ey > 0; }
+  function continueCollinear(from, over) {
+    const a = NODES[from], b = NODES[over];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    for (const k of ADJ[over]) {
+      const c = NODES[k];
+      if (sameDir(dx, dy, c.x - b.x, c.y - b.y)) return k;
+    }
+    return -1;
+  }
+  function getMovesForNode(currBoard, node, player) {
+    const moves = [];
+    for (const to of ADJ[node]) if (currBoard[to] === 0) moves.push({ from: node, to, captured: null });
+    for (const over of ADJ[node]) {
+      if (!currBoard[over] || currBoard[over] === player) continue;
+      const land = continueCollinear(node, over);
+      if (land >= 0 && currBoard[land] === 0) moves.push({ from: node, to: land, captured: over });
+    }
+    return moves;
+  }
+  function getAllLegalMoves(currBoard, player) {
+    let m = [];
+    for (let i = 0; i < N; i++) if (currBoard[i] === player) m = m.concat(getMovesForNode(currBoard, i, player));
+    return m;
+  }
+  function getFollowUpJumps(currBoard, node, player) {
+    return getMovesForNode(currBoard, node, player).filter((x) => x.captured !== null);
+  }
+  function applyMove(currBoard, move) {
+    const next = currBoard.slice();
+    next[move.to] = next[move.from];
+    next[move.from] = 0;
+    if (move.captured !== null) next[move.captured] = 0;
+    return next;
+  }
+  function count(currBoard, p) { return currBoard.reduce((n, x) => n + (x === p ? 1 : 0), 0); }
+  function pathCaptureCount(path) {
+    let n = 0;
+    for (let i = 0; i < path.length; i++) if (path[i].captured !== null) n++;
+    return n;
+  }
+  function positionKey(currBoard, turnJustMoved) { return currBoard.join('') + '_' + turnJustMoved; }
+
+  function generateTurnEnds(currBoard, player, maxBranch) {
+    const ends = [];
+    const root = getAllLegalMoves(currBoard, player).slice();
+    root.sort((a, b) => (b.captured !== null ? 1 : 0) - (a.captured !== null ? 1 : 0));
+    for (let i = 0; i < root.length; i++) {
+      const m = root[i];
+      const after = applyMove(currBoard, m);
+      if (m.captured === null) {
+        ends.push({ board: after, path: [m] });
+        if (ends.length >= maxBranch) return ends;
+        continue;
+      }
+      ends.push({ board: after, path: [m] });
+      if (ends.length >= maxBranch) return ends;
+      const stack = [{ board: after, pos: m.to, path: [m], depth: 1 }];
+      while (stack.length) {
+        const node = stack.pop();
+        if (node.depth > 8) continue;
+        const jumps = getFollowUpJumps(node.board, node.pos, player);
+        for (let j = 0; j < jumps.length; j++) {
+          const hop = jumps[j];
+          const nb = applyMove(node.board, hop);
+          const path = node.path.concat([hop]);
+          ends.push({ board: nb, path });
+          stack.push({ board: nb, pos: hop.to, path, depth: node.depth + 1 });
+          if (ends.length >= maxBranch) return ends;
+        }
+      }
+    }
+    return ends;
+  }
+
+  function evaluate(currBoard) {
+    const a = count(currBoard, P1), c = count(currBoard, P2);
+    if (a === 0) return 10000;
+    if (c === 0) return -10000;
+    const mob = getAllLegalMoves(currBoard, P2).length - getAllLegalMoves(currBoard, P1).length;
+    return (c - a) * 48 + mob * 1.5;
+  }
+  /** Honest depths: Easy=greedy, Medium=1 opponent full-turn, Hard=2 opponent full-turns. */
+  function opponentReplyPlies(level) {
+    if (level <= 1) return -1;
+    if (level === 2) return 1;
+    return 2;
+  }
+  function rootBranchForLevel(level) {
+    if (level >= 3) return 80;
+    if (level === 2) return 120;
+    return 140;
+  }
+  function replyBranchForLevel(level) {
+    if (level >= 3) return 40;
+    if (level === 2) return 72;
+    return null;
+  }
+  function minimaxTurns(currBoard, depth, maximizing, alpha, beta, branchCap) {
+    if (depth === 0) return evaluate(currBoard);
+    const player = maximizing ? P2 : P1;
+    const ends = generateTurnEnds(currBoard, player, branchCap);
+    if (!ends.length) return maximizing ? -900 : 900;
+    if (maximizing) {
+      let best = -Infinity;
+      for (let i = 0; i < ends.length; i++) {
+        const v = minimaxTurns(ends[i].board, depth - 1, false, alpha, beta, branchCap);
+        if (v > best) best = v;
+        if (v > alpha) alpha = v;
+        if (beta <= alpha) break;
+      }
+      return best;
+    }
+    let best = Infinity;
+    for (let i = 0; i < ends.length; i++) {
+      const v = minimaxTurns(ends[i].board, depth - 1, true, alpha, beta, branchCap);
+      if (v < best) best = v;
+      if (v < beta) beta = v;
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+  function selectAITurn(level, fromBoard) {
+    const currBoard = fromBoard || board;
+    const branch = rootBranchForLevel(level);
+    const ends = generateTurnEnds(currBoard, P2, branch);
+    if (!ends.length) return null;
+    if (level <= 1) {
+      let bestScore = -Infinity, pool = [];
+      for (let i = 0; i < ends.length; i++) {
+        const c = pathCaptureCount(ends[i].path);
+        const score = c * 100 + evaluate(ends[i].board) * 0.01;
+        if (score > bestScore) { bestScore = score; pool = [ends[i]]; }
+        else if (score === bestScore) pool.push(ends[i]);
+      }
+      return pool[Math.floor(Math.random() * pool.length)].path;
+    }
+    const reply = opponentReplyPlies(level);
+    const replyBranch = replyBranchForLevel(level);
+    let bestScore = -Infinity, best = [];
+    for (let i = 0; i < ends.length; i++) {
+      const end = ends[i];
+      let score = reply <= 0
+        ? evaluate(end.board)
+        : minimaxTurns(end.board, reply, false, -Infinity, Infinity, replyBranch);
+      score += pathCaptureCount(end.path) * 0.05;
+      if (score > bestScore) { bestScore = score; best = [end]; }
+      else if (score === bestScore) best.push(end);
+    }
+    return best[Math.floor(Math.random() * best.length)].path;
+  }
+
+  let board = startingBoard();
+  let nextStartingPlayer = P1;
+  let currentTurn = P1;
+  let currentState = STATE.IDLE;
+  let selected = null;
+  let validMoves = [];
+  let moveCount = 0;
+  let p1Captures = 0;
+  let p2Captures = 0;
+  let p1Center = 0;
+  let p2Center = 0;
+  let history = {};
+  let aiThinking = false;
+  let animating = false;
+  let timerId = null;
+  let mode = 'pve';
+  let centerRule = 'off';
+  let matchMode = 'off';
+  let shotLimit = 0;
+  let shotRemaining = 0;
+  let globalMatchRemaining = 0;
+  let p1Clock = 0;
+  let p2Clock = 0;
+  let undoStack = [];
+  let anim = null;
+  let turnPulse = 0;
+  let rafId = 0;
+  let moveHighlight = true;
+
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const statusEl = document.getElementById('status');
+  const undoBtn = document.getElementById('undo-btn');
+
+  function setStatus(t) {
+    if (statusEl) statusEl.textContent = t;
+  }
+
+  function toXY(x, y) {
+    const pad = 44;
+    const maxX = 2 * (4 - 1);
+    const maxY = 2 * (6 - 1);
+    const px = pad + (y / maxY) * (canvas.width - pad * 2);
+    const py = pad + ((maxX - x) / maxX) * (canvas.height - pad * 2);
+    return [px, py];
+  }
+  function fmtClock(sec) {
+    if (sec < 0) sec = 0;
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    return m + ':' + s;
+  }
+
+  function cloneHistory(h) {
+    const o = {};
+    for (const k in h) o[k] = h[k];
+    return o;
+  }
+  function pushUndoSnapshot() {
+    undoStack.push({
+      board: board.slice(),
+      currentTurn,
+      currentState,
+      selected,
+      validMoves: validMoves.slice(),
+      moveCount,
+      p1Captures,
+      p2Captures,
+      p1Center,
+      p2Center,
+      history: cloneHistory(history),
+      p1Clock,
+      p2Clock,
+      globalMatchRemaining,
+      shotRemaining,
+      mode,
+      centerRule,
+      matchMode,
+      shotLimit,
+    });
+    if (undoStack.length > 80) undoStack.shift();
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+  }
+  function restoreSnapshot(s) {
+    board = s.board.slice();
+    currentTurn = s.currentTurn;
+    currentState = s.currentState;
+    selected = s.selected;
+    validMoves = s.validMoves.slice();
+    moveCount = s.moveCount;
+    p1Captures = s.p1Captures;
+    p2Captures = s.p2Captures;
+    p1Center = s.p1Center;
+    p2Center = s.p2Center;
+    history = cloneHistory(s.history);
+    p1Clock = s.p1Clock;
+    p2Clock = s.p2Clock;
+    globalMatchRemaining = s.globalMatchRemaining;
+    shotRemaining = s.shotRemaining;
+    aiThinking = false;
+    animating = false;
+    anim = null;
+    document.getElementById('result-modal').style.display = 'none';
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+    updateUI();
+    drawBoard();
+  }
+  function undoMove() {
+    if (animating || aiThinking || undoStack.length === 0) return;
+    if (currentState === STATE.GAME_OVER && timerId) {
+      // allow undo from ended game; timers restart below if needed
+    }
+    // PvE: undo AI reply + the human turn that caused it when possible
+    if (mode === 'pve' && undoStack.length >= 2 && currentTurn === P1 && currentState !== STATE.CHAIN_JUMPING) {
+      undoStack.pop();
+      restoreSnapshot(undoStack.pop());
+    } else {
+      restoreSnapshot(undoStack.pop());
+    }
+    if (currentState !== STATE.GAME_OVER) startTimers();
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+  }
+
+  function applySettings() {
+    mode = document.getElementById('game-mode-select').value;
+    centerRule = document.getElementById('center-rule-select').value;
+    matchMode = document.getElementById('match-timer-select').value;
+    const shotVal = document.getElementById('shot-clock-select').value;
+    shotLimit = shotVal === 'off' ? 0 : parseInt(shotVal, 10);
+    const hlEl = document.getElementById('move-highlight-select');
+    // PvP defaults Off (no free legal-target hints). PvE defaults On until user overrides.
+    if (hlEl && !hlEl.dataset.userSet) {
+      hlEl.value = mode === 'pvp' ? 'off' : 'on';
+    }
+    moveHighlight = hlEl ? hlEl.value === 'on' : true;
+
+    const p2RoleEl = document.getElementById('p2-role');
+    if (p2RoleEl) p2RoleEl.textContent = mode === 'pve' ? '(AI)' : '(Human)';
+    const aiLevelContainer = document.getElementById('ai-level-container');
+    if (aiLevelContainer) {
+      const sel = document.getElementById('ai-level-select');
+      if (sel) sel.disabled = mode === 'pvp';
+      aiLevelContainer.style.opacity = mode === 'pvp' ? '0.45' : '1';
+    }
+
+    if (matchMode === 'off') {
+      globalMatchRemaining = 0;
+      p1Clock = 0;
+      p2Clock = 0;
+    } else {
+      const secs = parseInt(matchMode, 10) * 60;
+      if (mode === 'pvp') {
+        p1Clock = secs;
+        p2Clock = secs;
+        globalMatchRemaining = 0;
+      } else {
+        globalMatchRemaining = secs;
+        p1Clock = 0;
+        p2Clock = 0;
+      }
+    }
+    shotRemaining = shotLimit;
+  }
+
+  function drawPieceAt(x, y, player, radius, alpha) {
+    const r = radius || 16;
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    const grd = ctx.createRadialGradient(x - 4, y - 5, 2, x, y, r);
+    if (player === P1) {
+      grd.addColorStop(0, '#fffaf0');
+      grd.addColorStop(0.55, '#ebe2cf');
+      grd.addColorStop(1, '#b7ab92');
+    } else {
+      grd.addColorStop(0, '#5a4538');
+      grd.addColorStop(0.5, '#241812');
+      grd.addColorStop(1, '#0a0604');
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBoard() {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#1f4d39');
+    g.addColorStop(1, '#143328');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // Whose-turn wash on board (not a text banner)
+    if (currentState !== STATE.GAME_OVER) {
+      const wash = ctx.createLinearGradient(0, 0, w, 0);
+      if (currentTurn === P1) {
+        wash.addColorStop(0, 'rgba(255,245,220,0.14)');
+        wash.addColorStop(0.45, 'rgba(255,245,220,0)');
+        wash.addColorStop(1, 'rgba(0,0,0,0)');
+      } else {
+        wash.addColorStop(0, 'rgba(0,0,0,0)');
+        wash.addColorStop(0.55, 'rgba(30,20,10,0)');
+        wash.addColorStop(1, 'rgba(40,90,160,0.16)');
+      }
+      ctx.fillStyle = wash;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    ctx.strokeStyle = 'rgba(212,168,75,0.55)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < N; i++) {
+      for (const j of ADJ[i]) {
+        if (j <= i) continue;
+        const [x1, y1] = toXY(NODES[i].x, NODES[i].y);
+        const [x2, y2] = toXY(NODES[j].x, NODES[j].y);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      }
+    }
+
+    // Amber centre line at row 3 between col 2 and col 3 (lattice x=2,y=4 ↔ x=4,y=4).
+    {
+      const [ax, ay] = toXY(2, 4);
+      const [bx, by] = toXY(4, 4);
+      const grad = ctx.createLinearGradient(ax, ay - 10, bx, by + 10);
+      grad.addColorStop(0, 'rgba(232,168,60,0.15)');
+      grad.addColorStop(0.5, 'rgba(232,168,60,0.45)');
+      grad.addColorStop(1, 'rgba(232,168,60,0.15)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(ax - 8, ay - 10);
+      ctx.lineTo(bx + 8, by - 10);
+      ctx.lineTo(bx + 8, by + 10);
+      ctx.lineTo(ax - 8, ay + 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.strokeStyle = 'rgba(232,168,60,0.95)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    const hideFrom = anim ? anim.from : -1;
+    const hideCap = anim && anim.captured != null ? anim.captured : -1;
+
+    for (let i = 0; i < N; i++) {
+      const [x, y] = toXY(NODES[i].x, NODES[i].y);
+      // Amber rings on row-3 centre nodes (endgame zone).
+      if (isEndgameCenterNode(NODES[i])) {
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(212, 140, 40, 0.22)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(232, 168, 60, 0.85)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = isEndgameCenterNode(NODES[i]) ? 'rgba(232,168,60,0.95)' : 'rgba(212,168,75,0.4)';
+      ctx.fill();
+
+      if (moveHighlight && validMoves.some((m) => m.to === i) && !animating) {
+        ctx.beginPath();
+        ctx.arc(x, y, 18, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(60,184,154,0.85)';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+      }
+      if (board[i] && i !== hideFrom) {
+        const isTurnPiece = currentState !== STATE.GAME_OVER && board[i] === currentTurn && !animating;
+        const pulse = isTurnPiece ? 1 + 0.08 * Math.sin(turnPulse) : 1;
+        const dimOpp = currentState !== STATE.GAME_OVER && board[i] !== currentTurn ? 0.72 : 1;
+        const r = (selected === i ? 18 : 16) * pulse;
+        drawPieceAt(x, y, board[i], r, dimOpp);
+        if (isTurnPiece) {
+          ctx.beginPath();
+          ctx.arc(x, y, r + 3, 0, Math.PI * 2);
+          ctx.strokeStyle = currentTurn === P1 ? 'rgba(255,230,170,0.55)' : 'rgba(120,180,255,0.5)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+    }
+
+    if (anim) {
+      if (anim.captured != null && hideCap >= 0) {
+        const [cx, cy] = toXY(NODES[anim.captured].x, NODES[anim.captured].y);
+        const fade = Math.max(0, 1 - anim.t * 1.4);
+        drawPieceAt(cx, cy, anim.capturedPlayer, 16 * fade, fade);
+        if (fade > 0.2) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(212,80,60,' + (0.7 * fade) + ')';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+      }
+      const [x0, y0] = toXY(NODES[anim.from].x, NODES[anim.from].y);
+      const [x1, y1] = toXY(NODES[anim.to].x, NODES[anim.to].y);
+      const ease = anim.t < 0.5 ? 2 * anim.t * anim.t : 1 - Math.pow(-2 * anim.t + 2, 2) / 2;
+      drawPieceAt(x0 + (x1 - x0) * ease, y0 + (y1 - y0) * ease, anim.player, 17, 1);
+    }
+  }
+
+  function updateUI() {
+    const p1Pieces = count(board, P1);
+    const p2Pieces = count(board, P2);
+    document.getElementById('p1-pieces').textContent = String(p1Pieces);
+    document.getElementById('p2-pieces').textContent = String(p2Pieces);
+    document.getElementById('p1-caps').textContent = String(p1Captures);
+    document.getElementById('p2-caps').textContent = String(p2Captures);
+    document.getElementById('turn-count').textContent = String(moveCount);
+    let c1 = 0, c2 = 0;
+    if (centerRule === 'cumulative') {
+      document.getElementById('p1-center').textContent = String(p1Center);
+      document.getElementById('p2-center').textContent = String(p2Center);
+    } else if (centerRule === 'endgame') {
+      for (let i = 0; i < N; i++) {
+        if (board[i] === P1 && isEndgameCenterNode(NODES[i])) c1++;
+        if (board[i] === P2 && isEndgameCenterNode(NODES[i])) c2++;
+      }
+      document.getElementById('p1-center').textContent = String(c1);
+      document.getElementById('p2-center').textContent = String(c2);
+    } else {
+      document.getElementById('p1-center').textContent = 'Off';
+      document.getElementById('p2-center').textContent = 'Off';
+    }
+    document.getElementById('pill-p1').classList.toggle('active', currentTurn === P1 && currentState !== STATE.GAME_OVER);
+    document.getElementById('pill-p2').classList.toggle('active', currentTurn === P2 && currentState !== STATE.GAME_OVER);
+    document.getElementById('finish-btn').style.display =
+      (currentState === STATE.CHAIN_JUMPING && currentTurn === P1 && !animating) ? 'inline-block' : 'none';
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0 || animating || aiThinking;
+
+    if (matchMode === 'off') {
+      document.getElementById('p1-clock').textContent = '--:--';
+      document.getElementById('p2-clock').textContent = '--:--';
+      document.getElementById('match-clock-val').textContent = 'OFF';
+    } else if (mode === 'pvp') {
+      document.getElementById('p1-clock').textContent = fmtClock(p1Clock);
+      document.getElementById('p2-clock').textContent = fmtClock(p2Clock);
+      document.getElementById('match-clock-val').textContent = 'CHESS';
+    } else {
+      document.getElementById('p1-clock').textContent = '--:--';
+      document.getElementById('p2-clock').textContent = '--:--';
+      document.getElementById('match-clock-val').textContent = fmtClock(globalMatchRemaining);
+    }
+    document.getElementById('shot-clock-val').textContent = shotLimit > 0 ? String(shotRemaining) + 's' : 'OFF';
+  }
+
+  function endGame(winner, reason) {
+    currentState = STATE.GAME_OVER;
+    aiThinking = false;
+    animating = false;
+    anim = null;
+    if (timerId) clearInterval(timerId);
+    const title = document.getElementById('result-title');
+    const desc = document.getElementById('result-desc');
+    if (winner === P1) title.textContent = 'Ivory wins';
+    else if (winner === P2) title.textContent = 'Ebony wins';
+    else title.textContent = 'Draw';
+    desc.textContent = reason;
+    document.getElementById('result-modal').style.display = 'flex';
+    setStatus(reason);
+    updateUI();
+    drawBoard();
+  }
+
+  function evaluateScoreAndEnd(prefixReason) {
+    const p1Pieces = count(board, P1);
+    const p2Pieces = count(board, P2);
+    if (p1Captures > p2Captures) return endGame(P1, prefixReason + ' P1 won on captures.');
+    if (p2Captures > p1Captures) return endGame(P2, prefixReason + ' P2 won on captures.');
+    let c1 = p1Center, c2 = p2Center;
+    if (centerRule === 'endgame') {
+      c1 = 0; c2 = 0;
+      for (let i = 0; i < N; i++) {
+        if (board[i] === P1 && isEndgameCenterNode(NODES[i])) c1++;
+        if (board[i] === P2 && isEndgameCenterNode(NODES[i])) c2++;
+      }
+    }
+    if (centerRule !== 'off') {
+      if (c1 > c2) return endGame(P1, prefixReason + ' captures tied — P1 won on center.');
+      if (c2 > c1) return endGame(P2, prefixReason + ' captures tied — P2 won on center.');
+    }
+    if (p1Pieces === p2Pieces) return endGame(0, prefixReason + ' draw.');
+    return endGame(p1Pieces > p2Pieces ? P1 : P2, prefixReason + ' piece-count tiebreak.');
+  }
+
+  function timerTick() {
+    if (currentState === STATE.GAME_OVER || animating) return;
+    if (shotLimit > 0 && !aiThinking) {
+      shotRemaining--;
+      if (shotRemaining <= 0) {
+        return endGame(currentTurn === P1 ? P2 : P1, 'Shot clock expired.');
+      }
+    }
+    if (matchMode !== 'off') {
+      if (mode === 'pvp') {
+        if (currentTurn === P1) p1Clock--;
+        else p2Clock--;
+        if (p1Clock <= 0) return endGame(P2, 'P1 ran out of match time.');
+        if (p2Clock <= 0) return endGame(P1, 'P2 ran out of match time.');
+      } else {
+        globalMatchRemaining--;
+        if (globalMatchRemaining <= 0) return evaluateScoreAndEnd('Match timer expired —');
+      }
+    }
+    updateUI();
+  }
+
+  function startTimers() {
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(timerTick, 1000);
+  }
+  function resetTurnClock() { shotRemaining = shotLimit; }
+
+  function completeTurn() {
+    currentState = STATE.IDLE;
+    selected = null;
+    validMoves = [];
+    if (centerRule === 'cumulative') {
+      for (let i = 0; i < N; i++) {
+        if (isEndgameCenterNode(NODES[i])) {
+          if (board[i] === P1) p1Center++;
+          if (board[i] === P2) p2Center++;
+        }
+      }
+    }
+    moveCount++;
+    if (count(board, P1) === 0) return endGame(P2, 'P2 captured all pieces.');
+    if (count(board, P2) === 0) return endGame(P1, 'P1 captured all pieces.');
+    const key = positionKey(board, currentTurn);
+    history[key] = (history[key] || 0) + 1;
+    if (history[key] >= 3) return endGame(0, 'Draw — 3-fold repetition.');
+    currentTurn = currentTurn === P1 ? P2 : P1;
+    if (getAllLegalMoves(board, currentTurn).length === 0) {
+      return endGame(currentTurn === P1 ? P2 : P1, 'Stalemate — no legal moves.');
+    }
+    resetTurnClock();
+    updateUI();
+    drawBoard();
+    if (mode === 'pve' && currentTurn === P2) {
+      aiThinking = true;
+      setStatus('AI is thinking…');
+      setTimeout(runAITurn, 40);
+    } else {
+      aiThinking = false;
+      setStatus(currentTurn === P1 ? 'P1 turn' : 'P2 turn');
+    }
+  }
+
+  function applyMoveImmediate(move, player) {
+    board = applyMove(board, move);
+    if (move.captured !== null) {
+      if (player === P1) p1Captures++;
+      else p2Captures++;
+    }
+  }
+
+  function afterAnimatedMove(move, player) {
+    applyMoveImmediate(move, player);
+    anim = null;
+    animating = false;
+    if (move.captured !== null) {
+      const follow = getFollowUpJumps(board, move.to, player);
+      if (follow.length) {
+        currentState = STATE.CHAIN_JUMPING;
+        selected = move.to;
+        validMoves = follow;
+        if (player === P1) {
+          setStatus('Continue chain or Finish.');
+          updateUI();
+          drawBoard();
+          return;
+        }
+        // AI continues via runAITurn path queue
+      }
+    }
+    completeTurn();
+  }
+
+  function animateMove(move, player, done) {
+    animating = true;
+    const capturedPlayer = move.captured != null ? board[move.captured] : 0;
+    anim = {
+      from: move.from,
+      to: move.to,
+      captured: move.captured,
+      capturedPlayer,
+      player,
+      t: 0,
+      duration: move.captured != null ? 280 : 200,
+    };
+    // Hide mover at source during flight by temporarily clearing for draw
+    const savedFrom = board[move.from];
+    board[move.from] = 0;
+    const start = performance.now();
+    function step(now) {
+      anim.t = Math.min(1, (now - start) / anim.duration);
+      drawBoard();
+      if (anim.t < 1) {
+        rafId = requestAnimationFrame(step);
+      } else {
+        board[move.from] = savedFrom;
+        done();
+      }
+    }
+    rafId = requestAnimationFrame(step);
+  }
+
+  function executeMove(move, player) {
+    if (animating) return;
+    animateMove(move, player, () => afterAnimatedMove(move, player));
+  }
+
+  function runAITurn() {
+    if (currentState === STATE.GAME_OVER || mode !== 'pve' || currentTurn !== P2) return;
+    const level = parseInt(document.getElementById('ai-level-select').value, 10);
+    const path = selectAITurn(level, board);
+    if (!path || !path.length) return endGame(P1, 'AI has no legal moves.');
+    let i = 0;
+    function playNext() {
+      if (currentState === STATE.GAME_OVER) { aiThinking = false; return; }
+      if (i >= path.length) { aiThinking = false; updateUI(); return; }
+      if (currentTurn !== P2 && currentState !== STATE.CHAIN_JUMPING) { aiThinking = false; updateUI(); return; }
+      const move = path[i++];
+      animateMove(move, P2, () => {
+        applyMoveImmediate(move, P2);
+        anim = null;
+        animating = false;
+        if (move.captured !== null) {
+          const follow = getFollowUpJumps(board, move.to, P2);
+          // Follow selected AI path; if more hops remain in path, continue
+          if (i < path.length && follow.length) {
+            currentState = STATE.CHAIN_JUMPING;
+            selected = move.to;
+            validMoves = follow;
+            updateUI();
+            drawBoard();
+            setTimeout(playNext, 60);
+            return;
+          }
+        }
+        if (i >= path.length) {
+          completeTurn();
+          aiThinking = false;
+        } else {
+          setTimeout(playNext, 60);
+        }
+      });
+    }
+    playNext();
+  }
+
+  function handleCanvasClick(ev) {
+    if (currentState === STATE.GAME_OVER || aiThinking || animating) return;
+    if (mode === 'pve' && currentTurn !== P1) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+    const mx = (ev.clientX - rect.left) * sx;
+    const my = (ev.clientY - rect.top) * sy;
+    let hit = -1, best = 22;
+    for (let i = 0; i < N; i++) {
+      const [x, y] = toXY(NODES[i].x, NODES[i].y);
+      const d = Math.hypot(mx - x, my - y);
+      if (d < best) { best = d; hit = i; }
+    }
+    if (hit < 0) return;
+    if (currentState === STATE.CHAIN_JUMPING) {
+      const m = validMoves.find((v) => v.to === hit);
+      if (m) {
+        pushUndoSnapshot();
+        executeMove(m, currentTurn);
+      }
+      return;
+    }
+    if (board[hit] === currentTurn) {
+      selected = hit;
+      validMoves = getMovesForNode(board, hit, currentTurn);
+      currentState = STATE.SELECTED;
+      updateUI();
+      drawBoard();
+      return;
+    }
+    if (currentState === STATE.SELECTED) {
+      const m = validMoves.find((v) => v.to === hit);
+      if (m) {
+        pushUndoSnapshot();
+        executeMove(m, currentTurn);
+      }
+    }
+  }
+
+  function resetGame() {
+    if (timerId) clearInterval(timerId);
+    if (rafId) cancelAnimationFrame(rafId);
+    board = startingBoard();
+    currentTurn = nextStartingPlayer;
+    document.getElementById('starts-label').textContent = currentTurn === P1 ? 'Ivory' : 'Ebony';
+    nextStartingPlayer = nextStartingPlayer === P1 ? P2 : P1;
+    currentState = STATE.IDLE;
+    selected = null;
+    validMoves = [];
+    moveCount = 0;
+    p1Captures = 0;
+    p2Captures = 0;
+    p1Center = 0;
+    p2Center = 0;
+    history = {};
+    undoStack = [];
+    aiThinking = false;
+    animating = false;
+    anim = null;
+    document.getElementById('result-modal').style.display = 'none';
+    applySettings();
+    resetTurnClock();
+    updateUI();
+    drawBoard();
+    startTimers();
+    if (undoBtn) undoBtn.disabled = true;
+    if (mode === 'pve' && currentTurn === P2) {
+      aiThinking = true;
+      setStatus('AI is thinking…');
+      setTimeout(runAITurn, 40);
+    } else {
+      aiThinking = false;
+      setStatus(currentTurn === P1 ? 'Your turn — select a piece' : 'Ebony turn');
+    }
+  }
+
+  function loopPulse(ts) {
+    turnPulse = ts / 280;
+    if (!animating) drawBoard();
+    rafId = requestAnimationFrame(loopPulse);
+  }
+
+  // Wire BGM Music controls
+  (function wireBgm() {
+    const bgmAudio = document.getElementById('bgm-audio');
+    const bgmSelect = document.getElementById('bgm-select');
+    const bgmVol = document.getElementById('bgm-vol');
+    const bgmPlay = document.getElementById('bgm-play');
+    const bgmPause = document.getElementById('bgm-pause');
+    if (!bgmAudio || !bgmSelect || !bgmVol) return;
+    bgmAudio.volume = parseFloat(bgmVol.value) || 0.3;
+    bgmSelect.addEventListener('change', () => {
+      if (bgmSelect.value) {
+        bgmAudio.src = bgmSelect.value;
+        bgmAudio.play().catch(() => {});
+      } else {
+        bgmAudio.pause();
+      }
+    });
+    if (bgmPlay) {
+      bgmPlay.addEventListener('click', () => {
+        if (!bgmAudio.src && bgmSelect.value) bgmAudio.src = bgmSelect.value;
+        if (bgmSelect.value) bgmAudio.play().catch(() => {});
+      });
+    }
+    if (bgmPause) {
+      bgmPause.addEventListener('click', () => bgmAudio.pause());
+    }
+    bgmVol.addEventListener('input', () => { bgmAudio.volume = parseFloat(bgmVol.value) || 0; });
+  })();
+
+  document.getElementById('finish-btn').addEventListener('click', () => {
+    if (currentState === STATE.CHAIN_JUMPING && !animating) {
+      pushUndoSnapshot();
+      completeTurn();
+    }
+  });
+  document.getElementById('restart-btn').addEventListener('click', resetGame);
+  document.getElementById('play-again-btn').addEventListener('click', resetGame);
+  if (undoBtn) undoBtn.addEventListener('click', undoMove);
+  document.getElementById('game-mode-select').addEventListener('change', () => {
+    const hlEl = document.getElementById('move-highlight-select');
+    if (hlEl) delete hlEl.dataset.userSet;
+    resetGame();
+  });
+  document.getElementById('center-rule-select').addEventListener('change', resetGame);
+  document.getElementById('match-timer-select').addEventListener('change', resetGame);
+  document.getElementById('shot-clock-select').addEventListener('change', resetGame);
+  document.getElementById('ai-level-select').addEventListener('change', resetGame);
+  document.getElementById('move-highlight-select').addEventListener('change', () => {
+    const hlEl = document.getElementById('move-highlight-select');
+    if (hlEl) hlEl.dataset.userSet = '1';
+    moveHighlight = hlEl.value === 'on';
+    updateUI();
+    drawBoard();
+  });
+  canvas.addEventListener('click', handleCanvasClick);
+
+  window.__SHOLO_GUTI_F1a_8_4x6_FEATURE__ = {
+    P1, P2, STATE, N, NODES, ADJ, NODE_INDEX,
+    getBoard: () => board.slice(),
+    getTurn: () => currentTurn,
+    getState: () => currentState,
+    getMode: () => mode,
+    getCenterRule: () => centerRule,
+    getMoveHighlight: () => moveHighlight,
+    getShot: () => shotRemaining,
+    getMatch: () => ({ mode: matchMode, global: globalMatchRemaining, p1: p1Clock, p2: p2Clock }),
+    getMetrics: () => ({ moveCount, p1Captures, p2Captures, p1Center, p2Center }),
+    getAiSemantics(level) {
+      const lv = level || parseInt(document.getElementById('ai-level-select').value, 10);
+      return {
+        level: lv,
+        opponentReplyPlies: opponentReplyPlies(lv),
+        rootBranch: rootBranchForLevel(lv),
+        replyBranch: replyBranchForLevel(lv),
+        labels: { 1: 'Easy greedy', 2: 'Medium 1 opponent turn', 3: 'Hard 2 opponent turns' },
+      };
+    },
+    setOptions(opts) {
+      if (opts.mode) document.getElementById('game-mode-select').value = opts.mode;
+      if (opts.aiLevel) document.getElementById('ai-level-select').value = String(opts.aiLevel);
+      if (opts.centerRule) document.getElementById('center-rule-select').value = opts.centerRule;
+      if (opts.matchTimer != null) document.getElementById('match-timer-select').value = String(opts.matchTimer);
+      if (opts.shotClock != null) document.getElementById('shot-clock-select').value = String(opts.shotClock);
+      if (opts.moveHighlight != null) {
+        const hlEl = document.getElementById('move-highlight-select');
+        hlEl.value = opts.moveHighlight ? 'on' : 'off';
+        hlEl.dataset.userSet = '1';
+      }
+      resetGame();
+    },
+    resetGame,
+    undoMove,
+    timerTick,
+    forceBoard(b, turn) { board = b.slice(); currentTurn = turn || P1; currentState = STATE.IDLE; selected = null; validMoves = []; updateUI(); drawBoard(); },
+    getMovesForNode: (b, n, p) => getMovesForNode(b || board, n, p),
+    getAllLegalMoves: (b, p) => getAllLegalMoves(b || board, p || currentTurn),
+    getFollowUpJumps: (b, n, p) => getFollowUpJumps(b || board, n, p),
+    applyMove,
+    generateTurnEnds: (b, p, max) => generateTurnEnds(b || board, p || currentTurn, max || 120),
+    evaluate,
+    selectAITurn: (level, b) => selectAITurn(level, b || board),
+    playAITurnSync(level) {
+      const path = selectAITurn(level || parseInt(document.getElementById('ai-level-select').value, 10), board);
+      if (!path) return null;
+      for (let i = 0; i < path.length; i++) {
+        applyMoveImmediate(path[i], currentTurn);
+      }
+      completeTurn();
+      return path;
+    },
+    completeTurn,
+  };
+
+  resetGame();
+  rafId = requestAnimationFrame(loopPulse);
+})();
+</script>
+</body>
+</html>

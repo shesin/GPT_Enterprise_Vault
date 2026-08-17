@@ -1,0 +1,123 @@
+{
+  "purpose": "D1–D5 discovery round-2 playable smoke — not a G1–G9 verdict",
+  "evaluatedAt": "2026-08-17T07:26:12.422Z",
+  "boards": [
+    {
+      "id": "D1",
+      "file": "SHOLO_GUTI_9_BEAD_5x5_WITH_FEATURE.html",
+      "engine": "sholo-d1-9-5x5-fullturn-engine.cjs",
+      "n": 25,
+      "start": {
+        "p1": 9,
+        "p2": 9
+      },
+      "centerNodeIndices": [
+        12
+      ],
+      "openingLegal": 16,
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "centreRules": [
+        "off",
+        "cumulative",
+        "endgame"
+      ],
+      "ok": true
+    },
+    {
+      "id": "D2",
+      "file": "SHOLO_GUTI_7_BEAD_5x5_WITH_FEATURE.html",
+      "engine": "sholo-d2-7-5x5-fullturn-engine.cjs",
+      "n": 25,
+      "start": {
+        "p1": 7,
+        "p2": 7
+      },
+      "centerNodeIndices": [
+        12
+      ],
+      "openingLegal": 24,
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "centreRules": [
+        "off",
+        "cumulative",
+        "endgame"
+      ],
+      "ok": true
+    },
+    {
+      "id": "D3",
+      "file": "SHOLO_GUTI_5_BEAD_3x5_REAR_THIN_WITH_FEATURE.html",
+      "engine": "sholo-d3-5-3x5-fullturn-engine.cjs",
+      "n": 15,
+      "start": {
+        "p1": 5,
+        "p2": 5
+      },
+      "centerNodeIndices": [
+        7
+      ],
+      "openingLegal": 10,
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "centreRules": [
+        "off",
+        "cumulative",
+        "endgame"
+      ],
+      "ok": true
+    },
+    {
+      "id": "D4",
+      "file": "SHOLO_GUTI_12_BEAD_6x5_WITH_FEATURE.html",
+      "engine": "sholo-d4-12-6x5-fullturn-engine.cjs",
+      "n": 30,
+      "start": {
+        "p1": 12,
+        "p2": 12
+      },
+      "centerNodeIndices": [
+        12,
+        17
+      ],
+      "openingLegal": 16,
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "centreRules": [
+        "off",
+        "cumulative",
+        "endgame"
+      ],
+      "ok": true
+    },
+    {
+      "id": "D5",
+      "file": "SHOLO_GUTI_4_BEAD_3x5_REAR_WITH_FEATURE.html",
+      "engine": "sholo-d5-4-3x5-fullturn-engine.cjs",
+      "n": 15,
+      "start": {
+        "p1": 4,
+        "p2": 4
+      },
+      "centerNodeIndices": [
+        7
+      ],
+      "openingLegal": 13,
+      "openingCaptures": 0,
+      "aiPathLen": 1,
+      "engineParity": true,
+      "centreRules": [
+        "off",
+        "cumulative",
+        "endgame"
+      ],
+      "ok": true
+    }
+  ],
+  "allOk": true
+}

@@ -22,13 +22,16 @@ Sholo ladder — human KEEP confirmed; Feature Test complete (timer finals pendi
 
 ## Current Focus
 
-1. **Human playtest C3** (8-bead 5×5 thinned) — Lab G1–G9 complete at N=100/seed (`C3_LAB_COMPLETE.json`).  
-2. **Match timer, shot clock, and per-board centre defaults** — pick from Feature Test ranges (`WEB_FEATURE_TEST_05P.md`).  
-3. **Resignation rule** — not yet decided.
+1. **Human playtest F2b** (7-bead 4×4 dense) — best final-round Lab survivor (`FINAL_ROUND_LAB_EVALUATION.json`).  
+2. **Human playtest C3** (8-bead 5×5 thinned) — Lab G1–G9 complete at N=100/seed (`C3_LAB_COMPLETE.json`).  
+3. **Match timer, shot clock, and per-board centre defaults** — pick from Feature Test ranges (`WEB_FEATURE_TEST_05P.md`).  
+4. **Resignation rule** — not yet decided.
 
 **Human KEEP (2026-08-15):** all four active ladder playables registered in `FEATURE_TEST_KEEP_REGISTRY.json`.  
 **Feature Test:** **COMPLETE** — `FEATURE_TEST_EVALUATION.json`.  
-**Discovery C1–C4:** Lab complete 2026-08-16 — see `C1_C4_LAB_EVALUATION.json`.
+**Discovery C1–C4:** Lab complete 2026-08-16 — see `C1_C4_LAB_EVALUATION.json`.  
+**Discovery D1–D5:** Built + Lab complete 2026-08-17 — see `D1_D5_LAB_EVALUATION.json`.  
+**Final round F1b–F5b:** Built + Lab complete 2026-08-17 — see `FINAL_ROUND_LAB_EVALUATION.json`, ranking `ALL_NON_REJECT_LAB_RANKING.json`.
 
 ---
 
@@ -52,6 +55,8 @@ Sholo ladder — human KEEP confirmed; Feature Test complete (timer finals pendi
 - **C1–C4 discovery Lab (2026-08-16):** `evaluate-c1-c4-lab.cjs` → `C1_C4_LAB_EVALUATION.json`. **C1/C2/C4 REJECT (G2)**. **C3** Lab closed at N=100 (`C3_LAB_COMPLETE.json`) — all G1–G9 pass; human playtest remaining. See `BOARD_DISCOVERY_05P.md`.
 - **Baro Guti 12-bead (2026-08-16):** traditional 5×5 Alquerque rank camps — **REJECT (G2)** (`BARO_12_LAB_EVALUATION.json`). Distinct from C4 mini-wings. Do not promote.
 - **7-bead Lab review (2026-08-17):** D1 20%/80% (FPA −30 pp) is greedy-depth lean **inside** G2 (±35 pp). D2 captures balanced. **KEEP** — no Lab recheck, no geometry change.
+- **Discovery D1–D5 (2026-08-17):** `D1_D5_LAB_EVALUATION.json` — D1/D3 REJECT G2; D2/D4/D5 NFT.
+- **Final round F1b–F5b (2026-08-17):** `FINAL_ROUND_LAB_EVALUATION.json` — F1b/F3b/F4b/F5b REJECT G2; F1a/F2a/F2b NFT. Combined ranking: `ALL_NON_REJECT_LAB_RANKING.json`.
 
 ---
 
