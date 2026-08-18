@@ -203,7 +203,7 @@ Same lattice as 10-bead, **different occupancy and a thinned rear**. Never teste
 **5. Expected risk / weakness**
 
 - More empty space than 10-bead (9 empty vs 5). Could reintroduce INDEX_4-style second-mover if the opening into the centre file is too free.
-- 10-bead Feature Test: centre End-Game vs Cumulative was **inconclusive**, with first-player advantage about **+18 pp** at move-cap. Thinning may not fix that; it may worsen stalling.
+- 10-bead Feature Test: centre End-Game vs Cumulative was **inconclusive**, with **F/SP advantage** about **+18 pp** at move-cap (first mover ahead among winners). Thinning may not fix that; it may worsen stalling.
 - If Lab later wants a tighter 8, an alternate start (thin the *inner* file ends instead) should be a **separate** candidate — do not mix starts in one batch.
 
 **6. Why it deserves Lab testing**
@@ -231,7 +231,7 @@ Without this test, “8-bead is bad” is an overfit to one failed slice. The la
 
 - **Success:** 10-bead (square only) and 16-bead (square + full 6-node triangles).
 - Vision: smaller games should be **subgraphs of the proven full board**, not new invented grids.
-- 16-bead D1 is already fair (P1 52% / P2 48%, FPA +2.2 pp). Wings are part of that fairness, not decoration.
+- 16-bead D1 is already fair (P1 52% / P2 48%, F/SP +2.2 pp). Wings are part of that fairness, not decoration.
 
 **3. Why the evidence suggests it may be good**
 
@@ -491,7 +491,7 @@ Smoke: `prototype/board4/verify-sholo-c1-c4-feature.cjs` → `SHOLO_C1_C4_FEATUR
 
 Protocol: D1/D2/D3 · seeds 101/202/303 · N=30/seed · move-cap 120 · parity **pass**.
 
-| Depth | P1 win% | P2 win% | FPA | elim% | move-cap% | avg caps |
+| Depth | P1 win% | P2 win% | F/SP | elim% | move-cap% | avg caps |
 |-------|---------|---------|-----|-------|-----------|----------|
 | D1 | 0 | 100 | **−50 pp** | 100 | 0 | 16.0 |
 | D2 | 0 | 27.8 | **−50 pp** | 27.8 | 72.2 | 15.9 |
@@ -501,7 +501,7 @@ Protocol: D1/D2/D3 · seeds 101/202/303 · N=30/seed · move-cap 120 · parity *
 
 **Compare D2 vs reference family:**
 
-| Board | FPA D2 | capture/bead D2 | elim% D2 |
+| Board | F/SP D2 | capture/bead D2 | elim% D2 |
 |-------|--------|-----------------|----------|
 | 16-bead REF | +50 pp* | 0.37 | 0 |
 | KEEP 10-bead | +50 pp* | 0.60 | 8.9 |

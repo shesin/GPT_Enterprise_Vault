@@ -1147,7 +1147,9 @@ ${bgmOptions}
 </html>`;
 }
 
-const outDir = __dirname;
+const { UNREJECTED_GAMES_DIR } = require('./playable-dir.cjs');
+
+const outDir = UNREJECTED_GAMES_DIR;
 const variants = [
   {
     beads: 6,

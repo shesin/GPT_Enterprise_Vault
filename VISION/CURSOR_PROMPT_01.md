@@ -68,7 +68,8 @@ For any fairness/bias result, always state:
 - exact win percentages for both sides
 - depth at which the result occurred
 
-Never say only "one side wins", "side skew", "bias", or "FPA".
+Never say only "one side wins", "side skew", "bias", or "FPA" / "FPA only".
+Use **F/SP advantage** (First/Second Player advantage) and state which side won more.
 For every REJECT or NEEDS FURTHER TESTING result, state the exact
 failed/pending gate and the plain-language reason.
 

@@ -21,7 +21,7 @@
     ],
     "nPerSeed": 100,
     "moveCap": 120,
-    "note": "Confirmation only — same seeds/move-cap as certified protocol; N raised to reduce D1 FPA noise"
+    "note": "Confirmation only — same seeds/move-cap as certified protocol; N raised to reduce D1 F/SP noise"
   },
   "perDepth": {
     "1": {

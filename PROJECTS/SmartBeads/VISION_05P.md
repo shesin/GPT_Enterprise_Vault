@@ -149,7 +149,7 @@ Capabilities include:
 - heat maps
 - win-rate analysis
 - draw analysis
-- first-player advantage
+- first/second player advantage (F/SP)
 - game-length analysis
 - branching-factor analysis
 - statistical reporting
@@ -167,7 +167,7 @@ Agents and humans discussing Lab output must use these meanings. **Do not call e
 - **Games with a winner** — Finished by elimination or stalemate. Never labelled “decisive.”
 - **Depth D1 / D2 / D3** — Greedy / one opponent full-turn reply / two opponent full-turn replies (honest search labels).
 - **Seed / N** — Reproducible RNG start / number of games in a batch.
-- **FPA** — First-player advantage among games that had a winner.
+- **F/SP advantage** — First/Second Player advantage among games that had a winner: first-mover win % among winners minus 50 pp. A **negative** value means the second mover won more; either direction beyond ±35 pp (with ≥10 winners at D2) is a fairness concern. Lab JSON stores this as `firstPlayerAdvantagePp` — report it as **F/SP**, not “FPA.”
 
 Cursor Implementer prompts must define these terms before explaining results (see `VISION/CURSOR_PROMPT_01.md` Terminology Clarity Rule).
 
@@ -257,7 +257,7 @@ Teach understanding rather than memorization.
 Competition should reward strategic thinking.
 
 Continuously strive to minimize:
-- first-player advantage
+- first/second player advantage (meaningful edge to either side)
 - forced wins
 - dominant strategies
 - unnecessary draws
@@ -306,18 +306,32 @@ The project should continue improving through evidence while preserving the iden
 
 ----
 
-## Task: Build Slice-Based SmartBeads Candidates
+## V1 product boards (locked)
 
-We now have a validated Sholo Guti Lab.
+**Locked 2026-08.** Do not change this set unless a genuine Lab or gameplay failure is found.
 
-Our next goal is to discover the smallest good SmartBeads game.
+| # | Board | Role |
+|---|--------|------|
+| 1 | **16-bead · 5×5** | Classic / reference (37-point Alquerque + wing triangles) |
+| 2 | **6-bead · 4×4** | Product |
+| 3 | **6-bead · 3×5** | Product |
+| 4 | **10-bead · 5×5** | Product |
+| 5 | **12-bead · 6×5** | Product |
+| 6 | **8-bead · 4×6 hourglass** | Product |
+| 7 | **7-bead · 4×5 hourglass** | Product |
 
-Use the **proven full board as the parent** and create smaller games by taking literal board slices from it, preserving the original geometry and rules as far as the slice permits.
+Lab verdicts may remain **NEEDS FURTHER TESTING**; the set is locked for app integration. Optional follow-up: size-adjusted move-cap sensitivity (see `LAB_TERMINOLOGY_05P.md`) and human playtest — not grounds to swap boards without a documented failure.
 
-Test in **top-to-bottom order**:
+## Board selection principles
 
-**Full board → 4 slices (10 beads, 5×5) → 3 slices (8 beads, 4 columns × 5 rows) → 2 slices (6 beads) → 1 slice (4 beads)**
+1. **D2** is the primary gameplay depth.
+2. **F/SP advantage** (First/Second Player advantage) is a key fairness criterion. Bias toward **either** player is bad (`|F/SP| > 35` pp at D2 when ≥10 winners).
+3. **D2 capture gap** (avg P1 captures − avg P2 captures) is a key supporting fairness signal when winner samples are small (<10 at D2; concern if gap >3).
+4. Both players must be able to **capture and meaningfully interact** at D1 and D2.
+5. After fairness and capture health, **game progression** matters: a board that reaches meaningful conclusions gives stronger evidence than one that always hits move-cap — but progression is not a ranking score.
+6. **More winners is not automatically better.** Endings are evidence of resolution, not a leaderboard metric. Do not rank by raw D2 elimination %.
+7. **Move-cap** must be interpreted relative to board size. Certified Lab batches use **120** turns (harness safety only). Do not rank by raw move-cap %.
+8. **D1** is mainly a greedy sanity check, not the primary selection depth.
+9. **Do not reopen** board selection unless a genuine Lab or gameplay failure is found.
 
-For the **8-bead** candidate: remove one column from the 10-bead 5×5 parent → **4×5** lattice, **8 vs 8**. The **centre line** of the middle two columns is the endgame centre zone and must be shown in a distinct **amber** colour on the playable board.
-
----
+Detail on gates, move-cap bands, and sensitivity runs: `LAB_TERMINOLOGY_05P.md`.

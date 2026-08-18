@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const ROOT = __dirname;
+const { ROOT, playablePath } = require('./playable-dir.cjs');
 
 const API_KEYS = {
   'SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html': '__SHOLO_GUTI_6_FEATURE__',
@@ -66,7 +66,7 @@ function initDefaultElements(elements) {
 function loadFeaturePlayable(playableFile) {
   const apiKey = API_KEYS[playableFile];
   if (!apiKey) throw new Error('No API key for ' + playableFile);
-  const filePath = path.join(ROOT, playableFile);
+  const filePath = playablePath(playableFile);
   const html = fs.readFileSync(filePath, 'utf8');
   const match = html.match(/<script>([\s\S]*?)<\/script>/);
   if (!match) throw new Error('script missing in ' + playableFile);

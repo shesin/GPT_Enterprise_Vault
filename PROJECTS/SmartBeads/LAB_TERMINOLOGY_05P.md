@@ -142,14 +142,15 @@ Each term includes:
 | **Useful for** | Game-ending profile under fixed AI and move-cap. |
 | **Does NOT prove** | Fun or balance. **Never call this “decisive.”** |
 
-### First-player advantage (FPA)
+### F/SP advantage (First/Second Player advantage)
 
 | | |
 |---|---|
-| **Means** | Among games with a winner, what % did the first player win, minus 50 pp. |
-| **Why** | Fairness signal — large skew may indicate board or AI asymmetry. |
-| **Useful for** | Flagging boards where going first dominates. |
-| **Does NOT prove** | Human-perceived fairness if sample has almost no winners (FPA undefined). |
+| **Means** | Among games with a winner, first-mover win % minus 50 pp. **Positive** = first mover wins more; **negative** = second mover wins more. Either direction can indicate unfairness. |
+| **Why** | Fairness signal — large skew to **either side** may indicate board or AI asymmetry. |
+| **Useful for** | Flagging boards where one side dominates when the D2 sample has enough winners (≥10). |
+| **Does NOT prove** | Human-perceived fairness if sample has almost no winners (F/SP inconclusive — use capture gap instead). |
+| **JSON field** | Archived Lab JSON uses `firstPlayerAdvantagePp`; reports and docs say **F/SP advantage** (not “FPA”). |
 
 ---
 
@@ -179,7 +180,7 @@ Each term includes:
 |---|---|
 | **Means** | AI searches **1 full opponent turn** reply after each candidate turn. |
 | **Why** | Primary comparison depth (`PRIMARY_DEPTH = 2`) under `comparisonProtocol`. |
-| **Useful for** | Contested play: captures, length, win/draw split, FPA when winners exist. |
+| **Useful for** | Contested play: captures, length, win/draw split, F/SP when winners exist. |
 | **Does NOT prove** | Deep strategy. On 16-bead, D2 often hits move-cap before elimination — that is a **measurement profile**, not broken rules. |
 
 ### D3 (Hard / secondary Lab depth)
@@ -220,6 +221,17 @@ Each term includes:
 | **Useful for** | Separating artificial stops from natural endings. |
 | **Does NOT prove** | Board rejection by itself. |
 
+**Certified protocol:** all archived G1–G9 batches use **moveCap = 120** turns (Lab safety only). **Do not rank** boards by raw move-cap % alone — interpret relative to **board size (bead count)**:
+
+| Bead band | Typical boards | Read high move-cap @ 120 | Sensitivity cap (optional, not run by default) |
+|-----------|----------------|--------------------------|-----------------------------------------------|
+| 4–6 | 6×3×5, 6×4×4 | 120 may be generous; stall still meaningful | **60** (80 for 6-bead optional) |
+| 7–8 | 7×4×5, 8×4×6 | Compare capture/bead, not raw % vs 12-bead | **80** |
+| 10–12 | 10×5×5, 12×5×7 | 120 may be tight; high move-cap + strong captures ≠ weak | **120 vs 150** paired with 16-bead |
+| 16 | Reference | ~99% D2 move-cap is expected anchor profile | Same paired runs |
+
+Proportional guide (planning only): cap ≈ 120 × (beads ÷ 16). Does **not** replace certified 120-cap JSON.
+
 ### p1WinPct / p2WinPct
 
 | | |
@@ -237,7 +249,7 @@ The Lab must answer these seven questions. **More elimination ≠ better.**
 | Ruler | Question | Primary metrics |
 |-------|----------|-----------------|
 | **BREAKAGE** | Does the game break, crash, or get stuck? | Crash-free batches, legal `endReason`, parity checks |
-| **FAIRNESS** | Meaningful P1/P2 advantage? | FPA, first-player swap, p1/p2 win and capture balance |
+| **FAIRNESS** | Meaningful P1/P2 advantage? | F/SP advantage, first-player swap, p1/p2 win and capture balance |
 | **ALIVENESS** | Meaningful interactions and captures? | `avgCaptures`, `avgLength`, opening move count |
 | **GAME ENDING** | Natural endings vs Lab safety stop? | `eliminationPct`, stalemate, `moveCapDrawPct`, `repetitionDrawPct` |
 | **CAPTURE DYNAMICS** | Healthy chains vs abnormal collapse? | Chain optional stop/continue enumerated, capture variance |
@@ -311,14 +323,14 @@ Each gate is evaluated at **primary depth D2** unless noted. Use 16-bead referen
 | G8 | **Understandable across depths/seeds** | D1/D2/D3 differ predictably; per-seed not wildly contradictory | Reproducible; D3 avgCaptures ≥ D2 or longer horizon explained; no single-seed outlier driving verdict | Statistical proof |
 | G9 | **Same validated protocol** | Compare script uses same N, seeds, move-cap, depths as reference | Geometry verified not silent 16-bead; `comparisonProtocol` documented | — |
 
-#### Fairness rule (G2) — no invented FPA threshold
+#### Fairness rule (G2) — no invented F/SP threshold
 
 Use the method already proven on 16-bead (`final-validate-sholo-lab.cjs`):
 
-- **When games with a winner exist (D2 or D1 sample):** first-player win rate among winners should not diverge wildly between “P1 moves first” and “P2 moves first” batches — use the same **±35 pp** symmetry check as the trust gate, or report FPA and flag for human review if sample is tiny (< 10 winners).
+- **When games with a winner exist (D2 or D1 sample):** first-mover win rate among winners should not diverge wildly between “P1 moves first” and “P2 moves first” batches — use the same **±35 pp** symmetry check as the trust gate, or report **F/SP advantage** and flag for human review if sample is tiny (< 10 winners).
 - **When almost no winners (common at D2 on 16-bead):** compare **avgCaptures** between first-P1 and first-P2 batches — reference allowed **±3 captures** on 16-bead; candidates should be **within the same absolute band** unless bead count explains a difference.
 - **Automatic REJECT for fairness:** P1 wins ~100% of all games at D2 with large N, **or** first-player capture volume double second-player with no bead-layout explanation.
-- **D1 greedy bound (implemented in `sholo-lab-gates.cjs`):** `|firstPlayerAdvantagePp| > 35` with ≥30 winners fails G2. Example: 7-bead D1 20%/80% (FPA −30) **PASS**; 4/5-bead D1 0%/100% (FPA −50) **REJECT**. D2 remains the primary contested depth. Swap FPA comparison applies only when **both** swap arms have ≥10 winners.
+- **D1 greedy bound (implemented in `sholo-lab-gates.cjs`):** `|firstPlayerAdvantagePp| > 35` with ≥30 winners fails G2. Example: 7-bead D1 20%/80% (F/SP −30 pp) **PASS**; 4/5-bead D1 0%/100% (F/SP −50 pp) **REJECT**. D2 remains the primary contested depth. Swap F/SP comparison applies only when **both** swap arms have ≥10 winners.
 
 #### Length rule (G7) — anchored to 16-bead, not a universal turn cap
 
@@ -390,7 +402,7 @@ Use a **decision table**, not a leaderboard:
 4. Among **PASS** boards, compare **relative strengths** in prose:
    - **Session length** (D1 avgLength, D2 move-cap profile)
    - **Capture activity** (D2 avgCaptures, capture-per-bead)
-   - **Fairness** (D1 FPA or capture symmetry)
+   - **Fairness** (D1 F/SP sanity or capture symmetry; **D2 F/SP** when ≥10 winners)
    - **Natural endings** (elimination possible at D1/D3; stalemate/repetition rates)
    - **Product fit** (human playtest notes — timers, board size, teachability)
 5. **KEEP** only boards with explicit comparative advantage **and** human sign-off.
@@ -518,6 +530,8 @@ Reference validation, compare scripts, and `evaluate-ladder-lab.cjs` G9 must all
 
 | File | Role |
 |------|------|
+| `playable-dir.cjs` | Canonical path to `unrejected games/` playables |
+| `unrejected games/` | Active `*_WITH_FEATURE.html` playables (12 on disk) |
 | `sholo-guti-fullturn-engine.cjs` | 16-bead headless engine |
 | `sholo-lab-metrics.cjs` | Aggregation + comparison guards + `TERM_GLOSSARY` |
 | `final-validate-sholo-lab.cjs` | 25-check trust gate |

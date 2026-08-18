@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const ROOT = __dirname;
+const { ROOT, playablePath } = require('./playable-dir.cjs');
 const PLAYABLE = 'SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html';
 
 function el(id, extra) {
@@ -53,7 +53,7 @@ function el(id, extra) {
 }
 
 function loadIndex(file) {
-  const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const html = fs.readFileSync(playablePath(file), 'utf8');
   const match = html.match(/<script>([\s\S]*?)<\/script>/);
   if (!match) throw new Error('no script in ' + file);
 
@@ -175,7 +175,7 @@ function playOneGame(file, beads) {
 
   assert(Number.isFinite(api.evaluateBoard(api.getBoard())), 'eval finite');
 
-  const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const html = fs.readFileSync(playablePath(file), 'utf8');
   assert(!html.includes('Run 100-Game Lab'), 'lab button removed');
   assert(board0.length === 16, '4x4 board size');
   assert(html.includes('Ivory (P1)'), 'sholo shell present');
@@ -196,7 +196,7 @@ function assert(cond, msg) {
   if (!cond) throw new Error(msg || 'assertion failed');
 }
 
-assert(fs.existsSync(path.join(ROOT, PLAYABLE)), PLAYABLE + ' missing');
+assert(fs.existsSync(playablePath(PLAYABLE)), PLAYABLE + ' missing');
 assert(!fs.existsSync(path.join(ROOT, 'SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html')), 'legacy _b_ playable must be removed');
 
 const r6 = playOneGame(PLAYABLE, 6);

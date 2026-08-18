@@ -7,14 +7,14 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = __dirname;
+const { ROOT, playablePath } = require('./playable-dir.cjs');
 
-const C3_HTML = fs.readFileSync(path.join(ROOT, 'SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html'), 'utf8');
+const C3_HTML = fs.readFileSync(playablePath('SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html'), 'utf8');
 const C3_ENGINE = fs.readFileSync(path.join(ROOT, 'sholo-c3-8-5x5-fullturn-engine.cjs'), 'utf8');
-const BEAD6_HTML = fs.readFileSync(path.join(ROOT, 'SHOLO_GUTI_6_BEAD_WITH_FEATURE.html'), 'utf8');
+const BEAD6_HTML = fs.readFileSync(playablePath('SHOLO_GUTI_6_BEAD_WITH_FEATURE.html'), 'utf8');
 const BEAD6_ENGINE = fs.readFileSync(path.join(ROOT, 'sholo-6-bead-fullturn-engine.cjs'), 'utf8');
-const BEAD6_4x4_HTML = fs.readFileSync(path.join(ROOT, 'SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html'), 'utf8');
-const BEAD7_HTML = fs.readFileSync(path.join(ROOT, 'SHOLO_GUTI_7_BEAD_WITH_FEATURE.html'), 'utf8');
+const BEAD6_4x4_HTML = fs.readFileSync(playablePath('SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html'), 'utf8');
+const BEAD7_HTML = fs.readFileSync(playablePath('SHOLO_GUTI_7_BEAD_WITH_FEATURE.html'), 'utf8');
 const BEAD7_ENGINE = fs.readFileSync(path.join(ROOT, 'sholo-7-bead-fullturn-engine.cjs'), 'utf8');
 
 function patchEngine(src, header, startingBoardFn) {
@@ -593,7 +593,7 @@ const OUTPUTS = [
 
 for (const spec of OUTPUTS) {
   const { html, eng } = spec.build();
-  fs.writeFileSync(path.join(ROOT, spec.file), html);
+  fs.writeFileSync(playablePath(spec.file), html);
   fs.writeFileSync(path.join(ROOT, spec.engine), eng);
   const e = require(path.join(ROOT, spec.engine));
   const s = e.startingBoard();

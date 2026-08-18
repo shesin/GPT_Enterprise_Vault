@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const ROOT = __dirname;
+const { ROOT, playablePath } = require('./playable-dir.cjs');
 
 /** Active discovery / NFT playables only (Web REJECT boards removed). */
 const API_KEYS = {
@@ -46,7 +46,7 @@ function mockEl(id, extra) {
 function loadDiscoveryPlayable(playableFile) {
   const apiKey = API_KEYS[playableFile];
   if (!apiKey) throw new Error('No API key for ' + playableFile);
-  const filePath = path.join(ROOT, playableFile);
+  const filePath = playablePath(playableFile);
   const html = fs.readFileSync(filePath, 'utf8');
   const match = html.match(/<script>([\s\S]*?)<\/script>/);
   if (!match) throw new Error('script missing in ' + playableFile);

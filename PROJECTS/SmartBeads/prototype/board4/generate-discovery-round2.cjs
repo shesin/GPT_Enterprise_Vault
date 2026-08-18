@@ -6,11 +6,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = __dirname;
+const { ROOT, playablePath } = require('./playable-dir.cjs');
 
-const C3_HTML = fs.readFileSync(path.join(ROOT, 'SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html'), 'utf8');
+const C3_HTML = fs.readFileSync(playablePath('SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html'), 'utf8');
 const C3_ENGINE = fs.readFileSync(path.join(ROOT, 'sholo-c3-8-5x5-fullturn-engine.cjs'), 'utf8');
-const BEAD6_HTML = fs.readFileSync(path.join(ROOT, 'SHOLO_GUTI_6_BEAD_WITH_FEATURE.html'), 'utf8');
+const BEAD6_HTML = fs.readFileSync(playablePath('SHOLO_GUTI_6_BEAD_WITH_FEATURE.html'), 'utf8');
 const BEAD6_ENGINE = fs.readFileSync(path.join(ROOT, 'sholo-6-bead-fullturn-engine.cjs'), 'utf8');
 
 function patchC3Html(replacements) {
@@ -411,7 +411,7 @@ const outputs = [
 
 for (const spec of outputs) {
   const { html, eng } = spec.build();
-  fs.writeFileSync(path.join(ROOT, spec.file), html);
+  fs.writeFileSync(playablePath(spec.file), html);
   fs.writeFileSync(path.join(ROOT, spec.engine), eng);
   console.log('Wrote', spec.file, '+', spec.engine);
 }

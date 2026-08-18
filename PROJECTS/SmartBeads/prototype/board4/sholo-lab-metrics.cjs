@@ -154,7 +154,7 @@ const COMPARISON_PROTOCOL = {
   secondaryDepth: SECONDARY_DEPTH,
   primaryUse:
     'Contested play under honest 1-reply search: elimination%, captures, length, ' +
-    'legitimate draws (split repetition vs move-cap), W/L and FPA when gamesWithWinner > 0',
+    'legitimate draws (split repetition vs move-cap), W/L and F/SP when gamesWithWinner > 0',
   secondaryUse: 'Longer-horizon attrition (2-reply) — never rank by D3 elimination% alone',
   drawsAreLegitimate: true,
   moveCapIsLabSafetyNotTraditionalRule: true,

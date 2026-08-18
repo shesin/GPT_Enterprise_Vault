@@ -17,7 +17,8 @@ const SEEDS = protocol.SEEDS;
 const N_GAMES = protocol.N_PER_SEED;
 const MOVE_CAP = protocol.MOVE_CAP;
 const EXPECTED_TOTAL = protocol.gamesPerCompareRun();
-const HTML_10 = path.join(__dirname, 'SHOLO_GUTI_10_BEAD_WITH_FEATURE.html');
+const { playablePath } = require('./playable-dir.cjs');
+const HTML_10 = playablePath('SHOLO_GUTI_10_BEAD_WITH_FEATURE.html');
 const OUT = path.join(__dirname, 'SHOLO_10_VS_16_LAB_COMPARE.json');
 
 function assert(ok, msg) {

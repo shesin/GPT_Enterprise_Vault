@@ -55,7 +55,8 @@ Minimal browser-based playtest GUI rendered via Vite SVG and TypeScript controll
 
 Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside `src/` per the Prototype Classification rule: may skip full architectural review, must not share code with the production engine, and is not part of the Vite TypeScript playtest path.
 
-- **SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html** — **Active** 6-bead 4×4 playable (Human vs AI / PvP). Full box crosses (X in every 2×2 cell). Web: **NEEDS FURTHER TESTING** (G1–G9 pass; verdict from INDEX_6_B audit, 2026-08-15). **Rays variant removed 2026-08-15.**
+- **`unrejected games/`** — All active `*_WITH_FEATURE.html` playables (12 on disk: ladder KEEP, 16-bead reference, discovery NFT survivors). Open in browser from this folder. Lab scripts resolve paths via **`playable-dir.cjs`**.
+- **`playable-dir.cjs`** — Canonical path helper (`unrejected games/` + filename). Used by `feature-playable-loader.cjs`, `discovery-playable-loader.cjs`, verify scripts, and generators.
 - **cursor-index-fullturn-engine.cjs** — Headless 4×4 engine (`geometry`: `rays` | `fullBoxCross`; active playable uses `fullBoxCross`).
 - **evaluate-cursor-index-lab.cjs** — G1–G9 for active playable → `CURSOR_INDEX_6_ACTIVE_LAB_EVAL.json`; preserves INDEX_6/INDEX_6_B audit in `CURSOR_INDEX_LAB_EVALUATION.json`.
 - **generate-cursor-index.cjs** / **verify-cursor-index.cjs** — Generator and smoke test (active 4×4 playable).
@@ -64,13 +65,13 @@ Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside 
 - **SHOLO_GUTI.html** — Standalone playable Human-vs-AI Sholo Guti / Sixteen Soldiers (37-point board, 16 vs 16). Calibration/reference traditional game — not a SmartBeads product config.
 - **SHOLO_GUTI_CALIBRATION.html** — Headless/calibration harness for the same geometry (hop-based AI; not the primary playable).
 - **sholo-guti-fullturn-engine.cjs** / **sholo-lab-metrics.cjs** / **validate-sholo-fullturn-lab.cjs** / **final-validate-sholo-lab.cjs** / **validate-lab-16-bead-reference.cjs** — Headless full-turn Web harness + comparison guards. Run `final-validate-sholo-lab.cjs` before SmartBeads candidate testing; run `validate-lab-16-bead-reference.cjs` for 16-bead reference baseline. Honest depths: D1 greedy, D2 = 1 opponent reply, D3 = 2 opponent replies. See **LAB_CAPABILITY_STATUS.json**; methodology at **`LAB_TERMINOLOGY_05P.md`**; reports at **`WEB_REPORT_16_BEAD_05P.md`**, **`WEB_REPORT_All_BEAD_05P.md`** (SmartBeads root).
-- **SHOLO_GUTI_WITH_FEATURE.html** — Playable 16-bead Sholo Guti with full-stretch board, right-panel settings (PVP/PVE, timers, shot clock, center rules, BGM), undo, move/capture animation, turn highlight, honest Easy/Medium/Hard AI.
-- **SHOLO_GUTI_10_BEAD_WITH_FEATURE.html** — 10 vs 10 on 5×5 lattice only (side triangles removed). Same feature shell + move-highlight Off/On (PvP defaults Off).
-- **SHOLO_GUTI_7_BEAD_WITH_FEATURE.html** — 7 vs 7 on 4×5 hourglass (5+2+2+5). Human **KEEP**. D1 greedy 20/80 is inside G2; do not retest Lab or change geometry.
-- **SHOLO_GUTI_6_BEAD_WITH_FEATURE.html** — 6 vs 6 on 3×5 (sketch geometry). Rows 1–2 Ebony top, row 3 empty + single amber centre node, rows 4–5 Ivory bottom. Square board, P1 at bottom.
+- **`unrejected games/SHOLO_GUTI_WITH_FEATURE.html`** — Playable 16-bead Sholo Guti with full-stretch board, right-panel settings (PVP/PVE, timers, shot clock, center rules, BGM), undo, move/capture animation, turn highlight, honest Easy/Medium/Hard AI.
+- **`unrejected games/SHOLO_GUTI_10_BEAD_WITH_FEATURE.html`** — 10 vs 10 on 5×5 lattice only (side triangles removed). Same feature shell + move-highlight Off/On (PvP defaults Off).
+- **`unrejected games/SHOLO_GUTI_7_BEAD_WITH_FEATURE.html`** — 7 vs 7 on 4×5 hourglass (5+2+2+5). Human **KEEP**. D1 greedy 20/80 is inside G2; do not retest Lab or change geometry.
+- **`unrejected games/SHOLO_GUTI_6_BEAD_WITH_FEATURE.html`** — 6 vs 6 on 3×5 (sketch geometry). Rows 1–2 Ebony top, row 3 empty + single amber centre node, rows 4–5 Ivory bottom. Square board, P1 at bottom.
 - **BOARD_DISCOVERY_05P.md** — Evidence-based new-board shortlist (C1–C6). Not a verdict document.
-- **SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html** — 8 vs 8 on 5×5 Alquerque (thinned 10-bead). Lab: G1–G9 pass (`8_BEAD_5x5_LAB_COMPLETE.json`); human playtest remaining.
-- **Discovery NFT playables (7):** `SHOLO_GUTI_7_BEAD_4x4_DENSE` … `SHOLO_GUTI_4_BEAD_3x5_REAR` — see `ALL_NON_REJECT_LAB_RANKING.json`. Web REJECT playables **removed** 2026-08-17; Lab audit JSON kept.
+- **`unrejected games/SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html`** — 8 vs 8 on 5×5 Alquerque (thinned 10-bead). Lab: G1–G9 pass (`8_BEAD_5x5_LAB_COMPLETE.json`); human playtest remaining.
+- **Discovery NFT playables (7)** in `unrejected games/`: `SHOLO_GUTI_7_BEAD_4x4_DENSE` … `SHOLO_GUTI_4_BEAD_3x5_REAR` — see `ALL_NON_REJECT_LAB_RANKING.json`. Web REJECT playables **removed** 2026-08-17; Lab audit JSON kept.
 - **verify-discovery-nft-feature.cjs** / **complete-c3-lab.cjs** / **evaluate-d1-d5-lab.cjs** (survivors) / **evaluate-final-round-lab.cjs** (survivors) — discovery smoke + G1–G9. Artifacts: `LAB_EVALUATION_5_5_8_12_BEAD_DISCOVERY_SET.json`, `8_BEAD_5x5_LAB_COMPLETE.json`, `BARO_12_LAB_EVALUATION.json`, `SHOLO_DISCOVERY_NFT_FEATURE_SMOKE.json`.
 - **board-lab-artifacts.cjs** / **migrate-board-lab-names.cjs** — canonical bead+board keys for Lab JSON artifacts.
 - **Discovery generators (archival):** `generate-discovery-round2.cjs` · `generate-final-round.cjs` — can rebuild removed REJECT boards if needed; active playables are NFT survivors only.
@@ -144,4 +145,4 @@ The physical board model (`BoardDefinition`: intersections and connections) is t
 
 Configuration selects which board variant to use. The same engine evaluates multiple bead counts through AI self-play and playtesting.
 
-The objective is to discover the smallest balanced, enjoyable and replayable game before expanding to larger variants.
+The objective is to ship the **V1 seven-board app** (locked in `VISION_05P.md`) via one production engine, configurable board geometry, and a shared play shell. Prototype HTML playables remain the Lab/reference implementation; they do not ship as seven separate apps.

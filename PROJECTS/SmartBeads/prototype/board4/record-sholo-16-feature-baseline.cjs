@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const ROOT = __dirname;
-const FEATURE_FILE = path.join(ROOT, 'SHOLO_GUTI_WITH_FEATURE.html');
+const { ROOT, playablePath } = require('./playable-dir.cjs');
+const FEATURE_FILE = playablePath('SHOLO_GUTI_WITH_FEATURE.html');
 const TRUST_FILE = path.join(ROOT, 'SHOLO_LAB_FINAL_TRUST.json');
 const CAL_FILE = path.join(ROOT, 'SHOLO_FULLTURN_LAB_CALIBRATION.json');
 const OUT_FILE = path.join(ROOT, 'SHOLO_16_BEAD_FEATURE_BASELINE.json');

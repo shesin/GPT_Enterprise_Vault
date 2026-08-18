@@ -72,7 +72,7 @@ The standard 16-bead game is a **healthy reference board** for Web calibration. 
 | avgLength | **54.2** turns | Short tactical games — expected for greedy AI |
 | avgCaptures | **27.6** | Heavy capture activity |
 | P1 win / P2 win | **52% / 48%** | Roughly balanced |
-| First-player advantage | **+2.2 pp** | Negligible skew among winners |
+| F/SP advantage | **+2.2 pp** | Negligible skew among winners (first mover slightly ahead) |
 
 **Conclusion:** Board supports fast, capture-rich endings under greedy AI. Good sanity signal.
 
@@ -85,7 +85,7 @@ The standard 16-bead game is a **healthy reference board** for Web calibration. 
 | Move-cap draw | **98.9%** | Harness stopped game at turn 120 while still contested |
 | avgLength | **119.9** turns | Games run until move-cap |
 | avgCaptures | **11.7** | Material still exchanged — not frozen |
-| Games with a winner | **1.1%** | Too few to trust FPA |
+| Games with a winner | **1.1%** | Too few to trust F/SP |
 
 **Conclusion:** Under honest D2 + 120 move-cap, 16-bead attrition dominates. **High move-cap % does not mean broken board** — it means the Web stop arrived before elimination in this AI regime. Use D2 for **captures, length, and draw split**, not elimination ranking alone.
 
@@ -108,7 +108,7 @@ The standard 16-bead game is a **healthy reference board** for Web calibration. 
 | Ruler | Assessment | Evidence |
 |-------|------------|----------|
 | **BREAKAGE** | **PASS** | No crashes; legal endings; parity 25/25; no stuck zero-turn games |
-| **FAIRNESS** | **PASS (Web)** | D1 FPA ≈ +2 pp; first-player swap capture volume 12.69 vs 12.81 (within 3) |
+| **FAIRNESS** | **PASS (Web)** | D1 F/SP ≈ +2 pp; first-player swap capture volume 12.69 vs 12.81 (within 3) |
 | **ALIVENESS** | **PASS** | D2 avg 11.7 captures; D3 avg 24.1; D1 avg 27.6 |
 | **GAME ENDING** | **PASS (rules)** / **Web note** | Elimination/stalemate/repetition all implemented; D2 mostly move-cap under current settings |
 | **CAPTURE DYNAMICS** | **PASS** | Optional chain stop/continue enumerated; no abnormal instant collapse |
@@ -145,7 +145,7 @@ Timer code correctness **does not** prove timer values are good for humans.
 **Caveats (not downgrades to BROKEN)**
 
 - D2 + move-cap 120 rarely produces winners on 16-bead — use this profile when comparing **candidate boards**, not as a demand for high elimination %.
-- FPA at D2 is **undefined** in this sample (almost no winners) — fairness for product may need **human play** or longer move-cap experiments.
+- F/SP at D2 is **undefined** in this sample (almost no winners) — fairness for product may need **human play** or longer move-cap experiments.
 - Branch limits mean AI is not perfect — documented in `SEARCH_LIMITS`.
 
 **Not BROKEN** — no parity mismatch, crashes, or rule violations were found.
@@ -179,7 +179,7 @@ See **Board selection criteria** in `LAB_TERMINOLOGY_05P.md` for KEEP requiremen
 | Gate | 16-bead result | Role for ladder |
 |------|----------------|-----------------|
 | G1 No breakage | PASS — 25/25 trust, crash-free | Instrument trusted; candidates must match this bar |
-| G2 No side bias | PASS — D1 FPA +2.2 pp; D2 capture symmetry 12.69 vs 12.81 when first swapped | Fairness method validated; use same rules on candidates |
+| G2 No side bias | PASS — D1 F/SP +2.2 pp; D2 capture symmetry 12.69 vs 12.81 when first swapped | Fairness method validated; use same rules on candidates |
 | G3 Game alive | PASS — D2 avgCaptures 11.7 | **Floor reference:** candidates far below ~12 at D2 need explanation |
 | G4 Captures matter | PASS — D1 avgCaptures 27.6 | **Floor reference:** near-zero at D1+D2 → REJECT on any board |
 | G5 Elimination possible | PASS — D1 100% elimination; D3 4.4% | Elimination exists; D2 0% is **not** failure on reference |

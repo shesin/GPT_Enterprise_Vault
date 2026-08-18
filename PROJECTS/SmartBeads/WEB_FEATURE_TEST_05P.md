@@ -55,18 +55,18 @@
 
 | Board | Centre node? | Proof | End-Game (D2) | Cumulative (D2) | Recommended | Confidence |
 |-------|--------------|-------|---------------|-----------------|-------------|------------|
-| **4×4 6-bead** | **YES** (4 nodes: 5,6,9,10) | `CENTER_IDX` in playable | avgCapt 6.6 · elim 14.4% · FPA 1.8 pp · avgLen 116 | avgCapt 6.6 · elim 14.4% · FPA **−5.6 pp** · avgLen 116 | **End-Game** | **moderate** |
-| **10-bead** | **YES** (1 node: index 12) | `y===4 && x===4` | avgCapt 12.0 · elim 8.9% · FPA **18.2 pp** | avgCapt 12.0 · elim 8.9% · FPA 17.8 pp | **INSUFFICIENT_EVIDENCE** | **low** |
-| **7-bead** | **YES** (2 nodes: 9,10) | centre line row 3 | avgCapt 8.6 · elim 12.2% · FPA −2.9 pp | avgCapt 8.6 · elim 12.2% · FPA **0 pp** | **Cumulative** | **moderate** |
-| **6-bead 3×5** | **YES** (1 node: index 7) | single amber row 3 | avgCapt 6.0 · elim **34.4%** · FPA 2.9 pp | avgCapt 6.0 · elim 34.4% · FPA 1.1 pp | **Cumulative** | **low** |
+| **4×4 6-bead** | **YES** (4 nodes: 5,6,9,10) | `CENTER_IDX` in playable | avgCapt 6.6 · elim 14.4% · F/SP 1.8 pp · avgLen 116 | avgCapt 6.6 · elim 14.4% · F/SP **−5.6 pp** · avgLen 116 | **End-Game** | **moderate** |
+| **10-bead** | **YES** (1 node: index 12) | `y===4 && x===4` | avgCapt 12.0 · elim 8.9% · F/SP **18.2 pp** | avgCapt 12.0 · elim 8.9% · F/SP 17.8 pp | **INSUFFICIENT_EVIDENCE** | **low** |
+| **7-bead** | **YES** (2 nodes: 9,10) | centre line row 3 | avgCapt 8.6 · elim 12.2% · F/SP −2.9 pp | avgCapt 8.6 · elim 12.2% · F/SP **0 pp** | **Cumulative** | **moderate** |
+| **6-bead 3×5** | **YES** (1 node: index 7) | single amber row 3 | avgCapt 6.0 · elim **34.4%** · F/SP 2.9 pp | avgCapt 6.0 · elim 34.4% · F/SP 1.1 pp | **Cumulative** | **low** |
 
 ### Measurable comparison notes
 
 - **Contest rate** (avgCaptures, capture/bead) is **identical** between End-Game and Cumulative on every board — centre rules only change **move-cap / tiebreak resolution**, not D2 search or mid-game captures.
-- **4×4:** Cumulative worsens balance at move-cap (P2 wins 56% vs 44% among resolved games; FPA −5.6 pp). End-Game keeps FPA near even (+1.8 pp). Same elim rate.
-- **10-bead:** Both rules show **high FPA (~18 pp)** at move-cap resolution — neither rule fixes balance. Composite scores within noise (Δ −0.48).
-- **7-bead:** Cumulative improves balance (FPA 0 pp vs −2.9 pp endgame) with identical contest metrics — supports cumulative **if** product adds the mode.
-- **6-bead 3×5:** Higher elimination (34.4%) than 4×4 on same bead count; cumulative slightly better balance (FPA 1.1 vs 2.9 pp) but small composite margin.
+- **4×4:** Cumulative worsens balance at move-cap (P2 wins 56% vs 44% among resolved games; F/SP −5.6 pp). End-Game keeps F/SP near even (+1.8 pp). Same elim rate.
+- **10-bead:** Both rules show **high F/SP (~18 pp)** at move-cap resolution — neither rule fixes balance. Composite scores within noise (Δ −0.48).
+- **7-bead:** Cumulative improves balance (F/SP 0 pp vs −2.9 pp endgame) with identical contest metrics — supports cumulative **if** product adds the mode.
+- **6-bead 3×5:** Higher elimination (34.4%) than 4×4 on same bead count; cumulative slightly better balance (F/SP 1.1 vs 2.9 pp) but small composite margin.
 
 ### Hypothesis (capture fraction)
 
@@ -132,7 +132,7 @@ See table above. **Do not use a single global centre setting across boards.**
 | Board | Centre / cumulative rule | Max moves |
 |-------|---------------------------|-----------|
 | **4×4 6-bead** | **End-Game** (not cumulative) | **Unlimited** |
-| **10-bead** | **End-Game or Cumulative** — Lab inconclusive; both show high FPA at move-cap | n/a |
+| **10-bead** | **End-Game or Cumulative** — Lab inconclusive; both show high F/SP at move-cap | n/a |
 | **7-bead** | **Cumulative** (Lab); End-Game also in UI | n/a |
 | **6-bead 3×5** | **Cumulative** (Lab, low confidence); End-Game also in UI | n/a |
 
@@ -143,7 +143,7 @@ See table above. **Do not use a single global centre setting across boards.**
 1. **Match timer** — pick final minutes per board from viable range above.  
 2. **Shot clock** — pick final seconds per board from viable range above.  
 3. **Resignation** — rule not yet decided.  
-4. **10-bead centre rule** — Lab could not distinguish endgame vs cumulative; both show ~18 pp FPA at move-cap — human playtest required.  
+4. **10-bead centre rule** — Lab could not distinguish endgame vs cumulative; both show ~18 pp F/SP at move-cap — human playtest required.  
 5. **7-bead / 6-bead / 10-bead centre rule default** — Cumulative and End-Game are both in product UI; pick default per board after human playtest (Lab: 7/6 favour cumulative; 10 inconclusive).
 
 **Recommended defaults (2026-08-17 review — do not implement until human confirms):** 4×4 **End-Game**; 7-bead **Cumulative**; 6-bead 3×5 **Cumulative** (low confidence); 10-bead still human choice. Do not add short max-move 20/40/60. Optional later (not KEEP): long stall-resolution (~80–100 turns) on 7-bead / 4×4 only. 7-bead D1 20/80 is **KEEP** — not a Lab recheck.

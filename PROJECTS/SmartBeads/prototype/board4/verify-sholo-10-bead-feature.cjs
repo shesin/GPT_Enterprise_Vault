@@ -7,7 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const FILE = path.join(__dirname, 'SHOLO_GUTI_10_BEAD_WITH_FEATURE.html');
+const { playablePath } = require('./playable-dir.cjs');
+const FILE = playablePath('SHOLO_GUTI_10_BEAD_WITH_FEATURE.html');
 
 function assert(ok, msg) {
   if (!ok) throw new Error(msg);

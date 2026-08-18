@@ -7,7 +7,7 @@ const path = require('path');
 const vm = require('vm');
 const { boardKeyFromPlayable, labelFromBoardKey } = require('./board-lab-artifacts.cjs');
 
-const ROOT = __dirname;
+const { ROOT, playablePath } = require('./playable-dir.cjs');
 
 function assert(ok, msg) {
   if (!ok) throw new Error(msg);
@@ -36,7 +36,7 @@ function el(id, extra) {
 }
 
 function loadApi(file, apiName) {
-  const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const html = fs.readFileSync(playablePath(file), 'utf8');
   assert(/option value="off"/.test(html) && /option value="cumulative"/.test(html) && /option value="endgame"/.test(html), file + ': centre rule missing');
   const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
   assert(scriptMatch, file + ': script missing');

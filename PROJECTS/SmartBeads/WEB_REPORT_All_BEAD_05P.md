@@ -135,7 +135,7 @@ All G1–G9 **PASS**. D2 capture rate matches 16-bead reference spirit (~12/game
 | D2 | 8.6 | 113.3 | 12.2% | 87.8% | 3% / 9% |
 | D3 | 11.2 | 100.1 | 42.2% | 57.8% | 3% / 39% |
 
-All G1–G9 **PASS**. **D1**, P1 opens: first mover **20%**, second mover **80%** (FPA **−30 pp**) — second mover wins more, **inside** G2’s D1 bound (`|FPA| > 35` fails; 4/5-bead REJECT was 0/100). **D2** (primary) captures 4.12 vs 4.47 (ratio 1.08×). Human **KEEP** 2026-08-15. Review 2026-08-17: **KEEP** — do not recheck Lab, do not change geometry.
+All G1–G9 **PASS**. **D1**, P1 opens: first mover **20%**, second mover **80%** (F/SP **−30 pp**) — second mover wins more, **inside** G2’s D1 bound (`|F/SP| > 35` fails; 4/5-bead REJECT was 0/100). **D2** (primary) captures 4.12 vs 4.47 (ratio 1.08×). Human **KEEP** 2026-08-15. Review 2026-08-17: **KEEP** — do not recheck Lab, do not change geometry.
 
 ---
 
@@ -230,7 +230,7 @@ All G1–G9 **PASS**. D2 captures below 16-bead reference (~12) but above alive 
 
 **Failed gate:** **G2** (No meaningful side bias) → **REJECT** (`g2_fairness_fail`).
 
-**Depth responsible:** **D1** (greedy). With P1 opening, the second mover wins **85.6%** vs the first mover **14.4%** — the first-mover/second-mover gap exceeds the G2 ±35 percentage-point limit (90 decisive games, no draws). D2 swap batches show the same second-mover advantage pattern but did not alone exceed the swap FPA gap rule; **D1 is the condition that failed G2**.
+**Depth responsible:** **D1** (greedy). With P1 opening, the second mover wins **85.6%** vs the first mover **14.4%** — the first-mover/second-mover gap exceeds the G2 ±35 percentage-point limit (90 decisive games, no draws). D2 swap batches show the same second-mover advantage pattern but did not alone exceed the swap F/SP gap rule; **D1 is the condition that failed G2**.
 
 G1 and G3–G9 pass. Complete-turn protocol; parity confirmed.
 
@@ -433,7 +433,7 @@ New geometries, not promotions of REJECT 4/5/8. Protocol: D1/D2/D3 · seeds 101/
 
 **Evaluator:** `evaluate-d1-d5-lab.cjs` → `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json` · protocol N=30/seed · move-cap 120.
 
-| Board | Verdict | D2 FPA | D2 move-cap% | D2 elim% |
+| Board | Verdict | D2 F/SP | D2 move-cap% | D2 elim% |
 |-------|---------|--------|--------------|----------|
 | 9-bead 5×5 one-corner thin | **REJECT G2** | +41 pp | 33% | 33% |
 | 7-bead 5×5 thin hourglass | **NEEDS FURTHER TESTING** | null | **100%** | 0% |
@@ -449,7 +449,7 @@ New geometries, not promotions of REJECT 4/5/8. Protocol: D1/D2/D3 · seeds 101/
 
 **Evaluator:** `evaluate-final-round-lab.cjs` → `LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json`. **Skipped:** 4-bead 3×4 LR, 6-bead 5×5, 5-bead 5×5, 10-bead 6×5 (repeat failure classes).
 
-| Board | Verdict | D2 FPA | D2 move-cap% | D2 elim% |
+| Board | Verdict | D2 F/SP | D2 move-cap% | D2 elim% |
 |-------|---------|--------|--------------|----------|
 | 5-bead 4×3 hourglass | **REJECT G2** | +38 pp | 33% | 24% |
 | 7-bead 4×4 dense cross | **NEEDS FURTHER TESTING** | −36 pp | 77% | **23%** |
@@ -465,7 +465,7 @@ New geometries, not promotions of REJECT 4/5/8. Protocol: D1/D2/D3 · seeds 101/
 
 Authoritative artifact: `ALL_NON_REJECT_LAB_RANKING.json`. **Human KEEP** and **NEEDS FURTHER TESTING** only — no new KEEP from Lab.
 
-| Rank | Board | Tier | D2 elim% | D2 move-cap% | D2 FPA |
+| Rank | Board | Tier | D2 elim% | D2 move-cap% | D2 F/SP |
 |------|-------|------|----------|--------------|--------|
 | 1 | **6-bead 3×5** | Human KEEP | **34.4%** | 65.6% | +8 pp |
 | 2 | **6-bead 4×4 cross** | Human KEEP | 14.4% | 85.6% | ±4 pp |
@@ -479,7 +479,7 @@ Authoritative artifact: `ALL_NON_REJECT_LAB_RANKING.json`. **Human KEEP** and **
 | 10 | **8-bead 5×5 thinned** | NFT | 1.7% | 98.3% | +50 pp* |
 | 11 | **4-bead 3×5 rear** | NFT | 1.1% | 98.9% | −50 pp* |
 
-\*FPA among games with a winner. **16-bead** is REFERENCE only (not ranked).
+\*F/SP among games with a winner. **16-bead** is REFERENCE only (not ranked).
 
 **Next human playtest priority:** **7-bead 4×4 dense** (most alive new board) then **8-bead 5×5** (N=100 confirmed).
 

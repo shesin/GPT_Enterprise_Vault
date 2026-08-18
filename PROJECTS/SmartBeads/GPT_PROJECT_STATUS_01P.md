@@ -16,22 +16,21 @@ Target: 01P (~1 page)
 
 ## Current Phase
 
-Sholo ladder — human KEEP confirmed; Feature Test complete (timer finals pending)
+V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ---
 
 ## Current Focus
 
-1. **Human playtest 7-bead 4×4 dense** — best compact-set Lab survivor (`LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json`).  
-2. **Human playtest 8-bead 5×5** — Lab G1–G9 complete at N=100/seed (`8_BEAD_5x5_LAB_COMPLETE.json`).  
-3. **Match timer, shot clock, and per-board centre defaults** — pick from Feature Test ranges (`WEB_FEATURE_TEST_05P.md`).  
-4. **Resignation rule** — not yet decided.
+1. **Production app shell** — game selector + shared engine/UI (start with **16-bead reference** port).  
+2. **Port six product boards** — see locked list in `VISION_05P.md`.  
+3. **Optional Lab follow-up** — size-adjusted move-cap sensitivity (`LAB_TERMINOLOGY_05P.md`); not a blocker for integration.  
+4. **Match timer, shot clock, centre defaults** — from Feature Test ranges (`WEB_FEATURE_TEST_05P.md`) when wiring product settings.  
+5. **Resignation rule** — not yet decided.
 
-**Human KEEP (2026-08-15):** all four active ladder playables registered in `FEATURE_TEST_KEEP_REGISTRY.json`.  
-**Feature Test:** **COMPLETE** — `FEATURE_TEST_EVALUATION.json`.  
-**Discovery 5/5/8/12-bead set:** Lab complete 2026-08-16 — see `LAB_EVALUATION_5_5_8_12_BEAD_DISCOVERY_SET.json`.  
-**9/7/5/12/4-bead set:** Built + Lab complete 2026-08-17 — see `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json`.  
-**5/7/8/10/12-bead compact set:** Built + Lab complete 2026-08-17 — see `LAB_EVALUATION_5_7_8_10_12_BEAD_COMPACT_SET.json`, ranking `ALL_NON_REJECT_LAB_RANKING.json`.
+**V1 locked set (authoritative):** 16-bead · 5×5 (reference), 6×4×4, 6×3×5, 10×5×5, 12×6×5, 8×4×6 hourglass, 7×4×5 hourglass — `VISION_05P.md`. Do not swap boards without documented Lab/gameplay failure.
+
+**Historical (superseded for product scope):** Human KEEP registry (4 ladder boards, 2026-08-15), `ALL_NON_REJECT_LAB_RANKING.json`, discovery NFT lists — Lab archive only; not the V1 product list.
 
 ---
 
@@ -54,9 +53,10 @@ Sholo ladder — human KEEP confirmed; Feature Test complete (timer finals pendi
 - **Feature Test (2026-08-15):** **COMPLETE** — four KEEP boards; artifacts `FEATURE_TEST_EVALUATION.json`, `FEATURE_TEST_CENTRE_RULE_EVALUATION.json`. Per-board centre rule: **4×4 End-Game**, **10-bead inconclusive**, **7/6-bead cumulative**. **UI parity (2026-08-15):** Cumulative + End-Game enabled on all KEEP playables. Report: **`WEB_FEATURE_TEST_05P.md`**.
 - **5/5/8/12-bead discovery Lab (2026-08-16):** `evaluate-c1-c4-lab.cjs` → `LAB_EVALUATION_5_5_8_12_BEAD_DISCOVERY_SET.json`. **5-bead 3×5 LR / 5-bead 4×4 / 12-bead miniwing REJECT (G2)**. **8-bead 5×5** Lab closed at N=100 (`8_BEAD_5x5_LAB_COMPLETE.json`) — all G1–G9 pass; human playtest remaining. See `BOARD_DISCOVERY_05P.md`.
 - **12-bead Baro (2026-08-16):** traditional 5×5 Alquerque rank camps — **REJECT (G2)** (`BARO_12_LAB_EVALUATION.json`). Distinct from 12-bead miniwing. Do not promote.
-- **7-bead Lab review (2026-08-17):** D1 20%/80% (FPA −30 pp) is greedy-depth lean **inside** G2 (±35 pp). D2 captures balanced. **KEEP** — no Lab recheck, no geometry change.
+- **7-bead Lab review (2026-08-17):** D1 20%/80% (F/SP −30 pp) is greedy-depth lean **inside** G2 (±35 pp). D2 captures balanced. **KEEP** — no Lab recheck, no geometry change.
 - **9/7/5/12/4-bead set (2026-08-17):** `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json` — 9-bead 5×5 and 5-bead 3×5 rear thin REJECT G2; 7-bead 5×5, 12-bead 6×5, 4-bead 3×5 rear NFT.
 - **Web REJECT cleanup (2026-08-17):** Removed 10 discovery REJECT playables + dedicated engines from `prototype/board4/`. Kept Lab audit JSON, KEEP/NFT playables, ladder playables, 16-bead reference.
+- **Playable folder (2026-08-18):** All 12 unrejected `*_WITH_FEATURE.html` playables moved to `prototype/board4/unrejected games/`. Loaders and verify scripts use `playable-dir.cjs`.
 
 ---
 
@@ -79,9 +79,9 @@ Sholo ladder — human KEEP confirmed; Feature Test complete (timer finals pendi
 
 ## Next Step
 
-1. Human playtest **8-bead 5×5** (`SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html`).  
-2. Set KEEP-board **defaults**: 4×4 End-Game; 7-bead and 6-bead 3×5 Cumulative; 10-bead human choice; timers from Feature Test ranges.  
-3. Decide **resignation** when ready. Optional later: long stall-resolution for 7-bead / 4×4 only — not a KEEP condition.
+1. Build **production app** — 16-bead reference first, then shared architecture, then six product boards (`VISION_05P.md`).  
+2. Set product **defaults** from Feature Test when settings layer is wired.  
+3. Decide **resignation** when ready.
 
 ---
 
@@ -109,6 +109,6 @@ Sholo ladder — human KEEP confirmed; Feature Test complete (timer finals pendi
 
 ## Current Objective
 
-Find the smallest balanced, enjoyable Sholo ladder candidate that passes Web G1–G9 and human playtest before expanding the production TypeScript engine to new variants.
+Ship the **locked V1 seven-board** SmartBeads app using the production TypeScript engine and a shared board-config + renderer architecture.
 
 Quality takes priority over feature count.

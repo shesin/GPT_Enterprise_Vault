@@ -8,6 +8,8 @@ Update after every test session. Do not restate rule content here — that lives
 
 ## Active Sholo / Cursor Index feature line (2026-08-15)
 
+**Playable location (2026-08-18):** all `*_WITH_FEATURE.html` files live in **`prototype/board4/unrejected games/`**. Lab scripts use `playable-dir.cjs`.
+
 **4×4 selection finalized:** `SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html` (full box crosses) is the **only** active 6-bead 4×4 playable. Rays variant and `SHOLO_GUTI_6_BEAD_b_4x4_WITH_FEATURE.html` removed.
 
 Consolidated report: **`WEB_REPORT_All_BEAD_05P.md`** (SmartBeads root).
