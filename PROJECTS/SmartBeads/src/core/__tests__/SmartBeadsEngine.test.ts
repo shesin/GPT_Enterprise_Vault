@@ -7,7 +7,7 @@ import { Board7 } from '../../boards/Board7';
 
 describe('SmartBeadsEngine', () => {
   it('lists the configured board variants', () => {
-    expect(listBoardVariants()).toEqual(['4', '5', '6', '7']);
+    expect(listBoardVariants()).toEqual(['4', '5', '6', '7', '16']);
   });
 
   it('defines Board4 as a 4x4 grid with RED on row 1 and BLUE on row 4', () => {

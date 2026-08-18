@@ -3,7 +3,15 @@ export type Player = "RED" | "BLUE";
 export interface Intersection {
     id: number;
     occupant?: Player;
+    /** Layout coordinate for rendering (board-specific units). */
+    x?: number;
+    y?: number;
+    /** Original node label from the reference board (e.g. A22, LT). */
+    label?: string;
 }
+
+/** How a completed match is resolved when limits or terminal positions are reached. */
+export type TerminationProfile = "ply_limit" | "sholo_guti";
 
 export interface Connection {
     from: number;
@@ -37,6 +45,11 @@ export interface BoardDefinition {
      * When moveCount reaches this value, the game ends and a winner is evaluated.
      */
     maxPlies?: number | null;
+    /**
+     * Match termination behaviour. Default `ply_limit` (SmartBeads 4×4 lab).
+     * `sholo_guti` = elimination + stalemate; one ply per completed turn.
+     */
+    terminationProfile?: TerminationProfile;
 }
 
 /** Independent copy so each game can mutate occupants without sharing templates. */
@@ -50,6 +63,7 @@ export function cloneBoardDefinition(board: BoardDefinition): BoardDefinition {
             : undefined,
         centerNodeIds: board.centerNodeIds ? [...board.centerNodeIds] : undefined,
         maxPlies: board.maxPlies,
+        terminationProfile: board.terminationProfile,
     };
 }
 
@@ -60,6 +74,8 @@ export interface GameState {
     captures: Record<Player, number>;
     winner?: Player | "DRAW";
     gameOver: boolean;
+    /** Human-readable end reason when gameOver (e.g. elimination, stalemate). */
+    endReason?: string;
 }
 
 /** Slide or single capture hop along a board route. Multi-jump = sequential Moves. */

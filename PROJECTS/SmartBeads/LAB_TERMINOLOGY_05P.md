@@ -530,8 +530,8 @@ Reference validation, compare scripts, and `evaluate-ladder-lab.cjs` G9 must all
 
 | File | Role |
 |------|------|
-| `playable-dir.cjs` | Canonical path to `unrejected games/` playables |
-| `unrejected games/` | Active `*_WITH_FEATURE.html` playables (12 on disk) |
+| `playable-dir.cjs` | Resolves playables: `unrejected games/` (left-out NFT) or `board4/` root (locked V1) |
+| `unrejected games/` | Left-out NFT playables only (5) — not in locked V1 seven |
 | `sholo-guti-fullturn-engine.cjs` | 16-bead headless engine |
 | `sholo-lab-metrics.cjs` | Aggregation + comparison guards + `TERM_GLOSSARY` |
 | `final-validate-sholo-lab.cjs` | 25-check trust gate |

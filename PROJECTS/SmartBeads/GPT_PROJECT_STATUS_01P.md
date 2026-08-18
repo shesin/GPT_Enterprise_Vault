@@ -22,10 +22,10 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ## Current Focus
 
-1. **Production app shell** — game selector + shared engine/UI (start with **16-bead reference** port).  
-2. **Port six product boards** — see locked list in `VISION_05P.md`.  
-3. **Optional Lab follow-up** — size-adjusted move-cap sensitivity (`LAB_TERMINOLOGY_05P.md`); not a blocker for integration.  
-4. **Match timer, shot clock, centre defaults** — from Feature Test ranges (`WEB_FEATURE_TEST_05P.md`) when wiring product settings.  
+1. **M2 — shared play UI** (timers, centre rules, polish) on top of M0/M1 shell.  
+2. **M3 — port six remaining product boards** — see locked list in `VISION_05P.md`.  
+3. **Optional Lab follow-up** — size-adjusted move-cap sensitivity; not a blocker.  
+4. **Match timer, shot clock, centre defaults** — from Feature Test when wiring M2 settings.  
 5. **Resignation rule** — not yet decided.
 
 **V1 locked set (authoritative):** 16-bead · 5×5 (reference), 6×4×4, 6×3×5, 10×5×5, 12×6×5, 8×4×6 hourglass, 7×4×5 hourglass — `VISION_05P.md`. Do not swap boards without documented Lab/gameplay failure.
@@ -56,7 +56,8 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 - **7-bead Lab review (2026-08-17):** D1 20%/80% (F/SP −30 pp) is greedy-depth lean **inside** G2 (±35 pp). D2 captures balanced. **KEEP** — no Lab recheck, no geometry change.
 - **9/7/5/12/4-bead set (2026-08-17):** `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json` — 9-bead 5×5 and 5-bead 3×5 rear thin REJECT G2; 7-bead 5×5, 12-bead 6×5, 4-bead 3×5 rear NFT.
 - **Web REJECT cleanup (2026-08-17):** Removed 10 discovery REJECT playables + dedicated engines from `prototype/board4/`. Kept Lab audit JSON, KEEP/NFT playables, ladder playables, 16-bead reference.
-- **Playable folder (2026-08-18):** All 12 unrejected `*_WITH_FEATURE.html` playables moved to `prototype/board4/unrejected games/`. Loaders and verify scripts use `playable-dir.cjs`.
+- **Playable folders (2026-08-18):** Locked V1 seven + ladder playables in `prototype/board4/` root; **left-out NFT only** (5) in `unrejected games/`. `playable-dir.cjs` resolves both.
+- **M0 + M1 (2026-08-18):** Production **16-bead Sholo Guti** — `Board16Sholo.ts`, `BoardCatalog.ts`, generic `BoardRenderer.ts`, `terminationProfile: sholo_guti` (elimination + stalemate, one ply per turn). Web playtest defaults to 16-bead (`npm run web:smartbeads`). **42 Jest tests pass** including prototype parity vs `sholo-guti-fullturn-engine.cjs`.
 
 ---
 
@@ -79,9 +80,10 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ## Next Step
 
-1. Build **production app** — 16-bead reference first, then shared architecture, then six product boards (`VISION_05P.md`).  
-2. Set product **defaults** from Feature Test when settings layer is wired.  
-3. Decide **resignation** when ready.
+1. **M2** — Feature shell parity (settings panel, timers, centre rules) without changing core 16-bead rules.  
+2. **M3** — Register and port six remaining locked boards.  
+3. Set product **defaults** from Feature Test when M2 settings layer is wired.  
+4. Decide **resignation** when ready.
 
 ---
 

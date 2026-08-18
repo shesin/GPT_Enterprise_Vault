@@ -9,6 +9,7 @@ import {
   Move,
   Player,
   requireIntersection,
+  TerminationProfile,
 } from '../models/GameState';
 
 /**
@@ -111,14 +112,6 @@ export class SmartBeadsEngine {
 
     toPoint.occupant = mover;
     fromPoint.occupant = undefined;
-    this.currentState.moveCount += 1;
-
-    if (hasReachedPlyLimit(board.maxPlies, this.currentState.moveCount)) {
-      this.chainPieceId = null;
-      this.currentState.gameOver = true;
-      this.evaluateWinner();
-      return;
-    }
 
     if (jump && this.getJumpMovesFrom(move.to).length > 0) {
       this.chainPieceId = move.to;
@@ -126,7 +119,7 @@ export class SmartBeadsEngine {
     }
 
     this.chainPieceId = null;
-    this.currentState.currentPlayer = this.opponentOf(this.currentState.currentPlayer);
+    this.completeTurn(mover);
   }
 
   /**
@@ -141,8 +134,58 @@ export class SmartBeadsEngine {
       throw new Error('Cannot end turn: no capture chain in progress.');
     }
 
+    const mover = this.currentState.currentPlayer;
     this.chainPieceId = null;
-    this.currentState.currentPlayer = this.opponentOf(this.currentState.currentPlayer);
+    this.completeTurn(mover);
+  }
+
+  private completeTurn(mover: Player): void {
+    const profile = this.terminationProfile();
+
+    if (profile === 'sholo_guti') {
+      this.completeSholoTurn(mover);
+      return;
+    }
+
+    this.currentState.moveCount += 1;
+
+    if (hasReachedPlyLimit(this.currentState.board.maxPlies, this.currentState.moveCount)) {
+      this.currentState.gameOver = true;
+      this.evaluatePlyLimitWinner();
+      return;
+    }
+
+    this.currentState.currentPlayer = this.opponentOf(mover);
+  }
+
+  /** SHOLO_GUTI.html completeTurn semantics — elimination then stalemate. */
+  private completeSholoTurn(mover: Player): void {
+    this.currentState.moveCount += 1;
+
+    const redRemaining = this.countPieces('RED');
+    const blueRemaining = this.countPieces('BLUE');
+
+    if (redRemaining === 0) {
+      this.endGame('BLUE', 'elimination');
+      return;
+    }
+    if (blueRemaining === 0) {
+      this.endGame('RED', 'elimination');
+      return;
+    }
+
+    this.currentState.currentPlayer = this.opponentOf(mover);
+
+    if (this.getLegalMoves().length === 0) {
+      this.endGame(mover, 'stalemate');
+    }
+  }
+
+  private endGame(winner: Player, reason: string): void {
+    this.currentState.gameOver = true;
+    this.currentState.winner = winner;
+    this.currentState.endReason = reason;
+    this.chainPieceId = null;
   }
 
   private getJumpMovesFrom(pieceId: number): Move[] {
@@ -183,11 +226,12 @@ export class SmartBeadsEngine {
     return path;
   }
 
-  private evaluateWinner(): void {
+  private evaluatePlyLimitWinner(): void {
     const { captures, board } = this.currentState;
 
     if (captures.RED !== captures.BLUE) {
       this.currentState.winner = captures.RED > captures.BLUE ? 'RED' : 'BLUE';
+      this.currentState.endReason = 'ply_limit_captures';
       return;
     }
 
@@ -207,11 +251,17 @@ export class SmartBeadsEngine {
 
       if (redCenter !== blueCenter) {
         this.currentState.winner = redCenter > blueCenter ? 'RED' : 'BLUE';
+        this.currentState.endReason = 'ply_limit_center';
         return;
       }
     }
 
     this.currentState.winner = 'DRAW';
+    this.currentState.endReason = 'ply_limit_draw';
+  }
+
+  private terminationProfile(): TerminationProfile {
+    return this.currentState.board.terminationProfile ?? 'ply_limit';
   }
 
   private opponentOf(player: Player): Player {
@@ -226,6 +276,7 @@ export class SmartBeadsEngine {
       captures: { RED: 0, BLUE: 0 },
       gameOver: false,
       winner: undefined,
+      endReason: undefined,
     };
   }
 }
