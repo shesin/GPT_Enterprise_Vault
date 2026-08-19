@@ -39,7 +39,7 @@ const BASE_SETTINGS: GameFeatureSettings = {
   centerRule: 'off',
 };
 
-/** Locked V1 seven — only `16` is playable until other BoardDefinition modules register. */
+/** Locked V1 seven — playable boards register a BoardDefinition via engineVariant. */
 export const BOARD_CATALOG: BoardCatalogEntry[] = [
   {
     id: '16',
@@ -57,13 +57,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
   },
   {
     id: '6x4',
-    engineVariant: null,
+    engineVariant: '6',
     displayName: '6-bead · 4×4',
-    description: 'Locked V1 #2',
+    description: 'Locked V1 #2 — full box cross diagonals',
     beadCount: 6,
     lattice: '4×4',
-    playable: false,
-    productVisible: false,
+    playable: true,
+    productVisible: true,
     play: {
       defaultSettings: { ...BASE_SETTINGS, centerRule: 'endgame' },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],

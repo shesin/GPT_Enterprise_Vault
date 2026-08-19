@@ -7,20 +7,35 @@ SmartBeads/
 │
 ├── src/                               # SmartBeads source code (production)
 │   ├── boards/                        # Physical BoardDefinition variants
-│   │   ├── Board4.ts
-│   │   ├── Board5.ts
-│   │   ├── Board6.ts
-│   │   └── Board7.ts
-│   ├── config/                        # Variant selection only
-│   │   └── BoardConfig.ts             # Resolves BoardVariant → BoardDefinition
+│   │   ├── Board4.ts                  # 4-bead · 4×4 orthogonal (lab)
+│   │   ├── Board5.ts                  # Stub — future variant
+│   │   ├── Board6.ts                  # 6-bead · 4×4 full box cross (V1 #2)
+│   │   ├── Board7.ts                  # Stub — future variant
+│   │   ├── Board16Sholo.ts            # 16-bead · 5×5 + wings (V1 #1 reference)
+│   │   └── __tests__/                 # Board geometry + prototype parity tests
+│   ├── config/
+│   │   ├── BoardConfig.ts             # BoardVariant → BoardDefinition registry
+│   │   └── BoardCatalog.ts            # Locked V1 product catalog + play defaults
 │   ├── core/
-│   │   ├── SmartBeadsEngine.ts        # Main gameplay engine and  game flow
+│   │   ├── SmartBeadsEngine.ts        # Gameplay engine (slides, captures, chains, termination)
 │   │   └── __tests__/
 │   │       └── SmartBeadsEngine.test.ts
 │   ├── playtest/                      # Developer playtest interfaces
 │   │   ├── HumanVsAiRunner.ts         # CLI playtest interface
 │   │   ├── web/
-│   │   │   └── main.ts                # Browser SVG playtest GUI
+│   │   │   ├── main.ts                # Vite entry — bootstraps shared play shell
+│   │   │   ├── PlayController.ts      # 3-column feature UI + canvas input loop
+│   │   │   ├── play-shell.css         # Feature shell layout/styles
+│   │   │   ├── BoardRenderer.ts       # Legacy SVG renderer (CLI / fallback)
+│   │   │   ├── feature/
+│   │   │   │   ├── FeatureSession.ts  # Board-agnostic session (engine + settings + undo)
+│   │   │   │   ├── GameFeatureSettings.ts
+│   │   │   │   ├── HonestAi.ts
+│   │   │   │   └── centerScoring.ts
+│   │   │   ├── layout/
+│   │   │   │   └── boardProjection.ts # Lattice → canvas coordinates
+│   │   │   └── render/
+│   │   │       └── CanvasBoardRenderer.ts
 │   │   └── __tests__/
 │   │       └── HumanVsAiRunner.test.ts
 │   ├── simulation/                    # Automated self-play simulation runner
@@ -30,8 +45,12 @@ SmartBeads/
 │   └── models/
 │       └── GameState.ts               # BoardDefinition + GameState
 │
+├── scripts/                           # Browser verification (repo: PROJECTS/SmartBeads/scripts/)
+│   ├── m1-browser-verify.mjs
+│   └── m2-browser-verify.mjs
+│
 ├── prototype/                         # Design/UX prototypes (outside production src/)
-│   └── board4/                        # Standalone HTML gameplay lab for Board4
+│   └── board4/                        # Standalone HTML gameplay lab for Board4-scale boards
 │
 ├── BOARD_DISCOVERY_05P.md             # New-board shortlist + discovery Lab outcomes
 ├── LAB_TERMINOLOGY_05P.md             # Web glossary, gates G1–G9, board-quality ruler
@@ -43,106 +62,83 @@ SmartBeads/
 └── GPT_PROJECT_STATUS_01P.md          # Current milestone and next step
 ```
 
-Repo-root `index.html` (outside this folder tree) is the Vite entry for the TypeScript engine playtest GUI (`npm run web:board4`). Do not confuse it with `prototype/board4/index.html`.
+Repo-root `index.html` is the Vite entry for the production play shell (`npm run web:smartbeads`). Do not confuse it with `prototype/board4/index.html`.
 
 ## File Responsibilities
 
-### Repo-root index.html & src/playtest/web/main.ts
+### Repo-root index.html & src/playtest/web/
 
-Minimal browser-based playtest GUI rendered via Vite SVG and TypeScript controller (`npm run web:board4`). Authoritative entry is the repository root `index.html`, not anything under `prototype/`.
+Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`npm run web:smartbeads`). Board selection reads `BoardCatalog.ts`; only catalog entries with `playable: true` appear in the UI. Authoritative entry is the repository root `index.html`, not anything under `prototype/`.
+
+- **`main.ts`** — calls `bootstrapPlayShell()`.
+- **`PlayController.ts`** — settings panel, timers, undo, honest AI, board `<select>`, result modal.
+- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`.
+- **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas.
 
 ### prototype/board4/
 
-Standalone HTML gameplay laboratory for Board4-scale experiments. Lives outside `src/` per the Prototype Classification rule: may skip full architectural review, must not share code with the production engine, and is not part of the Vite TypeScript playtest path.
+Standalone HTML gameplay laboratory. Lives outside `src/` per the Prototype Classification rule: may skip full architectural review, must not share code with the production engine, and is not part of the Vite TypeScript playtest path.
 
 - **`unrejected games/`** — **Left-out NFT playables only** (5 on disk): Web-pass discovery boards **not** in the locked V1 seven. Locked product playables stay in **`board4/`** root.
 - **`playable-dir.cjs`** — Resolves playables: `unrejected games/` first, else `board4/` root (locked V1 + ladder).
 - **cursor-index-fullturn-engine.cjs** — Headless 4×4 engine (`geometry`: `rays` | `fullBoxCross`; active playable uses `fullBoxCross`).
-- **evaluate-cursor-index-lab.cjs** — G1–G9 for active playable → `CURSOR_INDEX_6_ACTIVE_LAB_EVAL.json`; preserves INDEX_6/INDEX_6_B audit in `CURSOR_INDEX_LAB_EVALUATION.json`.
-- **generate-cursor-index.cjs** / **verify-cursor-index.cjs** — Generator and smoke test (active 4×4 playable).
-- **evaluate-feature-test-lab.cjs** / **evaluate-centre-rule-feature-test.cjs** / **sholo-centre-lab.cjs** / **feature-playable-loader.cjs** / **FEATURE_TEST_KEEP_REGISTRY.json** / **FEATURE_TEST_EVALUATION.json** / **FEATURE_TEST_CENTRE_RULE_EVALUATION.json** — Feature Test (human-confirmed KEEP only). Report: **`WEB_FEATURE_TEST_05P.md`**.
-- **GEMINI_LAB.html** — Batch-testing tool. Parametrized (bead count, board geometry, tiebreaker mode, move limit). Runs many AI-vs-AI games headless and outputs a comparison table across configs so results do not need to be copy-pasted from the console by hand.
-- **SHOLO_GUTI.html** — Standalone playable Human-vs-AI Sholo Guti / Sixteen Soldiers (37-point board, 16 vs 16). Calibration/reference traditional game — not a SmartBeads product config.
-- **SHOLO_GUTI_CALIBRATION.html** — Headless/calibration harness for the same geometry (hop-based AI; not the primary playable).
-- **sholo-guti-fullturn-engine.cjs** / **sholo-lab-metrics.cjs** / **validate-sholo-fullturn-lab.cjs** / **final-validate-sholo-lab.cjs** / **validate-lab-16-bead-reference.cjs** — Headless full-turn Web harness + comparison guards. Run `final-validate-sholo-lab.cjs` before SmartBeads candidate testing; run `validate-lab-16-bead-reference.cjs` for 16-bead reference baseline. Honest depths: D1 greedy, D2 = 1 opponent reply, D3 = 2 opponent replies. See **LAB_CAPABILITY_STATUS.json**; methodology at **`LAB_TERMINOLOGY_05P.md`**; reports at **`WEB_REPORT_16_BEAD_05P.md`**, **`WEB_REPORT_All_BEAD_05P.md`** (SmartBeads root).
-- **`SHOLO_GUTI_WITH_FEATURE.html`** — Playable 16-bead Sholo Guti (locked V1 #1)
-- **`SHOLO_GUTI_10_BEAD_WITH_FEATURE.html`** — 10 vs 10 on 5×5 lattice (locked V1 #4)
-- **`SHOLO_GUTI_7_BEAD_WITH_FEATURE.html`** — 7 vs 7 on 4×5 hourglass (locked V1 #7)
-- **`SHOLO_GUTI_6_BEAD_WITH_FEATURE.html`** — 6 vs 6 on 3×5 (locked V1 #3)
-- **BOARD_DISCOVERY_05P.md** — Evidence-based new-board shortlist (C1–C6). Not a verdict document.
-- **`unrejected games/SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html`** — 8 vs 8 on 5×5 thinned (left-out NFT; not in locked V1)
-- **Left-out NFT playables (5)** in `unrejected games/`: 7×4×4 dense, 7×5×5, 12×5×7, 8×5×5 thinned, 4×3×5 rear — see `ALL_NON_REJECT_LAB_RANKING.json`.
-- **verify-discovery-nft-feature.cjs** / **complete-c3-lab.cjs** / **evaluate-d1-d5-lab.cjs** (survivors) / **evaluate-final-round-lab.cjs** (survivors) — discovery smoke + G1–G9. Artifacts: `LAB_EVALUATION_5_5_8_12_BEAD_DISCOVERY_SET.json`, `8_BEAD_5x5_LAB_COMPLETE.json`, `BARO_12_LAB_EVALUATION.json`, `SHOLO_DISCOVERY_NFT_FEATURE_SMOKE.json`.
-- **board-lab-artifacts.cjs** / **migrate-board-lab-names.cjs** — canonical bead+board keys for Lab JSON artifacts.
-- **Discovery generators (archival):** `generate-discovery-round2.cjs` · `generate-final-round.cjs` — can rebuild removed REJECT boards if needed; active playables are NFT survivors only.
-- **discovery-playable-loader.cjs** — VM loader for discovery/final-round playables (parity checks).
-- **SHOLO_3x5_BEAD_LAYOUTS.html** — Static 3/4/5-bead layout diagrams only (no playables for 3/4/5). **Removed playables:** 3-bead (not tested), 4/5/8-bead (Web REJECT G2).
-- **sholo-10-bead-fullturn-engine.cjs** / **compare-sholo-10-vs-16-lab.cjs** — Headless Lab for the 10-bead candidate + protocol compare vs 16-bead. Output: `SHOLO_10_VS_16_LAB_COMPARE.json`.
-- **record-sholo-16-feature-baseline.cjs** — Programmatic verification script for feature semantics and 16-bead feature baseline recording.
-- **verify-sholo-10-bead-feature.cjs** / **verify-sholo-7-bead-feature.cjs** / **verify-sholo-6-bead-feature.cjs** — Smoke checks for active Sholo playables.
-- **verify-sholo-guti.cjs** — Smoke tests for the playable (geometry, Finish, honest AI depth labels, AI replies).
-- **GEMINI_GAME_ARCHITECTURE_05P.md** — Describes the rules and mechanics implemented so far for both the 4-bead and 6-bead 4×4 variants (background reference; code is authoritative if they disagree).
-- **verify-gemini-lab.cjs** — Headless test script for GEMINI_LAB.html.
-- **WEB_RULES_05P.md** — Browser-verified, production-accepted rules for this prototype line.
-- **WEB_STATUS_05P.md** — Verification log for this prototype line.
-- **WEB_IN_PROGRESS_05P.md** — Implemented-but-unverified features for this prototype line.
-- **CURSOR_INDEX_LAB_EVALUATION.json** / **CURSOR_INDEX_6_LAB_EVAL.json** (rays audit) / **CURSOR_INDEX_6_B_LAB_EVAL.json** (cross audit) / **CURSOR_INDEX_VERIFY_SMOKE.json** — 4×4 Web eval + playable smoke.
-- **index.html**, **verify.cjs**, **collect-evidence.cjs**, **evidence/** — a separate, currently inactive prototype track. Explicitly different from the repository-root `index.html` used by the TypeScript engine Vite playtest GUI; do not conflate the two.
+- **SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html** — Prototype reference for production `Board6.ts` (6-bead · 4×4).
+- **SHOLO_GUTI_WITH_FEATURE.html** — Prototype reference for production `Board16Sholo.ts` (16-bead).
+- **sholo-guti-fullturn-engine.cjs** — Headless full-turn engine for 16-bead reference parity tests.
+- **evaluate-feature-test-lab.cjs** / **FEATURE_TEST_KEEP_REGISTRY.json** — Feature Test (human-confirmed KEEP only). Report: **`WEB_FEATURE_TEST_05P.md`**.
+- **GEMINI_GAME_ARCHITECTURE_05P.md** — Background reference for 4×4 variants; code is authoritative if they disagree.
 
 ### src/models/GameState.ts
 
-Authoritative board model: intersections, connections, optional jumpPaths / center nodes / maxPlies, captures, Move schema, and board cloning.
+Authoritative board model: intersections, connections, optional jumpPaths / center nodes / maxPlies / terminationProfile, captures, Move schema, and board cloning.
 
 ### src/boards/
 
-BoardDefinition variants (e.g. Board4 = 4×4 orthogonal grid with jumpPaths). Add new sizes here via config data only.
+BoardDefinition variants. Each file owns geometry, starting layout, center nodes, and match config for one physical board.
+
+| Module | V1 # | Status |
+|--------|------|--------|
+| `Board16Sholo.ts` | 1 · 16-bead 5×5 | **Production playable** |
+| `Board6.ts` | 2 · 6-bead 4×4 | **Production playable** |
+| `Board4.ts` | — | Lab orthogonal 4×4 (4-bead) |
+| `Board5.ts`, `Board7.ts` | — | Stubs |
 
 ### src/config/
 
-Chooses board variants only. Does not redefine board geometry.
+- **`BoardConfig.ts`** — maps `BoardVariant` (`4` / `5` / `6` / `7` / `16`) → `BoardDefinition`.
+- **`BoardCatalog.ts`** — locked V1 seven product entries, play defaults (centre rule, timers), and `playable` / `productVisible` flags.
 
-* **BoardConfig.ts** — maps `BoardVariant` (`4` / `5` / `6` / `7`) to a `BoardDefinition`.
+### src/core/SmartBeadsEngine.ts
+
+Coordinates gameplay for any registered board variant: slides, optional captures, multi-jump chains, voluntary `endTurn`, elimination/stalemate (`sholo_guti`), and ply limits (`ply_limit`).
+
+### src/playtest/
+
+Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for developer playtesting and engine validation.
 
 ### src/simulation/
 
 Automated self-play execution and game metrics collection (`SelfPlayRunner.ts`).
 
-### src/playtest/
+### Documentation set (SmartBeads root)
 
-Interactive CLI runner (`HumanVsAiRunner.ts`) and web GUI runner (`web/main.ts`) for developer playtesting and engine validation.
-
-### src/core/SmartBeadsEngine.ts
-
-Coordinates gameplay for any registered board variant: slides, optional captures, multi-jump chains, voluntary endTurn, and ply limits.
-
-### src/core/__tests__/
-
-Unit tests for the engine across registered variants.
-
-### PROJECT_MAP_05P.md
-
-Explains the project structure and the responsibility of each important file.
-
-### GPT_PROJECT_RULES_01P.md
-
-Contains the permanent engineering and design principles for SmartBeads.
-
-### GPT_PROJECT_STATUS_01P.md
-
-Contains the current development phase, completed work, active milestone and immediate next step.
-
-### LAB_TERMINOLOGY_05P.md / WEB_REPORT_16_BEAD_05P.md / WEB_REPORT_All_BEAD_05P.md / WEB_FEATURE_TEST_05P.md
-
-Project-level Web documentation (SmartBeads root). Terminology and G1–G9 gates; 16-bead reference; ladder/Cursor Index verdicts; **Feature Test** (KEEP-only settings). Headless engines and JSON artifacts under **`prototype/board4/`**.
+| File | Role |
+|------|------|
+| `GPT_PROJECT_RULES_01P.md` | Permanent engineering rules |
+| `VISION_05P.md` | Vision, locked V1 seven, design reasoning |
+| `GPT_PROJECT_STATUS_01P.md` | Milestone status and next step |
+| `PROJECT_MAP_05P.md` | This file — structure and navigation |
+| `WEB_FEATURE_TEST_05P.md` | Per-board feature defaults (centre rule, timers) |
+| `LAB_TERMINOLOGY_05P.md` / `WEB_REPORT_*.md` | Lab methodology and board verdicts |
 
 ---
 
 ## Summary
 
-SmartBeads is a strategic bead-based board game project.
+SmartBeads is a strategic bead-based board game platform.
 
-The physical board model (`BoardDefinition`: intersections and connections) is the source of truth.
+The physical board model (`BoardDefinition`: intersections and connections) is the source of truth. Configuration selects which board variant to use. The same engine and shared play shell serve all V1 boards.
 
-Configuration selects which board variant to use. The same engine evaluates multiple bead counts through AI self-play and playtesting.
+The objective is to ship the **V1 seven-board app** (locked in `VISION_05P.md`) via one production engine, configurable board geometry, and a shared feature shell. Prototype HTML playables remain the Lab/reference implementation; they do not ship as separate apps.
 
-The objective is to ship the **V1 seven-board app** (locked in `VISION_05P.md`) via one production engine, configurable board geometry, and a shared play shell. Prototype HTML playables remain the Lab/reference implementation; they do not ship as seven separate apps.
+**Current production playables:** 16-bead · 5×5 (`Board16Sholo`) and 6-bead · 4×4 (`Board6`).

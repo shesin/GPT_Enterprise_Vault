@@ -28,6 +28,19 @@ describe('SmartBeadsEngine', () => {
     }
   });
 
+  it('defines Board6 as a 6-bead 4×4 full box cross with sholo_guti rules', () => {
+    expect(Board6.intersections).toHaveLength(16);
+    expect(Board6.centerNodeIds).toEqual([5, 6, 9, 10]);
+    expect(Board6.maxPlies).toBeNull();
+    expect(Board6.terminationProfile).toBe('sholo_guti');
+
+    const red = Board6.intersections.filter((point) => point.occupant === 'RED');
+    const blue = Board6.intersections.filter((point) => point.occupant === 'BLUE');
+
+    expect(red).toHaveLength(6);
+    expect(blue).toHaveLength(6);
+  });
+
   it.each([
     ['4', Board4],
     ['5', Board5],
