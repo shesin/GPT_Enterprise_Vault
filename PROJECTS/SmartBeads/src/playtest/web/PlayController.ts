@@ -7,13 +7,18 @@ import {
   resolveEngineVariant,
 } from '../../config/BoardCatalog';
 import { findJumpPath, Move, Player } from '../../models/GameState';
-import { countCenterOccupancy, formatCenterDisplay } from './feature/centerScoring';
+import { formatCenterDisplay } from './feature/centerScoring';
 import {
   AiLevel,
   BGM_TRACKS,
   CenterRule,
+  formatCenterRuleLabel,
+  formatMatchTimerLabel,
+  formatShotClockLabel,
   GameFeatureSettings,
+  MatchTimerMinutes,
   parseMatchSeconds,
+  ShotClockSeconds,
 } from './feature/GameFeatureSettings';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
 import { selectAiTurnPath } from './feature/HonestAi';
@@ -97,6 +102,8 @@ export function bootstrapPlayShell(): void {
   function applyBoardDefaults(boardId: ProductBoardId): void {
     const defaults = getPlayConfig(boardId).defaultSettings;
     centerRuleSelect.value = defaults.centerRule;
+    matchTimerSelect.value = defaults.matchTimer;
+    shotClockSelect.value = defaults.shotClock;
   }
 
   function syncCenterRuleOptions(): void {
@@ -106,7 +113,7 @@ export function bootstrapPlayShell(): void {
     for (const rule of options) {
       const opt = document.createElement('option');
       opt.value = rule;
-      opt.textContent = rule === 'off' ? 'Off' : rule === 'endgame' ? 'End-Game' : 'Cumulative';
+      opt.textContent = formatCenterRuleLabel(rule);
       centerRuleSelect.appendChild(opt);
     }
     if (options.includes(current)) {
@@ -114,6 +121,46 @@ export function bootstrapPlayShell(): void {
     } else {
       centerRuleSelect.value = getPlayConfig(currentBoardId).defaultSettings.centerRule;
     }
+  }
+
+  function syncMatchTimerOptions(): void {
+    const options = getPlayConfig(currentBoardId).matchTimerOptions;
+    const current = matchTimerSelect.value as MatchTimerMinutes;
+    matchTimerSelect.innerHTML = '';
+    for (const value of options) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = formatMatchTimerLabel(value);
+      matchTimerSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      matchTimerSelect.value = current;
+    } else {
+      matchTimerSelect.value = getPlayConfig(currentBoardId).defaultSettings.matchTimer;
+    }
+  }
+
+  function syncShotClockOptions(): void {
+    const options = getPlayConfig(currentBoardId).shotClockOptions;
+    const current = shotClockSelect.value as ShotClockSeconds;
+    shotClockSelect.innerHTML = '';
+    for (const value of options) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = formatShotClockLabel(value);
+      shotClockSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      shotClockSelect.value = current;
+    } else {
+      shotClockSelect.value = getPlayConfig(currentBoardId).defaultSettings.shotClock;
+    }
+  }
+
+  function syncBoardPlayOptions(): void {
+    syncCenterRuleOptions();
+    syncMatchTimerOptions();
+    syncShotClockOptions();
   }
 
   function syncBoardTitle(): void {
@@ -164,10 +211,9 @@ export function bootstrapPlayShell(): void {
     (document.getElementById('p2-caps') as HTMLElement).textContent = String(state.captures.BLUE);
     (document.getElementById('turn-count') as HTMLElement).textContent = String(session.getMoveCount());
 
-    const c1 = countCenterOccupancy(state.board, 'RED');
-    const c2 = countCenterOccupancy(state.board, 'BLUE');
-    (document.getElementById('p1-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, c1);
-    (document.getElementById('p2-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, c2);
+    const centerScores = session.getCenterDisplayScores();
+    (document.getElementById('p1-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, centerScores.red);
+    (document.getElementById('p2-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, centerScores.blue);
 
     document.getElementById('pill-p1')?.classList.toggle('active', state.currentPlayer === 'RED' && !session.isGameOver());
     document.getElementById('pill-p2')?.classList.toggle('active', state.currentPlayer === 'BLUE' && !session.isGameOver());
@@ -455,7 +501,7 @@ export function bootstrapPlayShell(): void {
     currentBoardId = boardId;
     boardSelect.value = boardId;
     syncBoardTitle();
-    syncCenterRuleOptions();
+    syncBoardPlayOptions();
     applyBoardDefaults(boardId);
     session = createSession(boardId, readSettings());
     resultModal.style.display = 'none';
@@ -499,7 +545,7 @@ export function bootstrapPlayShell(): void {
   });
 
   syncBoardTitle();
-  syncCenterRuleOptions();
+  syncBoardPlayOptions();
   resetGame();
 }
 

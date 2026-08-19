@@ -83,8 +83,8 @@ async function main() {
     // Settings visible
     record('PvE/PvP mode select', await page.locator('#game-mode-select option[value="pvp"]').count() === 1, 'pvp option');
     record('AI level select', await page.locator('#ai-level-select').isVisible(), 'ai levels');
-    record('match timer select', await page.locator('#match-timer-select option[value="20"]').count() === 1, '20 min');
-    record('shot clock select', await page.locator('#shot-clock-select option[value="5"]').count() === 1, '5 sec');
+    record('match timer select', await page.locator('#match-timer-select option[value="25"]').count() === 1, '25 min');
+    record('shot clock select', await page.locator('#shot-clock-select option[value="90"]').count() === 1, '90 sec');
     record('center rule off/endgame', (
       await page.locator('#center-rule-select option[value="off"]').count() === 1
       && await page.locator('#center-rule-select option[value="endgame"]').count() === 1

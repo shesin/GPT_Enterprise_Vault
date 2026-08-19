@@ -2,8 +2,10 @@
 
 export type GameMode = 'pve' | 'pvp';
 export type CenterRule = 'off' | 'endgame' | 'cumulative';
-export type MatchTimerMinutes = 'off' | '20' | '30' | '40';
-export type ShotClockSeconds = 'off' | '5' | '10' | '15';
+/** Minutes per side (PvP) or shared match budget (PvE). Values are string digits or off. */
+export type MatchTimerMinutes = 'off' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';
+/** Seconds per turn when enabled. */
+export type ShotClockSeconds = 'off' | '30' | '60' | '90' | '120';
 export type AiLevel = 1 | 2 | 3;
 
 export interface GameFeatureSettings {
@@ -49,4 +51,18 @@ export function parseShotLimit(shotClock: ShotClockSeconds): number {
 
 export function parseMatchSeconds(matchTimer: MatchTimerMinutes): number {
   return matchTimer === 'off' ? 0 : parseInt(matchTimer, 10) * 60;
+}
+
+export function formatMatchTimerLabel(value: MatchTimerMinutes): string {
+  return value === 'off' ? 'Off' : `${value} min`;
+}
+
+export function formatShotClockLabel(value: ShotClockSeconds): string {
+  return value === 'off' ? 'Off' : `${value} sec`;
+}
+
+export function formatCenterRuleLabel(rule: CenterRule): string {
+  if (rule === 'off') return 'Off';
+  if (rule === 'endgame') return 'End-Game';
+  return 'Cumulative';
 }

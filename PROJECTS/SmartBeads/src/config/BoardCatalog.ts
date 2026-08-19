@@ -2,6 +2,8 @@ import { BoardVariant } from './BoardConfig';
 import {
   CenterRule,
   GameFeatureSettings,
+  MatchTimerMinutes,
+  ShotClockSeconds,
 } from '../playtest/web/feature/GameFeatureSettings';
 
 /** Catalog id for each locked V1 board (VISION_05P.md). */
@@ -17,6 +19,8 @@ export type ProductBoardId =
 export interface BoardPlayConfig {
   defaultSettings: GameFeatureSettings;
   centerRuleOptions: CenterRule[];
+  matchTimerOptions: MatchTimerMinutes[];
+  shotClockOptions: ShotClockSeconds[];
 }
 
 export interface BoardCatalogEntry {
@@ -39,7 +43,7 @@ const BASE_SETTINGS: GameFeatureSettings = {
   centerRule: 'off',
 };
 
-/** Locked V1 seven — playable boards register a BoardDefinition via engineVariant. */
+/** Locked V1 seven — human-decided catalog settings (2026-08-19). */
 export const BOARD_CATALOG: BoardCatalogEntry[] = [
   {
     id: '16',
@@ -51,8 +55,15 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     playable: true,
     productVisible: true,
     play: {
-      defaultSettings: { ...BASE_SETTINGS },
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'off',
+        matchTimer: '25',
+        shotClock: '90',
+      },
       centerRuleOptions: ['off', 'endgame'],
+      matchTimerOptions: ['off', '15', '25', '35'],
+      shotClockOptions: ['off', '60', '90', '120'],
     },
   },
   {
@@ -65,8 +76,15 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     playable: true,
     productVisible: true,
     play: {
-      defaultSettings: { ...BASE_SETTINGS, centerRule: 'endgame' },
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '3',
+        shotClock: '30',
+      },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
     },
   },
   {
@@ -79,8 +97,15 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     playable: true,
     productVisible: true,
     play: {
-      defaultSettings: { ...BASE_SETTINGS, centerRule: 'cumulative' },
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '3',
+        shotClock: '30',
+      },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
     },
   },
   {
@@ -93,8 +118,15 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     playable: true,
     productVisible: true,
     play: {
-      defaultSettings: { ...BASE_SETTINGS },
-      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'off',
+        matchTimer: '20',
+        shotClock: '90',
+      },
+      centerRuleOptions: ['off', 'endgame'],
+      matchTimerOptions: ['off', '10', '20', '30'],
+      shotClockOptions: ['off', '60', '90'],
     },
   },
   {
@@ -107,8 +139,15 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     playable: true,
     productVisible: true,
     play: {
-      defaultSettings: { ...BASE_SETTINGS },
-      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'off',
+        matchTimer: '20',
+        shotClock: '90',
+      },
+      centerRuleOptions: ['off', 'endgame'],
+      matchTimerOptions: ['off', '10', '20', '30'],
+      shotClockOptions: ['off', '60', '90'],
     },
   },
   {
@@ -121,8 +160,15 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     playable: true,
     productVisible: true,
     play: {
-      defaultSettings: { ...BASE_SETTINGS },
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '5',
+        shotClock: '30',
+      },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
     },
   },
   {
@@ -135,8 +181,15 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     playable: true,
     productVisible: true,
     play: {
-      defaultSettings: { ...BASE_SETTINGS, centerRule: 'cumulative' },
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '5',
+        shotClock: '30',
+      },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
     },
   },
 ];

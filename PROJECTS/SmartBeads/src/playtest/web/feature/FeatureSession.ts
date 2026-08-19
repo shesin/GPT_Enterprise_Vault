@@ -21,6 +21,8 @@ export interface SessionSnapshot {
   p2Clock: number;
   globalMatchRemaining: number;
   shotRemaining: number;
+  p1CenterScore: number;
+  p2CenterScore: number;
   featureOver?: FeatureGameOver | null;
 }
 
@@ -62,6 +64,8 @@ export class FeatureSession {
   private globalMatchRemaining = 0;
   private shotLimit = 0;
   private shotRemaining = 0;
+  private p1CenterScore = 0;
+  private p2CenterScore = 0;
   private featureOver: FeatureGameOver | null = null;
 
   constructor(boardVariant: BoardVariant, settings: GameFeatureSettings) {
@@ -89,6 +93,8 @@ export class FeatureSession {
     this.uiState = 'idle';
     this.selectedId = null;
     this.repetitionHistory = {};
+    this.p1CenterScore = 0;
+    this.p2CenterScore = 0;
     this.featureOver = null;
     this.applyTimerSettings();
   }
@@ -105,6 +111,8 @@ export class FeatureSession {
       p2Clock: this.p2Clock,
       globalMatchRemaining: this.globalMatchRemaining,
       shotRemaining: this.shotRemaining,
+      p1CenterScore: this.p1CenterScore,
+      p2CenterScore: this.p2CenterScore,
       featureOver: this.featureOver,
     };
   }
@@ -120,6 +128,8 @@ export class FeatureSession {
     this.p2Clock = snap.p2Clock;
     this.globalMatchRemaining = snap.globalMatchRemaining;
     this.shotRemaining = snap.shotRemaining;
+    this.p1CenterScore = snap.p1CenterScore ?? 0;
+    this.p2CenterScore = snap.p2CenterScore ?? 0;
     this.featureOver = snap.featureOver ?? null;
     this.shotLimit = parseShotLimit(this.settings.shotClock);
   }
@@ -182,6 +192,20 @@ export class FeatureSession {
     return this.shotLimit;
   }
 
+  getCenterDisplayScores(): { red: number; blue: number } {
+    const state = this.engine.getState();
+    if (this.settings.centerRule === 'cumulative') {
+      return { red: this.p1CenterScore, blue: this.p2CenterScore };
+    }
+    if (this.settings.centerRule === 'endgame') {
+      return {
+        red: countCenterOccupancy(state.board, 'RED'),
+        blue: countCenterOccupancy(state.board, 'BLUE'),
+      };
+    }
+    return { red: 0, blue: 0 };
+  }
+
   getLegalMovesForSelection(): Move[] {
     if (this.isGameOver()) return [];
     const chain = this.engine.getChainPieceId();
@@ -225,6 +249,10 @@ export class FeatureSession {
     const mover = stateBefore.currentPlayer;
 
     this.engine.applyMove(move);
+
+    if (this.settings.centerRule === 'cumulative') {
+      this.trackCumulativeCenterLanding(move.to);
+    }
 
     const chain = this.engine.getChainPieceId();
     if (chain !== null) {
@@ -286,8 +314,15 @@ export class FeatureSession {
     }
 
     if (this.settings.centerRule !== 'off') {
-      const c1 = countCenterOccupancy(state.board, 'RED');
-      const c2 = countCenterOccupancy(state.board, 'BLUE');
+      let c1 = 0;
+      let c2 = 0;
+      if (this.settings.centerRule === 'cumulative') {
+        c1 = this.p1CenterScore;
+        c2 = this.p2CenterScore;
+      } else {
+        c1 = countCenterOccupancy(state.board, 'RED');
+        c2 = countCenterOccupancy(state.board, 'BLUE');
+      }
       if (c1 > c2) {
         this.endGameByFeature('RED', `${prefixReason} captures tied — P1 won on center.`);
         return;
@@ -332,9 +367,18 @@ export class FeatureSession {
     } else {
       this.globalMatchRemaining -= 1;
       if (this.globalMatchRemaining <= 0) {
-        this.evaluateScoreAndEnd('Match timer expired —');
+        const loser = this.engine.getState().currentPlayer;
+        this.endGameByFeature(opponentOf(loser), 'Match timer expired.');
       }
     }
+  }
+
+  private trackCumulativeCenterLanding(nodeId: number): void {
+    const centerIds = this.engine.getState().board.centerNodeIds ?? [];
+    if (!centerIds.includes(nodeId)) return;
+    const occupant = this.engine.getState().board.intersections[nodeId]?.occupant;
+    if (occupant === 'RED') this.p1CenterScore += 1;
+    else if (occupant === 'BLUE') this.p2CenterScore += 1;
   }
 
   resetTurnClock(): void {

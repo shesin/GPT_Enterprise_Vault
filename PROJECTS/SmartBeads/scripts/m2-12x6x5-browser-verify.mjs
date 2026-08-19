@@ -91,8 +91,8 @@ async function main() {
       Array.from(document.getElementById('center-rule-select')?.options || []).map((o) => o.value),
     );
     record(
-      'centre rule off/cumulative/endgame',
-      centerOpts.includes('off') && centerOpts.includes('cumulative') && centerOpts.includes('endgame'),
+      'centre rule off/endgame',
+      centerOpts.includes('off') && centerOpts.includes('endgame') && !centerOpts.includes('cumulative'),
       centerOpts.join(','),
     );
 

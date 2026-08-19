@@ -95,7 +95,7 @@ async function main() {
     );
 
     const defaultCenter = await page.locator('#center-rule-select').inputValue();
-    record('default centre rule cumulative', defaultCenter === 'cumulative', defaultCenter);
+    record('default centre rule endgame', defaultCenter === 'endgame', defaultCenter);
 
     const slide = await page.evaluate(async () => {
       const { SmartBeadsEngine } = await import('/PROJECTS/SmartBeads/src/core/SmartBeadsEngine.ts');

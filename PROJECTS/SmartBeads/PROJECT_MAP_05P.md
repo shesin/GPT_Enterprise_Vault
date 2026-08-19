@@ -57,7 +57,8 @@ SmartBeads/
 │   ├── m2-10x5-browser-verify.mjs
 │   ├── m2-12x6x5-browser-verify.mjs
 │   ├── m2-8x4x6-browser-verify.mjs
-│   └── m2-7x4x5-browser-verify.mjs
+│   ├── m2-7x4x5-browser-verify.mjs
+│   └── m2-catalog-settings-verify.mjs
 │
 ├── prototype/                         # Design/UX prototypes (outside production src/)
 │   └── board4/                        # Standalone HTML gameplay lab for Board4-scale boards
@@ -126,7 +127,7 @@ BoardDefinition variants. Each file owns geometry, starting layout, center nodes
 ### src/config/
 
 - **`BoardConfig.ts`** — maps `BoardVariant` (`4` / `5` / `6` / `7` / `16`) → `BoardDefinition`.
-- **`BoardCatalog.ts`** — locked V1 seven product entries, play defaults (centre rule, timers), and `playable` / `productVisible` flags.
+- **`BoardCatalog.ts`** — locked V1 seven product entries, per-board play defaults (centre rule, match timer, shot clock) and option lists; `playable` / `productVisible` flags.
 
 ### src/core/SmartBeadsEngine.ts
 
