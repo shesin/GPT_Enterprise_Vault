@@ -85,13 +85,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
   },
   {
     id: '10x5',
-    engineVariant: null,
+    engineVariant: '10x5',
     displayName: '10-bead · 5×5',
-    description: 'Locked V1 #4',
+    description: 'Locked V1 #4 — two-file camps, empty centre file',
     beadCount: 10,
     lattice: '5×5',
-    playable: false,
-    productVisible: false,
+    playable: true,
+    productVisible: true,
     play: {
       defaultSettings: { ...BASE_SETTINGS },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],

@@ -4,11 +4,25 @@ import { Board4 } from '../../boards/Board4';
 import { Board5 } from '../../boards/Board5';
 import { Board6 } from '../../boards/Board6';
 import { Board6x3x5 } from '../../boards/Board6x3x5';
+import { Board10x5 } from '../../boards/Board10x5';
 import { Board7 } from '../../boards/Board7';
 
 describe('SmartBeadsEngine', () => {
   it('lists the configured board variants', () => {
-    expect(listBoardVariants()).toEqual(['4', '5', '6', '7', '16', '6x3x5']);
+    expect(listBoardVariants()).toEqual(['4', '5', '6', '7', '16', '6x3x5', '10x5']);
+  });
+
+  it('defines Board10x5 as a 10-bead 5×5 lattice with sholo_guti rules', () => {
+    expect(Board10x5.intersections).toHaveLength(25);
+    expect(Board10x5.centerNodeIds).toEqual([12]);
+    expect(Board10x5.maxPlies).toBeNull();
+    expect(Board10x5.terminationProfile).toBe('sholo_guti');
+
+    const red = Board10x5.intersections.filter((point) => point.occupant === 'RED');
+    const blue = Board10x5.intersections.filter((point) => point.occupant === 'BLUE');
+
+    expect(red).toHaveLength(10);
+    expect(blue).toHaveLength(10);
   });
 
   it('defines Board4 as a 4x4 grid with RED on row 1 and BLUE on row 4', () => {

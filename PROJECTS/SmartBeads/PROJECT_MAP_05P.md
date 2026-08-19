@@ -11,6 +11,7 @@ SmartBeads/
 │   │   ├── Board5.ts                  # Stub — future variant
 │   │   ├── Board6.ts                  # 6-bead · 4×4 full box cross (V1 #2)
 │   │   ├── Board6x3x5.ts              # 6-bead · 3×5 top–bottom (V1 #3)
+│   │   ├── Board10x5.ts               # 10-bead · 5×5 two-file (V1 #4)
 │   │   ├── Board7.ts                  # Stub — future variant
 │   │   ├── Board16Sholo.ts            # 16-bead · 5×5 + wings (V1 #1 reference)
 │   │   └── __tests__/                 # Board geometry + prototype parity tests
@@ -50,7 +51,8 @@ SmartBeads/
 │   ├── m1-browser-verify.mjs
 │   ├── m2-browser-verify.mjs          # 16-bead feature shell
 │   ├── m2-6x4-browser-verify.mjs
-│   └── m2-6x3x5-browser-verify.mjs
+│   ├── m2-6x3x5-browser-verify.mjs
+│   └── m2-10x5-browser-verify.mjs
 │
 ├── prototype/                         # Design/UX prototypes (outside production src/)
 │   └── board4/                        # Standalone HTML gameplay lab for Board4-scale boards
@@ -87,6 +89,7 @@ Standalone HTML gameplay laboratory. Lives outside `src/` per the Prototype Clas
 - **cursor-index-fullturn-engine.cjs** — Headless 4×4 engine (`geometry`: `rays` | `fullBoxCross`; active playable uses `fullBoxCross`).
 - **SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html** — Prototype reference for production `Board6.ts` (6-bead · 4×4).
 - **SHOLO_GUTI_6_BEAD_WITH_FEATURE.html** — Prototype reference for production `Board6x3x5.ts` (6-bead · 3×5).
+- **SHOLO_GUTI_10_BEAD_WITH_FEATURE.html** — Prototype reference for production `Board10x5.ts` (10-bead · 5×5).
 - **SHOLO_GUTI_WITH_FEATURE.html** — Prototype reference for production `Board16Sholo.ts` (16-bead).
 - **sholo-guti-fullturn-engine.cjs** — Headless full-turn engine for 16-bead reference parity tests.
 - **evaluate-feature-test-lab.cjs** / **FEATURE_TEST_KEEP_REGISTRY.json** — Feature Test (human-confirmed KEEP only). Report: **`WEB_FEATURE_TEST_05P.md`**.
@@ -105,6 +108,7 @@ BoardDefinition variants. Each file owns geometry, starting layout, center nodes
 | `Board16Sholo.ts` | 1 · 16-bead 5×5 | **Production playable** |
 | `Board6.ts` | 2 · 6-bead 4×4 | **Production playable** |
 | `Board6x3x5.ts` | 3 · 6-bead 3×5 | **Production playable** |
+| `Board10x5.ts` | 4 · 10-bead 5×5 | **Production playable** |
 | `Board4.ts` | — | Lab orthogonal 4×4 (4-bead) |
 | `Board5.ts`, `Board7.ts` | — | Stubs |
 
@@ -146,4 +150,4 @@ The physical board model (`BoardDefinition`: intersections and connections) is t
 
 The objective is to ship the **V1 seven-board app** (locked in `VISION_05P.md`) via one production engine, configurable board geometry, and a shared feature shell. Prototype HTML playables remain the Lab/reference implementation; they do not ship as separate apps.
 
-**Current production playables:** 16-bead · 5×5 (`Board16Sholo`), 6-bead · 4×4 (`Board6`), 6-bead · 3×5 (`Board6x3x5`).
+**Current production playables:** 16-bead · 5×5 (`Board16Sholo`), 6-bead · 4×4 (`Board6`), 6-bead · 3×5 (`Board6x3x5`), 10-bead · 5×5 (`Board10x5`).
