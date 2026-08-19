@@ -1,5 +1,5 @@
 # SmartBeads Project Rules
-Short, always-loaded rules — Cursor reads this file every message.
+Short, actionable engineering rules. Cursor loads them via `.cursor/rules/smartbeads-core.mdc` (always) and `smartbeads-rules.mdc` (when editing SmartBeads files). This file is the canonical source — sync the `.mdc` copies when rules change.
 
 ## Purpose
 Permanent, actionable engineering rules only. State the rule, not the reasoning — reasoning lives in VISION_05P.md. No status, no temporary details, no numeric defaults here.

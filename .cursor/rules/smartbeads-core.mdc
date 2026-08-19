@@ -1,0 +1,17 @@
+---
+description: SmartBeads hard gates (minimal always-on)
+alwaysApply: true
+---
+
+# SmartBeads — always-on gates
+
+Apply when work touches `PROJECTS/SmartBeads/` (full rules load via `smartbeads-rules.mdc` when matching files are in context).
+
+- **Evidence before conclusion** — repo inspection and execution beat chat history or status docs.
+- **Prototype ≠ production** — `prototype/` must not share code with `src/`; port geometry/rules only.
+- **Verified source** — read files before changing; never invent project state from memory.
+- **Verification scope** — tests/builds are technical verification only; they do not prove gameplay/UX quality.
+- **Protected docs** — do not edit `VISION_05P.md` or `GPT_PROJECT_RULES_01P.md` to fit an implementation; stop and report conflicts.
+- **Reuse before build** — extend existing engine/shell components; no new abstraction without demonstrated need.
+
+Canonical full rules: `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md`
