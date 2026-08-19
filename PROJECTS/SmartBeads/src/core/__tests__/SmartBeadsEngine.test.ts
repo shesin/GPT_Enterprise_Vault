@@ -14,6 +14,19 @@ describe('SmartBeadsEngine', () => {
     expect(listBoardVariants()).toEqual(['4', '5', '6', '7', '16', '6x3x5', '10x5', '12x6x5', '8x4x6']);
   });
 
+  it('defines Board7 as a 7-bead 4×5 hourglass with sholo_guti rules', () => {
+    expect(Board7.intersections).toHaveLength(20);
+    expect(Board7.centerNodeIds).toEqual([9, 10]);
+    expect(Board7.maxPlies).toBeNull();
+    expect(Board7.terminationProfile).toBe('sholo_guti');
+
+    const red = Board7.intersections.filter((point) => point.occupant === 'RED');
+    const blue = Board7.intersections.filter((point) => point.occupant === 'BLUE');
+
+    expect(red).toHaveLength(7);
+    expect(blue).toHaveLength(7);
+  });
+
   it('defines Board8x4x6 as an 8-bead 4×6 hourglass with sholo_guti rules', () => {
     expect(Board8x4x6.intersections).toHaveLength(24);
     expect(Board8x4x6.centerNodeIds).toEqual([9, 10, 13, 14]);
