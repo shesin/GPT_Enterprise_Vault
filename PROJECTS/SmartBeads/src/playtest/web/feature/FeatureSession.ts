@@ -299,6 +299,19 @@ export class FeatureSession {
     this.selectedId = null;
   }
 
+  /** Resignation: opponent accepts draw, or declines and wins. */
+  resolveResignation(resigningPlayer: Player, acceptDraw: boolean): void {
+    if (this.isGameOver()) return;
+    const resignLabel = resigningPlayer === 'RED' ? 'P1' : 'P2';
+    const oppLabel = resigningPlayer === 'RED' ? 'P2' : 'P1';
+    if (acceptDraw) {
+      this.endGameByFeature('DRAW', `${resignLabel} resigned — ${oppLabel} agreed to a draw.`);
+      return;
+    }
+    const winner = resigningPlayer === 'RED' ? 'BLUE' : 'RED';
+    this.endGameByFeature(winner, `${resignLabel} resigned — ${oppLabel} declined the draw.`);
+  }
+
   evaluateScoreAndEnd(prefixReason: string): void {
     const state = this.engine.getState();
     const redCaps = state.captures.RED;

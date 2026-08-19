@@ -40,6 +40,7 @@
       <div id="status"></div>
       <div class="controls">
         <button class="finish" id="finish-btn">Finish chain</button>
+        <button id="resign-btn" type="button">Resign</button>
         <button id="undo-btn" type="button">Undo</button>
         <button id="restart-btn">New game</button>
       </div>
@@ -97,6 +98,17 @@
       </div>
       <audio id="bgm-audio" loop></audio>
     </aside>
+  </div>
+
+  <div class="modal" id="resign-offer-modal">
+    <div class="modal-card">
+      <h3 id="resign-offer-title">Resignation offer</h3>
+      <p id="resign-offer-desc"></p>
+      <div class="modal-actions">
+        <button type="button" id="resign-agree-btn">Agree to draw</button>
+        <button type="button" id="resign-decline-btn">Decline — claim win</button>
+      </div>
+    </div>
   </div>
 
   <div class="modal" id="result-modal">

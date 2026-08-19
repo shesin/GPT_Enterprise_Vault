@@ -64,6 +64,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 - **8-bead · 4×6 hourglass (2026-08-19):** `Board8x4x6.ts` — 24-node hourglass waist, catalog `8x4x6`, centre nodes **9, 10, 13, 14**. Prototype parity vs `sholo-f1a-8-4x6-fullturn-engine.cjs` / `SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html`.
 - **7-bead · 4×5 hourglass (2026-08-19):** `Board7.ts` — 20-node hourglass (5+2+2+5 camps), catalog `7x4x5`, centre nodes **9, 10**. Prototype parity vs `sholo-7-bead-fullturn-engine.cjs` / `SHOLO_GUTI_7_BEAD_WITH_FEATURE.html`. **V1 seven-board port complete.**
 - **Human-decided catalog settings (2026-08-19):** Per-board centre/timer/shot defaults and option lists in `BoardCatalog.ts`; UI reads catalog via `PlayController`. Timer expiry → opponent wins. Capture majority then centre tiebreak. **Resignation rule decided but not yet implemented** (requires UI + session flow).
+- **Resignation (2026-08-19):** P1/current player offers resignation; opponent accepts draw or claims win. PvP offer modal; PvE uses `shouldAcceptResignationDraw` (HonestAi eval). Browser: `m2-resignation-verify.mjs`.
 
 ---
 
@@ -78,7 +79,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 | `SHOLO_GUTI_7_BEAD_WITH_FEATURE.html` | NEEDS FURTHER TESTING | **KEEP** | Complete |
 | `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html` | NEEDS FURTHER TESTING | **KEEP** | Complete |
 
-**Pending:** resignation UI/flow implementation (rule decided 2026-08-19).
+**Pending:** none for resignation (implemented 2026-08-19).
 
 **Do not promote:** 4-bead, 5-bead 3×5 sketch, 8-bead 4×5, Cursor Index 4, **5-bead 3×5 LR**, **5-bead 4×4**, **12-bead miniwing**, **12-bead Baro**. **8-bead 5×5** is Lab-pass only until human playtest.
 
@@ -86,7 +87,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ## Next Step
 
-1. Implement **resignation** UI and session flow (rule locked; not in catalog-only scope).  
+1. Commit remaining local work (visual parity, board order, doc dedup) as directed.  
 2. Ship / polish beyond V1 seven-board port as directed.
 
 ---

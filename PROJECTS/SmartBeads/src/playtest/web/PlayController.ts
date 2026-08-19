@@ -21,7 +21,7 @@ import {
   ShotClockSeconds,
 } from './feature/GameFeatureSettings';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
-import { selectAiTurnPath } from './feature/HonestAi';
+import { selectAiTurnPath, shouldAcceptResignationDraw } from './feature/HonestAi';
 import {
   BoardAnimState,
   drawCanvasBoard,
@@ -39,6 +39,10 @@ function winnerLabel(winner: Player | 'DRAW' | undefined): string {
   if (winner === 'RED') return 'Ivory wins';
   if (winner === 'BLUE') return 'Ebony wins';
   return 'Draw';
+}
+
+function playerDisplayName(player: Player): string {
+  return player === 'RED' ? 'Ivory (P1)' : 'Ebony (P2)';
 }
 
 export function bootstrapPlayShell(): void {
@@ -61,13 +65,19 @@ export function bootstrapPlayShell(): void {
   let rafId = 0;
   let aiRunId = 0;
   const undoStack: SessionSnapshot[] = [];
+  let pendingResignPlayer: Player | null = null;
 
   const canvas = document.getElementById('board') as HTMLCanvasElement;
   const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
+  const resignBtn = document.getElementById('resign-btn') as HTMLButtonElement;
   const undoBtn = document.getElementById('undo-btn') as HTMLButtonElement;
   const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
   const playAgainBtn = document.getElementById('play-again-btn') as HTMLButtonElement;
   const resultModal = document.getElementById('result-modal') as HTMLDivElement;
+  const resignOfferModal = document.getElementById('resign-offer-modal') as HTMLDivElement;
+  const resignOfferDesc = document.getElementById('resign-offer-desc') as HTMLParagraphElement;
+  const resignAgreeBtn = document.getElementById('resign-agree-btn') as HTMLButtonElement;
+  const resignDeclineBtn = document.getElementById('resign-decline-btn') as HTMLButtonElement;
   const resultTitle = document.getElementById('result-title') as HTMLHeadingElement;
   const resultDesc = document.getElementById('result-desc') as HTMLParagraphElement;
   const statusEl = document.getElementById('status') as HTMLDivElement | null;
@@ -185,6 +195,60 @@ export function bootstrapPlayShell(): void {
     undoBtn.disabled = undoStack.length === 0;
   }
 
+  function canOfferResignation(): boolean {
+    if (session.isGameOver() || animating || aiThinking) return false;
+    if (pendingResignPlayer !== null) return false;
+    return true;
+  }
+
+  function resigningPlayerForMode(): Player {
+    const settings = session.getSettings();
+    if (settings.mode === 'pve') return 'RED';
+    return session.getEngine().getState().currentPlayer;
+  }
+
+  function finishResignation(resigning: Player, acceptDraw: boolean): void {
+    if (timerId) clearInterval(timerId);
+    cancelAiWork();
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    session.resolveResignation(resigning, acceptDraw);
+    updateUI();
+  }
+
+  function beginResignation(): void {
+    if (!canOfferResignation()) return;
+    const settings = session.getSettings();
+    const resigning = resigningPlayerForMode();
+    const confirmed = window.confirm(
+      `Offer resignation as ${playerDisplayName(resigning)}? Opponent may accept a draw or claim a win.`,
+    );
+    if (!confirmed) return;
+
+    if (settings.mode === 'pve') {
+      const testOverride = sessionStorage.getItem('sb-test-resign-ai');
+      let acceptDraw: boolean;
+      if (testOverride === 'accept') {
+        acceptDraw = true;
+      } else if (testOverride === 'reject') {
+        acceptDraw = false;
+      } else {
+        acceptDraw = shouldAcceptResignationDraw(
+          session.getBoardVariant(),
+          session.getEngine().exportSnapshot(),
+          session.getAiPlayer(),
+        );
+      }
+      finishResignation(resigning, acceptDraw);
+      return;
+    }
+
+    pendingResignPlayer = resigning;
+    resignOfferDesc.textContent =
+      `${playerDisplayName(resigning)} offers resignation. Agree to a draw?`;
+    resignOfferModal.style.display = 'flex';
+  }
+
   function drawBoard(): void {
     const state = session.getEngine().getState();
     drawCanvasBoard(canvas, {
@@ -226,6 +290,7 @@ export function bootstrapPlayShell(): void {
     finishBtn.style.display = showFinish ? 'inline-block' : 'none';
 
     undoBtn.disabled = undoStack.length === 0 || animating || aiThinking;
+    resignBtn.disabled = !canOfferResignation();
 
     const matchSecs = parseMatchSeconds(settings.matchTimer);
     if (matchSecs <= 0) {
@@ -250,10 +315,12 @@ export function bootstrapPlayShell(): void {
     aiLevelSelect.disabled = settings.mode === 'pvp';
     aiLevelContainer.style.opacity = settings.mode === 'pvp' ? '0.45' : '1';
 
-    if (session.isGameOver()) {
+    if (session.isGameOver() && pendingResignPlayer === null) {
       resultModal.style.display = 'flex';
       resultTitle.textContent = winnerLabel(session.getDisplayedWinner());
       resultDesc.textContent = session.getDisplayedReason() ?? '';
+    } else if (pendingResignPlayer === null) {
+      resultModal.style.display = 'none';
     }
 
     drawBoard();
@@ -455,6 +522,8 @@ export function bootstrapPlayShell(): void {
     }
 
     resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
     undoBtn.disabled = undoStack.length === 0;
     if (!session.isGameOver()) startTimers();
     setStatus('Your turn — select a piece');
@@ -474,6 +543,8 @@ export function bootstrapPlayShell(): void {
     session = createSession(currentBoardId, settings);
     session.reset();
     resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
     session.resetTurnClock();
     setStatus('Your turn — select a piece');
     updateUI();
@@ -481,6 +552,16 @@ export function bootstrapPlayShell(): void {
     undoBtn.disabled = true;
     rafId = requestAnimationFrame(loopPulse);
   }
+
+  resignBtn.addEventListener('click', beginResignation);
+  resignAgreeBtn.addEventListener('click', () => {
+    if (pendingResignPlayer === null) return;
+    finishResignation(pendingResignPlayer, true);
+  });
+  resignDeclineBtn.addEventListener('click', () => {
+    if (pendingResignPlayer === null) return;
+    finishResignation(pendingResignPlayer, false);
+  });
 
   finishBtn.addEventListener('click', () => {
     if (session.getUiState() !== 'chain' || animating) return;
@@ -505,6 +586,8 @@ export function bootstrapPlayShell(): void {
     applyBoardDefaults(boardId);
     session = createSession(boardId, readSettings());
     resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
     session.resetTurnClock();
     setStatus('Your turn — select a piece');
     updateUI();

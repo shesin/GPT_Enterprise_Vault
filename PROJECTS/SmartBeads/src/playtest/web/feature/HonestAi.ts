@@ -206,3 +206,13 @@ export function selectAiTurnPath(
 
   return best[Math.floor(Math.random() * best.length)].path;
 }
+
+/** When the human offers resignation in PvE, AI accepts a draw unless clearly ahead. */
+export function shouldAcceptResignationDraw(
+  variant: BoardVariant,
+  snapshot: { state: GameState; chainPieceId: number | null },
+  aiPlayer: Player = 'BLUE',
+): boolean {
+  const score = evaluate(snapshot.state, variant, aiPlayer);
+  return score <= 0;
+}
