@@ -1,0 +1,3275 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBeads</title>
+  <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-shell.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="card left">
+      <h2>Players</h2>
+      <div class="pill red" id="pill-p1">
+        <div>
+          <div><strong>Ivory (P1)</strong></div>
+          <div class="tiny" id="p1-role">(Human)</div>
+        </div>
+        <div class="timer" id="p1-clock">--:--</div>
+      </div>
+      <div class="pill blue" id="pill-p2">
+        <div>
+          <div><strong>Ebony (P2)</strong></div>
+          <div class="tiny" id="p2-role">(AI)</div>
+        </div>
+        <div class="timer" id="p2-clock">--:--</div>
+      </div>
+      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">16</span></div>
+      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">16</span></div>
+      <div class="stat"><span>P1 captures</span><span class="val" id="p1-caps">0</span></div>
+      <div class="stat"><span>P2 captures</span><span class="val" id="p2-caps">0</span></div>
+      <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
+      <div class="stat"><span>Shot clock</span><span class="val" id="shot-clock-val">OFF</span></div>
+      <div class="stat"><span>Match timer</span><span class="val" id="match-clock-val">OFF</span></div>
+      <div class="stat"><span>P1 center</span><span class="val" id="p1-center">Off</span></div>
+      <div class="stat"><span>P2 center</span><span class="val" id="p2-center">Off</span></div>
+    </aside>
+
+    <main class="main">
+      <div class="board-frame"><canvas id="board" width="500" height="680"></canvas></div>
+      <div id="status"></div>
+      <div class="controls">
+        <button class="finish" id="finish-btn">Finish chain</button>
+        <button id="resign-btn" type="button">Resign</button>
+        <button id="undo-btn" type="button">Undo</button>
+        <button id="restart-btn">New game</button>
+      </div>
+    </main>
+
+    <aside class="card right">
+      <h2>Settings</h2>
+      <div class="setting-list">
+        <div class="setting">
+          <label>Board</label>
+          <select id="board-select"></select>
+        </div>
+        <div class="setting">
+          <label>Game mode</label>
+          <select id="game-mode-select">
+            <option value="pve" selected>Human vs AI</option>
+            <option value="pvp">Human vs Human</option>
+          </select>
+        </div>
+        <div class="setting" id="ai-level-container">
+          <label>AI level</label>
+          <select id="ai-level-select">
+            <option value="1">Easy</option>
+            <option value="2" selected>Medium</option>
+            <option value="3">Hard</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>Match timer</label>
+          <select id="match-timer-select"></select>
+        </div>
+        <div class="setting">
+          <label>Turn shot clock</label>
+          <select id="shot-clock-select"></select>
+        </div>
+        <div class="setting">
+          <label>Center rule</label>
+          <select id="center-rule-select"></select>
+        </div>
+      </div>
+
+      <h2 style="margin-top: 14px;">BGM Music</h2>
+      <div class="bgm-section">
+        <select id="bgm-select">
+          <option value="">— Select Music —</option>
+        </select>
+        <div class="bgm-controls">
+          <button type="button" id="bgm-play">▶ Play</button>
+          <button type="button" id="bgm-pause">⏸ Pause</button>
+        </div>
+        <div class="bgm-vol-row">
+          <span class="tiny">Volume</span>
+          <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.3">
+        </div>
+      </div>
+      <audio id="bgm-audio" loop></audio>
+    </aside>
+  </div>
+
+  <div class="modal" id="resign-offer-modal">
+    <div class="modal-card">
+      <h3 id="resign-offer-title">Resignation offer</h3>
+      <p id="resign-offer-desc"></p>
+      <div class="modal-actions">
+        <button type="button" id="resign-agree-btn">Agree to draw</button>
+        <button type="button" id="resign-decline-btn">Decline — claim win</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="result-modal">
+    <div class="modal-card">
+      <h3 id="result-title">Game Over</h3>
+      <p id="result-desc"></p>
+      <button id="play-again-btn">Play again</button>
+    </div>
+  </div>
+
+  <script type="module" src="/PROJECTS/SmartBeads/src/playtest/web/main.ts"></script>
+</body>
+</html>
+
+
+===== FILE: PROJECTS\SmartBeads\src\boards\Board16Sholo.ts =====
+
+import { BoardDefinition, Connection, Intersection, JumpPath } from '../models/GameState';
+
+/**
+ * 16-bead Sholo Guti reference board (37-point full-stretch 5×5 + wings).
+ * Geometry and starting layout match prototype/board4/sholo-guti-fullturn-engine.cjs
+ * and SHOLO_GUTI.html — ported for production only; no shared runtime code.
+ */
+
+interface NodeSpec {
+  id: string;
+  x: number;
+  y: number;
+}
+
+const GRID_LINK_DIRS: ReadonlyArray<[number, number]> = [
+  [0, 1],
+  [1, 0],
+  [1, 1],
+  [1, -1],
+];
+
+const WING_LINKS: ReadonlyArray<[string, string]> = [
+  ['RT', 'RM'],
+  ['RM', 'RB'],
+  ['RIT', 'RIM'],
+  ['RIM', 'RIB'],
+  ['RT', 'RIT'],
+  ['RIT', 'A24'],
+  ['RB', 'RIB'],
+  ['RIB', 'A24'],
+  ['A24', 'RIM'],
+  ['RIM', 'RM'],
+  ['LT', 'LM'],
+  ['LM', 'LB'],
+  ['LIT', 'LIM'],
+  ['LIM', 'LIB'],
+  ['LT', 'LIT'],
+  ['LIT', 'A20'],
+  ['LB', 'LIB'],
+  ['LIB', 'A20'],
+  ['A20', 'LIM'],
+  ['LIM', 'LM'],
+];
+
+function buildNodeSpecs(): NodeSpec[] {
+  const nodes: NodeSpec[] = [];
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      nodes.push({ id: `A${r}${c}`, x: 2 * c, y: 2 * r });
+    }
+  }
+  const wings: NodeSpec[] = [
+    { id: 'LT', x: -2, y: 0 },
+    { id: 'LM', x: -2, y: 4 },
+    { id: 'LB', x: -2, y: 8 },
+    { id: 'LIT', x: -1, y: 2 },
+    { id: 'LIM', x: -1, y: 4 },
+    { id: 'LIB', x: -1, y: 6 },
+    { id: 'RT', x: 10, y: 0 },
+    { id: 'RM', x: 10, y: 4 },
+    { id: 'RB', x: 10, y: 8 },
+    { id: 'RIT', x: 9, y: 2 },
+    { id: 'RIM', x: 9, y: 4 },
+    { id: 'RIB', x: 9, y: 6 },
+  ];
+  return nodes.concat(wings);
+}
+
+function sameDir(dx: number, dy: number, ex: number, ey: number): boolean {
+  return dx * ey === dy * ex && dx * ex + dy * ey > 0;
+}
+
+function buildAdjacency(nodes: NodeSpec[]): number[][] {
+  const indexByLabel = new Map(nodes.map((node, index) => [node.id, index]));
+  const adjacency = Array.from({ length: nodes.length }, () => [] as number[]);
+
+  const link = (a: string, b: string): void => {
+    const i = indexByLabel.get(a)!;
+    const j = indexByLabel.get(b)!;
+    if (!adjacency[i].includes(j)) {
+      adjacency[i].push(j);
+    }
+    if (!adjacency[j].includes(i)) {
+      adjacency[j].push(i);
+    }
+  };
+
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      for (const [dr, dc] of GRID_LINK_DIRS) {
+        const r2 = r + dr;
+        const c2 = c + dc;
+        if (r2 < 0 || r2 > 4 || c2 < 0 || c2 > 4) {
+          continue;
+        }
+        link(`A${r}${c}`, `A${r2}${c2}`);
+      }
+    }
+  }
+
+  for (const [a, b] of WING_LINKS) {
+    link(a, b);
+  }
+
+  return adjacency;
+}
+
+function continueCollinear(
+  from: number,
+  over: number,
+  nodes: NodeSpec[],
+  adjacency: number[][],
+): number {
+  const a = nodes[from];
+  const b = nodes[over];
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  for (const landing of adjacency[over]) {
+    const c = nodes[landing];
+    if (sameDir(dx, dy, c.x - b.x, c.y - b.y)) {
+      return landing;
+    }
+  }
+  return -1;
+}
+
+function startingOccupant(node: NodeSpec): 'RED' | 'BLUE' | undefined {
+  if (node.id.startsWith('L') || (node.id.startsWith('A') && (node.x === 0 || node.x === 2))) {
+    return 'RED';
+  }
+  if (node.id.startsWith('R') || (node.id.startsWith('A') && (node.x === 6 || node.x === 8))) {
+    return 'BLUE';
+  }
+  return undefined;
+}
+
+function buildIntersections(nodes: NodeSpec[]): Intersection[] {
+  return nodes.map((node, id) => ({
+    id,
+    label: node.id,
+    x: node.x,
+    y: node.y,
+    occupant: startingOccupant(node),
+  }));
+}
+
+function buildConnections(adjacency: number[][]): Connection[] {
+  const connections: Connection[] = [];
+  for (let from = 0; from < adjacency.length; from++) {
+    for (const to of adjacency[from]) {
+      if (from < to) {
+        connections.push({ from, to });
+      }
+    }
+  }
+  return connections;
+}
+
+function buildJumpPaths(nodes: NodeSpec[], adjacency: number[][]): JumpPath[] {
+  const jumpPaths: JumpPath[] = [];
+  for (let from = 0; from < nodes.length; from++) {
+    for (const over of adjacency[from]) {
+      const landing = continueCollinear(from, over, nodes, adjacency);
+      if (landing >= 0) {
+        jumpPaths.push({ from, over, to: landing });
+      }
+    }
+  }
+  return jumpPaths;
+}
+
+const NODE_SPECS = buildNodeSpecs();
+const ADJACENCY = buildAdjacency(NODE_SPECS);
+
+function buildCenterNodeIds(nodes: NodeSpec[]): number[] {
+  const centreIndex = nodes.findIndex((node) => node.id === 'A22');
+  if (centreIndex < 0) {
+    throw new Error('16-bead centre node A22 missing from board spec');
+  }
+  return [centreIndex];
+}
+
+/** Reference parity: 37 nodes, 92 undirected edges. */
+export const BOARD16_NODE_COUNT = NODE_SPECS.length;
+export const BOARD16_EDGE_COUNT = buildConnections(ADJACENCY).length;
+export const BOARD16_CENTER_NODE_IDS = buildCenterNodeIds(NODE_SPECS);
+
+export const Board16Sholo: BoardDefinition = {
+  name: 'Sholo-Guti-16x5x5',
+  intersections: buildIntersections(NODE_SPECS),
+  connections: buildConnections(ADJACENCY),
+  jumpPaths: buildJumpPaths(NODE_SPECS, ADJACENCY),
+  centerNodeIds: BOARD16_CENTER_NODE_IDS,
+  maxPlies: null,
+  terminationProfile: 'sholo_guti',
+};
+
+
+===== FILE: PROJECTS\SmartBeads\src\models\GameState.ts =====
+
+export type Player = "RED" | "BLUE";
+
+export interface Intersection {
+    id: number;
+    occupant?: Player;
+    /** Layout coordinate for rendering (board-specific units). */
+    x?: number;
+    y?: number;
+    /** Original node label from the reference board (e.g. A22, LT). */
+    label?: string;
+}
+
+/** How a completed match is resolved when limits or terminal positions are reached. */
+export type TerminationProfile = "ply_limit" | "sholo_guti";
+
+export interface Connection {
+    from: number;
+    to: number;
+}
+
+/**
+ * Straight-line capture geometry on the board graph.
+ * Occupancy is checked at runtime; this only defines legal jump routes.
+ */
+export interface JumpPath {
+    from: number;
+    over: number;
+    to: number;
+}
+
+/**
+ * Board geometry + optional match rules.
+ * Larger grids (5x5, 6x6) add new BoardDefinition variants; the engine stays unchanged.
+ */
+export interface BoardDefinition {
+    name: string;
+    intersections: Intersection[];
+    connections: Connection[];
+    /** Optional capture routes (from → over opponent → empty to). */
+    jumpPaths?: JumpPath[];
+    /** Nodes used for center-control tie-break when captures are equal. */
+    centerNodeIds?: number[];
+    /**
+     * Soft move limit. `null`, `undefined`, or `0` = unlimited.
+     * When moveCount reaches this value, the game ends and a winner is evaluated.
+     */
+    maxPlies?: number | null;
+    /**
+     * Match termination behaviour. Default `ply_limit` (SmartBeads 4×4 lab).
+     * `sholo_guti` = elimination + stalemate; one ply per completed turn.
+     */
+    terminationProfile?: TerminationProfile;
+}
+
+/** Independent copy so each game can mutate occupants without sharing templates. */
+export function cloneBoardDefinition(board: BoardDefinition): BoardDefinition {
+    return {
+        name: board.name,
+        intersections: board.intersections.map((intersection) => ({ ...intersection })),
+        connections: board.connections.map((connection) => ({ ...connection })),
+        jumpPaths: board.jumpPaths
+            ? board.jumpPaths.map((path) => ({ ...path }))
+            : undefined,
+        centerNodeIds: board.centerNodeIds ? [...board.centerNodeIds] : undefined,
+        maxPlies: board.maxPlies,
+        terminationProfile: board.terminationProfile,
+    };
+}
+
+export interface GameState {
+    board: BoardDefinition;
+    currentPlayer: Player;
+    moveCount: number;
+    captures: Record<Player, number>;
+    winner?: Player | "DRAW";
+    gameOver: boolean;
+    /** Human-readable end reason when gameOver (e.g. elimination, stalemate). */
+    endReason?: string;
+}
+
+/** Slide or single capture hop along a board route. Multi-jump = sequential Moves. */
+export interface Move {
+    from: number;
+    to: number;
+}
+
+/** Adjacent intersection ids joined by a legal connection. */
+export function getConnectedIds(board: BoardDefinition, pointId: number): number[] {
+    const connected: number[] = [];
+    for (const connection of board.connections) {
+        if (connection.from === pointId) {
+            connected.push(connection.to);
+        } else if (connection.to === pointId) {
+            connected.push(connection.from);
+        }
+    }
+    return connected;
+}
+
+/** Lookup by id; throws if the board graph is inconsistent. */
+export function requireIntersection(board: BoardDefinition, id: number): Intersection {
+    const point = board.intersections.find((intersection) => intersection.id === id);
+    if (!point) {
+        throw new Error(`Unknown intersection id: ${id}`);
+    }
+    return point;
+}
+
+/** Geometry-only jump route for a from→to hop, if the board defines one. */
+export function findJumpPath(
+    board: BoardDefinition,
+    from: number,
+    to: number,
+): JumpPath | undefined {
+    return board.jumpPaths?.find((path) => path.from === from && path.to === to);
+}
+
+/** True when a positive maxPlies is configured and the limit has been reached. */
+export function hasReachedPlyLimit(maxPlies: number | null | undefined, moveCount: number): boolean {
+    return typeof maxPlies === "number" && maxPlies > 0 && moveCount >= maxPlies;
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\core\SmartBeadsEngine.ts =====
+
+import { BoardVariant, resolveBoard } from '../config/BoardConfig';
+import {
+  cloneBoardDefinition,
+  findJumpPath,
+  getConnectedIds,
+  GameState,
+  hasReachedPlyLimit,
+  JumpPath,
+  Move,
+  Player,
+  requireIntersection,
+  TerminationProfile,
+} from '../models/GameState';
+
+/**
+ * Project gameplay engine.
+ * Board geometry, jump routes, centers, and ply limits come from BoardDefinition.
+ *
+ * Capture rules (project):
+ * - Jumps are optional (slides remain legal when not mid-chain).
+ * - Multi-jump chaining is allowed via sequential Move applications.
+ * - After a capture, further jumps from the same bead are optional; call endTurn() to stop.
+ */
+export class SmartBeadsEngine {
+  private readonly variant: BoardVariant;
+  private currentState: GameState;
+  /** When set, the current player must continue or end a capture chain with this bead. */
+  private chainPieceId: number | null = null;
+
+  constructor(variant: BoardVariant) {
+    this.variant = variant;
+    this.currentState = this.initializeInitialState(variant);
+  }
+
+  getVariant(): BoardVariant {
+    return this.variant;
+  }
+
+  getState(): GameState {
+    return this.currentState;
+  }
+
+  /** Deep snapshot for undo, AI search, and feature-layer restore. */
+  exportSnapshot(): { state: GameState; chainPieceId: number | null } {
+    return {
+      state: {
+        ...this.currentState,
+        board: cloneBoardDefinition(this.currentState.board),
+        captures: { ...this.currentState.captures },
+      },
+      chainPieceId: this.chainPieceId,
+    };
+  }
+
+  /** Restore a prior snapshot without changing match rules. */
+  loadSnapshot(snapshot: { state: GameState; chainPieceId: number | null }): void {
+    this.currentState = {
+      ...snapshot.state,
+      board: cloneBoardDefinition(snapshot.state.board),
+      captures: { ...snapshot.state.captures },
+    };
+    this.chainPieceId = snapshot.chainPieceId;
+  }
+
+  /** Counts remaining pieces on the board for the specified player. */
+  countPieces(playerId: Player): number {
+    return this.currentState.board.intersections.filter(
+      (point) => point.occupant === playerId,
+    ).length;
+  }
+
+  /** Bead id that must continue a multi-jump, if any. */
+  getChainPieceId(): number | null {
+    return this.chainPieceId;
+  }
+
+  /**
+   * Legal moves for the current player.
+   * - Normal turn: optional slides and optional jumps.
+   * - Mid multi-jump: only continuing jumps from the chaining bead.
+   */
+  getLegalMoves(): Move[] {
+    if (this.currentState.gameOver) {
+      return [];
+    }
+
+    if (this.chainPieceId !== null) {
+      return this.getJumpMovesFrom(this.chainPieceId);
+    }
+
+    const { board, currentPlayer } = this.currentState;
+    const moves: Move[] = [];
+
+    for (const intersection of board.intersections) {
+      if (intersection.occupant !== currentPlayer) {
+        continue;
+      }
+
+      for (const to of getConnectedIds(board, intersection.id)) {
+        const target = requireIntersection(board, to);
+        if (target.occupant === undefined) {
+          moves.push({ from: intersection.id, to });
+        }
+      }
+
+      moves.push(...this.getJumpMovesFrom(intersection.id));
+    }
+
+    return moves;
+  }
+
+  applyMove(move: Move): void {
+    if (this.currentState.gameOver) {
+      throw new Error('Game is already over.');
+    }
+
+    const isLegal = this.getLegalMoves().some(
+      (legal) => legal.from === move.from && legal.to === move.to,
+    );
+    if (!isLegal) {
+      throw new Error(`Illegal move: ${move.from} -> ${move.to}`);
+    }
+
+    const board = this.currentState.board;
+    const jump = this.resolveLegalJump(move);
+    const fromPoint = requireIntersection(board, move.from);
+    const toPoint = requireIntersection(board, move.to);
+    const mover = fromPoint.occupant!;
+
+    if (jump) {
+      requireIntersection(board, jump.over).occupant = undefined;
+      this.currentState.captures[mover] += 1;
+    }
+
+    toPoint.occupant = mover;
+    fromPoint.occupant = undefined;
+
+    if (jump && this.getJumpMovesFrom(move.to).length > 0) {
+      this.chainPieceId = move.to;
+      return;
+    }
+
+    this.chainPieceId = null;
+    this.completeTurn(mover);
+  }
+
+  /**
+   * Voluntarily end a multi-jump after one or more captures.
+   * Illegal when not mid-chain.
+   */
+  endTurn(): void {
+    if (this.currentState.gameOver) {
+      throw new Error('Game is already over.');
+    }
+    if (this.chainPieceId === null) {
+      throw new Error('Cannot end turn: no capture chain in progress.');
+    }
+
+    const mover = this.currentState.currentPlayer;
+    this.chainPieceId = null;
+    this.completeTurn(mover);
+  }
+
+  private completeTurn(mover: Player): void {
+    const profile = this.terminationProfile();
+
+    if (profile === 'sholo_guti') {
+      this.completeSholoTurn(mover);
+      return;
+    }
+
+    this.currentState.moveCount += 1;
+
+    if (hasReachedPlyLimit(this.currentState.board.maxPlies, this.currentState.moveCount)) {
+      this.currentState.gameOver = true;
+      this.evaluatePlyLimitWinner();
+      return;
+    }
+
+    this.currentState.currentPlayer = this.opponentOf(mover);
+  }
+
+  /** SHOLO_GUTI.html completeTurn semantics — elimination then stalemate. */
+  private completeSholoTurn(mover: Player): void {
+    this.currentState.moveCount += 1;
+
+    const redRemaining = this.countPieces('RED');
+    const blueRemaining = this.countPieces('BLUE');
+
+    if (redRemaining === 0) {
+      this.endGame('BLUE', 'elimination');
+      return;
+    }
+    if (blueRemaining === 0) {
+      this.endGame('RED', 'elimination');
+      return;
+    }
+
+    this.currentState.currentPlayer = this.opponentOf(mover);
+
+    if (this.getLegalMoves().length === 0) {
+      this.endGame(mover, 'stalemate');
+    }
+  }
+
+  private endGame(winner: Player, reason: string): void {
+    this.currentState.gameOver = true;
+    this.currentState.winner = winner;
+    this.currentState.endReason = reason;
+    this.chainPieceId = null;
+  }
+
+  private getJumpMovesFrom(pieceId: number): Move[] {
+    const { board, currentPlayer } = this.currentState;
+    const piece = requireIntersection(board, pieceId);
+    if (piece.occupant !== currentPlayer) {
+      return [];
+    }
+
+    const moves: Move[] = [];
+    for (const path of board.jumpPaths ?? []) {
+      if (path.from !== pieceId) {
+        continue;
+      }
+      if (this.isJumpCurrentlyLegal(path, currentPlayer)) {
+        moves.push({ from: path.from, to: path.to });
+      }
+    }
+    return moves;
+  }
+
+  private isJumpCurrentlyLegal(path: JumpPath, currentPlayer: Player): boolean {
+    const board = this.currentState.board;
+    const over = requireIntersection(board, path.over);
+    const landing = requireIntersection(board, path.to);
+    const opponent = this.opponentOf(currentPlayer);
+    return over.occupant === opponent && landing.occupant === undefined;
+  }
+
+  private resolveLegalJump(move: Move): JumpPath | undefined {
+    const path = findJumpPath(this.currentState.board, move.from, move.to);
+    if (!path) {
+      return undefined;
+    }
+    if (!this.isJumpCurrentlyLegal(path, this.currentState.currentPlayer)) {
+      return undefined;
+    }
+    return path;
+  }
+
+  private evaluatePlyLimitWinner(): void {
+    const { captures, board } = this.currentState;
+
+    if (captures.RED !== captures.BLUE) {
+      this.currentState.winner = captures.RED > captures.BLUE ? 'RED' : 'BLUE';
+      this.currentState.endReason = 'ply_limit_captures';
+      return;
+    }
+
+    const centerIds = board.centerNodeIds ?? [];
+    if (centerIds.length > 0) {
+      let redCenter = 0;
+      let blueCenter = 0;
+
+      for (const id of centerIds) {
+        const occupant = requireIntersection(board, id).occupant;
+        if (occupant === 'RED') {
+          redCenter += 1;
+        } else if (occupant === 'BLUE') {
+          blueCenter += 1;
+        }
+      }
+
+      if (redCenter !== blueCenter) {
+        this.currentState.winner = redCenter > blueCenter ? 'RED' : 'BLUE';
+        this.currentState.endReason = 'ply_limit_center';
+        return;
+      }
+    }
+
+    this.currentState.winner = 'DRAW';
+    this.currentState.endReason = 'ply_limit_draw';
+  }
+
+  private terminationProfile(): TerminationProfile {
+    return this.currentState.board.terminationProfile ?? 'ply_limit';
+  }
+
+  private opponentOf(player: Player): Player {
+    return player === 'RED' ? 'BLUE' : 'RED';
+  }
+
+  private initializeInitialState(variant: BoardVariant): GameState {
+    return {
+      board: cloneBoardDefinition(resolveBoard(variant)),
+      currentPlayer: 'RED',
+      moveCount: 0,
+      captures: { RED: 0, BLUE: 0 },
+      gameOver: false,
+      winner: undefined,
+      endReason: undefined,
+    };
+  }
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\config\BoardConfig.ts =====
+
+import { BoardDefinition } from '../models/GameState';
+import { Board4 } from '../boards/Board4';
+import { Board5 } from '../boards/Board5';
+import { Board6 } from '../boards/Board6';
+import { Board6x3x5 } from '../boards/Board6x3x5';
+import { Board10x5 } from '../boards/Board10x5';
+import { Board12x6x5 } from '../boards/Board12x6x5';
+import { Board8x4x6 } from '../boards/Board8x4x6';
+import { Board7 } from '../boards/Board7';
+import { Board16Sholo } from '../boards/Board16Sholo';
+
+/**
+ * Selects which physical board definition to use.
+ * Geometry lives on BoardDefinition; register new variants here.
+ */
+export type BoardVariant = '4' | '5' | '6' | '6x3x5' | '10x5' | '12x6x5' | '8x4x6' | '7' | '16';
+
+const boardVariants: Record<BoardVariant, BoardDefinition> = {
+  '4': Board4,
+  '5': Board5,
+  '6': Board6,
+  '6x3x5': Board6x3x5,
+  '10x5': Board10x5,
+  '12x6x5': Board12x6x5,
+  '8x4x6': Board8x4x6,
+  '7': Board7,
+  '16': Board16Sholo,
+};
+
+export function listBoardVariants(): BoardVariant[] {
+  return ['4', '5', '6', '7', '16', '6x3x5', '10x5', '12x6x5', '8x4x6'];
+}
+
+export function resolveBoard(variant: BoardVariant): BoardDefinition {
+  return boardVariants[variant];
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\config\BoardCatalog.ts =====
+
+import { BoardVariant } from './BoardConfig';
+import {
+  CenterRule,
+  GameFeatureSettings,
+  MatchTimerMinutes,
+  ShotClockSeconds,
+} from '../playtest/web/feature/GameFeatureSettings';
+
+/** Catalog id for each locked V1 board (VISION_05P.md). */
+export type ProductBoardId =
+  | '16'
+  | '6x4'
+  | '6x3x5'
+  | '10x5'
+  | '12x6x5'
+  | '8x4x6'
+  | '7x4x5';
+
+/** Product dropdown order: largest → smallest bead count, 6×4 before 6×3×5. */
+export const PRODUCT_BOARD_ORDER: ProductBoardId[] = [
+  '16',
+  '12x6x5',
+  '10x5',
+  '8x4x6',
+  '7x4x5',
+  '6x4',
+  '6x3x5',
+];
+
+export interface BoardPlayConfig {
+  defaultSettings: GameFeatureSettings;
+  centerRuleOptions: CenterRule[];
+  matchTimerOptions: MatchTimerMinutes[];
+  shotClockOptions: ShotClockSeconds[];
+}
+
+export interface BoardCatalogEntry {
+  id: ProductBoardId;
+  engineVariant: BoardVariant | null;
+  displayName: string;
+  description: string;
+  beadCount: number;
+  lattice: string;
+  playable: boolean;
+  productVisible: boolean;
+  play: BoardPlayConfig;
+}
+
+const BASE_SETTINGS: GameFeatureSettings = {
+  mode: 'pve',
+  aiLevel: 2,
+  matchTimer: 'off',
+  shotClock: 'off',
+  centerRule: 'off',
+};
+
+/** Locked V1 seven — human-decided catalog settings (2026-08-19). */
+export const BOARD_CATALOG: BoardCatalogEntry[] = [
+  {
+    id: '16',
+    engineVariant: '16',
+    displayName: '16-bead · 5×5 Classic',
+    description: 'Sholo Guti reference — 37-point board with wing triangles',
+    beadCount: 16,
+    lattice: '5×5 + wings',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'off',
+        matchTimer: '25',
+        shotClock: '90',
+      },
+      centerRuleOptions: ['off', 'endgame'],
+      matchTimerOptions: ['off', '15', '25', '35'],
+      shotClockOptions: ['off', '60', '90', '120'],
+    },
+  },
+  {
+    id: '12x6x5',
+    engineVariant: '12x6x5',
+    displayName: '12-bead · 6×5',
+    description: 'Locked V1 #5 — two-file rank camps, empty centre file',
+    beadCount: 12,
+    lattice: '6×5',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'off',
+        matchTimer: '20',
+        shotClock: '90',
+      },
+      centerRuleOptions: ['off', 'endgame'],
+      matchTimerOptions: ['off', '10', '20', '30'],
+      shotClockOptions: ['off', '60', '90'],
+    },
+  },
+  {
+    id: '10x5',
+    engineVariant: '10x5',
+    displayName: '10-bead · 5×5',
+    description: 'Locked V1 #4 — two-file camps, empty centre file',
+    beadCount: 10,
+    lattice: '5×5',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'off',
+        matchTimer: '20',
+        shotClock: '90',
+      },
+      centerRuleOptions: ['off', 'endgame'],
+      matchTimerOptions: ['off', '10', '20', '30'],
+      shotClockOptions: ['off', '60', '90'],
+    },
+  },
+  {
+    id: '8x4x6',
+    engineVariant: '8x4x6',
+    displayName: '8-bead · 4×6 hourglass',
+    description: 'Locked V1 #6 — hourglass waist camps',
+    beadCount: 8,
+    lattice: '4×6 hourglass',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '5',
+        shotClock: '30',
+      },
+      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
+    },
+  },
+  {
+    id: '7x4x5',
+    engineVariant: '7',
+    displayName: '7-bead · 4×5 hourglass',
+    description: 'Locked V1 #7 — hourglass waist camps',
+    beadCount: 7,
+    lattice: '4×5 hourglass',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '5',
+        shotClock: '30',
+      },
+      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
+    },
+  },
+  {
+    id: '6x4',
+    engineVariant: '6',
+    displayName: '6-bead · 4×4',
+    description: 'Locked V1 #2 — full box cross diagonals',
+    beadCount: 6,
+    lattice: '4×4',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '3',
+        shotClock: '30',
+      },
+      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
+    },
+  },
+  {
+    id: '6x3x5',
+    engineVariant: '6x3x5',
+    displayName: '6-bead · 3×5',
+    description: 'Locked V1 #3 — top–bottom camps, single centre node',
+    beadCount: 6,
+    lattice: '3×5',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '3',
+        shotClock: '30',
+      },
+      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
+    },
+  },
+];
+
+export function listProductBoards(): BoardCatalogEntry[] {
+  const playable = BOARD_CATALOG.filter((entry) => entry.productVisible && entry.playable);
+  return PRODUCT_BOARD_ORDER.map((id) => playable.find((entry) => entry.id === id)).filter(
+    (entry): entry is BoardCatalogEntry => entry !== undefined,
+  );
+}
+
+export function listCatalogBoards(): BoardCatalogEntry[] {
+  return BOARD_CATALOG;
+}
+
+export function getCatalogEntry(id: ProductBoardId): BoardCatalogEntry | undefined {
+  return BOARD_CATALOG.find((entry) => entry.id === id);
+}
+
+export const DEFAULT_PRODUCT_BOARD: ProductBoardId = '16';
+
+export function getPlayConfig(id: ProductBoardId): BoardPlayConfig {
+  const entry = getCatalogEntry(id);
+  if (!entry) {
+    throw new Error(`Unknown catalog board: ${id}`);
+  }
+  return entry.play;
+}
+
+export function resolveEngineVariant(id: ProductBoardId): BoardVariant {
+  const entry = getCatalogEntry(id);
+  if (!entry?.engineVariant || !entry.playable) {
+    throw new Error(`Board not playable in production: ${id}`);
+  }
+  return entry.engineVariant;
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\main.ts =====
+
+import { bootstrapPlayShell } from './PlayController';
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  bootstrapPlayShell();
+} else {
+  window.addEventListener('DOMContentLoaded', bootstrapPlayShell);
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\PlayController.ts =====
+
+import {
+  DEFAULT_PRODUCT_BOARD,
+  getCatalogEntry,
+  getPlayConfig,
+  listProductBoards,
+  ProductBoardId,
+  resolveEngineVariant,
+} from '../../config/BoardCatalog';
+import { findJumpPath, Move, Player } from '../../models/GameState';
+import { formatCenterDisplay } from './feature/centerScoring';
+import {
+  AiLevel,
+  BGM_TRACKS,
+  CenterRule,
+  formatCenterRuleLabel,
+  formatMatchTimerLabel,
+  formatShotClockLabel,
+  GameFeatureSettings,
+  MatchTimerMinutes,
+  parseMatchSeconds,
+  ShotClockSeconds,
+} from './feature/GameFeatureSettings';
+import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
+import { selectAiTurnPath, shouldAcceptResignationDraw } from './feature/HonestAi';
+import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
+import { getBoardCanvasSize } from './layout/boardVisualProfile';
+import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
+import {
+  BoardAnimState,
+  drawCanvasBoard,
+  hitTestNode,
+} from './render/CanvasBoardRenderer';
+
+function fmtClock(sec: number): string {
+  const clamped = sec < 0 ? 0 : sec;
+  const m = Math.floor(clamped / 60).toString().padStart(2, '0');
+  const s = (clamped % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function winnerLabel(winner: Player | 'DRAW' | undefined): string {
+  if (winner === 'RED') return 'Ivory wins';
+  if (winner === 'BLUE') return 'Ebony wins';
+  return 'Draw';
+}
+
+function playerDisplayName(player: Player): string {
+  return player === 'RED' ? 'Ivory (P1)' : 'Ebony (P2)';
+}
+
+export function bootstrapPlayShell(): void {
+  let currentBoardId: ProductBoardId = DEFAULT_PRODUCT_BOARD;
+
+  function createSession(boardId: ProductBoardId, settings?: GameFeatureSettings): FeatureSession {
+    const play = getPlayConfig(boardId);
+    return new FeatureSession(
+      resolveEngineVariant(boardId),
+      settings ?? { ...play.defaultSettings },
+    );
+  }
+
+  let session = createSession(currentBoardId);
+  let anim: BoardAnimState | null = null;
+  let animating = false;
+  let aiThinking = false;
+  let turnPulse = 0;
+  let timerId: ReturnType<typeof setInterval> | null = null;
+  let pulseRaf = 0;
+  let animRaf = 0;
+  let aiRunId = 0;
+  const undoStack: SessionSnapshot[] = [];
+  let pendingResignPlayer: Player | null = null;
+
+  const canvas = document.getElementById('board') as HTMLCanvasElement;
+  const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
+  const resignBtn = document.getElementById('resign-btn') as HTMLButtonElement;
+  const undoBtn = document.getElementById('undo-btn') as HTMLButtonElement;
+  const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
+  const playAgainBtn = document.getElementById('play-again-btn') as HTMLButtonElement;
+  const resultModal = document.getElementById('result-modal') as HTMLDivElement;
+  const resignOfferModal = document.getElementById('resign-offer-modal') as HTMLDivElement;
+  const resignOfferDesc = document.getElementById('resign-offer-desc') as HTMLParagraphElement;
+  const resignAgreeBtn = document.getElementById('resign-agree-btn') as HTMLButtonElement;
+  const resignDeclineBtn = document.getElementById('resign-decline-btn') as HTMLButtonElement;
+  const resultTitle = document.getElementById('result-title') as HTMLHeadingElement;
+  const resultDesc = document.getElementById('result-desc') as HTMLParagraphElement;
+  const statusEl = document.getElementById('status') as HTMLDivElement | null;
+
+  const boardSelect = document.getElementById('board-select') as HTMLSelectElement;
+  const gameModeSelect = document.getElementById('game-mode-select') as HTMLSelectElement;
+  const aiLevelSelect = document.getElementById('ai-level-select') as HTMLSelectElement;
+  const matchTimerSelect = document.getElementById('match-timer-select') as HTMLSelectElement;
+  const shotClockSelect = document.getElementById('shot-clock-select') as HTMLSelectElement;
+  const centerRuleSelect = document.getElementById('center-rule-select') as HTMLSelectElement;
+  const aiLevelContainer = document.getElementById('ai-level-container') as HTMLDivElement;
+
+  const bgmAudio = document.getElementById('bgm-audio') as HTMLAudioElement;
+  const bgmSelect = document.getElementById('bgm-select') as HTMLSelectElement;
+  const bgmVol = document.getElementById('bgm-vol') as HTMLInputElement;
+  const bgmPlay = document.getElementById('bgm-play') as HTMLButtonElement;
+  const bgmPause = document.getElementById('bgm-pause') as HTMLButtonElement;
+
+  populateBgmSelect(bgmSelect);
+  populateBoardSelect(boardSelect);
+
+  function readSettings(): GameFeatureSettings {
+    return {
+      mode: gameModeSelect.value as GameFeatureSettings['mode'],
+      aiLevel: parseInt(aiLevelSelect.value, 10) as AiLevel,
+      matchTimer: matchTimerSelect.value as GameFeatureSettings['matchTimer'],
+      shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
+      centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
+    };
+  }
+
+  function applyBoardDefaults(boardId: ProductBoardId): void {
+    const defaults = getPlayConfig(boardId).defaultSettings;
+    centerRuleSelect.value = defaults.centerRule;
+    matchTimerSelect.value = defaults.matchTimer;
+    shotClockSelect.value = defaults.shotClock;
+  }
+
+  function syncCenterRuleOptions(): void {
+    const options = getPlayConfig(currentBoardId).centerRuleOptions;
+    const current = centerRuleSelect.value as CenterRule;
+    centerRuleSelect.innerHTML = '';
+    for (const rule of options) {
+      const opt = document.createElement('option');
+      opt.value = rule;
+      opt.textContent = formatCenterRuleLabel(rule);
+      centerRuleSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      centerRuleSelect.value = current;
+    } else {
+      centerRuleSelect.value = getPlayConfig(currentBoardId).defaultSettings.centerRule;
+    }
+  }
+
+  function syncMatchTimerOptions(): void {
+    const options = getPlayConfig(currentBoardId).matchTimerOptions;
+    const current = matchTimerSelect.value as MatchTimerMinutes;
+    matchTimerSelect.innerHTML = '';
+    for (const value of options) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = formatMatchTimerLabel(value);
+      matchTimerSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      matchTimerSelect.value = current;
+    } else {
+      matchTimerSelect.value = getPlayConfig(currentBoardId).defaultSettings.matchTimer;
+    }
+  }
+
+  function syncShotClockOptions(): void {
+    const options = getPlayConfig(currentBoardId).shotClockOptions;
+    const current = shotClockSelect.value as ShotClockSeconds;
+    shotClockSelect.innerHTML = '';
+    for (const value of options) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = formatShotClockLabel(value);
+      shotClockSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      shotClockSelect.value = current;
+    } else {
+      shotClockSelect.value = getPlayConfig(currentBoardId).defaultSettings.shotClock;
+    }
+  }
+
+  function syncBoardPlayOptions(): void {
+    syncCenterRuleOptions();
+    syncMatchTimerOptions();
+    syncShotClockOptions();
+  }
+
+  function syncBoardTitle(): void {
+    const entry = getCatalogEntry(currentBoardId);
+    if (entry) {
+      document.title = `SmartBeads — ${entry.displayName}`;
+    }
+  }
+
+  function setStatus(text: string): void {
+    if (statusEl) statusEl.textContent = text;
+  }
+
+  function cancelAiWork(): void {
+    aiRunId += 1;
+    aiThinking = false;
+  }
+
+  function pushUndoSnapshot(): void {
+    undoStack.push(session.exportSnapshot());
+    if (undoStack.length > 80) undoStack.shift();
+    undoBtn.disabled = undoStack.length === 0;
+  }
+
+  function canOfferResignation(): boolean {
+    if (session.isGameOver() || animating || aiThinking) return false;
+    if (pendingResignPlayer !== null) return false;
+    return true;
+  }
+
+  function resigningPlayerForMode(): Player {
+    const settings = session.getSettings();
+    if (settings.mode === 'pve') return 'RED';
+    return session.getEngine().getState().currentPlayer;
+  }
+
+  function finishResignation(resigning: Player, acceptDraw: boolean): void {
+    if (timerId) clearInterval(timerId);
+    cancelAiWork();
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    session.resolveResignation(resigning, acceptDraw);
+    updateUI();
+  }
+
+  function beginResignation(): void {
+    if (!canOfferResignation()) return;
+    const settings = session.getSettings();
+    const resigning = resigningPlayerForMode();
+    const confirmed = window.confirm(
+      `Offer resignation as ${playerDisplayName(resigning)}? Opponent may accept a draw or claim a win.`,
+    );
+    if (!confirmed) return;
+
+    if (settings.mode === 'pve') {
+      const testOverride = sessionStorage.getItem('sb-test-resign-ai');
+      let acceptDraw: boolean;
+      if (testOverride === 'accept') {
+        acceptDraw = true;
+      } else if (testOverride === 'reject') {
+        acceptDraw = false;
+      } else {
+        acceptDraw = shouldAcceptResignationDraw(
+          session.getBoardVariant(),
+          session.getEngine().exportSnapshot(),
+          session.getAiPlayer(),
+        );
+      }
+      finishResignation(resigning, acceptDraw);
+      return;
+    }
+
+    pendingResignPlayer = resigning;
+    resignOfferDesc.textContent =
+      `${playerDisplayName(resigning)} offers resignation. Agree to a draw?`;
+    resignOfferModal.style.display = 'flex';
+  }
+
+  function turnStatusText(): string {
+    const player = session.getEngine().getState().currentPlayer;
+    const label = player === 'RED' ? 'P1' : 'P2';
+    const uiState = session.getUiState();
+    if (uiState === 'chain') return `${label} — continue chain or Finish`;
+    return `${label} turn — select a piece`;
+  }
+
+  function applyCanvasSizeForBoard(): void {
+    const boardName = session.getEngine().getState().board.name;
+    const { width, height } = getBoardCanvasSize(boardName);
+    canvas.width = width;
+    canvas.height = height;
+    fitCanvasToFrame(canvas);
+  }
+
+  installCanvasResizeObserver(canvas, () => {
+    fitCanvasToFrame(canvas);
+    drawBoard();
+  });
+
+  function drawBoard(): void {
+    const state = session.getEngine().getState();
+    drawCanvasBoard(canvas, {
+      board: state.board,
+      currentPlayer: state.currentPlayer,
+      gameOver: session.isGameOver(),
+      selectedId: session.getSelectedId(),
+      legalTargets: session.getLegalTargetIds(),
+      chainPieceId: session.getEngine().getChainPieceId(),
+      anim,
+      turnPulse,
+    });
+  }
+
+  function updateUI(): void {
+    const state = session.getEngine().getState();
+    const settings = session.getSettings();
+    const redPieces = session.getEngine().countPieces('RED');
+    const bluePieces = session.getEngine().countPieces('BLUE');
+
+    (document.getElementById('p1-pieces') as HTMLElement).textContent = String(redPieces);
+    (document.getElementById('p2-pieces') as HTMLElement).textContent = String(bluePieces);
+    (document.getElementById('p1-caps') as HTMLElement).textContent = String(state.captures.RED);
+    (document.getElementById('p2-caps') as HTMLElement).textContent = String(state.captures.BLUE);
+    (document.getElementById('turn-count') as HTMLElement).textContent = String(session.getMoveCount());
+
+    const centerScores = session.getCenterDisplayScores();
+    (document.getElementById('p1-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, centerScores.red);
+    (document.getElementById('p2-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, centerScores.blue);
+
+    document.getElementById('pill-p1')?.classList.toggle('active', state.currentPlayer === 'RED' && !session.isGameOver());
+    document.getElementById('pill-p2')?.classList.toggle('active', state.currentPlayer === 'BLUE' && !session.isGameOver());
+
+    const uiState = session.getUiState();
+    const showFinish = uiState === 'chain'
+      && !animating
+      && !aiThinking
+      && (settings.mode === 'pvp' || state.currentPlayer === 'RED');
+    finishBtn.style.display = showFinish ? 'inline-block' : 'none';
+
+    undoBtn.disabled = undoStack.length === 0 || animating || aiThinking;
+    resignBtn.disabled = !canOfferResignation();
+
+    const matchSecs = parseMatchSeconds(settings.matchTimer);
+    if (matchSecs <= 0) {
+      (document.getElementById('p1-clock') as HTMLElement).textContent = '--:--';
+      (document.getElementById('p2-clock') as HTMLElement).textContent = '--:--';
+      (document.getElementById('match-clock-val') as HTMLElement).textContent = 'OFF';
+    } else if (settings.mode === 'pvp') {
+      (document.getElementById('p1-clock') as HTMLElement).textContent = fmtClock(session.getP1Clock());
+      (document.getElementById('p2-clock') as HTMLElement).textContent = fmtClock(session.getP2Clock());
+      (document.getElementById('match-clock-val') as HTMLElement).textContent = 'CHESS';
+    } else {
+      (document.getElementById('p1-clock') as HTMLElement).textContent = '--:--';
+      (document.getElementById('p2-clock') as HTMLElement).textContent = '--:--';
+      (document.getElementById('match-clock-val') as HTMLElement).textContent = fmtClock(session.getGlobalMatchRemaining());
+    }
+
+    const shotLimit = session.getShotLimit();
+    (document.getElementById('shot-clock-val') as HTMLElement).textContent =
+      shotLimit > 0 ? `${session.getShotRemaining()}s` : 'OFF';
+
+    (document.getElementById('p2-role') as HTMLElement).textContent = settings.mode === 'pve' ? '(AI)' : '(Human)';
+    aiLevelSelect.disabled = settings.mode === 'pvp';
+    aiLevelContainer.style.opacity = settings.mode === 'pvp' ? '0.45' : '1';
+
+    if (session.isGameOver() && pendingResignPlayer === null) {
+      resultModal.style.display = 'flex';
+      resultTitle.textContent = winnerLabel(session.getDisplayedWinner());
+      resultDesc.textContent = session.getDisplayedReason() ?? '';
+    } else if (pendingResignPlayer === null) {
+      resultModal.style.display = 'none';
+    }
+
+    drawBoard();
+  }
+
+  function startTimers(): void {
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(() => {
+      if (session.isGameOver() || animating) return;
+      if (aiThinking) return;
+      session.timerTick();
+      updateUI();
+    }, 1000);
+  }
+
+  function loopPulse(ts: number): void {
+    turnPulse = ts / 280;
+    if (!animating) drawBoard();
+    pulseRaf = requestAnimationFrame(loopPulse);
+  }
+
+  function afterHumanOrAiTurn(): void {
+    updateUI();
+    if (session.isGameOver()) {
+      cancelAiWork();
+      return;
+    }
+    const settings = session.getSettings();
+    const state = session.getEngine().getState();
+    if (settings.mode === 'pve' && state.currentPlayer === 'BLUE') {
+      const runId = aiRunId;
+      aiThinking = true;
+      setStatus('AI is thinking…');
+      setTimeout(() => {
+        if (runId !== aiRunId) return;
+        runAiTurn(runId);
+      }, AI_REPLY_DELAY_MS);
+    } else {
+      cancelAiWork();
+      setStatus(turnStatusText());
+    }
+  }
+
+  function playAnimated(move: Move, player: Player, onDone: () => void): void {
+    if (animating) return;
+    const state = session.getEngine().getState();
+    const jump = findJumpPath(state.board, move.from, move.to);
+    const captured = jump?.over;
+    const capturedPlayer = captured !== undefined
+      ? state.board.intersections[captured].occupant
+      : undefined;
+
+    session.applyMove(move);
+
+    animating = true;
+    anim = {
+      from: move.from,
+      to: move.to,
+      captured,
+      capturedPlayer,
+      player,
+      t: 0,
+      duration: jump ? HUMAN_JUMP_ANIM_MS : HUMAN_SLIDE_ANIM_MS,
+    };
+
+    const start = performance.now();
+    function step(now: number): void {
+      if (!anim) return;
+      anim.t = Math.min(1, (now - start) / anim.duration);
+      drawBoard();
+      if (anim.t < 1) {
+        animRaf = requestAnimationFrame(step);
+      } else {
+        anim = null;
+        animating = false;
+        onDone();
+      }
+    }
+    animRaf = requestAnimationFrame(step);
+  }
+
+  function executeMoveAnimated(move: Move, player: Player): void {
+    playAnimated(move, player, () => {
+      if (session.getUiState() === 'chain') {
+        setStatus(turnStatusText());
+        updateUI();
+        return;
+      }
+      afterHumanOrAiTurn();
+    });
+  }
+
+  function runAiTurn(runId: number): void {
+    if (runId !== aiRunId) return;
+    const settings = session.getSettings();
+    const state = session.getEngine().getState();
+    if (session.isGameOver() || settings.mode !== 'pve' || state.currentPlayer !== 'BLUE') {
+      cancelAiWork();
+      return;
+    }
+
+    const path = selectAiTurnPath(
+      session.getBoardVariant(),
+      settings.aiLevel,
+      session.getEngine().exportSnapshot(),
+      'BLUE',
+    );
+    if (!path?.length) {
+      session.endGameByFeature('RED', 'AI has no legal moves.');
+      cancelAiWork();
+      updateUI();
+      return;
+    }
+
+    let i = 0;
+    function playNext(): void {
+      if (runId !== aiRunId) return;
+      if (session.isGameOver()) {
+        cancelAiWork();
+        return;
+      }
+      if (i >= path.length) {
+        cancelAiWork();
+        updateUI();
+        setStatus(turnStatusText());
+        return;
+      }
+
+      const move = path[i];
+      i += 1;
+      playAnimated(move, 'BLUE', () => {
+        if (runId !== aiRunId) return;
+        const chain = session.getEngine().getChainPieceId();
+        if (chain !== null && i < path.length) {
+          setTimeout(playNext, 60);
+          return;
+        }
+        if (chain !== null) {
+          session.finishChain();
+        }
+        if (i >= path.length) {
+          cancelAiWork();
+          afterHumanOrAiTurn();
+        } else {
+          setTimeout(playNext, 60);
+        }
+      });
+    }
+    playNext();
+  }
+
+  function handleCanvasClick(ev: MouseEvent): void {
+    if (session.isGameOver() || aiThinking || animating) return;
+    if (!session.canHumanAct()) return;
+
+    const nodeId = hitTestNode(canvas, session.getEngine().getState().board, ev.clientX, ev.clientY);
+    if (nodeId < 0) return;
+
+    const uiState = session.getUiState();
+    const state = session.getEngine().getState();
+
+    if (uiState === 'chain') {
+      const move = session.getEngine().getLegalMoves().find((m) => m.to === nodeId);
+      if (move) {
+        pushUndoSnapshot();
+        executeMoveAnimated(move, state.currentPlayer);
+      }
+      return;
+    }
+
+    if (state.board.intersections[nodeId]?.occupant === state.currentPlayer) {
+      session.selectNode(nodeId);
+      updateUI();
+      return;
+    }
+
+    if (uiState === 'selected') {
+      const move = session.getLegalMovesForSelection().find((m) => m.to === nodeId);
+      if (move) {
+        pushUndoSnapshot();
+        executeMoveAnimated(move, state.currentPlayer);
+      }
+    }
+  }
+
+  function undoMove(): void {
+    if (animating || aiThinking || undoStack.length === 0) return;
+    cancelAiWork();
+    anim = null;
+    animating = false;
+    const settings = session.getSettings();
+    const uiState = session.getUiState();
+
+    if (settings.mode === 'pve' && undoStack.length >= 2 && session.getEngine().getState().currentPlayer === 'RED' && uiState !== 'chain') {
+      undoStack.pop();
+      session.loadSnapshot(undoStack.pop()!);
+    } else {
+      session.loadSnapshot(undoStack.pop()!);
+    }
+
+    resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    undoBtn.disabled = undoStack.length === 0;
+    if (!session.isGameOver()) startTimers();
+    setStatus(turnStatusText());
+    updateUI();
+  }
+
+  function resetGame(): void {
+    if (timerId) clearInterval(timerId);
+    cancelAnimationFrame(pulseRaf);
+    cancelAnimationFrame(animRaf);
+    cancelAiWork();
+    undoStack.length = 0;
+    anim = null;
+    animating = false;
+    aiThinking = false;
+
+    const settings = readSettings();
+    session = createSession(currentBoardId, settings);
+    session.reset();
+    applyCanvasSizeForBoard();
+    resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    session.resetTurnClock();
+    setStatus(turnStatusText());
+    updateUI();
+    startTimers();
+    undoBtn.disabled = true;
+    pulseRaf = requestAnimationFrame(loopPulse);
+  }
+
+  resignBtn.addEventListener('click', beginResignation);
+  resignAgreeBtn.addEventListener('click', () => {
+    if (pendingResignPlayer === null) return;
+    finishResignation(pendingResignPlayer, true);
+  });
+  resignDeclineBtn.addEventListener('click', () => {
+    if (pendingResignPlayer === null) return;
+    finishResignation(pendingResignPlayer, false);
+  });
+
+  finishBtn.addEventListener('click', () => {
+    if (session.getUiState() !== 'chain' || animating) return;
+    pushUndoSnapshot();
+    session.finishChain();
+    afterHumanOrAiTurn();
+  });
+
+  function switchBoard(boardId: ProductBoardId): void {
+    if (timerId) clearInterval(timerId);
+    cancelAnimationFrame(pulseRaf);
+    cancelAnimationFrame(animRaf);
+    cancelAiWork();
+    undoStack.length = 0;
+    anim = null;
+    animating = false;
+    aiThinking = false;
+
+    currentBoardId = boardId;
+    boardSelect.value = boardId;
+    syncBoardTitle();
+    syncBoardPlayOptions();
+    applyBoardDefaults(boardId);
+    session = createSession(boardId, readSettings());
+    applyCanvasSizeForBoard();
+    resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    session.resetTurnClock();
+    setStatus(turnStatusText());
+    updateUI();
+    startTimers();
+    undoBtn.disabled = true;
+    pulseRaf = requestAnimationFrame(loopPulse);
+  }
+
+  restartBtn.addEventListener('click', resetGame);
+  playAgainBtn.addEventListener('click', resetGame);
+  undoBtn.addEventListener('click', undoMove);
+  boardSelect.addEventListener('change', () => {
+    switchBoard(boardSelect.value as ProductBoardId);
+  });
+  gameModeSelect.addEventListener('change', resetGame);
+  centerRuleSelect.addEventListener('change', resetGame);
+  matchTimerSelect.addEventListener('change', resetGame);
+  shotClockSelect.addEventListener('change', resetGame);
+  aiLevelSelect.addEventListener('change', resetGame);
+  canvas.addEventListener('click', handleCanvasClick);
+
+  bgmAudio.volume = parseFloat(bgmVol.value) || 0.3;
+  bgmSelect.addEventListener('change', () => {
+    if (bgmSelect.value) {
+      bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
+    } else {
+      bgmAudio.pause();
+    }
+  });
+  bgmPlay.addEventListener('click', () => {
+    if (!bgmAudio.src && bgmSelect.value) bgmAudio.src = bgmSelect.value;
+    if (bgmSelect.value) bgmAudio.play().catch(() => {});
+  });
+  bgmPause.addEventListener('click', () => bgmAudio.pause());
+  bgmVol.addEventListener('input', () => {
+    bgmAudio.volume = parseFloat(bgmVol.value) || 0;
+  });
+
+  syncBoardTitle();
+  syncBoardPlayOptions();
+  resetGame();
+
+  (window as unknown as { __SB_TEST__?: object }).__SB_TEST__ = {
+    snapshot: () => {
+      const state = session.getEngine().getState();
+      return {
+        currentPlayer: state.currentPlayer,
+        selectedId: session.getSelectedId(),
+        moveCount: session.getMoveCount(),
+        canHumanAct: session.canHumanAct(),
+        mode: session.getSettings().mode,
+        boardName: state.board.name,
+        uiState: session.getUiState(),
+        occupants: state.board.intersections.map((n) => ({
+          id: n.id,
+          label: n.label,
+          occupant: n.occupant,
+          x: n.x,
+          y: n.y,
+        })),
+      };
+    },
+  };
+}
+
+function populateBoardSelect(select: HTMLSelectElement): void {
+  select.innerHTML = '';
+  for (const entry of listProductBoards()) {
+    const opt = document.createElement('option');
+    opt.value = entry.id;
+    opt.textContent = entry.displayName;
+    select.appendChild(opt);
+  }
+  select.value = DEFAULT_PRODUCT_BOARD;
+}
+
+function populateBgmSelect(select: HTMLSelectElement): void {
+  select.innerHTML = '<option value="">— Select Music —</option>';
+  for (const track of BGM_TRACKS) {
+    const opt = document.createElement('option');
+    opt.value = track.url;
+    opt.textContent = track.label;
+    select.appendChild(opt);
+  }
+}
+
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\play-shell.css =====
+
+:root {
+  --bg: #0f2019;
+  --panel: #1a3128;
+  --panel-2: #234036;
+  --line: #45695b;
+  --text: #e8f0ea;
+  --muted: #9bb5a6;
+  --gold: #d4a84b;
+  --red: #d64545;
+  --blue: #3d8fd1;
+  --ok: #3cb89a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(ellipse at top, #284b3d, transparent 60%), linear-gradient(165deg, #12281f, #0b1813);
+  color: var(--text);
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+}
+.shell {
+  width: min(1280px, 100%);
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr) minmax(220px, 260px);
+  gap: 14px;
+  align-items: start;
+}
+.card {
+  background: rgba(18, 38, 30, 0.92);
+  border: 1px solid rgba(212,168,75,0.22);
+  border-radius: 14px;
+  padding: 12px;
+}
+.left h2, .right h2 {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.setting-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.setting label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+select, button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid rgba(212,168,75,0.34);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font: inherit;
+}
+select:disabled { opacity: 0.45; cursor: not-allowed; }
+button { cursor: pointer; font-weight: 700; }
+.board-frame {
+  --board-aspect: 0.7353;
+  width: min(100%, calc((100vh - 100px) * var(--board-aspect)));
+  max-width: 100%;
+  max-height: min(calc(100vh - 100px), 820px);
+  aspect-ratio: var(--board-aspect);
+  height: auto;
+  background: linear-gradient(180deg, #214b37, #123326);
+  border-radius: 16px;
+  padding: 10px;
+  border: 1px solid rgba(212,168,75,0.22);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 10px;
+  background: #173b2d;
+  cursor: pointer;
+}
+.controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.finish { background: #2f8c66; color: #06261b; display: none; }
+#undo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.stat { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.val { font-weight: 700; font-variant-numeric: tabular-nums; }
+.pill { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 10px; border: 1px solid transparent; margin-bottom: 8px; }
+.pill.active { border-color: rgba(212,168,75,0.7); background: rgba(212,168,75,0.1); }
+.pill.red { border-left: 4px solid var(--red); }
+.pill.blue { border-left: 4px solid var(--blue); }
+.tiny { font-size: 0.74rem; color: var(--muted); }
+.timer { font-family: ui-monospace, monospace; font-weight: 700; color: var(--gold); }
+.modal { display:none; position: fixed; inset:0; background: rgba(0,0,0,0.7); align-items:center; justify-content:center; padding: 12px; z-index: 30; }
+.modal-card { width: min(360px, 100%); background: #152a22; border: 1px solid var(--gold); border-radius: 14px; padding: 20px; text-align: center; }
+.modal-card h3 { font-size: 1.4rem; margin-bottom: 8px; }
+.modal-card p { color: var(--muted); margin-bottom: 12px; }
+.modal-actions { display: flex; flex-direction: column; gap: 8px; }
+.modal-actions button { width: 100%; }
+#resign-decline-btn { background: var(--red); color: #fff; border: none; }
+#resign-agree-btn { background: var(--ok); color: #06261b; border: none; }
+#resign-btn { background: #5a4030; color: var(--text); }
+.bgm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.bgm-controls {
+  display: flex;
+  gap: 6px;
+}
+.bgm-controls button {
+  flex: 1;
+  padding: 6px;
+  font-size: 0.8rem;
+}
+#bgm-play { background: var(--ok); color: #06261b; border: none; }
+#bgm-pause { background: var(--red); color: #fff; border: none; }
+.bgm-vol-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#bgm-vol {
+  flex: 1;
+  accent-color: var(--gold);
+}
+#status {
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+  min-height: 1.2em;
+}
+@media (max-width: 980px) {
+  .shell { grid-template-columns: 1fr; }
+  .board-frame {
+    width: min(100%, calc(65vh * var(--board-aspect)));
+    max-height: min(65vh, 620px);
+  }
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\feature\FeatureSession.ts =====
+
+import { BoardVariant } from '../../../config/BoardConfig';
+import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
+import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
+import { countCenterOccupancy } from './centerScoring';
+import {
+  GameFeatureSettings,
+  parseMatchSeconds,
+  parseShotLimit,
+} from './GameFeatureSettings';
+
+export type UiInteractionState = 'idle' | 'selected' | 'chain' | 'game_over';
+
+export interface SessionSnapshot {
+  boardVariant: BoardVariant;
+  engineSnap: { state: GameState; chainPieceId: number | null };
+  settings: GameFeatureSettings;
+  uiState: UiInteractionState;
+  selectedId: number | null;
+  repetitionHistory: Record<string, number>;
+  p1Clock: number;
+  p2Clock: number;
+  globalMatchRemaining: number;
+  shotRemaining: number;
+  p1CenterScore: number;
+  p2CenterScore: number;
+  featureOver?: FeatureGameOver | null;
+}
+
+export interface FeatureGameOver {
+  winner: Player | 'DRAW';
+  reason: string;
+}
+
+function opponentOf(player: Player): Player {
+  return player === 'RED' ? 'BLUE' : 'RED';
+}
+
+function positionKey(state: GameState, mover: Player): string {
+  const occ = state.board.intersections.map((p) => {
+    if (p.occupant === 'RED') return 'R';
+    if (p.occupant === 'BLUE') return 'B';
+    return '0';
+  }).join('');
+  return `${occ}_${mover}`;
+}
+
+function cloneHistory(h: Record<string, number>): Record<string, number> {
+  return { ...h };
+}
+
+/**
+ * Feature-layer session wrapping M1 SmartBeadsEngine.
+ * Timers, repetition draw, center tiebreak, and undo live here — not in core rules.
+ */
+export class FeatureSession {
+  private boardVariant: BoardVariant;
+  private engine: SmartBeadsEngine;
+  private settings: GameFeatureSettings;
+  private uiState: UiInteractionState = 'idle';
+  private selectedId: number | null = null;
+  private repetitionHistory: Record<string, number> = {};
+  private p1Clock = 0;
+  private p2Clock = 0;
+  private globalMatchRemaining = 0;
+  private shotLimit = 0;
+  private shotRemaining = 0;
+  private p1CenterScore = 0;
+  private p2CenterScore = 0;
+  private featureOver: FeatureGameOver | null = null;
+
+  constructor(boardVariant: BoardVariant, settings: GameFeatureSettings) {
+    this.boardVariant = boardVariant;
+    this.settings = { ...settings };
+    this.engine = new SmartBeadsEngine(boardVariant);
+    this.applyTimerSettings();
+  }
+
+  getBoardVariant(): BoardVariant {
+    return this.boardVariant;
+  }
+
+  getSettings(): GameFeatureSettings {
+    return { ...this.settings };
+  }
+
+  updateSettings(settings: GameFeatureSettings): void {
+    this.settings = { ...settings };
+    this.applyTimerSettings();
+  }
+
+  reset(): void {
+    this.engine = new SmartBeadsEngine(this.boardVariant);
+    this.uiState = 'idle';
+    this.selectedId = null;
+    this.repetitionHistory = {};
+    this.p1CenterScore = 0;
+    this.p2CenterScore = 0;
+    this.featureOver = null;
+    this.applyTimerSettings();
+  }
+
+  exportSnapshot(): SessionSnapshot {
+    return {
+      boardVariant: this.boardVariant,
+      engineSnap: this.engine.exportSnapshot(),
+      settings: { ...this.settings },
+      uiState: this.uiState,
+      selectedId: this.selectedId,
+      repetitionHistory: cloneHistory(this.repetitionHistory),
+      p1Clock: this.p1Clock,
+      p2Clock: this.p2Clock,
+      globalMatchRemaining: this.globalMatchRemaining,
+      shotRemaining: this.shotRemaining,
+      p1CenterScore: this.p1CenterScore,
+      p2CenterScore: this.p2CenterScore,
+      featureOver: this.featureOver,
+    };
+  }
+
+  loadSnapshot(snap: SessionSnapshot): void {
+    this.boardVariant = snap.boardVariant;
+    this.engine.loadSnapshot(snap.engineSnap);
+    this.settings = { ...snap.settings };
+    this.uiState = snap.uiState;
+    this.selectedId = snap.selectedId;
+    this.repetitionHistory = cloneHistory(snap.repetitionHistory);
+    this.p1Clock = snap.p1Clock;
+    this.p2Clock = snap.p2Clock;
+    this.globalMatchRemaining = snap.globalMatchRemaining;
+    this.shotRemaining = snap.shotRemaining;
+    this.p1CenterScore = snap.p1CenterScore ?? 0;
+    this.p2CenterScore = snap.p2CenterScore ?? 0;
+    this.featureOver = snap.featureOver ?? null;
+    this.shotLimit = parseShotLimit(this.settings.shotClock);
+  }
+
+  getEngine(): SmartBeadsEngine {
+    return this.engine;
+  }
+
+  getUiState(): UiInteractionState {
+    return this.uiState;
+  }
+
+  getSelectedId(): number | null {
+    return this.selectedId;
+  }
+
+  getMoveCount(): number {
+    return this.engine.getState().moveCount;
+  }
+
+  getHumanPlayer(): Player {
+    return 'RED';
+  }
+
+  getAiPlayer(): Player {
+    return 'BLUE';
+  }
+
+  isGameOver(): boolean {
+    return this.engine.getState().gameOver || this.featureOver !== null;
+  }
+
+  getDisplayedWinner(): Player | 'DRAW' | undefined {
+    if (this.featureOver) return this.featureOver.winner;
+    return this.engine.getState().winner;
+  }
+
+  getDisplayedReason(): string | undefined {
+    if (this.featureOver) return this.featureOver.reason;
+    return this.engine.getState().endReason;
+  }
+
+  getP1Clock(): number {
+    return this.p1Clock;
+  }
+
+  getP2Clock(): number {
+    return this.p2Clock;
+  }
+
+  getGlobalMatchRemaining(): number {
+    return this.globalMatchRemaining;
+  }
+
+  getShotRemaining(): number {
+    return this.shotRemaining;
+  }
+
+  getShotLimit(): number {
+    return this.shotLimit;
+  }
+
+  getCenterDisplayScores(): { red: number; blue: number } {
+    const state = this.engine.getState();
+    if (this.settings.centerRule === 'cumulative') {
+      return { red: this.p1CenterScore, blue: this.p2CenterScore };
+    }
+    if (this.settings.centerRule === 'endgame') {
+      return {
+        red: countCenterOccupancy(state.board, 'RED'),
+        blue: countCenterOccupancy(state.board, 'BLUE'),
+      };
+    }
+    return { red: 0, blue: 0 };
+  }
+
+  getLegalMovesForSelection(): Move[] {
+    if (this.isGameOver()) return [];
+    const chain = this.engine.getChainPieceId();
+    if (chain !== null) {
+      return this.engine.getLegalMoves();
+    }
+    if (this.selectedId === null) return [];
+    return this.engine.getLegalMoves().filter((m) => m.from === this.selectedId);
+  }
+
+  getLegalTargetIds(): number[] {
+    return this.getLegalMovesForSelection().map((m) => m.to);
+  }
+
+  selectNode(nodeId: number): boolean {
+    if (this.isGameOver()) return false;
+    const state = this.engine.getState();
+    if (this.engine.getChainPieceId() !== null) return false;
+
+    const node = state.board.intersections.find((p) => p.id === nodeId);
+    if (node?.occupant !== state.currentPlayer) return false;
+
+    const hasMoves = this.engine.getLegalMoves().some((m) => m.from === nodeId);
+    if (!hasMoves) return false;
+
+    this.selectedId = nodeId;
+    this.uiState = 'selected';
+    return true;
+  }
+
+  canHumanAct(): boolean {
+    if (this.isGameOver()) return false;
+    if (this.settings.mode === 'pvp') return true;
+    return this.engine.getState().currentPlayer === 'RED';
+  }
+
+  applyMove(move: Move): void {
+    const stateBefore = this.engine.getState();
+    const mover = stateBefore.currentPlayer;
+
+    this.engine.applyMove(move);
+
+    if (this.settings.centerRule === 'cumulative') {
+      this.trackCumulativeCenterLanding(move.to);
+    }
+
+    const chain = this.engine.getChainPieceId();
+    if (chain !== null) {
+      this.selectedId = chain;
+      this.uiState = 'chain';
+      return;
+    }
+
+    this.afterTurnCompleted(mover);
+  }
+
+  finishChain(): void {
+    if (this.isGameOver()) return;
+    if (this.engine.getChainPieceId() === null) return;
+    const mover = this.engine.getState().currentPlayer;
+    this.engine.endTurn();
+    this.afterTurnCompleted(mover);
+  }
+
+  private afterTurnCompleted(mover: Player): void {
+    this.selectedId = null;
+    this.uiState = 'idle';
+
+    const engState = this.engine.getState();
+    if (engState.gameOver) {
+      this.uiState = 'game_over';
+      return;
+    }
+
+    const key = positionKey(engState, mover);
+    this.repetitionHistory[key] = (this.repetitionHistory[key] || 0) + 1;
+    if (this.repetitionHistory[key] >= 3) {
+      this.featureOver = { winner: 'DRAW', reason: 'Draw — 3-fold repetition.' };
+      this.uiState = 'game_over';
+      return;
+    }
+
+    this.shotRemaining = this.shotLimit;
+  }
+
+  endGameByFeature(winner: Player | 'DRAW', reason: string): void {
+    this.featureOver = { winner, reason };
+    this.uiState = 'game_over';
+    this.selectedId = null;
+  }
+
+  /** Resignation: opponent accepts draw, or declines and wins. */
+  resolveResignation(resigningPlayer: Player, acceptDraw: boolean): void {
+    if (this.isGameOver()) return;
+    const resignLabel = resigningPlayer === 'RED' ? 'P1' : 'P2';
+    const oppLabel = resigningPlayer === 'RED' ? 'P2' : 'P1';
+    if (acceptDraw) {
+      this.endGameByFeature('DRAW', `${resignLabel} resigned — ${oppLabel} agreed to a draw.`);
+      return;
+    }
+    const winner = resigningPlayer === 'RED' ? 'BLUE' : 'RED';
+    this.endGameByFeature(winner, `${resignLabel} resigned — ${oppLabel} declined the draw.`);
+  }
+
+  evaluateScoreAndEnd(prefixReason: string): void {
+    const state = this.engine.getState();
+    const redCaps = state.captures.RED;
+    const blueCaps = state.captures.BLUE;
+
+    if (redCaps > blueCaps) {
+      this.endGameByFeature('RED', `${prefixReason} P1 won on captures.`);
+      return;
+    }
+    if (blueCaps > redCaps) {
+      this.endGameByFeature('BLUE', `${prefixReason} P2 won on captures.`);
+      return;
+    }
+
+    if (this.settings.centerRule !== 'off') {
+      let c1 = 0;
+      let c2 = 0;
+      if (this.settings.centerRule === 'cumulative') {
+        c1 = this.p1CenterScore;
+        c2 = this.p2CenterScore;
+      } else {
+        c1 = countCenterOccupancy(state.board, 'RED');
+        c2 = countCenterOccupancy(state.board, 'BLUE');
+      }
+      if (c1 > c2) {
+        this.endGameByFeature('RED', `${prefixReason} captures tied — P1 won on center.`);
+        return;
+      }
+      if (c2 > c1) {
+        this.endGameByFeature('BLUE', `${prefixReason} captures tied — P2 won on center.`);
+        return;
+      }
+    }
+
+    const redPieces = this.engine.countPieces('RED');
+    const bluePieces = this.engine.countPieces('BLUE');
+    if (redPieces === bluePieces) {
+      this.endGameByFeature('DRAW', `${prefixReason} draw.`);
+      return;
+    }
+    this.endGameByFeature(
+      redPieces > bluePieces ? 'RED' : 'BLUE',
+      `${prefixReason} piece-count tiebreak.`,
+    );
+  }
+
+  timerTick(): void {
+    if (this.isGameOver()) return;
+
+    if (this.shotLimit > 0) {
+      this.shotRemaining -= 1;
+      if (this.shotRemaining <= 0) {
+        const loser = this.engine.getState().currentPlayer;
+        this.endGameByFeature(opponentOf(loser), 'Shot clock expired.');
+      }
+    }
+
+    const matchSecs = parseMatchSeconds(this.settings.matchTimer);
+    if (matchSecs <= 0) return;
+
+    if (this.settings.mode === 'pvp') {
+      if (this.engine.getState().currentPlayer === 'RED') this.p1Clock -= 1;
+      else this.p2Clock -= 1;
+      if (this.p1Clock <= 0) this.endGameByFeature('BLUE', 'P1 ran out of match time.');
+      else if (this.p2Clock <= 0) this.endGameByFeature('RED', 'P2 ran out of match time.');
+    } else {
+      this.globalMatchRemaining -= 1;
+      if (this.globalMatchRemaining <= 0) {
+        const loser = this.engine.getState().currentPlayer;
+        this.endGameByFeature(opponentOf(loser), 'Match timer expired.');
+      }
+    }
+  }
+
+  private trackCumulativeCenterLanding(nodeId: number): void {
+    const centerIds = this.engine.getState().board.centerNodeIds ?? [];
+    if (!centerIds.includes(nodeId)) return;
+    const occupant = this.engine.getState().board.intersections[nodeId]?.occupant;
+    if (occupant === 'RED') this.p1CenterScore += 1;
+    else if (occupant === 'BLUE') this.p2CenterScore += 1;
+  }
+
+  resetTurnClock(): void {
+    this.shotRemaining = this.shotLimit;
+  }
+
+  private applyTimerSettings(): void {
+    this.shotLimit = parseShotLimit(this.settings.shotClock);
+    this.shotRemaining = this.shotLimit;
+    const matchSecs = parseMatchSeconds(this.settings.matchTimer);
+
+    if (matchSecs <= 0) {
+      this.globalMatchRemaining = 0;
+      this.p1Clock = 0;
+      this.p2Clock = 0;
+      return;
+    }
+
+    if (this.settings.mode === 'pvp') {
+      this.p1Clock = matchSecs;
+      this.p2Clock = matchSecs;
+      this.globalMatchRemaining = 0;
+    } else {
+      this.globalMatchRemaining = matchSecs;
+      this.p1Clock = 0;
+      this.p2Clock = 0;
+    }
+  }
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\feature\GameFeatureSettings.ts =====
+
+/** Shared match settings for production play shell. */
+
+export type GameMode = 'pve' | 'pvp';
+export type CenterRule = 'off' | 'endgame' | 'cumulative';
+/** Minutes per side (PvP) or shared match budget (PvE). Values are string digits or off. */
+export type MatchTimerMinutes = 'off' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';
+/** Seconds per turn when enabled. */
+export type ShotClockSeconds = 'off' | '30' | '60' | '90' | '120';
+export type AiLevel = 1 | 2 | 3;
+
+export interface GameFeatureSettings {
+  mode: GameMode;
+  aiLevel: AiLevel;
+  matchTimer: MatchTimerMinutes;
+  shotClock: ShotClockSeconds;
+  centerRule: CenterRule;
+}
+
+export interface BgmTrack {
+  label: string;
+  url: string;
+}
+
+/** Same track list as SHOLO_GUTI_WITH_FEATURE.html */
+export const BGM_TRACKS: BgmTrack[] = [
+  { label: 'Bubble Gum Puzzler', url: 'http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler.mp3' },
+  { label: 'Bubble Gum Puzzler 2', url: 'http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler-2.mp3' },
+  { label: 'Cool Puzzler', url: 'http://soundimage.org/wp-content/uploads/2017/07/Cool-Puzzler.mp3' },
+  { label: 'Sky Puzzle', url: 'http://soundimage.org/wp-content/uploads/2017/06/Sky-Puzzle.mp3' },
+  { label: 'Mind Bender', url: 'http://soundimage.org/wp-content/uploads/2017/06/Mind-Bender.mp3' },
+  { label: 'Puzzle Dreams', url: 'http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams.mp3' },
+  { label: 'Puzzle Dreams 3', url: 'http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams-3.mp3' },
+  { label: 'Mysterious Puzzle', url: 'http://soundimage.org/wp-content/uploads/2014/10/Mysterious-Puzzle.mp3' },
+  { label: '8-Bit Puzzler', url: 'http://soundimage.org/wp-content/uploads/2017/03/8-Bit-Puzzler.mp3' },
+  { label: 'Puzzle Game 5', url: 'http://soundimage.org/wp-content/uploads/2014/12/Puzzle-Game-5.mp3' },
+  { label: 'Happy Puzzler', url: 'http://soundimage.org/wp-content/uploads/2017/09/Happy-Puzzler.mp3' },
+  { label: 'Puzzle Action', url: 'http://soundimage.org/wp-content/uploads/2017/08/Puzzle-Action.mp3' },
+  { label: 'Puzzle Technica', url: 'https://soundimage.org/wp-content/uploads/2021/11/Puzzle-Technica.mp3' },
+  { label: "Cool Puzzle Groovin' 2", url: 'https://soundimage.org/wp-content/uploads/2021/08/Cool-Puzzle-Groovin-2.mp3' },
+  { label: 'Quirky Quarks', url: 'https://soundimage.org/wp-content/uploads/2021/08/Quirky-Quarks.mp3' },
+  { label: 'Drifting Things', url: 'http://soundimage.org/wp-content/uploads/2018/01/Drifting-Things.mp3' },
+  { label: 'Wind Up Things', url: 'http://soundimage.org/wp-content/uploads/2018/01/Wind-Up-Things.mp3' },
+  { label: 'Carnival Games', url: 'http://soundimage.org/wp-content/uploads/2018/07/Carnival-Games.mp3' },
+  { label: 'Far Away Puzzle Places', url: 'http://soundimage.org/wp-content/uploads/2018/07/Far-Away-Puzzle-Places.mp3' },
+  { label: 'Thought Puzzles', url: 'http://soundimage.org/wp-content/uploads/2017/09/Thought-Puzzles.mp3' },
+];
+
+export function parseShotLimit(shotClock: ShotClockSeconds): number {
+  return shotClock === 'off' ? 0 : parseInt(shotClock, 10);
+}
+
+export function parseMatchSeconds(matchTimer: MatchTimerMinutes): number {
+  return matchTimer === 'off' ? 0 : parseInt(matchTimer, 10) * 60;
+}
+
+export function formatMatchTimerLabel(value: MatchTimerMinutes): string {
+  return value === 'off' ? 'Off' : `${value} min`;
+}
+
+export function formatShotClockLabel(value: ShotClockSeconds): string {
+  return value === 'off' ? 'Off' : `${value} sec`;
+}
+
+export function formatCenterRuleLabel(rule: CenterRule): string {
+  if (rule === 'off') return 'Off';
+  if (rule === 'endgame') return 'End-Game';
+  return 'Cumulative';
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\feature\HonestAi.ts =====
+
+import { BoardVariant } from '../../../config/BoardConfig';
+import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
+import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
+import { AiLevel } from './GameFeatureSettings';
+
+export interface TurnEnd {
+  snapshot: { state: GameState; chainPieceId: number | null };
+  path: Move[];
+}
+
+function opponentOf(player: Player): Player {
+  return player === 'RED' ? 'BLUE' : 'RED';
+}
+
+function isJump(state: GameState, move: Move): boolean {
+  return findJumpPath(state.board, move.from, move.to) !== undefined;
+}
+
+function pathCaptureCount(state: GameState, path: Move[]): number {
+  let n = 0;
+  for (const move of path) {
+    if (isJump(state, move)) n += 1;
+  }
+  return n;
+}
+
+function countPieces(state: GameState, player: Player): number {
+  return state.board.intersections.filter((p) => p.occupant === player).length;
+}
+
+function mobility(variant: BoardVariant, state: GameState, player: Player): number {
+  const eng = new SmartBeadsEngine(variant);
+  eng.loadSnapshot({
+    state: { ...state, currentPlayer: player, board: state.board },
+    chainPieceId: null,
+  });
+  return eng.getLegalMoves().length;
+}
+
+function evaluate(state: GameState, variant: BoardVariant, aiPlayer: Player = 'BLUE'): number {
+  const human = opponentOf(aiPlayer);
+  const aiCount = countPieces(state, aiPlayer);
+  const humanCount = countPieces(state, human);
+  if (humanCount === 0) return 10000;
+  if (aiCount === 0) return -10000;
+
+  const aiMob = mobility(variant, state, aiPlayer);
+  const humanMob = mobility(variant, state, human);
+  return (aiCount - humanCount) * 48 + (aiMob - humanMob) * 1.5;
+}
+
+function opponentReplyPlies(level: AiLevel): number {
+  if (level <= 1) return -1;
+  if (level === 2) return 1;
+  return 2;
+}
+
+function rootBranchForLevel(level: AiLevel): number {
+  if (level >= 3) return 80;
+  if (level === 2) return 120;
+  return 140;
+}
+
+function replyBranchForLevel(level: AiLevel): number {
+  if (level >= 3) return 40;
+  if (level === 2) return 72;
+  return 140;
+}
+
+function getFollowUpJumps(
+  variant: BoardVariant,
+  snapshot: { state: GameState; chainPieceId: number | null },
+): Move[] {
+  const eng = new SmartBeadsEngine(variant);
+  eng.loadSnapshot(snapshot);
+  return eng.getLegalMoves().filter((m) => isJump(snapshot.state, m));
+}
+
+export function generateTurnEnds(
+  variant: BoardVariant,
+  snapshot: { state: GameState; chainPieceId: number | null },
+  player: Player,
+  maxBranch: number,
+): TurnEnd[] {
+  const eng = new SmartBeadsEngine(variant);
+  eng.loadSnapshot({ ...snapshot, state: { ...snapshot.state, currentPlayer: player }, chainPieceId: null });
+  const root = eng.getLegalMoves().slice();
+  root.sort((a, b) => (isJump(snapshot.state, b) ? 1 : 0) - (isJump(snapshot.state, a) ? 1 : 0));
+
+  const ends: TurnEnd[] = [];
+
+  for (const move of root) {
+    const afterEng = new SmartBeadsEngine(variant);
+    afterEng.loadSnapshot({ ...snapshot, state: { ...snapshot.state, currentPlayer: player }, chainPieceId: null });
+    afterEng.applyMove(move);
+    const afterSnap = afterEng.exportSnapshot();
+    ends.push({ snapshot: afterSnap, path: [move] });
+    if (ends.length >= maxBranch) return ends;
+
+    if (!isJump(snapshot.state, move)) continue;
+
+    const stack: Array<{ snap: { state: GameState; chainPieceId: number | null }; path: Move[]; depth: number }> = [
+      { snap: afterSnap, path: [move], depth: 1 },
+    ];
+
+    while (stack.length) {
+      const node = stack.pop()!;
+      if (node.depth > 8) continue;
+      const jumps = getFollowUpJumps(variant, node.snap);
+      for (const hop of jumps) {
+        const hopEng = new SmartBeadsEngine(variant);
+        hopEng.loadSnapshot(node.snap);
+        hopEng.applyMove(hop);
+        const hopSnap = hopEng.exportSnapshot();
+        const path = node.path.concat(hop);
+        ends.push({ snapshot: hopSnap, path });
+        stack.push({ snap: hopSnap, path, depth: node.depth + 1 });
+        if (ends.length >= maxBranch) return ends;
+      }
+    }
+  }
+
+  return ends;
+}
+
+function minimaxTurns(
+  variant: BoardVariant,
+  snapshot: { state: GameState; chainPieceId: number | null },
+  depth: number,
+  maximizing: boolean,
+  alpha: number,
+  beta: number,
+  branchCap: number,
+  aiPlayer: Player,
+): number {
+  if (depth === 0) return evaluate(snapshot.state, variant, aiPlayer);
+  const player = maximizing ? aiPlayer : opponentOf(aiPlayer);
+  const ends = generateTurnEnds(variant, snapshot, player, branchCap);
+  if (!ends.length) return maximizing ? -900 : 900;
+
+  if (maximizing) {
+    let best = -Infinity;
+    for (const end of ends) {
+      const v = minimaxTurns(variant, end.snapshot, depth - 1, false, alpha, beta, branchCap, aiPlayer);
+      if (v > best) best = v;
+      if (v > alpha) alpha = v;
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+
+  let best = Infinity;
+  for (const end of ends) {
+    const v = minimaxTurns(variant, end.snapshot, depth - 1, true, alpha, beta, branchCap, aiPlayer);
+    if (v < best) best = v;
+    if (v < beta) beta = v;
+    if (beta <= alpha) break;
+  }
+  return best;
+}
+
+/** Honest AI — Easy greedy, Medium 1 opponent turn, Hard 2 opponent turns. */
+export function selectAiTurnPath(
+  variant: BoardVariant,
+  level: AiLevel,
+  snapshot: { state: GameState; chainPieceId: number | null },
+  aiPlayer: Player = 'BLUE',
+): Move[] | null {
+  const branch = rootBranchForLevel(level);
+  const ends = generateTurnEnds(variant, snapshot, aiPlayer, branch);
+  if (!ends.length) return null;
+
+  if (level <= 1) {
+    let bestScore = -Infinity;
+    let pool: TurnEnd[] = [];
+    for (const end of ends) {
+      const captures = pathCaptureCount(snapshot.state, end.path);
+      const score = captures * 100 + evaluate(end.snapshot.state, variant, aiPlayer) * 0.01;
+      if (score > bestScore) {
+        bestScore = score;
+        pool = [end];
+      } else if (score === bestScore) {
+        pool.push(end);
+      }
+    }
+    return pool[Math.floor(Math.random() * pool.length)].path;
+  }
+
+  const reply = opponentReplyPlies(level);
+  const replyBranch = replyBranchForLevel(level);
+  let bestScore = -Infinity;
+  let best: TurnEnd[] = [];
+
+  for (const end of ends) {
+    let score = reply <= 0
+      ? evaluate(end.snapshot.state, variant, aiPlayer)
+      : minimaxTurns(variant, end.snapshot, reply, false, -Infinity, Infinity, replyBranch, aiPlayer);
+    score += pathCaptureCount(snapshot.state, end.path) * 0.05;
+    if (score > bestScore) {
+      bestScore = score;
+      best = [end];
+    } else if (score === bestScore) {
+      best.push(end);
+    }
+  }
+
+  return best[Math.floor(Math.random() * best.length)].path;
+}
+
+/** When the human offers resignation in PvE, AI accepts a draw unless clearly ahead. */
+export function shouldAcceptResignationDraw(
+  variant: BoardVariant,
+  snapshot: { state: GameState; chainPieceId: number | null },
+  aiPlayer: Player = 'BLUE',
+): boolean {
+  const score = evaluate(snapshot.state, variant, aiPlayer);
+  return score <= 0;
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\feature\centerScoring.ts =====
+
+import { BoardDefinition, Player } from '../../../models/GameState';
+import { CenterRule } from './GameFeatureSettings';
+
+/** Count beads occupying configured center nodes (BoardDefinition.centerNodeIds). */
+export function countCenterOccupancy(board: BoardDefinition, player: Player): number {
+  const centerIds = board.centerNodeIds ?? [];
+  if (centerIds.length === 0) return 0;
+  let count = 0;
+  for (const id of centerIds) {
+    if (board.intersections[id]?.occupant === player) count += 1;
+  }
+  return count;
+}
+
+export function formatCenterDisplay(rule: CenterRule, count: number): string {
+  return rule === 'off' ? 'Off' : String(count);
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\feature\pveTiming.ts =====
+
+/** Slide flight on canvas (ms). Engine occupancy updates at click, not at flight end. */
+export const HUMAN_SLIDE_ANIM_MS = 200;
+/** Jump flight on canvas (ms). */
+export const HUMAN_JUMP_ANIM_MS = 280;
+/**
+ * After the human ply is committed, wait this long before the AI starts.
+ * Tests that sample occupancy after this window are looking at a second ply
+ * and cannot prove the human two-click move.
+ */
+export const AI_REPLY_DELAY_MS = 700;
+
+/** Safe window to observe the human ply on screen (animation may still be drawing). */
+export const HUMAN_PLY_OBSERVE_MS = HUMAN_JUMP_ANIM_MS + 80;
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\layout\boardProjection.ts =====
+
+import { BoardDefinition, Intersection } from '../../../models/GameState';
+import { getBoardVisualProfile, ProjectionKind } from './boardVisualProfile';
+
+/** Default lattice projection matching SHOLO_GUTI_WITH_FEATURE.html / 16-bead canvas. */
+export const SHOLO_LATTICE_PROJECTION = {
+  padX: 40,
+  padY: 36,
+  latticeYSpan: 8,
+  latticeXBase: 10,
+  latticeXSpan: 12,
+  widthInset: 80,
+  heightInset: 72,
+} as const;
+
+export function getLatticeBounds(board: BoardDefinition): { maxX: number; maxY: number } {
+  let maxX = 0;
+  let maxY = 0;
+  for (const node of board.intersections) {
+    if (node.x !== undefined) maxX = Math.max(maxX, node.x);
+    if (node.y !== undefined) maxY = Math.max(maxY, node.y);
+  }
+  return { maxX, maxY };
+}
+
+export function projectLatticeIntersection(
+  x: number,
+  y: number,
+  viewWidth: number,
+  viewHeight: number,
+  params: typeof SHOLO_LATTICE_PROJECTION = SHOLO_LATTICE_PROJECTION,
+): { x: number; y: number } {
+  return {
+    x: params.padX + (y / params.latticeYSpan) * (viewWidth - params.widthInset),
+    y: params.padY + ((params.latticeXBase - x) / params.latticeXSpan) * (viewHeight - params.heightInset),
+  };
+}
+
+function projectWithKind(
+  x: number,
+  y: number,
+  viewWidth: number,
+  viewHeight: number,
+  kind: ProjectionKind,
+  bounds: { maxX: number; maxY: number },
+): { x: number; y: number } {
+  switch (kind) {
+    case 'sholo16':
+      return projectLatticeIntersection(x, y, viewWidth, viewHeight);
+    case 'square5': {
+      const pad = 44;
+      return {
+        x: pad + (y / 8) * (viewWidth - pad * 2),
+        y: pad + ((8 - x) / 8) * (viewHeight - pad * 2),
+      };
+    }
+    case 'grid-stretch': {
+      const pad = 44;
+      const { maxX, maxY } = bounds;
+      return {
+        x: pad + (y / maxY) * (viewWidth - pad * 2),
+        y: pad + ((maxX - x) / maxX) * (viewHeight - pad * 2),
+      };
+    }
+    case 'square-fit': {
+      const pad = 44;
+      const { maxX, maxY } = bounds;
+      const innerW = viewWidth - pad * 2;
+      const innerH = viewHeight - pad * 2;
+      const pitch = Math.min(innerW / maxX, innerH / maxY);
+      const gridW = maxX * pitch;
+      const gridH = maxY * pitch;
+      const ox = pad + (innerW - gridW) / 2;
+      const oy = pad + (innerH - gridH) / 2;
+      return {
+        x: ox + (x / maxX) * gridW,
+        y: oy + (y / maxY) * gridH,
+      };
+    }
+    case 'portrait45': {
+      const pad = 44;
+      return {
+        x: pad + (y / 8) * (viewWidth - pad * 2),
+        y: pad + ((6 - x) / 6) * (viewHeight - pad * 2),
+      };
+    }
+    default:
+      return projectLatticeIntersection(x, y, viewWidth, viewHeight);
+  }
+}
+
+export function projectIntersectionOnCanvas(
+  intersection: Intersection,
+  canvasWidth: number,
+  canvasHeight: number,
+  board?: BoardDefinition,
+): { x: number; y: number } {
+  if (intersection.x === undefined || intersection.y === undefined) {
+    throw new Error(`Intersection ${intersection.id} has no layout coordinates`);
+  }
+  if (!board) {
+    return projectLatticeIntersection(intersection.x, intersection.y, canvasWidth, canvasHeight);
+  }
+  const profile = getBoardVisualProfile(board.name);
+  const bounds = getLatticeBounds(board);
+  return projectWithKind(intersection.x, intersection.y, canvasWidth, canvasHeight, profile.projection, bounds);
+}
+
+/** Project a raw lattice coordinate (for centre overlays). */
+export function projectLatticePointOnCanvas(
+  latticeX: number,
+  latticeY: number,
+  canvasWidth: number,
+  canvasHeight: number,
+  board: BoardDefinition,
+): { x: number; y: number } {
+  const profile = getBoardVisualProfile(board.name);
+  const bounds = getLatticeBounds(board);
+  return projectWithKind(latticeX, latticeY, canvasWidth, canvasHeight, profile.projection, bounds);
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\layout\boardVisualProfile.ts =====
+
+/** Canvas layout + centre decoration — ported from prototype/board4 SHOLO_GUTI_*_WITH_FEATURE.html. */
+
+export type ProjectionKind =
+  | 'sholo16'
+  | 'square5'
+  | 'grid-stretch'
+  | 'square-fit'
+  | 'portrait45';
+
+export interface LatticePoint {
+  x: number;
+  y: number;
+}
+
+export interface BoardVisualProfile {
+  projection: ProjectionKind;
+  canvasWidth: number;
+  canvasHeight: number;
+  /** Amber filled squares behind centre nodes (lattice coords). */
+  centerSquares?: LatticePoint[];
+  /** Amber band + line between two lattice points (hourglass waist). */
+  centerLine?: [LatticePoint, LatticePoint];
+  /** Nodes that receive amber rings / highlight dots (canvas only). */
+  centerRingPoints?: LatticePoint[];
+  /** 6×4 prototype uses vertical turn wash; others use horizontal. */
+  turnWashAxis?: 'horizontal' | 'vertical';
+}
+
+const SQUARE_CANVAS = { canvasWidth: 560, canvasHeight: 560 } as const;
+const SHOLO16_CANVAS = { canvasWidth: 500, canvasHeight: 680 } as const;
+
+const PROFILES: Record<string, BoardVisualProfile> = {
+  'Sholo-Guti-16x5x5': {
+    projection: 'sholo16',
+    ...SHOLO16_CANVAS,
+    centerRingPoints: [{ x: 4, y: 4 }],
+  },
+  'SmartBeads-6x4x4': {
+    projection: 'square-fit',
+    ...SQUARE_CANVAS,
+    turnWashAxis: 'vertical',
+    centerRingPoints: [
+      { x: 2, y: 2 },
+      { x: 4, y: 2 },
+      { x: 2, y: 4 },
+      { x: 4, y: 4 },
+    ],
+  },
+  'SmartBeads-6x3x5': {
+    projection: 'square-fit',
+    ...SQUARE_CANVAS,
+    centerSquares: [{ x: 2, y: 4 }],
+    centerRingPoints: [{ x: 2, y: 4 }],
+  },
+  'SmartBeads-10x5': {
+    projection: 'square5',
+    ...SQUARE_CANVAS,
+    centerSquares: [{ x: 4, y: 4 }],
+    centerRingPoints: [{ x: 4, y: 4 }],
+  },
+  'SmartBeads-12x6x5': {
+    projection: 'grid-stretch',
+    ...SQUARE_CANVAS,
+    centerSquares: [
+      { x: 4, y: 4 },
+      { x: 4, y: 6 },
+    ],
+    centerRingPoints: [
+      { x: 4, y: 4 },
+      { x: 4, y: 6 },
+    ],
+  },
+  'SmartBeads-8x4x6': {
+    projection: 'grid-stretch',
+    ...SQUARE_CANVAS,
+    centerRingPoints: [
+      { x: 2, y: 4 },
+      { x: 4, y: 4 },
+      { x: 2, y: 6 },
+      { x: 4, y: 6 },
+    ],
+  },
+  'SmartBeads-7x4x5': {
+    projection: 'portrait45',
+    ...SQUARE_CANVAS,
+    centerRingPoints: [
+      { x: 2, y: 4 },
+      { x: 4, y: 4 },
+    ],
+  },
+};
+
+export function getBoardVisualProfile(boardName: string): BoardVisualProfile {
+  return PROFILES[boardName] ?? { projection: 'grid-stretch', ...SQUARE_CANVAS };
+}
+
+export function getBoardCanvasSize(boardName: string): { width: number; height: number } {
+  const profile = getBoardVisualProfile(boardName);
+  return { width: profile.canvasWidth, height: profile.canvasHeight };
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\layout\canvasDisplay.ts =====
+
+/** Size the board frame to the canvas bitmap aspect — same approach as prototype HTML. */
+
+export function fitCanvasToFrame(canvas: HTMLCanvasElement): void {
+  const frame = canvas.parentElement as HTMLElement | null;
+  if (!frame || canvas.width <= 0 || canvas.height <= 0) return;
+
+  const aspect = canvas.width / canvas.height;
+  frame.style.setProperty('--board-aspect', String(aspect));
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+}
+
+export function installCanvasResizeObserver(canvas: HTMLCanvasElement, onResize: () => void): () => void {
+  window.addEventListener('resize', onResize);
+  return () => window.removeEventListener('resize', onResize);
+}
+
+
+===== FILE: PROJECTS\SmartBeads\src\playtest\web\render\CanvasBoardRenderer.ts =====
+
+import { BoardDefinition, Move, Player } from '../../../models/GameState';
+import { getBoardVisualProfile } from '../layout/boardVisualProfile';
+import { projectIntersectionOnCanvas, projectLatticePointOnCanvas } from '../layout/boardProjection';
+
+export interface BoardAnimState {
+  from: number;
+  to: number;
+  captured?: number;
+  capturedPlayer?: Player;
+  player: Player;
+  t: number;
+  duration: number;
+}
+
+export interface CanvasBoardView {
+  board: BoardDefinition;
+  currentPlayer: Player;
+  gameOver: boolean;
+  selectedId: number | null;
+  legalTargets: number[];
+  chainPieceId: number | null;
+  anim: BoardAnimState | null;
+  turnPulse: number;
+}
+
+function resolveCenterHighlight(board: BoardDefinition): Set<number> {
+  const profile = getBoardVisualProfile(board.name);
+  const byNodeId = new Set<number>();
+  const ringPoints = profile.centerRingPoints;
+  if (!ringPoints?.length) return byNodeId;
+
+  const byLattice = new Set(ringPoints.map((pt) => `${pt.x},${pt.y}`));
+  for (const node of board.intersections) {
+    if (node.x === undefined || node.y === undefined) continue;
+    if (byLattice.has(`${node.x},${node.y}`)) {
+      byNodeId.add(node.id);
+    }
+  }
+  return byNodeId;
+}
+
+function isCenterHighlight(nodeId: number, cache: Set<number>): boolean {
+  return cache.has(nodeId);
+}
+
+/** Nodes that receive the whose-turn pulse/ring — current player only, chain piece if chaining. */
+export function listTurnHighlightNodeIds(
+  board: BoardDefinition,
+  currentPlayer: Player,
+  chainPieceId: number | null,
+): number[] {
+  const ids: number[] = [];
+  for (const node of board.intersections) {
+    if (node.occupant !== currentPlayer) continue;
+    if (chainPieceId !== null && node.id !== chainPieceId) continue;
+    ids.push(node.id);
+  }
+  return ids;
+}
+
+function drawAmberSquare(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
+  ctx.fillStyle = 'rgba(232,168,60,0.35)';
+  ctx.fillRect(cx - 14, cy - 14, 28, 28);
+  ctx.strokeStyle = 'rgba(232,168,60,0.95)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(cx - 14, cy - 14, 28, 28);
+}
+
+function drawCenterLine(
+  ctx: CanvasRenderingContext2D,
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+): void {
+  const grad = ctx.createLinearGradient(ax, ay - 10, bx, by + 10);
+  grad.addColorStop(0, 'rgba(232,168,60,0.15)');
+  grad.addColorStop(0.5, 'rgba(232,168,60,0.45)');
+  grad.addColorStop(1, 'rgba(232,168,60,0.15)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(ax - 8, ay - 10);
+  ctx.lineTo(bx + 8, by - 10);
+  ctx.lineTo(bx + 8, by + 10);
+  ctx.lineTo(ax - 8, ay + 10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.strokeStyle = 'rgba(232,168,60,0.95)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.beginPath();
+  ctx.arc(x, y, 22, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(212, 140, 40, 0.22)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(232, 168, 60, 0.85)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function drawTurnWash(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  currentPlayer: Player,
+  axis: 'horizontal' | 'vertical',
+): void {
+  const wash =
+    axis === 'vertical'
+      ? ctx.createLinearGradient(0, 0, 0, h)
+      : ctx.createLinearGradient(0, 0, w, 0);
+
+  if (axis === 'vertical') {
+    if (currentPlayer === 'RED') {
+      wash.addColorStop(0, 'rgba(0,0,0,0)');
+      wash.addColorStop(0.55, 'rgba(255,245,220,0)');
+      wash.addColorStop(1, 'rgba(255,245,220,0.14)');
+    } else {
+      wash.addColorStop(0, 'rgba(40,90,160,0.16)');
+      wash.addColorStop(0.45, 'rgba(30,20,10,0)');
+      wash.addColorStop(1, 'rgba(0,0,0,0)');
+    }
+  } else if (currentPlayer === 'RED') {
+    wash.addColorStop(0, 'rgba(255,245,220,0.14)');
+    wash.addColorStop(0.45, 'rgba(255,245,220,0)');
+    wash.addColorStop(1, 'rgba(0,0,0,0)');
+  } else {
+    wash.addColorStop(0, 'rgba(0,0,0,0)');
+    wash.addColorStop(0.55, 'rgba(30,20,10,0)');
+    wash.addColorStop(1, 'rgba(40,90,160,0.16)');
+  }
+
+  ctx.fillStyle = wash;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawCenterDecorations(
+  ctx: CanvasRenderingContext2D,
+  board: BoardDefinition,
+  w: number,
+  h: number,
+): void {
+  const profile = getBoardVisualProfile(board.name);
+
+  if (profile.centerLine) {
+    const [a, b] = profile.centerLine;
+    const aPt = projectLatticePointOnCanvas(a.x, a.y, w, h, board);
+    const bPt = projectLatticePointOnCanvas(b.x, b.y, w, h, board);
+    drawCenterLine(ctx, aPt.x, aPt.y, bPt.x, bPt.y);
+  }
+
+  if (profile.centerSquares) {
+    for (const sq of profile.centerSquares) {
+      const pt = projectLatticePointOnCanvas(sq.x, sq.y, w, h, board);
+      drawAmberSquare(ctx, pt.x, pt.y);
+    }
+  }
+}
+
+function drawPieceAt(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  player: Player,
+  radius: number,
+  alpha: number,
+): void {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const grd = ctx.createRadialGradient(x - 4, y - 5, 2, x, y, radius);
+  if (player === 'RED') {
+    grd.addColorStop(0, '#fffaf0');
+    grd.addColorStop(0.55, '#ebe2cf');
+    grd.addColorStop(1, '#b7ab92');
+  } else {
+    grd.addColorStop(0, '#5a4538');
+    grd.addColorStop(0.5, '#241812');
+    grd.addColorStop(1, '#0a0604');
+  }
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+  ctx.restore();
+}
+
+export function drawCanvasBoard(
+  canvas: HTMLCanvasElement,
+  view: CanvasBoardView,
+): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const w = canvas.width;
+  const h = canvas.height;
+  const { board, currentPlayer, gameOver, selectedId, legalTargets, chainPieceId, anim, turnPulse } = view;
+  const visualProfile = getBoardVisualProfile(board.name);
+  const centerHighlight = resolveCenterHighlight(board);
+  const project = (node: { x?: number; y?: number; id: number }) =>
+    projectIntersectionOnCanvas(node as Parameters<typeof projectIntersectionOnCanvas>[0], w, h, board);
+
+  ctx.clearRect(0, 0, w, h);
+  const g = ctx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, '#1f4d39');
+  g.addColorStop(1, '#143328');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+
+  const animating = anim !== null && anim.t < 1;
+  const washPlayer = animating && anim ? anim.player : currentPlayer;
+  if (!gameOver) {
+    drawTurnWash(ctx, w, h, washPlayer, visualProfile.turnWashAxis ?? 'horizontal');
+  }
+
+  ctx.strokeStyle = 'rgba(212,168,75,0.55)';
+  ctx.lineWidth = 2;
+  for (const conn of board.connections) {
+    const from = board.intersections[conn.from];
+    const to = board.intersections[conn.to];
+    if (from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined) continue;
+    const fromPt = project(from);
+    const toPt = project(to);
+    ctx.beginPath();
+    ctx.moveTo(fromPt.x, fromPt.y);
+    ctx.lineTo(toPt.x, toPt.y);
+    ctx.stroke();
+  }
+
+  drawCenterDecorations(ctx, board, w, h);
+
+  const hideFrom = anim ? anim.from : -1;
+  const hideTo = animating && anim ? anim.to : -1;
+  const hideCap = anim && anim.captured != null ? anim.captured : -1;
+
+  for (const node of board.intersections) {
+    if (node.x === undefined || node.y === undefined) continue;
+    const { x, y } = project(node);
+    const center = isCenterHighlight(node.id, centerHighlight);
+
+    if (center) {
+      drawCenterRing(ctx, x, y);
+    }
+
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = center ? 'rgba(232,168,60,0.95)' : 'rgba(212,168,75,0.4)';
+    ctx.fill();
+
+    if (legalTargets.includes(node.id) && !animating) {
+      ctx.beginPath();
+      ctx.arc(x, y, 18, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(60,184,154,0.85)';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    if (node.occupant && node.id !== hideFrom && node.id !== hideTo) {
+      const isChainPiece = chainPieceId !== null && node.id === chainPieceId;
+      const isTurnPiece =
+        !gameOver
+        && node.occupant === currentPlayer
+        && !animating
+        && (chainPieceId === null || isChainPiece);
+      const pulse = isTurnPiece ? 1 + 0.08 * Math.sin(turnPulse) : 1;
+      const dimOpp = !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
+      const r = (selectedId === node.id ? 18 : 16) * pulse;
+      drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
+      if (isTurnPiece) {
+        ctx.beginPath();
+        ctx.arc(x, y, r + 3, 0, Math.PI * 2);
+        ctx.strokeStyle = node.occupant === 'RED' ? 'rgba(255,230,170,0.55)' : 'rgba(120,180,255,0.5)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+  }
+
+  if (anim) {
+    if (anim.captured != null && hideCap >= 0) {
+      const capNode = board.intersections[anim.captured];
+      if (capNode.x !== undefined && capNode.y !== undefined && anim.capturedPlayer) {
+        const capPt = project(capNode);
+        const fade = Math.max(0, 1 - anim.t * 1.4);
+        drawPieceAt(ctx, capPt.x, capPt.y, anim.capturedPlayer, 16 * fade, fade);
+        if (fade > 0.2) {
+          ctx.beginPath();
+          ctx.arc(capPt.x, capPt.y, 22, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(212,80,60,${0.7 * fade})`;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+      }
+    }
+
+    const fromNode = board.intersections[anim.from];
+    const toNode = board.intersections[anim.to];
+    if (fromNode.x !== undefined && fromNode.y !== undefined && toNode.x !== undefined && toNode.y !== undefined) {
+      const fromPt = project(fromNode);
+      const toPt = project(toNode);
+      const ease = anim.t < 0.5 ? 2 * anim.t * anim.t : 1 - ((-2 * anim.t + 2) ** 2) / 2;
+      drawPieceAt(
+        ctx,
+        fromPt.x + (toPt.x - fromPt.x) * ease,
+        fromPt.y + (toPt.y - fromPt.y) * ease,
+        anim.player,
+        17,
+        1,
+      );
+    }
+  }
+}
+
+export function hitTestNode(
+  canvas: HTMLCanvasElement,
+  board: BoardDefinition,
+  clientX: number,
+  clientY: number,
+): number {
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width / rect.width;
+  const sy = canvas.height / rect.height;
+  const mx = (clientX - rect.left) * sx;
+  const my = (clientY - rect.top) * sy;
+
+  let hit = -1;
+  let best = 22;
+  for (const node of board.intersections) {
+    if (node.x === undefined || node.y === undefined) continue;
+    const { x, y } = projectIntersectionOnCanvas(node, canvas.width, canvas.height, board);
+    const d = Math.hypot(mx - x, my - y);
+    if (d < best) {
+      best = d;
+      hit = node.id;
+    }
+  }
+  return hit;
+}

@@ -16,6 +16,17 @@ export type ProductBoardId =
   | '8x4x6'
   | '7x4x5';
 
+/** Product dropdown order: largest → smallest bead count, 6×4 before 6×3×5. */
+export const PRODUCT_BOARD_ORDER: ProductBoardId[] = [
+  '16',
+  '12x6x5',
+  '10x5',
+  '8x4x6',
+  '7x4x5',
+  '6x4',
+  '6x3x5',
+];
+
 export interface BoardPlayConfig {
   defaultSettings: GameFeatureSettings;
   centerRuleOptions: CenterRule[];
@@ -67,54 +78,12 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     },
   },
   {
-    id: '6x4',
-    engineVariant: '6',
-    displayName: '6-bead · 4×4',
-    description: 'Locked V1 #2 — full box cross diagonals',
-    beadCount: 6,
-    lattice: '4×4',
-    playable: true,
-    productVisible: true,
-    play: {
-      defaultSettings: {
-        ...BASE_SETTINGS,
-        centerRule: 'endgame',
-        matchTimer: '3',
-        shotClock: '30',
-      },
-      centerRuleOptions: ['off', 'cumulative', 'endgame'],
-      matchTimerOptions: ['off', '3', '5', '10'],
-      shotClockOptions: ['off', '30', '60'],
-    },
-  },
-  {
-    id: '6x3x5',
-    engineVariant: '6x3x5',
-    displayName: '6-bead · 3×5',
-    description: 'Locked V1 #3 — top–bottom camps, single centre node',
-    beadCount: 6,
-    lattice: '3×5',
-    playable: true,
-    productVisible: true,
-    play: {
-      defaultSettings: {
-        ...BASE_SETTINGS,
-        centerRule: 'endgame',
-        matchTimer: '3',
-        shotClock: '30',
-      },
-      centerRuleOptions: ['off', 'cumulative', 'endgame'],
-      matchTimerOptions: ['off', '3', '5', '10'],
-      shotClockOptions: ['off', '30', '60'],
-    },
-  },
-  {
-    id: '10x5',
-    engineVariant: '10x5',
-    displayName: '10-bead · 5×5',
-    description: 'Locked V1 #4 — two-file camps, empty centre file',
-    beadCount: 10,
-    lattice: '5×5',
+    id: '12x6x5',
+    engineVariant: '12x6x5',
+    displayName: '12-bead · 6×5',
+    description: 'Locked V1 #5 — two-file rank camps, empty centre file',
+    beadCount: 12,
+    lattice: '6×5',
     playable: true,
     productVisible: true,
     play: {
@@ -130,12 +99,12 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     },
   },
   {
-    id: '12x6x5',
-    engineVariant: '12x6x5',
-    displayName: '12-bead · 6×5',
-    description: 'Locked V1 #5 — two-file rank camps, empty centre file',
-    beadCount: 12,
-    lattice: '6×5',
+    id: '10x5',
+    engineVariant: '10x5',
+    displayName: '10-bead · 5×5',
+    description: 'Locked V1 #4 — two-file camps, empty centre file',
+    beadCount: 10,
+    lattice: '5×5',
     playable: true,
     productVisible: true,
     play: {
@@ -192,10 +161,55 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       shotClockOptions: ['off', '30', '60'],
     },
   },
+  {
+    id: '6x4',
+    engineVariant: '6',
+    displayName: '6-bead · 4×4',
+    description: 'Locked V1 #2 — full box cross diagonals',
+    beadCount: 6,
+    lattice: '4×4',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '3',
+        shotClock: '30',
+      },
+      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
+    },
+  },
+  {
+    id: '6x3x5',
+    engineVariant: '6x3x5',
+    displayName: '6-bead · 3×5',
+    description: 'Locked V1 #3 — top–bottom camps, single centre node',
+    beadCount: 6,
+    lattice: '3×5',
+    playable: true,
+    productVisible: true,
+    play: {
+      defaultSettings: {
+        ...BASE_SETTINGS,
+        centerRule: 'endgame',
+        matchTimer: '3',
+        shotClock: '30',
+      },
+      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      matchTimerOptions: ['off', '3', '5', '10'],
+      shotClockOptions: ['off', '30', '60'],
+    },
+  },
 ];
 
 export function listProductBoards(): BoardCatalogEntry[] {
-  return BOARD_CATALOG.filter((entry) => entry.productVisible && entry.playable);
+  const playable = BOARD_CATALOG.filter((entry) => entry.productVisible && entry.playable);
+  return PRODUCT_BOARD_ORDER.map((id) => playable.find((entry) => entry.id === id)).filter(
+    (entry): entry is BoardCatalogEntry => entry !== undefined,
+  );
 }
 
 export function listCatalogBoards(): BoardCatalogEntry[] {

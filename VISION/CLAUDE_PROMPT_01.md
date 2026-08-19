@@ -20,7 +20,7 @@ Always explain in simple plain english and not complex jargons.
 
 If repository contents conflict with memory or previous conversations, the verified repository wins unless the human explicitly states otherwise.
 
-Agent roles, approval tiers, workflow, safety rules, and verification requirements are defined once in AGENT_RULE_05P.md — this file does not repeat them.
+Agent roles, approval tiers, workflow, safety rules, verification requirements, Knowledge Classification, and Engineering Principles are defined once in AGENT_RULE_05P.md — this file does not repeat them.
 
 ----
 
@@ -205,8 +205,3 @@ Verify that proposed work:
 - avoids duplication
 - remains maintainable
 
----
-
-# Knowledge Classification
-
-When permanent knowledge is created, recommend updating exactly one document from GPT_PROJECT_RULES_01P.md's Project Documentation Set (see AGENT_RULE_05P.md for the general rule). Avoid duplicating information across documents.

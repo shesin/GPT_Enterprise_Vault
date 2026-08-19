@@ -196,6 +196,12 @@ export class SmartBeadsEngine {
       return;
     }
 
+    if (hasReachedPlyLimit(this.currentState.board.maxPlies, this.currentState.moveCount)) {
+      this.currentState.gameOver = true;
+      this.evaluatePlyLimitWinner();
+      return;
+    }
+
     this.currentState.currentPlayer = this.opponentOf(mover);
 
     if (this.getLegalMoves().length === 0) {

@@ -3,6 +3,8 @@
  * Requires: npm run web:smartbeads (http://localhost:5173/)
  */
 import { chromium } from 'playwright';
+import { clickNode } from './lib/project-node.mjs';
+import { isolatedFromSnaps, liveSnap, openingSlideNodes, waitForHumanPlyCommitted, waitForLaterPly } from './lib/live-ply.mjs';
 
 const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
 const results = [];
@@ -13,28 +15,7 @@ function record(name, ok, detail) {
 }
 
 async function clickCanvasNear(page, nodeIndex) {
-  const box = await page.evaluate((i) => {
-    const { SmartBeadsEngine } = window.__vite_ssr_exports__ || {};
-    return (async () => {
-      const { SmartBeadsEngine: Eng } = await import('/PROJECTS/SmartBeads/src/core/SmartBeadsEngine.ts');
-      const eng = new Eng('16');
-      const node = eng.getState().board.intersections[i];
-      const canvas = document.getElementById('board');
-      if (!canvas || node.x === undefined || node.y === undefined) return null;
-      const w = canvas.width;
-      const h = canvas.height;
-      const px = 40 + (node.y / 8) * (w - 80);
-      const py = 36 + ((10 - node.x) / 12) * (h - 72);
-      const rect = canvas.getBoundingClientRect();
-      const sx = rect.width / w;
-      const sy = rect.height / h;
-      return { x: rect.left + px * sx, y: rect.top + py * sy };
-    })();
-  }, nodeIndex);
-  const coords = await box;
-  if (!coords) throw new Error(`node ${nodeIndex} coords missing`);
-  await page.mouse.click(coords.x, coords.y);
-  await page.waitForTimeout(450);
+  await clickNode(page, '16', nodeIndex);
 }
 
 async function waitForHumanTurn(page, maxMs = 15000) {
@@ -64,21 +45,26 @@ async function main() {
     const pieces = await page.locator('#p1-pieces').textContent();
     record('starting pieces 16+16', pieces === '16' && (await page.locator('#p2-pieces').textContent()) === '16', `P1=${pieces}`);
 
-    // Slide via UI
-    const slide = await page.evaluate(async () => {
-      const { SmartBeadsEngine } = await import('/PROJECTS/SmartBeads/src/core/SmartBeadsEngine.ts');
-      const eng = new SmartBeadsEngine('16');
-      const board = eng.getState().board;
-      const isJump = (m) => board.jumpPaths?.some((p) => p.from === m.from && p.to === m.to);
-      return eng.getLegalMoves().find((m) => !isJump(m)) || null;
-    });
-    if (slide) {
-      await clickCanvasNear(page, slide.from);
-      await clickCanvasNear(page, slide.to);
-      await waitForHumanTurn(page);
-    }
+    // Slide via UI — occupancy must match the human ply before waiting for AI.
+    // 16-bead uses the hanging edge a person actually points at (A41→A42).
+    const slide = await openingSlideNodes(page, '16', 'A41', 'A42');
+    const beforePly = await liveSnap(page);
+    await clickCanvasNear(page, slide.from.id);
+    await clickCanvasNear(page, slide.to.id);
+    const committed = await waitForHumanPlyCommitted(page);
+    const afterHuman = committed.snap;
+    const iso = await isolatedFromSnaps(page, beforePly, afterHuman, {
+      from: slide.from.id,
+      to: slide.to.id,
+    }, 'RED');
+    record(
+      'two clicks A41→A42 = isolated Ivory ply (AI has not moved)',
+      !committed.tooLate && afterHuman.moveCount === 1 && afterHuman.currentPlayer === 'BLUE' && iso.ok,
+      iso.detail,
+    );
+    await waitForHumanTurn(page);
     const turnsAfterSlide = await page.locator('#turn-count').textContent();
-    record('normal slide + turn advance', turnsAfterSlide !== '0', `turns=${turnsAfterSlide}`);
+    record('AI later advances the turn', parseInt(turnsAfterSlide || '0', 10) >= 2, `turns=${turnsAfterSlide}`);
 
     // Settings visible
     record('PvE/PvP mode select', await page.locator('#game-mode-select option[value="pvp"]').count() === 1, 'pvp option');
@@ -116,14 +102,16 @@ async function main() {
     // AI responds after human move
     await page.locator('#restart-btn').click();
     await page.waitForTimeout(500);
-    if (slide) {
-      await clickCanvasNear(page, slide.from);
-      await clickCanvasNear(page, slide.to);
-      await page.waitForTimeout(1200);
-    }
+    await clickCanvasNear(page, slide.from.id);
+    await clickCanvasNear(page, slide.to.id);
+    const afterAi = await waitForLaterPly(page);
     const p2CapsAfterAi = await page.locator('#p2-caps').textContent();
     const turnAfterAi = await page.locator('#turn-count').textContent();
-    record('AI takes turn after human slide', parseInt(turnAfterAi || '0', 10) >= 2, `turns=${turnAfterAi} p2caps=${p2CapsAfterAi}`);
+    record(
+      'AI takes turn after human slide',
+      afterAi.moveCount >= 2 && parseInt(turnAfterAi || '0', 10) >= 2,
+      `turns=${turnAfterAi} p2caps=${p2CapsAfterAi} snapTurns=${afterAi.moveCount}`,
+    );
 
     // PvP mode disables AI level
     await page.selectOption('#game-mode-select', 'pvp');

@@ -173,13 +173,11 @@ const NODE_SPECS = buildNodeSpecs();
 const ADJACENCY = buildAdjacency(NODE_SPECS);
 
 function buildCenterNodeIds(nodes: NodeSpec[]): number[] {
-  const ids: number[] = [];
-  for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
-    if (!node.id.startsWith('A')) continue;
-    if (node.x === 2 || node.x === 4 || node.x === 6) ids.push(i);
+  const centreIndex = nodes.findIndex((node) => node.id === 'A22');
+  if (centreIndex < 0) {
+    throw new Error('16-bead centre node A22 missing from board spec');
   }
-  return ids;
+  return [centreIndex];
 }
 
 /** Reference parity: 37 nodes, 92 undirected edges. */

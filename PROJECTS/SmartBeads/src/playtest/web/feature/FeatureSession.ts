@@ -238,10 +238,8 @@ export class FeatureSession {
 
   canHumanAct(): boolean {
     if (this.isGameOver()) return false;
-    const state = this.engine.getState();
-    if (state.currentPlayer !== this.getHumanPlayer()) return false;
-    if (this.settings.mode === 'pve' && state.currentPlayer !== 'RED') return false;
-    return true;
+    if (this.settings.mode === 'pvp') return true;
+    return this.engine.getState().currentPlayer === 'RED';
   }
 
   applyMove(move: Move): void {
@@ -249,10 +247,6 @@ export class FeatureSession {
     const mover = stateBefore.currentPlayer;
 
     this.engine.applyMove(move);
-
-    if (this.settings.centerRule === 'cumulative') {
-      this.trackCumulativeCenterLanding(move.to);
-    }
 
     const chain = this.engine.getChainPieceId();
     if (chain !== null) {
@@ -275,6 +269,13 @@ export class FeatureSession {
   private afterTurnCompleted(mover: Player): void {
     this.selectedId = null;
     this.uiState = 'idle';
+
+    // FIX: Accumulate center occupancy per completed turn
+    if (this.settings.centerRule === 'cumulative') {
+      const board = this.engine.getState().board;
+      this.p1CenterScore += countCenterOccupancy(board, 'RED');
+      this.p2CenterScore += countCenterOccupancy(board, 'BLUE');
+    }
 
     const engState = this.engine.getState();
     if (engState.gameOver) {
@@ -380,8 +381,7 @@ export class FeatureSession {
     } else {
       this.globalMatchRemaining -= 1;
       if (this.globalMatchRemaining <= 0) {
-        const loser = this.engine.getState().currentPlayer;
-        this.endGameByFeature(opponentOf(loser), 'Match timer expired.');
+        this.evaluateScoreAndEnd('Match timer expired.');
       }
     }
   }

@@ -23,6 +23,8 @@ The verified repository is the implementation source of truth.
 
 SmartBeads project docs live under `PROJECTS/SmartBeads/`.
 
+Agent roles, approval tiers, workflow, safety, verification, Knowledge Classification, and Engineering Principles are defined once in `VISION/AGENT_RULE_05P.md` — do not restate them here.
+
 ---
 
 # Core Principle
@@ -172,15 +174,3 @@ Use exactly these headings:
 
 (State which tier this task was: Automatic / Medium / Major, and
 whether it matched the Architect's original classification.)
-
----
-
-# Knowledge Classification
-
-If implementation results in permanent knowledge, recommend updating exactly one of:
-
-- GPT_PROJECT_RULES_01P.md
-- GPT_PROJECT_STATUS_01P.md
-
-Do not duplicate information across documents.
-

@@ -24,6 +24,8 @@ The verified repository is the implementation source of truth.
 
 SmartBeads project docs live under `PROJECTS/SmartBeads/`.
 
+Knowledge Classification and Engineering Principles are defined once in `VISION/AGENT_RULE_05P.md` — do not restate them here.
+
 ---
 
 # Core Principle
@@ -125,16 +127,6 @@ Challenge, and explain the risk of:
 - anything that would touch Major-tier territory disguised as Medium
 
 Recommend the safest alternative instead.
-
----
-
-# Knowledge Classification
-
-If planning surfaces permanent knowledge (a new rule, a settled
-decision), recommend updating exactly one of: PROJECT_MAP_05P.md,
-GPT_PROJECT_RULES_01P.md, GPT_PROJECT_STATUS_01P.md,
-VISION_05P.md. Never duplicate the same
-fact across documents.
 
 ---
 

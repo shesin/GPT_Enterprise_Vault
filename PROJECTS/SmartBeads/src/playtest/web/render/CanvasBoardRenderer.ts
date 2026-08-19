@@ -1,5 +1,6 @@
 import { BoardDefinition, Move, Player } from '../../../models/GameState';
-import { projectIntersectionOnCanvas } from '../layout/boardProjection';
+import { getBoardVisualProfile } from '../layout/boardVisualProfile';
+import { projectIntersectionOnCanvas, projectLatticePointOnCanvas } from '../layout/boardProjection';
 
 export interface BoardAnimState {
   from: number;
@@ -20,6 +21,143 @@ export interface CanvasBoardView {
   chainPieceId: number | null;
   anim: BoardAnimState | null;
   turnPulse: number;
+}
+
+function resolveCenterHighlight(board: BoardDefinition): Set<number> {
+  const profile = getBoardVisualProfile(board.name);
+  const byNodeId = new Set<number>();
+  const ringPoints = profile.centerRingPoints;
+  if (!ringPoints?.length) return byNodeId;
+
+  const byLattice = new Set(ringPoints.map((pt) => `${pt.x},${pt.y}`));
+  for (const node of board.intersections) {
+    if (node.x === undefined || node.y === undefined) continue;
+    if (byLattice.has(`${node.x},${node.y}`)) {
+      byNodeId.add(node.id);
+    }
+  }
+  return byNodeId;
+}
+
+function isCenterHighlight(nodeId: number, cache: Set<number>): boolean {
+  return cache.has(nodeId);
+}
+
+/** Nodes that receive the whose-turn pulse/ring — current player only, chain piece if chaining. */
+export function listTurnHighlightNodeIds(
+  board: BoardDefinition,
+  currentPlayer: Player,
+  chainPieceId: number | null,
+): number[] {
+  const ids: number[] = [];
+  for (const node of board.intersections) {
+    if (node.occupant !== currentPlayer) continue;
+    if (chainPieceId !== null && node.id !== chainPieceId) continue;
+    ids.push(node.id);
+  }
+  return ids;
+}
+
+function drawAmberSquare(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
+  ctx.fillStyle = 'rgba(232,168,60,0.35)';
+  ctx.fillRect(cx - 14, cy - 14, 28, 28);
+  ctx.strokeStyle = 'rgba(232,168,60,0.95)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(cx - 14, cy - 14, 28, 28);
+}
+
+function drawCenterLine(
+  ctx: CanvasRenderingContext2D,
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+): void {
+  const grad = ctx.createLinearGradient(ax, ay - 10, bx, by + 10);
+  grad.addColorStop(0, 'rgba(232,168,60,0.15)');
+  grad.addColorStop(0.5, 'rgba(232,168,60,0.45)');
+  grad.addColorStop(1, 'rgba(232,168,60,0.15)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(ax - 8, ay - 10);
+  ctx.lineTo(bx + 8, by - 10);
+  ctx.lineTo(bx + 8, by + 10);
+  ctx.lineTo(ax - 8, ay + 10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.strokeStyle = 'rgba(232,168,60,0.95)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.beginPath();
+  ctx.arc(x, y, 22, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(232, 168, 60, 0.7)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function drawTurnWash(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  currentPlayer: Player,
+  axis: 'horizontal' | 'vertical',
+): void {
+  const wash =
+    axis === 'vertical'
+      ? ctx.createLinearGradient(0, 0, 0, h)
+      : ctx.createLinearGradient(0, 0, w, 0);
+
+  if (axis === 'vertical') {
+    if (currentPlayer === 'RED') {
+      wash.addColorStop(0, 'rgba(0,0,0,0)');
+      wash.addColorStop(0.55, 'rgba(255,245,220,0)');
+      wash.addColorStop(1, 'rgba(255,245,220,0.14)');
+    } else {
+      wash.addColorStop(0, 'rgba(40,90,160,0.16)');
+      wash.addColorStop(0.45, 'rgba(30,20,10,0)');
+      wash.addColorStop(1, 'rgba(0,0,0,0)');
+    }
+  } else if (currentPlayer === 'RED') {
+    wash.addColorStop(0, 'rgba(255,245,220,0.14)');
+    wash.addColorStop(0.45, 'rgba(255,245,220,0)');
+    wash.addColorStop(1, 'rgba(0,0,0,0)');
+  } else {
+    wash.addColorStop(0, 'rgba(0,0,0,0)');
+    wash.addColorStop(0.55, 'rgba(30,20,10,0)');
+    wash.addColorStop(1, 'rgba(40,90,160,0.16)');
+  }
+
+  ctx.fillStyle = wash;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawCenterDecorations(
+  ctx: CanvasRenderingContext2D,
+  board: BoardDefinition,
+  w: number,
+  h: number,
+): void {
+  const profile = getBoardVisualProfile(board.name);
+
+  if (profile.centerLine) {
+    const [a, b] = profile.centerLine;
+    const aPt = projectLatticePointOnCanvas(a.x, a.y, w, h, board);
+    const bPt = projectLatticePointOnCanvas(b.x, b.y, w, h, board);
+    drawCenterLine(ctx, aPt.x, aPt.y, bPt.x, bPt.y);
+  }
+
+  if (profile.centerSquares) {
+    for (const sq of profile.centerSquares) {
+      const pt = projectLatticePointOnCanvas(sq.x, sq.y, w, h, board);
+      drawAmberSquare(ctx, pt.x, pt.y);
+    }
+  }
 }
 
 function drawPieceAt(
@@ -59,6 +197,10 @@ export function drawCanvasBoard(
   const w = canvas.width;
   const h = canvas.height;
   const { board, currentPlayer, gameOver, selectedId, legalTargets, chainPieceId, anim, turnPulse } = view;
+  const visualProfile = getBoardVisualProfile(board.name);
+  const centerHighlight = resolveCenterHighlight(board);
+  const project = (node: { x?: number; y?: number; id: number }) =>
+    projectIntersectionOnCanvas(node as Parameters<typeof projectIntersectionOnCanvas>[0], w, h, board);
 
   ctx.clearRect(0, 0, w, h);
   const g = ctx.createLinearGradient(0, 0, w, h);
@@ -67,19 +209,10 @@ export function drawCanvasBoard(
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 
+  const animating = anim !== null && anim.t < 1;
+  const washPlayer = animating && anim ? anim.player : currentPlayer;
   if (!gameOver) {
-    const wash = ctx.createLinearGradient(0, 0, w, 0);
-    if (currentPlayer === 'RED') {
-      wash.addColorStop(0, 'rgba(255,245,220,0.14)');
-      wash.addColorStop(0.45, 'rgba(255,245,220,0)');
-      wash.addColorStop(1, 'rgba(0,0,0,0)');
-    } else {
-      wash.addColorStop(0, 'rgba(0,0,0,0)');
-      wash.addColorStop(0.55, 'rgba(30,20,10,0)');
-      wash.addColorStop(1, 'rgba(40,90,160,0.16)');
-    }
-    ctx.fillStyle = wash;
-    ctx.fillRect(0, 0, w, h);
+    drawTurnWash(ctx, w, h, washPlayer, visualProfile.turnWashAxis ?? 'horizontal');
   }
 
   ctx.strokeStyle = 'rgba(212,168,75,0.55)';
@@ -88,21 +221,28 @@ export function drawCanvasBoard(
     const from = board.intersections[conn.from];
     const to = board.intersections[conn.to];
     if (from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined) continue;
-    const fromPt = projectIntersectionOnCanvas(from, w, h);
-    const toPt = projectIntersectionOnCanvas(to, w, h);
+    const fromPt = project(from);
+    const toPt = project(to);
     ctx.beginPath();
     ctx.moveTo(fromPt.x, fromPt.y);
     ctx.lineTo(toPt.x, toPt.y);
     ctx.stroke();
   }
 
+  drawCenterDecorations(ctx, board, w, h);
+
   const hideFrom = anim ? anim.from : -1;
+  const hideTo = animating && anim ? anim.to : -1;
   const hideCap = anim && anim.captured != null ? anim.captured : -1;
-  const animating = anim !== null && anim.t < 1;
 
   for (const node of board.intersections) {
     if (node.x === undefined || node.y === undefined) continue;
-    const { x, y } = projectIntersectionOnCanvas(node, w, h);
+    const { x, y } = project(node);
+    const center = isCenterHighlight(node.id, centerHighlight);
+
+    if (center) {
+      drawCenterRing(ctx, x, y);
+    }
 
     ctx.beginPath();
     ctx.arc(x, y, 5, 0, Math.PI * 2);
@@ -117,8 +257,13 @@ export function drawCanvasBoard(
       ctx.stroke();
     }
 
-    if (node.occupant && node.id !== hideFrom) {
-      const isTurnPiece = !gameOver && node.occupant === currentPlayer && !animating && chainPieceId === null;
+    if (node.occupant && node.id !== hideFrom && node.id !== hideTo) {
+      const isChainPiece = chainPieceId !== null && node.id === chainPieceId;
+      const isTurnPiece =
+        !gameOver
+        && node.occupant === currentPlayer
+        && !animating
+        && (chainPieceId === null || isChainPiece);
       const pulse = isTurnPiece ? 1 + 0.08 * Math.sin(turnPulse) : 1;
       const dimOpp = !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
       const r = (selectedId === node.id ? 18 : 16) * pulse;
@@ -137,7 +282,7 @@ export function drawCanvasBoard(
     if (anim.captured != null && hideCap >= 0) {
       const capNode = board.intersections[anim.captured];
       if (capNode.x !== undefined && capNode.y !== undefined && anim.capturedPlayer) {
-        const capPt = projectIntersectionOnCanvas(capNode, w, h);
+        const capPt = project(capNode);
         const fade = Math.max(0, 1 - anim.t * 1.4);
         drawPieceAt(ctx, capPt.x, capPt.y, anim.capturedPlayer, 16 * fade, fade);
         if (fade > 0.2) {
@@ -153,8 +298,8 @@ export function drawCanvasBoard(
     const fromNode = board.intersections[anim.from];
     const toNode = board.intersections[anim.to];
     if (fromNode.x !== undefined && fromNode.y !== undefined && toNode.x !== undefined && toNode.y !== undefined) {
-      const fromPt = projectIntersectionOnCanvas(fromNode, w, h);
-      const toPt = projectIntersectionOnCanvas(toNode, w, h);
+      const fromPt = project(fromNode);
+      const toPt = project(toNode);
       const ease = anim.t < 0.5 ? 2 * anim.t * anim.t : 1 - ((-2 * anim.t + 2) ** 2) / 2;
       drawPieceAt(
         ctx,
@@ -184,7 +329,7 @@ export function hitTestNode(
   let best = 22;
   for (const node of board.intersections) {
     if (node.x === undefined || node.y === undefined) continue;
-    const { x, y } = projectIntersectionOnCanvas(node, canvas.width, canvas.height);
+    const { x, y } = projectIntersectionOnCanvas(node, canvas.width, canvas.height, board);
     const d = Math.hypot(mx - x, my - y);
     if (d < best) {
       best = d;

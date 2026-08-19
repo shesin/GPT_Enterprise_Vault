@@ -280,27 +280,35 @@ Every completion report must state explicitly, for the actual requested outcome:
 Passing unit tests, successful builds, or code review of the diff are Technical
 Verification only. They must never be presented, implied, or summarized as
 confirmation that a feature, fix, or user-facing behavior actually works, unless
-that specific outcome was itself directly observed.
+that specific outcome was itself directly observed. A green `npm test` does not
+mean the UI is bug-free.
+
+When the human reproduced a bug by clicking: write a failing Jest test for those
+exact clicks first; confirm it fails; only then change engine/session/AI code.
+Do not start with animation or CSS. Engine/session rules must be correct without
+a renderer.
 
 If direct observation is not possible in the current environment, say so plainly
 and stop — do not report completion.
 
 
 ---
-# Documentation
+# Knowledge Classification
 
-If permanent knowledge is created, recommend updating exactly one document:
+If permanent knowledge is created, recommend updating exactly one document from the Project Documentation Set (see GPT_PROJECT_RULES_01P.md — Rule - Project Documentation Set):
 
 - GPT_PROJECT_RULES_01P.md
 - GPT_PROJECT_STATUS_01P.md
 - PROJECT_MAP_05P.md
 - VISION_05P.md
 
-Avoid duplicate information.
+Avoid duplicate information across documents.
+
+Agent prompt files must reference this section. They must not restate it.
 
 ---
 
-# Final Principles
+# Engineering Principles
 
 - Repository before memory.
 - Evidence before assumptions.

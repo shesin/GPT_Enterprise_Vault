@@ -1,3 +1,5 @@
+# CHATGPT_PROMPT_01.md (personal — not referenced in repo docs)
+
 # AI_PROMPT_01.md (Merged Additions)
 
 # PROMPT to CURSOR OR CLINE

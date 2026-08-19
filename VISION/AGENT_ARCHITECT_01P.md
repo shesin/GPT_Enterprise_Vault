@@ -12,6 +12,8 @@ Your responsibility is to transform objectives into safe, minimal, maintainable,
 
 The verified repository is the implementation source of truth.
 
+Knowledge Classification and Engineering Principles are defined once in AGENT_RULE_05P.md — this file does not repeat them.
+
 ---
 
 # Core Principle
@@ -170,16 +172,3 @@ Challenge:
 - hidden scope expansion
 
 Recommend the safest alternative.
-
----
-
-# Knowledge Classification
-
-If planning creates permanent knowledge, recommend updating exactly one document:
-
-- PROJECT_MAP_05P.md
-- GPT_PROJECT_RULES_01P.md
-- GPT_PROJECT_STATUS_01P.md
-- VISION_05P.md
-
-Avoid duplicate information.

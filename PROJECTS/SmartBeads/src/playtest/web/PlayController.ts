@@ -6,7 +6,7 @@ import {
   ProductBoardId,
   resolveEngineVariant,
 } from '../../config/BoardCatalog';
-import { findJumpPath, Move, Player } from '../../models/GameState';
+import { cloneBoardDefinition, findJumpPath, Move, Player } from '../../models/GameState';
 import { formatCenterDisplay } from './feature/centerScoring';
 import {
   AiLevel,
@@ -22,6 +22,9 @@ import {
 } from './feature/GameFeatureSettings';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
 import { selectAiTurnPath, shouldAcceptResignationDraw } from './feature/HonestAi';
+import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
+import { getBoardCanvasSize } from './layout/boardVisualProfile';
+import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
 import {
   BoardAnimState,
   drawCanvasBoard,
@@ -62,7 +65,8 @@ export function bootstrapPlayShell(): void {
   let aiThinking = false;
   let turnPulse = 0;
   let timerId: ReturnType<typeof setInterval> | null = null;
-  let rafId = 0;
+  let pulseRaf = 0;
+  let animRaf = 0;
   let aiRunId = 0;
   const undoStack: SessionSnapshot[] = [];
   let pendingResignPlayer: Player | null = null;
@@ -249,10 +253,35 @@ export function bootstrapPlayShell(): void {
     resignOfferModal.style.display = 'flex';
   }
 
+  function turnStatusText(): string {
+    const player = session.getEngine().getState().currentPlayer;
+    const label = player === 'RED' ? 'P1' : 'P2';
+    const uiState = session.getUiState();
+    if (uiState === 'chain') return `${label} — continue chain or Finish`;
+    return `${label} turn — select a piece`;
+  }
+
+  function applyCanvasSizeForBoard(): void {
+    const boardName = session.getEngine().getState().board.name;
+    const { width, height } = getBoardCanvasSize(boardName);
+    canvas.width = width;
+    canvas.height = height;
+    fitCanvasToFrame(canvas);
+  }
+
+  installCanvasResizeObserver(canvas, () => {
+    fitCanvasToFrame(canvas);
+    drawBoard();
+  });
+
   function drawBoard(): void {
     const state = session.getEngine().getState();
+    const board = anim ? cloneBoardDefinition(state.board) : state.board;
+    if (anim && board.intersections[anim.from]) {
+      board.intersections[anim.from].occupant = undefined;
+    }
     drawCanvasBoard(canvas, {
-      board: state.board,
+      board,
       currentPlayer: state.currentPlayer,
       gameOver: session.isGameOver(),
       selectedId: session.getSelectedId(),
@@ -284,9 +313,9 @@ export function bootstrapPlayShell(): void {
 
     const uiState = session.getUiState();
     const showFinish = uiState === 'chain'
-      && state.currentPlayer === 'RED'
       && !animating
-      && !aiThinking;
+      && !aiThinking
+      && (settings.mode === 'pvp' || state.currentPlayer === 'RED');
     finishBtn.style.display = showFinish ? 'inline-block' : 'none';
 
     undoBtn.disabled = undoStack.length === 0 || animating || aiThinking;
@@ -339,7 +368,7 @@ export function bootstrapPlayShell(): void {
   function loopPulse(ts: number): void {
     turnPulse = ts / 280;
     if (!animating) drawBoard();
-    rafId = requestAnimationFrame(loopPulse);
+    pulseRaf = requestAnimationFrame(loopPulse);
   }
 
   function afterHumanOrAiTurn(): void {
@@ -357,15 +386,15 @@ export function bootstrapPlayShell(): void {
       setTimeout(() => {
         if (runId !== aiRunId) return;
         runAiTurn(runId);
-      }, 40);
+      }, AI_REPLY_DELAY_MS);
     } else {
       cancelAiWork();
-      setStatus(state.currentPlayer === 'RED' ? 'P1 turn' : 'P2 turn');
+      setStatus(turnStatusText());
     }
   }
 
-  function animateMove(move: Move, player: Player, onDone: () => void): void {
-    animating = true;
+  function playAnimated(move: Move, player: Player, onDone: () => void): void {
+    if (animating) return;
     const state = session.getEngine().getState();
     const jump = findJumpPath(state.board, move.from, move.to);
     const captured = jump?.over;
@@ -373,6 +402,7 @@ export function bootstrapPlayShell(): void {
       ? state.board.intersections[captured].occupant
       : undefined;
 
+    animating = true;
     anim = {
       from: move.from,
       to: move.to,
@@ -380,8 +410,9 @@ export function bootstrapPlayShell(): void {
       capturedPlayer,
       player,
       t: 0,
-      duration: jump ? 280 : 200,
+      duration: jump ? HUMAN_JUMP_ANIM_MS : HUMAN_SLIDE_ANIM_MS,
     };
+    drawBoard();
 
     const start = performance.now();
     function step(now: number): void {
@@ -389,22 +420,21 @@ export function bootstrapPlayShell(): void {
       anim.t = Math.min(1, (now - start) / anim.duration);
       drawBoard();
       if (anim.t < 1) {
-        rafId = requestAnimationFrame(step);
+        animRaf = requestAnimationFrame(step);
       } else {
         anim = null;
         animating = false;
+        session.applyMove(move);
         onDone();
       }
     }
-    rafId = requestAnimationFrame(step);
+    animRaf = requestAnimationFrame(step);
   }
 
   function executeMoveAnimated(move: Move, player: Player): void {
-    if (animating) return;
-    animateMove(move, player, () => {
-      session.applyMove(move);
-      if (session.getUiState() === 'chain' && player === 'RED') {
-        setStatus('Continue chain or Finish.');
+    playAnimated(move, player, () => {
+      if (session.getUiState() === 'chain') {
+        setStatus(turnStatusText());
         updateUI();
         return;
       }
@@ -434,6 +464,9 @@ export function bootstrapPlayShell(): void {
       return;
     }
 
+    // FIX: Push snapshot before AI turn so Undo restores cleanly to human turn
+    pushUndoSnapshot();
+
     let i = 0;
     function playNext(): void {
       if (runId !== aiRunId) return;
@@ -444,29 +477,25 @@ export function bootstrapPlayShell(): void {
       if (i >= path.length) {
         cancelAiWork();
         updateUI();
-        setStatus('P1 turn');
+        setStatus(turnStatusText());
         return;
       }
 
       const move = path[i];
       i += 1;
-      animateMove(move, 'BLUE', () => {
+      playAnimated(move, 'BLUE', () => {
         if (runId !== aiRunId) return;
-        session.applyMove(move);
         const chain = session.getEngine().getChainPieceId();
+
+        // FIX: Only continue if chain is active AND there are remaining moves in path!
         if (chain !== null && i < path.length) {
-          setTimeout(playNext, 60);
+          setTimeout(playNext, 380);
           return;
         }
-        if (chain !== null) {
-          session.finishChain();
-        }
-        if (i >= path.length) {
-          cancelAiWork();
-          afterHumanOrAiTurn();
-        } else {
-          setTimeout(playNext, 60);
-        }
+
+        // Turn is complete (chain is null). Stop AI execution immediately!
+        cancelAiWork();
+        afterHumanOrAiTurn();
       });
     }
     playNext();
@@ -526,13 +555,14 @@ export function bootstrapPlayShell(): void {
     pendingResignPlayer = null;
     undoBtn.disabled = undoStack.length === 0;
     if (!session.isGameOver()) startTimers();
-    setStatus('Your turn — select a piece');
+    setStatus(turnStatusText());
     updateUI();
   }
 
   function resetGame(): void {
     if (timerId) clearInterval(timerId);
-    cancelAnimationFrame(rafId);
+    cancelAnimationFrame(pulseRaf);
+    cancelAnimationFrame(animRaf);
     cancelAiWork();
     undoStack.length = 0;
     anim = null;
@@ -542,15 +572,16 @@ export function bootstrapPlayShell(): void {
     const settings = readSettings();
     session = createSession(currentBoardId, settings);
     session.reset();
+    applyCanvasSizeForBoard();
     resultModal.style.display = 'none';
     resignOfferModal.style.display = 'none';
     pendingResignPlayer = null;
     session.resetTurnClock();
-    setStatus('Your turn — select a piece');
+    setStatus(turnStatusText());
     updateUI();
     startTimers();
     undoBtn.disabled = true;
-    rafId = requestAnimationFrame(loopPulse);
+    pulseRaf = requestAnimationFrame(loopPulse);
   }
 
   resignBtn.addEventListener('click', beginResignation);
@@ -572,7 +603,8 @@ export function bootstrapPlayShell(): void {
 
   function switchBoard(boardId: ProductBoardId): void {
     if (timerId) clearInterval(timerId);
-    cancelAnimationFrame(rafId);
+    cancelAnimationFrame(pulseRaf);
+    cancelAnimationFrame(animRaf);
     cancelAiWork();
     undoStack.length = 0;
     anim = null;
@@ -585,15 +617,16 @@ export function bootstrapPlayShell(): void {
     syncBoardPlayOptions();
     applyBoardDefaults(boardId);
     session = createSession(boardId, readSettings());
+    applyCanvasSizeForBoard();
     resultModal.style.display = 'none';
     resignOfferModal.style.display = 'none';
     pendingResignPlayer = null;
     session.resetTurnClock();
-    setStatus('Your turn — select a piece');
+    setStatus(turnStatusText());
     updateUI();
     startTimers();
     undoBtn.disabled = true;
-    rafId = requestAnimationFrame(loopPulse);
+    pulseRaf = requestAnimationFrame(loopPulse);
   }
 
   restartBtn.addEventListener('click', resetGame);
@@ -630,6 +663,31 @@ export function bootstrapPlayShell(): void {
   syncBoardTitle();
   syncBoardPlayOptions();
   resetGame();
+
+  (window as unknown as { __SB_TEST__?: object }).__SB_TEST__ = {
+    snapshot: () => {
+      const state = session.getEngine().getState();
+      return {
+        currentPlayer: state.currentPlayer,
+        selectedId: session.getSelectedId(),
+        moveCount: session.getMoveCount(),
+        canHumanAct: session.canHumanAct(),
+        mode: session.getSettings().mode,
+        boardName: state.board.name,
+        uiState: session.getUiState(),
+        occupants: state.board.intersections.map((n) => ({
+          id: n.id,
+          label: n.label,
+          occupant: n.occupant,
+          x: n.x,
+          y: n.y,
+        })),
+        animating,
+        animFrom: anim?.from ?? null,
+        animTo: anim?.to ?? null,
+      };
+    },
+  };
 }
 
 function populateBoardSelect(select: HTMLSelectElement): void {

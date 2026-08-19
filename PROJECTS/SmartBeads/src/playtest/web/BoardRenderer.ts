@@ -1,15 +1,14 @@
 import { BoardDefinition, Intersection, Move } from '../../models/GameState';
-import { projectLatticeIntersection } from './layout/boardProjection';
+import { projectIntersectionOnCanvas } from './layout/boardProjection';
 
-/** Matches SHOLO_GUTI.html vertical board projection. */
+/** Matches SHOLO_GUTI.html vertical board projection (legacy SVG path). */
 export function projectIntersection(
   intersection: Intersection,
   viewWidth: number,
   viewHeight: number,
+  board?: BoardDefinition,
 ): { x: number; y: number } {
-  const latticeX = intersection.x ?? 0;
-  const latticeY = intersection.y ?? 0;
-  return projectLatticeIntersection(latticeX, latticeY, viewWidth, viewHeight);
+  return projectIntersectionOnCanvas(intersection, viewWidth, viewHeight, board);
 }
 
 /** Fallback grid layout when intersections lack x/y (legacy 4×4 lab). */
@@ -34,13 +33,13 @@ export function resolveNodePosition(
   intersection: Intersection,
   viewWidth: number,
   viewHeight: number,
-  gridSize?: number,
+  options?: { gridSize?: number; board?: BoardDefinition },
 ): { x: number; y: number } {
   if (intersection.x !== undefined && intersection.y !== undefined) {
-    return projectIntersection(intersection, viewWidth, viewHeight);
+    return projectIntersection(intersection, viewWidth, viewHeight, options?.board);
   }
-  if (gridSize !== undefined) {
-    return projectGridIntersection(intersection.id, gridSize, viewWidth, viewHeight);
+  if (options?.gridSize !== undefined) {
+    return projectGridIntersection(intersection.id, options.gridSize, viewWidth, viewHeight);
   }
   throw new Error(`Intersection ${intersection.id} has no layout coordinates`);
 }
@@ -59,7 +58,7 @@ export function renderBoardSvg(
   svg.innerHTML = '';
 
   const positionFor = (intersection: Intersection) =>
-    resolveNodePosition(intersection, viewWidth, viewHeight, options?.gridSize);
+    resolveNodePosition(intersection, viewWidth, viewHeight, { gridSize: options?.gridSize, board });
 
   for (const conn of board.connections) {
     const from = board.intersections.find((point) => point.id === conn.from);

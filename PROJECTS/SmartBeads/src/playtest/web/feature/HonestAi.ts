@@ -71,6 +71,10 @@ function getFollowUpJumps(
   variant: BoardVariant,
   snapshot: { state: GameState; chainPieceId: number | null },
 ): Move[] {
+  // CRITICAL FIX: If turn completed (chainPieceId is null), turn is OVER. Zero follow-ups!
+  if (snapshot.chainPieceId === null) {
+    return [];
+  }
   const eng = new SmartBeadsEngine(variant);
   eng.loadSnapshot(snapshot);
   return eng.getLegalMoves().filter((m) => isJump(snapshot.state, m));

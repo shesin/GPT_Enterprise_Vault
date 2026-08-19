@@ -24,7 +24,15 @@ Every conclusion, recommendation, or implementation decision must be supported b
 
 ## Rule - Verification Scope
 
-Distinguish Technical Verification (repository/tests/execution) from Gameplay/UX Evaluation (subjective, requires human review). Automated verification never implies gameplay quality, balance, or enjoyment unless explicitly evaluated.
+Distinguish Technical Verification (repository/tests/execution) from Gameplay/UX Evaluation (subjective, requires human review). Automated verification never implies gameplay quality, balance, or enjoyment unless explicitly evaluated. A green `npm test` / Jest run is not proof the UI or a human two-click path is bug-free.
+
+## Rule - Human Oracle
+
+When a bug is found by clicking on screen, do not guess a fix. Encode those exact clicks as a Jest test first. Confirm the test FAILS, then fix engine/session/AI code until it passes. Do not start with CSS, canvas delay, or layout.
+
+## Rule - Engine Independent of Animation
+
+`SmartBeadsEngine` and `FeatureSession` must be mathematically correct with no renderer. Animation, CSS, and canvas delay must not implement or repair turn, capture, or AI rules.
 
 ## Rule - Board Fidelity
 

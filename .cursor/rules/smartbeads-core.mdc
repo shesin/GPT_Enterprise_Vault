@@ -10,7 +10,9 @@ Apply when work touches `PROJECTS/SmartBeads/` (full rules load via `smartbeads-
 - **Evidence before conclusion** — repo inspection and execution beat chat history or status docs.
 - **Prototype ≠ production** — `prototype/` must not share code with `src/`; port geometry/rules only.
 - **Verified source** — read files before changing; never invent project state from memory.
-- **Verification scope** — tests/builds are technical verification only; they do not prove gameplay/UX quality.
+- **Verification scope** — tests/builds are technical verification only; a green `npm test` does not prove the UI or a human two-click path is bug-free.
+- **Human oracle** — screen-reproduced bugs: failing Jest for those exact clicks first, then engine fix. No CSS/animation-first patches.
+- **Engine ≠ animation** — `SmartBeadsEngine` / `FeatureSession` must be correct with no renderer.
 - **Protected docs** — do not edit `VISION_05P.md` or `GPT_PROJECT_RULES_01P.md` to fit an implementation; stop and report conflicts.
 - **Reuse before build** — extend existing engine/shell components; no new abstraction without demonstrated need.
 

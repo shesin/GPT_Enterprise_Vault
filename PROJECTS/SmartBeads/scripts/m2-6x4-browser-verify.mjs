@@ -3,6 +3,8 @@
  * Requires: npm run web:smartbeads (http://localhost:5173/)
  */
 import { chromium } from 'playwright';
+import { clickNode as clickBoardNode } from './lib/project-node.mjs';
+import { playTwoClicksIsolated, timingWindow } from './lib/live-ply.mjs';
 
 const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
 const BOARD_ID = '6x4';
@@ -14,30 +16,8 @@ function record(name, ok, detail) {
   console.log(`${ok ? 'CONFIRMED' : 'UNCONFIRMED'}  ${name}${detail ? ' — ' + detail : ''}`);
 }
 
-async function projectNode(page, nodeIndex) {
-  return page.evaluate(async (i) => {
-    const { SmartBeadsEngine } = await import('/PROJECTS/SmartBeads/src/core/SmartBeadsEngine.ts');
-    const eng = new SmartBeadsEngine('6');
-    const node = eng.getState().board.intersections[i];
-    const canvas = document.getElementById('board');
-    if (!canvas || node.x === undefined || node.y === undefined) return null;
-    const w = canvas.width;
-    const h = canvas.height;
-    const px = 40 + (node.y / 8) * (w - 80);
-    const py = 36 + ((10 - node.x) / 12) * (h - 72);
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: rect.left + (px * rect.width) / w,
-      y: rect.top + (py * rect.height) / h,
-    };
-  }, nodeIndex);
-}
-
 async function clickNode(page, nodeIndex) {
-  const coords = await projectNode(page, nodeIndex);
-  if (!coords) throw new Error(`node ${nodeIndex} coords missing`);
-  await page.mouse.click(coords.x, coords.y);
-  await page.waitForTimeout(450);
+  await clickBoardNode(page, BOARD_ID, nodeIndex);
 }
 
 async function selectBoard(page) {
@@ -165,13 +145,16 @@ async function main() {
 
     await page.locator('#restart-btn').click();
     await page.waitForTimeout(500);
-    if (slide) {
-      await clickNode(page, slide.from);
-      await clickNode(page, slide.to);
-      await page.waitForTimeout(1200);
-    }
+    const ply = await playTwoClicksIsolated(page, BOARD_ID, VARIANT);
+    record(
+      'two clicks = isolated Ivory ply (AI has not moved)',
+      ply.iso.ok && ply.after.moveCount === 1 && ply.selectDiff.length === 0,
+      ply.iso.detail,
+    );
+    const timing = await timingWindow(page);
+    await page.waitForTimeout(timing.AI_REPLY_DELAY_MS + 900);
     const turnAfterAi = await page.locator('#turn-count').textContent();
-    record('AI responds after human move', parseInt(turnAfterAi || '0', 10) >= 2, `turns=${turnAfterAi}`);
+    record('AI reply is a later ply', parseInt(turnAfterAi || '0', 10) >= 2, `turns=${turnAfterAi}`);
 
     await page.selectOption('#game-mode-select', 'pvp');
     await page.waitForTimeout(300);

@@ -1,6 +1,8 @@
 import {
   BOARD_CATALOG,
   getPlayConfig,
+  listProductBoards,
+  PRODUCT_BOARD_ORDER,
   ProductBoardId,
 } from '../BoardCatalog';
 
@@ -54,6 +56,10 @@ describe('BoardCatalog human-decided settings', () => {
       expect(play.shotClockOptions).toEqual(['off', '30', '60']);
       expect(play.defaultSettings.shotClock).toBe('30');
     }
+  });
+
+  it('lists product boards in bead-count dropdown order', () => {
+    expect(listProductBoards().map((entry) => entry.id)).toEqual(PRODUCT_BOARD_ORDER);
   });
 
   it('exposes timer and shot-clock option lists for every playable board', () => {

@@ -10,7 +10,7 @@ Your responsibility is to implement safely, verify thoroughly, and preserve the 
 
 The verified repository is the implementation source of truth.
 
-Agent roles, approval tiers, workflow, safety rules, and the verification checklist are defined once in AGENT_RULE_05P.md — this file does not repeat them.
+Agent roles, approval tiers, workflow, safety rules, the verification checklist, Knowledge Classification, and Engineering Principles are defined once in AGENT_RULE_05P.md — this file does not repeat them.
 
 ---
 # Instrument Verification & Certification Rule
@@ -171,6 +171,19 @@ Never continue with assumptions.
 
 ---
 
+# Human Oracle (screen bugs)
+
+When the human found the bug by clicking:
+
+1. Write a Jest test for **those exact two clicks** (named nodes/labels, not `getLegalMoves()[0]` / first quiet slide).
+2. Run it. It **must FAIL** before any engine/UI change. If it passes, the test is wrong — fix the test, not the game.
+3. Only then fix `SmartBeadsEngine` / `FeatureSession` / AI turn logic.
+4. Do not guess CSS, canvas delay, or layout as the first patch. A green `npm test` is not proof the UI is bug-free.
+
+Engine rules stay independent of animation: session/engine state must be correct with the renderer unplugged.
+
+---
+
 # Verification Rules
 
 Never invent files, tests, build results, errors, or implementation status. Report actual results only — see AGENT_RULE_05P.md for the full pre-completion verification checklist.
@@ -208,8 +221,3 @@ Use exactly these headings, in this order:
 ## Remaining Work
 ## Tier Classification
 
----
-
-# Knowledge Classification
-
-If implementation creates permanent knowledge, recommend updating exactly one document from GPT_PROJECT_RULES_01P.md's Project Documentation Set (see AGENT_RULE_05P.md for the general rule). Do not duplicate information.

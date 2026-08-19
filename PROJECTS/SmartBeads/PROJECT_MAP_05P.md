@@ -52,6 +52,8 @@ SmartBeads/
 ├── scripts/                           # Browser verification (repo: PROJECTS/SmartBeads/scripts/)
 │   ├── m1-browser-verify.mjs
 │   ├── m2-browser-verify.mjs          # 16-bead feature shell
+│   ├── m2-2step-observe.mjs           # two-click occupancy gate (all V1 boards)
+│   ├── m2-gameplay-verify.mjs         # prototype-pixel + isolated first ply
 │   ├── m2-6x4-browser-verify.mjs
 │   ├── m2-6x3x5-browser-verify.mjs
 │   ├── m2-10x5-browser-verify.mjs
@@ -84,6 +86,8 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`main.ts`** — calls `bootstrapPlayShell()`.
 - **`PlayController.ts`** — settings panel, timers, undo, honest AI, board `<select>`, result modal.
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`.
+- **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
+- **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
 - **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas.
 
 ### prototype/board4/
@@ -151,6 +155,36 @@ Automated self-play execution and game metrics collection (`SelfPlayRunner.ts`).
 | `PROJECT_MAP_05P.md` | This file — structure and navigation |
 | `WEB_FEATURE_TEST_05P.md` | Per-board feature defaults (centre rule, timers) |
 | `LAB_TERMINOLOGY_05P.md` / `WEB_REPORT_*.md` | Lab methodology and board verdicts |
+
+### Agent prompts (`VISION/`)
+
+Two audiences — do not confuse them:
+
+**External AI (human paste — Cursor does not load this)**
+
+| File | Role |
+|------|------|
+| `AI_PROMPT_01.md` | Architect partner prompt for conversations outside Cursor |
+
+Other files may exist under `VISION/` for personal use; they are not part of repo documentation or Cursor configuration.
+
+**Cursor / repo agents (implementation and in-IDE work)**
+
+| File | Role |
+|------|------|
+| `AGENT_RULE_05P.md` | Canonical workflow, safety, Knowledge Classification, Engineering Principles |
+| `CURSOR_PROMPT_01.md` | Cursor implementer — code execution in this repository |
+| `AGENT_ARCHITECT_01P.md` | In-repo architect agent (plan/review; no direct edits) |
+
+Single-owner rule — canonical text lives in `AGENT_RULE_05P.md` only:
+
+| Topic | Owner |
+|-------|--------|
+| Knowledge Classification | `AGENT_RULE_05P.md` |
+| Engineering Principles | `AGENT_RULE_05P.md` |
+| Roles, approval tiers, workflow, safety, verification | `AGENT_RULE_05P.md` |
+
+All other agent prompts reference the above; they do not restate those sections.
 
 ---
 
