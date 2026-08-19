@@ -113,13 +113,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
   },
   {
     id: '8x4x6',
-    engineVariant: null,
+    engineVariant: '8x4x6',
     displayName: '8-bead · 4×6 hourglass',
-    description: 'Locked V1 #6',
+    description: 'Locked V1 #6 — hourglass waist camps',
     beadCount: 8,
     lattice: '4×6 hourglass',
-    playable: false,
-    productVisible: false,
+    playable: true,
+    productVisible: true,
     play: {
       defaultSettings: { ...BASE_SETTINGS },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],

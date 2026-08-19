@@ -5,6 +5,7 @@ import { Board6 } from '../boards/Board6';
 import { Board6x3x5 } from '../boards/Board6x3x5';
 import { Board10x5 } from '../boards/Board10x5';
 import { Board12x6x5 } from '../boards/Board12x6x5';
+import { Board8x4x6 } from '../boards/Board8x4x6';
 import { Board7 } from '../boards/Board7';
 import { Board16Sholo } from '../boards/Board16Sholo';
 
@@ -12,7 +13,7 @@ import { Board16Sholo } from '../boards/Board16Sholo';
  * Selects which physical board definition to use.
  * Geometry lives on BoardDefinition; register new variants here.
  */
-export type BoardVariant = '4' | '5' | '6' | '6x3x5' | '10x5' | '12x6x5' | '7' | '16';
+export type BoardVariant = '4' | '5' | '6' | '6x3x5' | '10x5' | '12x6x5' | '8x4x6' | '7' | '16';
 
 const boardVariants: Record<BoardVariant, BoardDefinition> = {
   '4': Board4,
@@ -21,12 +22,13 @@ const boardVariants: Record<BoardVariant, BoardDefinition> = {
   '6x3x5': Board6x3x5,
   '10x5': Board10x5,
   '12x6x5': Board12x6x5,
+  '8x4x6': Board8x4x6,
   '7': Board7,
   '16': Board16Sholo,
 };
 
 export function listBoardVariants(): BoardVariant[] {
-  return ['4', '5', '6', '7', '16', '6x3x5', '10x5', '12x6x5'];
+  return ['4', '5', '6', '7', '16', '6x3x5', '10x5', '12x6x5', '8x4x6'];
 }
 
 export function resolveBoard(variant: BoardVariant): BoardDefinition {
