@@ -3,125 +3,122 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartBeads Web Playtest</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #143328;
-      color: #ebe2cf;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 {
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
-    .panel {
-      background: #1f4d39;
-      padding: 15px 25px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      margin-bottom: 20px;
-      text-align: center;
-      max-width: 620px;
-      width: 100%;
-      border: 1px solid rgba(201,162,39,0.25);
-    }
-    .controls {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-    button, select {
-      padding: 8px 16px;
-      font-size: 14px;
-      border-radius: 4px;
-      border: 1px solid #8a7a62;
-      background-color: #c9a227;
-      color: #143328;
-      cursor: pointer;
-    }
-    button:disabled {
-      background-color: #6b6355;
-      cursor: not-allowed;
-    }
-    button.secondary {
-      background-color: #8a7a62;
-      color: #fff;
-    }
-    .status-row {
-      display: flex;
-      justify-content: space-around;
-      margin: 10px 0;
-      font-weight: bold;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .banner {
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 4px;
-      font-weight: bold;
-      text-align: center;
-    }
-    .banner.game-over {
-      background-color: rgba(212, 237, 218, 0.15);
-      color: #ebe2cf;
-      border: 1px solid rgba(201,162,39,0.45);
-    }
-    svg#board {
-      background: linear-gradient(145deg, #1f4d39, #143328);
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.35);
-      cursor: pointer;
-      border: 1px solid rgba(201,162,39,0.2);
-    }
-    .instruction {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #c9d4c9;
-    }
-    label {
-      margin-right: 6px;
-    }
-  </style>
+  <title>SmartBeads</title>
+  <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-shell.css">
 </head>
 <body>
-  <h1 id="boardTitle">SmartBeads — 16-bead · 5×5 Classic</h1>
+  <div class="shell">
+    <aside class="card left">
+      <h2>Players</h2>
+      <div class="pill red" id="pill-p1">
+        <div>
+          <div><strong>Ivory (P1)</strong></div>
+          <div class="tiny" id="p1-role">(Human)</div>
+        </div>
+        <div class="timer" id="p1-clock">--:--</div>
+      </div>
+      <div class="pill blue" id="pill-p2">
+        <div>
+          <div><strong>Ebony (P2)</strong></div>
+          <div class="tiny" id="p2-role">(AI)</div>
+        </div>
+        <div class="timer" id="p2-clock">--:--</div>
+      </div>
+      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">16</span></div>
+      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">16</span></div>
+      <div class="stat"><span>P1 captures</span><span class="val" id="p1-caps">0</span></div>
+      <div class="stat"><span>P2 captures</span><span class="val" id="p2-caps">0</span></div>
+      <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
+      <div class="stat"><span>Shot clock</span><span class="val" id="shot-clock-val">OFF</span></div>
+      <div class="stat"><span>Match timer</span><span class="val" id="match-clock-val">OFF</span></div>
+      <div class="stat"><span>P1 center</span><span class="val" id="p1-center">Off</span></div>
+      <div class="stat"><span>P2 center</span><span class="val" id="p2-center">Off</span></div>
+    </aside>
 
-  <div class="panel">
-    <div class="controls">
-      <label for="boardSelect"><strong>Board:</strong></label>
-      <select id="boardSelect"></select>
+    <main class="main">
+      <div class="board-frame"><canvas id="board" width="500" height="680"></canvas></div>
+      <div id="status"></div>
+      <div class="controls">
+        <button class="finish" id="finish-btn">Finish chain</button>
+        <button id="undo-btn" type="button">Undo</button>
+        <button id="restart-btn">New game</button>
+      </div>
+    </main>
 
-      <label for="colorSelect"><strong>Your Color:</strong></label>
-      <select id="colorSelect">
-        <option value="RED" selected>RED (Moves First)</option>
-        <option value="BLUE">BLUE (Moves Second)</option>
-      </select>
-      <button id="restartBtn">New Game</button>
-    </div>
+    <aside class="card right">
+      <h2>Settings</h2>
+      <div class="setting-list">
+        <div class="setting">
+          <label>Board</label>
+          <select id="board-select"></select>
+        </div>
+        <div class="setting">
+          <label>Game mode</label>
+          <select id="game-mode-select">
+            <option value="pve" selected>Human vs AI</option>
+            <option value="pvp">Human vs Human</option>
+          </select>
+        </div>
+        <div class="setting" id="ai-level-container">
+          <label>AI level</label>
+          <select id="ai-level-select">
+            <option value="1">Easy</option>
+            <option value="2" selected>Medium</option>
+            <option value="3">Hard</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>Match timer</label>
+          <select id="match-timer-select">
+            <option value="off" selected>Off</option>
+            <option value="20">20 min</option>
+            <option value="30">30 min</option>
+            <option value="40">40 min</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>Turn shot clock</label>
+          <select id="shot-clock-select">
+            <option value="off" selected>Off</option>
+            <option value="5">5 sec</option>
+            <option value="10">10 sec</option>
+            <option value="15">15 sec</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>Center rule</label>
+          <select id="center-rule-select">
+            <option value="off" selected>Off</option>
+            <option value="endgame">End-Game</option>
+          </select>
+        </div>
+      </div>
 
-    <div class="status-row">
-      <div id="turnStatus">Turn: 1 (RED)</div>
-      <div id="pieceStatus">Pieces - RED: 16 | BLUE: 16</div>
-      <div id="captureStatus">Captures - RED: 0 | BLUE: 0</div>
-    </div>
-
-    <div class="controls">
-      <button id="endTurnBtn" class="secondary" disabled>End Turn Voluntarily</button>
-    </div>
-
-    <div id="gameBanner" class="banner" style="display: none;"></div>
-    <div id="instructionText" class="instruction">Click an owned piece to highlight legal moves, then click a target destination.</div>
+      <h2 style="margin-top: 14px;">BGM Music</h2>
+      <div class="bgm-section">
+        <select id="bgm-select">
+          <option value="">— Select Music —</option>
+        </select>
+        <div class="bgm-controls">
+          <button type="button" id="bgm-play">▶ Play</button>
+          <button type="button" id="bgm-pause">⏸ Pause</button>
+        </div>
+        <div class="bgm-vol-row">
+          <span class="tiny">Volume</span>
+          <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.3">
+        </div>
+      </div>
+      <audio id="bgm-audio" loop></audio>
+    </aside>
   </div>
 
-  <svg id="board" width="560" height="680" viewBox="0 0 560 680"></svg>
+  <div class="modal" id="result-modal">
+    <div class="modal-card">
+      <h3 id="result-title">Game Over</h3>
+      <p id="result-desc"></p>
+      <button id="play-again-btn">Play again</button>
+    </div>
+  </div>
 
   <script type="module" src="/PROJECTS/SmartBeads/src/playtest/web/main.ts"></script>
 </body>

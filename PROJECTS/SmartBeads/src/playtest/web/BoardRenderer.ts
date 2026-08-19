@@ -1,4 +1,5 @@
 import { BoardDefinition, Intersection, Move } from '../../models/GameState';
+import { projectLatticeIntersection } from './layout/boardProjection';
 
 /** Matches SHOLO_GUTI.html vertical board projection. */
 export function projectIntersection(
@@ -8,12 +9,7 @@ export function projectIntersection(
 ): { x: number; y: number } {
   const latticeX = intersection.x ?? 0;
   const latticeY = intersection.y ?? 0;
-  const padX = viewWidth * 0.08;
-  const padY = viewHeight * 0.055;
-  return {
-    x: padX + (latticeY / 8) * (viewWidth - padX * 2),
-    y: padY + ((10 - latticeX) / 12) * (viewHeight - padY * 2),
-  };
+  return projectLatticeIntersection(latticeX, latticeY, viewWidth, viewHeight);
 }
 
 /** Fallback grid layout when intersections lack x/y (legacy 4×4 lab). */

@@ -172,15 +172,27 @@ function buildJumpPaths(nodes: NodeSpec[], adjacency: number[][]): JumpPath[] {
 const NODE_SPECS = buildNodeSpecs();
 const ADJACENCY = buildAdjacency(NODE_SPECS);
 
+function buildCenterNodeIds(nodes: NodeSpec[]): number[] {
+  const ids: number[] = [];
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (!node.id.startsWith('A')) continue;
+    if (node.x === 2 || node.x === 4 || node.x === 6) ids.push(i);
+  }
+  return ids;
+}
+
 /** Reference parity: 37 nodes, 92 undirected edges. */
 export const BOARD16_NODE_COUNT = NODE_SPECS.length;
 export const BOARD16_EDGE_COUNT = buildConnections(ADJACENCY).length;
+export const BOARD16_CENTER_NODE_IDS = buildCenterNodeIds(NODE_SPECS);
 
 export const Board16Sholo: BoardDefinition = {
   name: 'Sholo-Guti-16x5x5',
   intersections: buildIntersections(NODE_SPECS),
   connections: buildConnections(ADJACENCY),
   jumpPaths: buildJumpPaths(NODE_SPECS, ADJACENCY),
+  centerNodeIds: BOARD16_CENTER_NODE_IDS,
   maxPlies: null,
   terminationProfile: 'sholo_guti',
 };

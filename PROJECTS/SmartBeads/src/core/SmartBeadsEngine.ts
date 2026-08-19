@@ -40,6 +40,28 @@ export class SmartBeadsEngine {
     return this.currentState;
   }
 
+  /** Deep snapshot for undo, AI search, and feature-layer restore. */
+  exportSnapshot(): { state: GameState; chainPieceId: number | null } {
+    return {
+      state: {
+        ...this.currentState,
+        board: cloneBoardDefinition(this.currentState.board),
+        captures: { ...this.currentState.captures },
+      },
+      chainPieceId: this.chainPieceId,
+    };
+  }
+
+  /** Restore a prior snapshot without changing match rules. */
+  loadSnapshot(snapshot: { state: GameState; chainPieceId: number | null }): void {
+    this.currentState = {
+      ...snapshot.state,
+      board: cloneBoardDefinition(snapshot.state.board),
+      captures: { ...snapshot.state.captures },
+    };
+    this.chainPieceId = snapshot.chainPieceId;
+  }
+
   /** Counts remaining pieces on the board for the specified player. */
   countPieces(playerId: Player): number {
     return this.currentState.board.intersections.filter(

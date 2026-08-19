@@ -29,7 +29,7 @@ describe('Board16Sholo', () => {
   it('uses sholo_guti termination with no ply cap', () => {
     expect(Board16Sholo.terminationProfile).toBe('sholo_guti');
     expect(Board16Sholo.maxPlies).toBeNull();
-    expect(Board16Sholo.centerNodeIds).toBeUndefined();
+    expect(Board16Sholo.centerNodeIds?.length).toBeGreaterThan(0);
   });
 
   it('gives RED 13 opening legal slides and no captures (reference parity)', () => {
