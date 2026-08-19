@@ -5,11 +5,25 @@ import { Board5 } from '../../boards/Board5';
 import { Board6 } from '../../boards/Board6';
 import { Board6x3x5 } from '../../boards/Board6x3x5';
 import { Board10x5 } from '../../boards/Board10x5';
+import { Board12x6x5 } from '../../boards/Board12x6x5';
 import { Board7 } from '../../boards/Board7';
 
 describe('SmartBeadsEngine', () => {
   it('lists the configured board variants', () => {
-    expect(listBoardVariants()).toEqual(['4', '5', '6', '7', '16', '6x3x5', '10x5']);
+    expect(listBoardVariants()).toEqual(['4', '5', '6', '7', '16', '6x3x5', '10x5', '12x6x5']);
+  });
+
+  it('defines Board12x6x5 as a 12-bead 6×5 lattice with sholo_guti rules', () => {
+    expect(Board12x6x5.intersections).toHaveLength(30);
+    expect(Board12x6x5.centerNodeIds).toEqual([12, 17]);
+    expect(Board12x6x5.maxPlies).toBeNull();
+    expect(Board12x6x5.terminationProfile).toBe('sholo_guti');
+
+    const red = Board12x6x5.intersections.filter((point) => point.occupant === 'RED');
+    const blue = Board12x6x5.intersections.filter((point) => point.occupant === 'BLUE');
+
+    expect(red).toHaveLength(12);
+    expect(blue).toHaveLength(12);
   });
 
   it('defines Board10x5 as a 10-bead 5×5 lattice with sholo_guti rules', () => {

@@ -22,7 +22,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ## Current Focus
 
-1. **M3 — port remaining locked product boards** (4 of 7 in production: 16, 6×4, 6×3×5, 10×5).  
+1. **M3 — port remaining locked product boards** (5 of 7 in production: 16, 6×4, 6×3×5, 10×5, 12×6×5).  
 2. **Optional Lab follow-up** — size-adjusted move-cap sensitivity; not a blocker.  
 3. **Match timer, shot clock** — pick final values from Feature Test viable ranges.  
 4. **Resignation rule** — not yet decided.
@@ -56,11 +56,12 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 - **9/7/5/12/4-bead set (2026-08-17):** `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json` — 9-bead 5×5 and 5-bead 3×5 rear thin REJECT G2; 7-bead 5×5, 12-bead 6×5, 4-bead 3×5 rear NFT.
 - **Web REJECT cleanup (2026-08-17):** Removed 10 discovery REJECT playables + dedicated engines from `prototype/board4/`. Kept Lab audit JSON, KEEP/NFT playables, ladder playables, 16-bead reference.
 - **Playable folders (2026-08-18):** Locked V1 seven + ladder playables in `prototype/board4/` root; **left-out NFT only** (5) in `unrejected games/`. `playable-dir.cjs` resolves both.
-- **M0 + M1 (2026-08-18):** Production **16-bead Sholo Guti** — `Board16Sholo.ts`, `BoardCatalog.ts`, `terminationProfile: sholo_guti`. **68 Jest tests pass** (2026-08-19).
-- **M2 + M3 shell (2026-08-19):** Shared play shell — `PlayController.ts`, `FeatureSession.ts`, `CanvasBoardRenderer.ts`, board `<select>`, centre rules, undo, honest AI. Browser scripts: `m2-browser-verify.mjs`, `m2-6x4-browser-verify.mjs`, `m2-6x3x5-browser-verify.mjs`, `m2-10x5-browser-verify.mjs`.
+- **M0 + M1 (2026-08-18):** Production **16-bead Sholo Guti** — `Board16Sholo.ts`, `BoardCatalog.ts`, `terminationProfile: sholo_guti`. **76 Jest tests pass** (2026-08-19).
+- **M2 + M3 shell (2026-08-19):** Shared play shell — `PlayController.ts`, `FeatureSession.ts`, `CanvasBoardRenderer.ts`, board `<select>`, centre rules, undo, honest AI. Browser scripts: `m2-browser-verify.mjs`, `m2-6x4-browser-verify.mjs`, `m2-6x3x5-browser-verify.mjs`, `m2-10x5-browser-verify.mjs`, `m2-12x6x5-browser-verify.mjs`.
 - **6-bead · 4×4 (2026-08-19):** `Board6.ts` — full box cross, catalog `6x4`, default centre **End-Game**, unlimited plies. Prototype parity vs `cursor-index-fullturn-engine.cjs` (`fullBoxCross`).
 - **6-bead · 3×5 (2026-08-19):** `Board6x3x5.ts` — separate board module (not reused 4×4), catalog `6x3x5`, default centre **Cumulative**, centre node index **7**. Prototype parity vs `sholo-6-bead-fullturn-engine.cjs` / `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html`.
 - **10-bead · 5×5 (2026-08-19):** `Board10x5.ts` — 25-node Alquerque, two-file camps, empty centre file, catalog `10x5`, default centre **Off** (Feature Test: no Lab recommendation), centre node index **12**. Prototype parity vs `sholo-10-bead-fullturn-engine.cjs` / `SHOLO_GUTI_10_BEAD_WITH_FEATURE.html`.
+- **12-bead · 6×5 (2026-08-19):** `Board12x6x5.ts` — 30-node 6×5 Alquerque, two-file rank camps, empty centre file, catalog `12x6x5`, default centre **Off** (catalog; not in Feature Test KEEP set), centre nodes **12, 17**. Prototype parity vs `sholo-d4-12-6x5-fullturn-engine.cjs` / `SHOLO_GUTI_12_BEAD_6x5_WITH_FEATURE.html`.
 
 ---
 
@@ -83,7 +84,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ## Next Step
 
-1. **M3 — next locked board:** 12-bead · 6×5 (`12x6x5`) — new `BoardDefinition` + catalog enable.  
+1. **M3 — next locked board:** 8-bead · 4×6 hourglass (`8x4x6`) — new `BoardDefinition` + catalog enable.  
 2. Set product **timer defaults** from Feature Test when ready.  
 3. Decide **resignation** when ready.
 

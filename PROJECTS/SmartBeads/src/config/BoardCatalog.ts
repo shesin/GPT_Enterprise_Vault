@@ -99,13 +99,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
   },
   {
     id: '12x6x5',
-    engineVariant: null,
+    engineVariant: '12x6x5',
     displayName: '12-bead · 6×5',
-    description: 'Locked V1 #5',
+    description: 'Locked V1 #5 — two-file rank camps, empty centre file',
     beadCount: 12,
     lattice: '6×5',
-    playable: false,
-    productVisible: false,
+    playable: true,
+    productVisible: true,
     play: {
       defaultSettings: { ...BASE_SETTINGS },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
