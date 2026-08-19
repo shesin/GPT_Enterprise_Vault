@@ -94,6 +94,11 @@ export function bootstrapPlayShell(): void {
     };
   }
 
+  function applyBoardDefaults(boardId: ProductBoardId): void {
+    const defaults = getPlayConfig(boardId).defaultSettings;
+    centerRuleSelect.value = defaults.centerRule;
+  }
+
   function syncCenterRuleOptions(): void {
     const options = getPlayConfig(currentBoardId).centerRuleOptions;
     const current = centerRuleSelect.value as CenterRule;
@@ -451,7 +456,8 @@ export function bootstrapPlayShell(): void {
     boardSelect.value = boardId;
     syncBoardTitle();
     syncCenterRuleOptions();
-    session = createSession(boardId, getPlayConfig(boardId).defaultSettings);
+    applyBoardDefaults(boardId);
+    session = createSession(boardId, readSettings());
     resultModal.style.display = 'none';
     session.resetTurnClock();
     setStatus('Your turn — select a piece');

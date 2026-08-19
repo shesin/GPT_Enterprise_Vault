@@ -71,13 +71,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
   },
   {
     id: '6x3x5',
-    engineVariant: null,
+    engineVariant: '6x3x5',
     displayName: '6-bead · 3×5',
-    description: 'Locked V1 #3',
+    description: 'Locked V1 #3 — top–bottom camps, single centre node',
     beadCount: 6,
     lattice: '3×5',
-    playable: false,
-    productVisible: false,
+    playable: true,
+    productVisible: true,
     play: {
       defaultSettings: { ...BASE_SETTINGS, centerRule: 'cumulative' },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
