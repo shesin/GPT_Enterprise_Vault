@@ -2,7 +2,7 @@ PROJECT_SNAPSHOT.txt
 Architect review export — GPT_Enterprise_Vault / SmartBeads
 Generated: 2026-08-20
 Production src path: PROJECTS/SmartBeads/src/
-Engine rules were not changed in this snapshot task.
+Open V1 implementation items: none (see GPT_PROJECT_STATUS_01P.md).
 
 ========== git status ==========
 On branch main
@@ -12,112 +12,203 @@ Your branch is ahead of 'origin/main' by 2 commits.
 nothing to commit, working tree clean
 
 ========== git log -n 3 --oneline ==========
-f678f10 docs: refresh status and map before architect snapshot
-58615bc Fix PvE turn-boundary leaks and stop treating a green Jest run as UI proof.
-2d24a57 Add resignation flow: opponent may accept draw or claim win (PvP and PvE).
+937450f chore: clean working tree before architect snapshot
+f9d26a4 Accept unique capture-over clicks and sanity-check production PvE on every V1 board.
+54d0050 Close AI optional-stop stall and stop treating Lab/self-play counts as production PvE proof.
 
 ========== tree PROJECTS/SmartBeads/src ==========
 Folder PATH listing for volume DATA
 Volume serial number is 420B-EB17
 D:\BUSINESS IDEA\GPT_ENTERPRISE_VAULT\PROJECTS\SMARTBEADS\SRC
-+---boards
-|   |   Board10x5.ts
-|   |   Board12x6x5.ts
-|   |   Board16Sholo.ts
-|   |   Board4.ts
-|   |   Board5.ts
-|   |   Board6.ts
-|   |   Board6x3x5.ts
-|   |   Board7.ts
-|   |   Board8x4x6.ts
-|   |   
-|   \---__tests__
-|           Board10x5.test.ts
-|           Board10x5PrototypeParity.test.ts
-|           Board12x6x5.test.ts
-|           Board12x6x5PrototypeParity.test.ts
-|           Board16PrototypeParity.test.ts
-|           Board16Sholo.test.ts
-|           Board6.test.ts
-|           Board6PrototypeParity.test.ts
-|           Board6x3x5.test.ts
-|           Board6x3x5PrototypeParity.test.ts
-|           Board7.test.ts
-|           Board7PrototypeParity.test.ts
-|           Board8x4x6.test.ts
-|           Board8x4x6PrototypeParity.test.ts
-|           
-+---config
-|   |   BoardCatalog.ts
-|   |   BoardConfig.ts
-|   |   
-|   \---__tests__
-|           BoardCatalog.test.ts
-|           
-+---core
-|   |   SmartBeadsEngine.ts
-|   |   
-|   \---__tests__
-|           SmartBeadsEngine.test.ts
-|           SmartBeadsEngine16.test.ts
-|           
-+---models
-|       GameState.ts
-|       
-+---playtest
-|   |   HumanVsAiRunner.ts
-|   |   
-|   +---web
-|   |   |   BoardRenderer.ts
-|   |   |   main.ts
-|   |   |   play-shell.css
-|   |   |   PlayController.ts
-|   |   |   
-|   |   +---feature
-|   |   |   |   centerScoring.ts
-|   |   |   |   FeatureSession.ts
-|   |   |   |   firstMoveInvariants.ts
-|   |   |   |   GameFeatureSettings.ts
-|   |   |   |   HonestAi.ts
-|   |   |   |   pveTiming.ts
-|   |   |   |   
-|   |   |   \---__tests__
-|   |   |           FeatureSession.firstMove.test.ts
-|   |   |           FeatureSession.resignation.test.ts
-|   |   |           FeatureSession.turnControl.test.ts
-|   |   |           
-|   |   +---layout
-|   |   |   |   boardProjection.ts
-|   |   |   |   boardVisualProfile.ts
-|   |   |   |   canvasDisplay.ts
-|   |   |   |   prototypeProjectionOracle.ts
-|   |   |   |   
-|   |   |   \---__tests__
-|   |   |           boardProjection.test.ts
-|   |   |           prototypeVisualParity.test.ts
-|   |   |           
-|   |   +---render
-|   |   |       CanvasBoardRenderer.ts
-|   |   |       
-|   |   \---sholo16
-|   \---__tests__
-|           HumanVsAiRunner.test.ts
-|           
-\---simulation
-    |   SelfPlayRunner.ts
-    |   
-    \---__tests__
+├───boards
+│   │   Board10x5.ts
+│   │   Board12x6x5.ts
+│   │   Board16Sholo.ts
+│   │   Board4.ts
+│   │   Board5.ts
+│   │   Board6.ts
+│   │   Board6x3x5.ts
+│   │   Board7.ts
+│   │   Board8x4x6.ts
+│   │   
+│   └───__tests__
+│           Board10x5.test.ts
+│           Board10x5PrototypeParity.test.ts
+│           Board12x6x5.test.ts
+│           Board12x6x5PrototypeParity.test.ts
+│           Board16PrototypeParity.test.ts
+│           Board16Sholo.test.ts
+│           Board6.test.ts
+│           Board6PrototypeParity.test.ts
+│           Board6x3x5.test.ts
+│           Board6x3x5PrototypeParity.test.ts
+│           Board7.test.ts
+│           Board7PrototypeParity.test.ts
+│           Board8x4x6.test.ts
+│           Board8x4x6PrototypeParity.test.ts
+│           
+├───config
+│   │   BoardCatalog.ts
+│   │   BoardConfig.ts
+│   │   
+│   └───__tests__
+│           BoardCatalog.test.ts
+│           
+├───core
+│   │   SmartBeadsEngine.ts
+│   │   
+│   └───__tests__
+│           SmartBeadsEngine.test.ts
+│           SmartBeadsEngine16.test.ts
+│           
+├───models
+│       GameState.ts
+│       
+├───playtest
+│   │   HumanVsAiRunner.ts
+│   │   
+│   ├───web
+│   │   │   BoardRenderer.ts
+│   │   │   main.ts
+│   │   │   play-shell.css
+│   │   │   PlayController.ts
+│   │   │   
+│   │   ├───feature
+│   │   │   │   aiTurnPath.ts
+│   │   │   │   centerScoring.ts
+│   │   │   │   FeatureSession.ts
+│   │   │   │   firstMoveInvariants.ts
+│   │   │   │   GameFeatureSettings.ts
+│   │   │   │   HonestAi.ts
+│   │   │   │   pveTiming.ts
+│   │   │   │   
+│   │   │   └───__tests__
+│   │   │           aiTurnPath.test.ts
+│   │   │           FeatureSession.firstMove.test.ts
+│   │   │           FeatureSession.resignation.test.ts
+│   │   │           FeatureSession.turnControl.test.ts
+│   │   │           HonestAi.test.ts
+│   │   │           
+│   │   ├───layout
+│   │   │   │   boardProjection.ts
+│   │   │   │   boardVisualProfile.ts
+│   │   │   │   canvasDisplay.ts
+│   │   │   │   prototypeProjectionOracle.ts
+│   │   │   │   
+│   │   │   └───__tests__
+│   │   │           boardProjection.test.ts
+│   │   │           prototypeVisualParity.test.ts
+│   │   │           
+│   │   ├───render
+│   │   │       CanvasBoardRenderer.ts
+│   │   │       
+│   │   ├───sholo16
+│   │   └───__tests__
+│   │           chromeScreenshotPositions.test.ts
+│   │           PlayController.test.ts
+│   │           productionPve16.test.ts
+│   │           v1ProductionSanity.test.ts
+│   │           
+│   └───__tests__
+│           HumanVsAiRunner.test.ts
+│           
+└───simulation
+    │   SelfPlayRunner.ts
+    │   
+    └───__tests__
             SelfPlayRunner.test.ts
 
 ========== npm test ==========
-> test
-> jest
 
-Test Suites: 24 passed, 24 total
-Tests:       177 passed, 177 total
+> test
+> jest && node PROJECTS/SmartBeads/scripts/m2-2step-npm-gate.mjs
+
+
+Test Suites: 30 passed, 30 total
+Tests:       234 passed, 234 total
 Snapshots:   0 total
-Time:        19.764 s, estimated 70 s
+Time:        17.585 s, estimated 20 s
 Ran all test suites.
+CONFIRMED  observe window is after slide lands and before AI reply starts — {"AI_REPLY_DELAY_MS":40,"HUMAN_PLY_OBSERVE_MS":215,"HUMAN_SLIDE_ANIM_MS":200,"HUMAN_JUMP_ANIM_MS":280}
+CONFIRMED  16 empty nodes do not look like Ivory beads — []
+CONFIRMED  16 click 1 selects only — occupancy unchanged — {"selected":21,"diff":[]}
+CONFIRMED  16 dest click: slide starts, AI has not applied — {"animating":true,"moveCount":0,"animFrom":21,"animTo":22}
+CONFIRMED  16 PvP two clicks = isolated Ivory slide — 21:RED->., 22:.->RED
+CONFIRMED  16 PvE two clicks: human ply visible, AI has not moved — 21:RED->., 22:.->RED; destIvory=true; tooLate=false
+CONFIRMED  16 hanging A41→A42: Ivory sits on A42, A41 empty, no capture yet — {"a41":null,"a42":"RED","turns":1}
+CONFIRMED  16 hanging A41→A42: AI turn completes (not stuck on AI is thinking) — {"stalled":false,"turns":2,"player":"RED","uiState":"idle","aiThinking":false,"statusText":"P1 turn — select a piece"}
+CONFIRMED  16 hanging A41→A42: Medium AI capture is a later ply — {"turns":2,"player":"RED","stillIsolated":false}
+CONFIRMED  12x6x5 empty nodes do not look like Ivory beads — []
+CONFIRMED  12x6x5 click 1 selects only — occupancy unchanged — {"selected":1,"diff":[]}
+CONFIRMED  12x6x5 dest click: slide starts, AI has not applied — {"animating":true,"moveCount":0,"animFrom":1,"animTo":2}
+CONFIRMED  12x6x5 PvP two clicks = isolated Ivory slide — 1:RED->., 2:.->RED
+CONFIRMED  12x6x5 PvE two clicks: human ply visible, AI has not moved — 1:RED->., 2:.->RED; destIvory=true; tooLate=false
+CONFIRMED  10x5 empty nodes do not look like Ivory beads — []
+CONFIRMED  10x5 click 1 selects only — occupancy unchanged — {"selected":1,"diff":[]}
+CONFIRMED  10x5 dest click: slide starts, AI has not applied — {"animating":true,"moveCount":0,"animFrom":1,"animTo":2}
+CONFIRMED  10x5 PvP two clicks = isolated Ivory slide — 1:RED->., 2:.->RED
+CONFIRMED  10x5 PvE two clicks: human ply visible, AI has not moved — 1:RED->., 2:.->RED; destIvory=true; tooLate=false
+CONFIRMED  8x4x6 empty nodes do not look like Ivory beads — []
+CONFIRMED  8x4x6 click 1 selects only — occupancy unchanged — {"selected":0,"diff":[]}
+CONFIRMED  8x4x6 dest click: slide starts, AI has not applied — {"animating":true,"moveCount":0,"animFrom":0,"animTo":5}
+CONFIRMED  8x4x6 PvP two clicks = isolated Ivory slide — 0:RED->., 5:.->RED
+CONFIRMED  8x4x6 PvE two clicks: human ply visible, AI has not moved — 0:RED->., 5:.->RED; destIvory=true; tooLate=false
+CONFIRMED  7x4x5 empty nodes do not look like Ivory beads — []
+CONFIRMED  7x4x5 click 1 selects only — occupancy unchanged — {"selected":0,"diff":[]}
+CONFIRMED  7x4x5 dest click: slide starts, AI has not applied — {"animating":true,"moveCount":0,"animFrom":0,"animTo":5}
+CONFIRMED  7x4x5 PvP two clicks = isolated Ivory slide — 0:RED->., 5:.->RED
+CONFIRMED  7x4x5 PvE two clicks: human ply visible, AI has not moved — 0:RED->., 5:.->RED; destIvory=true; tooLate=false
+CONFIRMED  6x4 empty nodes do not look like Ivory beads — []
+CONFIRMED  6x4 click 1 selects only — occupancy unchanged — {"selected":0,"diff":[]}
+CONFIRMED  6x4 dest click: slide starts, AI has not applied — {"animating":true,"moveCount":0,"animFrom":0,"animTo":5}
+CONFIRMED  6x4 PvP two clicks = isolated Ivory slide — 0:RED->., 5:.->RED
+CONFIRMED  6x4 PvE two clicks: human ply visible, AI has not moved — 0:RED->., 5:.->RED; destIvory=true; tooLate=false
+CONFIRMED  6x3x5 empty nodes do not look like Ivory beads — []
+CONFIRMED  6x3x5 click 1 selects only — occupancy unchanged — {"selected":9,"diff":[]}
+CONFIRMED  6x3x5 dest click: slide starts, AI has not applied — {"animating":true,"moveCount":0,"animFrom":9,"animTo":6}
+CONFIRMED  6x3x5 PvP two clicks = isolated Ivory slide — 6:.->RED, 9:RED->.
+CONFIRMED  6x3x5 PvE two clicks: human ply visible, AI has not moved — 6:.->RED, 9:RED->.; destIvory=true; tooLate=false
+
+--- TWO-CLICK ---
+CONFIRMED  observe window is after slide lands and before AI reply starts
+CONFIRMED  16 empty nodes do not look like Ivory beads
+CONFIRMED  16 click 1 selects only — occupancy unchanged
+CONFIRMED  16 dest click: slide starts, AI has not applied
+CONFIRMED  16 PvP two clicks = isolated Ivory slide
+CONFIRMED  16 PvE two clicks: human ply visible, AI has not moved
+CONFIRMED  16 hanging A41→A42: Ivory sits on A42, A41 empty, no capture yet
+CONFIRMED  16 hanging A41→A42: AI turn completes (not stuck on AI is thinking)
+CONFIRMED  16 hanging A41→A42: Medium AI capture is a later ply
+CONFIRMED  12x6x5 empty nodes do not look like Ivory beads
+CONFIRMED  12x6x5 click 1 selects only — occupancy unchanged
+CONFIRMED  12x6x5 dest click: slide starts, AI has not applied
+CONFIRMED  12x6x5 PvP two clicks = isolated Ivory slide
+CONFIRMED  12x6x5 PvE two clicks: human ply visible, AI has not moved
+CONFIRMED  10x5 empty nodes do not look like Ivory beads
+CONFIRMED  10x5 click 1 selects only — occupancy unchanged
+CONFIRMED  10x5 dest click: slide starts, AI has not applied
+CONFIRMED  10x5 PvP two clicks = isolated Ivory slide
+CONFIRMED  10x5 PvE two clicks: human ply visible, AI has not moved
+CONFIRMED  8x4x6 empty nodes do not look like Ivory beads
+CONFIRMED  8x4x6 click 1 selects only — occupancy unchanged
+CONFIRMED  8x4x6 dest click: slide starts, AI has not applied
+CONFIRMED  8x4x6 PvP two clicks = isolated Ivory slide
+CONFIRMED  8x4x6 PvE two clicks: human ply visible, AI has not moved
+CONFIRMED  7x4x5 empty nodes do not look like Ivory beads
+CONFIRMED  7x4x5 click 1 selects only — occupancy unchanged
+CONFIRMED  7x4x5 dest click: slide starts, AI has not applied
+CONFIRMED  7x4x5 PvP two clicks = isolated Ivory slide
+CONFIRMED  7x4x5 PvE two clicks: human ply visible, AI has not moved
+CONFIRMED  6x4 empty nodes do not look like Ivory beads
+CONFIRMED  6x4 click 1 selects only — occupancy unchanged
+CONFIRMED  6x4 dest click: slide starts, AI has not applied
+CONFIRMED  6x4 PvP two clicks = isolated Ivory slide
+CONFIRMED  6x4 PvE two clicks: human ply visible, AI has not moved
+CONFIRMED  6x3x5 empty nodes do not look like Ivory beads
+CONFIRMED  6x3x5 click 1 selects only — occupancy unchanged
+CONFIRMED  6x3x5 dest click: slide starts, AI has not applied
+CONFIRMED  6x3x5 PvP two clicks = isolated Ivory slide
+CONFIRMED  6x3x5 PvE two clicks: human ply visible, AI has not moved
 
 ========== PROJECTS/SmartBeads/src/core/SmartBeadsEngine.ts ==========
 import { BoardVariant, resolveBoard } from '../config/BoardConfig';
@@ -434,7 +525,7 @@ export class SmartBeadsEngine {
 ========== PROJECTS/SmartBeads/src/playtest/web/feature/FeatureSession.ts ==========
 import { BoardVariant } from '../../../config/BoardConfig';
 import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
-import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
+import { BoardDefinition, findJumpPath, GameState, Move, Player } from '../../../models/GameState';
 import { countCenterOccupancy } from './centerScoring';
 import {
   GameFeatureSettings,
@@ -480,6 +571,24 @@ function positionKey(state: GameState, mover: Player): string {
 
 function cloneHistory(h: Record<string, number>): Record<string, number> {
   return { ...h };
+}
+
+function jumpsOver(board: BoardDefinition, moves: Move[], overId: number): Move[] {
+  return moves.filter((m) => findJumpPath(board, m.from, m.to)?.over === overId);
+}
+
+function uniqueJumpOvers(board: BoardDefinition, moves: Move[]): number[] {
+  const counts = new Map<number, number>();
+  for (const move of moves) {
+    const over = findJumpPath(board, move.from, move.to)?.over;
+    if (over === undefined) continue;
+    counts.set(over, (counts.get(over) ?? 0) + 1);
+  }
+  const unique: number[] = [];
+  for (const [over, n] of counts) {
+    if (n === 1) unique.push(over);
+  }
+  return unique;
 }
 
 /**
@@ -650,8 +759,81 @@ export class FeatureSession {
     return this.engine.getLegalMoves().filter((m) => m.from === this.selectedId);
   }
 
+  /**
+   * Landing squares, plus the jumped-over enemy when exactly one legal jump
+   * uses that over. Clicking the captured bead is the same legal hop as
+   * clicking the empty landing beyond it — not a new capture line.
+   */
   getLegalTargetIds(): number[] {
-    return this.getLegalMovesForSelection().map((m) => m.to);
+    const moves = this.getLegalMovesForSelection();
+    const ids = new Set(moves.map((m) => m.to));
+    for (const over of uniqueJumpOvers(this.engine.getState().board, moves)) {
+      ids.add(over);
+    }
+    return [...ids];
+  }
+
+  /**
+   * Map a board click to the legal hop: empty landing, or unique capture-over.
+   * Returns null when the click is not a legal destination for the selection.
+   */
+  resolveClickMove(nodeId: number): Move | null {
+    const moves = this.getLegalMovesForSelection();
+    const landings = moves.filter((m) => m.to === nodeId);
+    if (landings.length === 1) return landings[0];
+    if (landings.length > 1) return null;
+    const overs = jumpsOver(this.engine.getState().board, moves, nodeId);
+    if (overs.length === 1) return overs[0];
+    return null;
+  }
+
+  /**
+   * Idle click on an enemy bead: apply the capture when exactly one legal
+   * jump from the current player goes over that bead.
+   */
+  resolveIdleCaptureClick(nodeId: number): Move | null {
+    if (this.isGameOver()) return null;
+    if (this.engine.getChainPieceId() !== null) return null;
+    if (this.selectedId !== null) return null;
+    const state = this.engine.getState();
+    if (state.board.intersections[nodeId]?.occupant !== this.opponentOfCurrent()) return null;
+    const overs = jumpsOver(state.board, this.engine.getLegalMoves(), nodeId);
+    if (overs.length === 1) return overs[0];
+    return null;
+  }
+
+  /**
+   * Two-click / chain / unique-victim mapping used by the play shell.
+   * Engine rules stay the same; this only chooses among already-legal hops.
+   */
+  interpretClick(nodeId: number):
+    | { kind: 'select'; nodeId: number }
+    | { kind: 'move'; move: Move }
+    | { kind: 'ignore' } {
+    if (this.isGameOver() || !this.canHumanAct()) return { kind: 'ignore' };
+    const state = this.engine.getState();
+    const occupant = state.board.intersections[nodeId]?.occupant;
+
+    if (this.engine.getChainPieceId() !== null) {
+      const move = this.resolveClickMove(nodeId);
+      return move ? { kind: 'move', move } : { kind: 'ignore' };
+    }
+
+    if (occupant === state.currentPlayer) {
+      return { kind: 'select', nodeId };
+    }
+
+    if (this.uiState === 'selected') {
+      const move = this.resolveClickMove(nodeId);
+      return move ? { kind: 'move', move } : { kind: 'ignore' };
+    }
+
+    const idleCapture = this.resolveIdleCaptureClick(nodeId);
+    return idleCapture ? { kind: 'move', move: idleCapture } : { kind: 'ignore' };
+  }
+
+  private opponentOfCurrent(): Player {
+    return opponentOf(this.engine.getState().currentPlayer);
   }
 
   selectNode(nodeId: number): boolean {
@@ -879,9 +1061,10 @@ import {
   parseMatchSeconds,
   ShotClockSeconds,
 } from './feature/GameFeatureSettings';
+import { applyAiHops, AiHopRecord } from './feature/aiTurnPath';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
 import { selectAiTurnPath, shouldAcceptResignationDraw } from './feature/HonestAi';
-import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
+import { AI_REPLY_DELAY_MS, AI_THINK_BUDGET_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
 import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
 import {
@@ -905,6 +1088,85 @@ function winnerLabel(winner: Player | 'DRAW' | undefined): string {
 
 function playerDisplayName(player: Player): string {
   return player === 'RED' ? 'Ivory (P1)' : 'Ebony (P2)';
+}
+
+/** After a hop lands, the live AI loop continues only while a chain is still open. */
+export function shouldContinueAiTurn(chainPieceId: number | null, hopsRemaining: number): boolean {
+  return chainPieceId !== null && hopsRemaining > 0;
+}
+
+/**
+ * Capture optionality: AI may stop while follow-up jumps still exist.
+ * Humans click Finish; AI has no Finish button, so the sequencer must end the turn.
+ * Leaving the chain open keeps currentPlayer = BLUE and the shell sticks on “AI is thinking…”.
+ */
+export function completeAiTurnIfChainOpen(session: FeatureSession): void {
+  if (!session.isGameOver() && session.getEngine().getChainPieceId() !== null) {
+    session.finishChain();
+  }
+}
+
+/**
+ * Choose an AI path without throwing: Medium/Hard with a think budget, then Easy, then first legal hop.
+ */
+export function planAiTurnPath(session: FeatureSession): Move[] | null {
+  const settings = session.getSettings();
+  const aiPlayer = session.getAiPlayer();
+  const variant = session.getBoardVariant();
+  const snap = session.getEngine().exportSnapshot();
+  try {
+    const planned = selectAiTurnPath(variant, settings.aiLevel, snap, aiPlayer, AI_THINK_BUDGET_MS);
+    if (planned?.length) return planned;
+  } catch {
+    /* Easy fallback below */
+  }
+  try {
+    const easy = selectAiTurnPath(variant, 1, snap, aiPlayer, 200);
+    if (easy?.length) return easy;
+  } catch {
+    /* first legal hop below */
+  }
+  const legal = session.getEngine().getLegalMoves();
+  return legal.length ? [legal[0]] : null;
+}
+
+/**
+ * Live AI turn sequencer (same continue/stop as the play-shell hop loop).
+ * Animation is not used — engine rules must hold with the renderer unplugged.
+ * Pass `path` to inject hops (leftover/stale cases). Omit it to use planAiTurnPath.
+ */
+export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopRecord[] {
+  const settings = session.getSettings();
+  const aiPlayer = session.getAiPlayer();
+  if (session.isGameOver() || settings.mode !== 'pve' || session.getEngine().getState().currentPlayer !== aiPlayer) {
+    throw new Error('stale hop: AI turn is not live');
+  }
+
+  const planned = path === undefined
+    ? planAiTurnPath(session)
+    : path;
+
+  if (!planned?.length) {
+    if (path === undefined) {
+      session.endGameByFeature('RED', 'AI has no legal moves.');
+      return [];
+    }
+    throw new Error('stale hop: empty leftover path');
+  }
+
+  const records: AiHopRecord[] = [];
+  for (let i = 0; i < planned.length; i++) {
+    if (i > 0 && !shouldContinueAiTurn(session.getEngine().getChainPieceId(), planned.length - i)) {
+      break;
+    }
+    const hopRecords = applyAiHops(session, [planned[i]], aiPlayer);
+    records.push({ ...hopRecords[0], index: i });
+    if (!shouldContinueAiTurn(session.getEngine().getChainPieceId(), planned.length - (i + 1))) {
+      break;
+    }
+  }
+  completeAiTurnIfChainOpen(session);
+  return records;
 }
 
 export function bootstrapPlayShell(): void {
@@ -1253,7 +1515,13 @@ export function bootstrapPlayShell(): void {
   }
 
   function playAnimated(move: Move, player: Player, onDone: () => void): void {
-    if (animating) return;
+    if (animating) {
+      completeAiTurnIfChainOpen(session);
+      cancelAiWork();
+      setStatus(turnStatusText());
+      updateUI();
+      return;
+    }
     const state = session.getEngine().getState();
     const jump = findJumpPath(state.board, move.from, move.to);
     const captured = jump?.over;
@@ -1283,7 +1551,31 @@ export function bootstrapPlayShell(): void {
       } else {
         anim = null;
         animating = false;
-        session.applyMove(move);
+        try {
+          session.applyMove(move);
+        } catch {
+          completeAiTurnIfChainOpen(session);
+          if (player === 'BLUE' && !session.isGameOver() && session.getEngine().getState().currentPlayer === 'BLUE') {
+            const fallback = session.getEngine().getLegalMoves()[0];
+            if (fallback) {
+              try {
+                session.applyMove(fallback);
+              } catch {
+                session.endGameByFeature('RED', 'AI move failed.');
+              }
+            } else {
+              session.endGameByFeature('RED', 'AI has no legal moves.');
+            }
+            completeAiTurnIfChainOpen(session);
+            cancelAiWork();
+            afterHumanOrAiTurn();
+            return;
+          }
+          cancelAiWork();
+          setStatus('Move failed.');
+          updateUI();
+          return;
+        }
         onDone();
       }
     }
@@ -1310,12 +1602,20 @@ export function bootstrapPlayShell(): void {
       return;
     }
 
-    const path = selectAiTurnPath(
-      session.getBoardVariant(),
-      settings.aiLevel,
-      session.getEngine().exportSnapshot(),
-      'BLUE',
-    );
+    // A previous optional-stop left the chain open: close it instead of planning a new piece.
+    if (session.getEngine().getChainPieceId() !== null) {
+      completeAiTurnIfChainOpen(session);
+      cancelAiWork();
+      afterHumanOrAiTurn();
+      return;
+    }
+
+    let path: Move[] | null = null;
+    try {
+      path = planAiTurnPath(session);
+    } catch {
+      path = session.getEngine().getLegalMoves().slice(0, 1);
+    }
     if (!path?.length) {
       session.endGameByFeature('RED', 'AI has no legal moves.');
       cancelAiWork();
@@ -1334,9 +1634,9 @@ export function bootstrapPlayShell(): void {
         return;
       }
       if (i >= path.length) {
+        completeAiTurnIfChainOpen(session);
         cancelAiWork();
-        updateUI();
-        setStatus(turnStatusText());
+        afterHumanOrAiTurn();
         return;
       }
 
@@ -1346,13 +1646,12 @@ export function bootstrapPlayShell(): void {
         if (runId !== aiRunId) return;
         const chain = session.getEngine().getChainPieceId();
 
-        // FIX: Only continue if chain is active AND there are remaining moves in path!
-        if (chain !== null && i < path.length) {
+        if (shouldContinueAiTurn(chain, path.length - i)) {
           setTimeout(playNext, 380);
           return;
         }
 
-        // Turn is complete (chain is null). Stop AI execution immediately!
+        completeAiTurnIfChainOpen(session);
         cancelAiWork();
         afterHumanOrAiTurn();
       });
@@ -1367,30 +1666,17 @@ export function bootstrapPlayShell(): void {
     const nodeId = hitTestNode(canvas, session.getEngine().getState().board, ev.clientX, ev.clientY);
     if (nodeId < 0) return;
 
-    const uiState = session.getUiState();
     const state = session.getEngine().getState();
 
-    if (uiState === 'chain') {
-      const move = session.getEngine().getLegalMoves().find((m) => m.to === nodeId);
-      if (move) {
-        pushUndoSnapshot();
-        executeMoveAnimated(move, state.currentPlayer);
-      }
-      return;
-    }
-
-    if (state.board.intersections[nodeId]?.occupant === state.currentPlayer) {
-      session.selectNode(nodeId);
+    const click = session.interpretClick(nodeId);
+    if (click.kind === 'select') {
+      session.selectNode(click.nodeId);
       updateUI();
       return;
     }
-
-    if (uiState === 'selected') {
-      const move = session.getLegalMovesForSelection().find((m) => m.to === nodeId);
-      if (move) {
-        pushUndoSnapshot();
-        executeMoveAnimated(move, state.currentPlayer);
-      }
+    if (click.kind === 'move') {
+      pushUndoSnapshot();
+      executeMoveAnimated(click.move, state.currentPlayer);
     }
   }
 
@@ -1531,9 +1817,11 @@ export function bootstrapPlayShell(): void {
         selectedId: session.getSelectedId(),
         moveCount: session.getMoveCount(),
         canHumanAct: session.canHumanAct(),
+        gameOver: session.isGameOver(),
         mode: session.getSettings().mode,
         boardName: state.board.name,
         uiState: session.getUiState(),
+        chainPieceId: session.getEngine().getChainPieceId(),
         occupants: state.board.intersections.map((n) => ({
           id: n.id,
           label: n.label,
@@ -1542,6 +1830,8 @@ export function bootstrapPlayShell(): void {
           y: n.y,
         })),
         animating,
+        aiThinking,
+        statusText: statusEl?.textContent ?? '',
         animFrom: anim?.from ?? null,
         animTo: anim?.to ?? null,
       };
@@ -1569,4 +1859,3 @@ function populateBgmSelect(select: HTMLSelectElement): void {
     select.appendChild(opt);
   }
 }
-
