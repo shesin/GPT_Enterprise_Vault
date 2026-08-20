@@ -44,7 +44,11 @@ Capturing is optional. During a capture sequence, a player — human or AI — m
 Three configurable end modes (move/time/unlimited), never hardcoded. On limit, resolve via hierarchy in VISION_05P.md. Draw is legitimate.
 ---
 ## Rule - Resignation
-Not yet decided. Do not implement until an explicit decision is recorded here.
+Either player (human or AI) may resign at any time during their own turn.
+- If the opponent does NOT agree to the resignation, the resigning player LOSES.
+- If the opponent AGREES to the resignation, the game ends in a DRAW.
+This applies identically regardless of whether the resigning or responding
+side is human or AI.
 
 ---
 ## Rule - Configurable Parameters
