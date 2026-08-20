@@ -49,3 +49,22 @@ describe('FeatureSession natural turn taking (all V1 boards)', () => {
     expect(session.getSelectedId()).toBe(blue!.id);
   });
 });
+
+describe('FeatureSession 16-bead triangular two-click path', () => {
+  it('selecting LT offers collinear LIT capture to A20 and does not offer the LIM corner', () => {
+    const session = new FeatureSession('16', { mode: 'pvp', ...off });
+    const engine = session.getEngine();
+    for (const point of engine.getState().board.intersections) {
+      point.occupant = undefined;
+    }
+    const id = (label: string) => engine.getState().board.intersections.find((p) => p.label === label)!.id;
+    engine.getState().board.intersections.find((p) => p.label === 'LT')!.occupant = 'RED';
+    engine.getState().board.intersections.find((p) => p.label === 'LIT')!.occupant = 'BLUE';
+    engine.getState().currentPlayer = 'RED';
+
+    expect(session.selectNode(id('LT'))).toBe(true);
+    const targets = session.getLegalTargetIds();
+    expect(targets).toContain(id('A20'));
+    expect(targets).not.toContain(id('LIM'));
+  });
+});

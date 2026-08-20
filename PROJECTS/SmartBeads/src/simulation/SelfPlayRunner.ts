@@ -32,7 +32,10 @@ export interface BatchSimulationReport {
 }
 
 /**
- * Selects and applies a single random legal move for the current player on the engine instance.
+ * Board4 random legal-move stepper — not production PvE.
+ * Does not import the product AI, session, or play-shell sequencer.
+ * Batch counts from this runner are engine-random games, not product-AI proof.
+ *
  * Handles mid-chain capture continuation decisions (50% endTurn vs continuing jump).
  * Returns true if a move or endTurn was applied; false if game is over or no legal moves exist.
  */

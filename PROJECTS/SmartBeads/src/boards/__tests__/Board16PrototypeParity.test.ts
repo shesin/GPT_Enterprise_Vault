@@ -38,6 +38,25 @@ describe('Board16Sholo prototype parity', () => {
       expect.arrayContaining([{ from, over, to }]),
     );
   });
+
+  it('matches every prototype collinear jump including both triangular wings', () => {
+    const refJumps: Array<{ from: number; over: number; to: number }> = [];
+    for (let from = 0; from < refEngine.N; from++) {
+      for (const over of refEngine.ADJ[from]) {
+        const to = refEngine.continueCollinear(from, over);
+        if (to >= 0) {
+          refJumps.push({ from, over, to });
+        }
+      }
+    }
+    const prod = [...(Board16Sholo.jumpPaths ?? [])].sort(
+      (a, b) => a.from - b.from || a.over - b.over || a.to - b.to,
+    );
+    const expected = refJumps.sort(
+      (a, b) => a.from - b.from || a.over - b.over || a.to - b.to,
+    );
+    expect(prod).toEqual(expected);
+  });
 });
 
 function countRefEdges(): number {

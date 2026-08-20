@@ -1,6 +1,15 @@
+import { readFileSync } from 'node:fs';
 import { generateBatchReport, playSingleGame, runSelfPlayBatch } from '../SelfPlayRunner';
 
 describe('SelfPlayRunner', () => {
+  it('is Board4 random legal moves — not production PvE (no HonestAi / FeatureSession / runAiTurn)', () => {
+    const src = readFileSync(require.resolve('../SelfPlayRunner.ts'), 'utf8');
+    expect(src).not.toMatch(/HonestAi/);
+    expect(src).not.toMatch(/FeatureSession/);
+    expect(src).not.toMatch(/runAiTurn/);
+    expect(src).toMatch(/executeAiRandomMove/);
+  });
+
   it('executes a single game of Board4 to completion with RED starting', () => {
     const result = playSingleGame('4', 'RED');
 

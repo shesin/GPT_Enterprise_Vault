@@ -130,4 +130,70 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     expect(engine.getState().winner).toBe('BLUE');
     expect(engine.getState().endReason).toBe('stalemate');
   });
+
+  it('allows collinear captures on the left triangular wing (LT→LB over LM, LT→A20 over LIT)', () => {
+    const engineA = new SmartBeadsEngine('16');
+    clearBoard(engineA);
+    const boardA = engineA.getState().board;
+    const idA = (label: string) => boardA.intersections.find((point) => point.label === label)!.id;
+    boardA.intersections.find((point) => point.label === 'LT')!.occupant = 'RED';
+    boardA.intersections.find((point) => point.label === 'LM')!.occupant = 'BLUE';
+    engineA.getState().currentPlayer = 'RED';
+    expect(engineA.getLegalMoves().some((m) => m.from === idA('LT') && m.to === idA('LB'))).toBe(true);
+    engineA.applyMove({ from: idA('LT'), to: idA('LB') });
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'LB')?.occupant).toBe('RED');
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'LM')?.occupant).toBeUndefined();
+    expect(engineA.getState().captures.RED).toBe(1);
+
+    const engineB = new SmartBeadsEngine('16');
+    clearBoard(engineB);
+    const boardB = engineB.getState().board;
+    const idB = (label: string) => boardB.intersections.find((point) => point.label === label)!.id;
+    boardB.intersections.find((point) => point.label === 'LT')!.occupant = 'RED';
+    boardB.intersections.find((point) => point.label === 'LIT')!.occupant = 'BLUE';
+    engineB.getState().currentPlayer = 'RED';
+    expect(engineB.getLegalMoves().some((m) => m.from === idB('LT') && m.to === idB('A20'))).toBe(true);
+    engineB.applyMove({ from: idB('LT'), to: idB('A20') });
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe('RED');
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant).toBeUndefined();
+  });
+
+  it('allows collinear captures on the right triangular wing (RT→RB over RM, RT→A24 over RIT)', () => {
+    const engineA = new SmartBeadsEngine('16');
+    clearBoard(engineA);
+    const boardA = engineA.getState().board;
+    const idA = (label: string) => boardA.intersections.find((point) => point.label === label)!.id;
+    boardA.intersections.find((point) => point.label === 'RT')!.occupant = 'RED';
+    boardA.intersections.find((point) => point.label === 'RM')!.occupant = 'BLUE';
+    engineA.getState().currentPlayer = 'RED';
+    expect(engineA.getLegalMoves().some((m) => m.from === idA('RT') && m.to === idA('RB'))).toBe(true);
+    engineA.applyMove({ from: idA('RT'), to: idA('RB') });
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'RB')?.occupant).toBe('RED');
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'RM')?.occupant).toBeUndefined();
+    expect(engineA.getState().captures.RED).toBe(1);
+
+    const engineB = new SmartBeadsEngine('16');
+    clearBoard(engineB);
+    const boardB = engineB.getState().board;
+    const idB = (label: string) => boardB.intersections.find((point) => point.label === label)!.id;
+    boardB.intersections.find((point) => point.label === 'RT')!.occupant = 'RED';
+    boardB.intersections.find((point) => point.label === 'RIT')!.occupant = 'BLUE';
+    engineB.getState().currentPlayer = 'RED';
+    expect(engineB.getLegalMoves().some((m) => m.from === idB('RT') && m.to === idB('A24'))).toBe(true);
+    engineB.applyMove({ from: idB('RT'), to: idB('A24') });
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'A24')?.occupant).toBe('RED');
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'RIT')?.occupant).toBeUndefined();
+  });
+
+  it('rejects a non-collinear triangle-corner hop that only looks like a capture', () => {
+    const engine = new SmartBeadsEngine('16');
+    clearBoard(engine);
+    const board = engine.getState().board;
+    const id = (label: string) => board.intersections.find((point) => point.label === label)!.id;
+
+    board.intersections.find((point) => point.label === 'LT')!.occupant = 'RED';
+    board.intersections.find((point) => point.label === 'LIT')!.occupant = 'BLUE';
+    engine.getState().currentPlayer = 'RED';
+    expect(() => engine.applyMove({ from: id('LT'), to: id('LIM') })).toThrow(/Illegal move/);
+  });
 });

@@ -55,6 +55,17 @@ export function shouldContinueAiTurn(chainPieceId: number | null, hopsRemaining:
 }
 
 /**
+ * Capture optionality: AI may stop while follow-up jumps still exist.
+ * Humans click Finish; AI has no Finish button, so the sequencer must end the turn.
+ * Leaving the chain open keeps currentPlayer = BLUE and the shell sticks on “AI is thinking…”.
+ */
+export function completeAiTurnIfChainOpen(session: FeatureSession): void {
+  if (!session.isGameOver() && session.getEngine().getChainPieceId() !== null) {
+    session.finishChain();
+  }
+}
+
+/**
  * Live AI turn sequencer (same continue/stop as the play-shell hop loop).
  * Animation is not used — engine rules must hold with the renderer unplugged.
  * Pass `path` to inject hops (leftover/stale cases). Omit it to use selectAiTurnPath.
@@ -94,6 +105,7 @@ export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopR
       break;
     }
   }
+  completeAiTurnIfChainOpen(session);
   return records;
 }
 
@@ -443,7 +455,13 @@ export function bootstrapPlayShell(): void {
   }
 
   function playAnimated(move: Move, player: Player, onDone: () => void): void {
-    if (animating) return;
+    if (animating) {
+      completeAiTurnIfChainOpen(session);
+      cancelAiWork();
+      setStatus(turnStatusText());
+      updateUI();
+      return;
+    }
     const state = session.getEngine().getState();
     const jump = findJumpPath(state.board, move.from, move.to);
     const captured = jump?.over;
@@ -473,7 +491,15 @@ export function bootstrapPlayShell(): void {
       } else {
         anim = null;
         animating = false;
-        session.applyMove(move);
+        try {
+          session.applyMove(move);
+        } catch {
+          completeAiTurnIfChainOpen(session);
+          cancelAiWork();
+          setStatus('Move failed.');
+          updateUI();
+          return;
+        }
         onDone();
       }
     }
@@ -497,6 +523,14 @@ export function bootstrapPlayShell(): void {
     const state = session.getEngine().getState();
     if (session.isGameOver() || settings.mode !== 'pve' || state.currentPlayer !== 'BLUE') {
       cancelAiWork();
+      return;
+    }
+
+    // A previous optional-stop left the chain open: close it instead of planning a new piece.
+    if (session.getEngine().getChainPieceId() !== null) {
+      completeAiTurnIfChainOpen(session);
+      cancelAiWork();
+      afterHumanOrAiTurn();
       return;
     }
 
@@ -524,9 +558,9 @@ export function bootstrapPlayShell(): void {
         return;
       }
       if (i >= path.length) {
+        completeAiTurnIfChainOpen(session);
         cancelAiWork();
-        updateUI();
-        setStatus(turnStatusText());
+        afterHumanOrAiTurn();
         return;
       }
 
@@ -541,7 +575,7 @@ export function bootstrapPlayShell(): void {
           return;
         }
 
-        // Turn is complete (chain is null). Stop AI execution immediately!
+        completeAiTurnIfChainOpen(session);
         cancelAiWork();
         afterHumanOrAiTurn();
       });
@@ -720,9 +754,11 @@ export function bootstrapPlayShell(): void {
         selectedId: session.getSelectedId(),
         moveCount: session.getMoveCount(),
         canHumanAct: session.canHumanAct(),
+        gameOver: session.isGameOver(),
         mode: session.getSettings().mode,
         boardName: state.board.name,
         uiState: session.getUiState(),
+        chainPieceId: session.getEngine().getChainPieceId(),
         occupants: state.board.intersections.map((n) => ({
           id: n.id,
           label: n.label,
@@ -731,6 +767,8 @@ export function bootstrapPlayShell(): void {
           y: n.y,
         })),
         animating,
+        aiThinking,
+        statusText: statusEl?.textContent ?? '',
         animFrom: anim?.from ?? null,
         animTo: anim?.to ?? null,
       };

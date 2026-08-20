@@ -61,6 +61,32 @@ export async function waitForLaterPly(page, minMoves = 2, maxMs = 2500) {
   return liveSnap(page);
 }
 
+/**
+ * Fail if the shell stays on “AI is thinking…” or leaves a BLUE chain open.
+ * moveCount >= 2 is not enough — an optional-stop capture can apply one hop and stall.
+ */
+export async function waitForAiTurnComplete(page, maxMs = 8000) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < maxMs) {
+    const snap = await liveSnap(page);
+    const thinking = snap.aiThinking === true || /AI is thinking/i.test(snap.statusText || '');
+    if (snap.gameOver && !thinking && !snap.animating) {
+      return { snap, stalled: false };
+    }
+    if (
+      !thinking
+      && !snap.animating
+      && snap.currentPlayer === 'RED'
+      && snap.uiState !== 'chain'
+      && (snap.chainPieceId == null || snap.chainPieceId === undefined)
+    ) {
+      return { snap, stalled: false };
+    }
+    await page.waitForTimeout(40);
+  }
+  return { snap: await liveSnap(page), stalled: true };
+}
+
 export async function clickPrototypeNode(page, node) {
   const box = await page.locator('#board').boundingBox();
   if (!box) throw new Error('no canvas box');

@@ -15,6 +15,8 @@ export interface AiHopRecord {
  * Apply an AI hop queue with turn-boundary checks.
  * First hop of a turn may start with chainPieceId null.
  * After a hop completes the turn (chain null, player flipped), remaining hops are stale.
+ * Does not call finishChain — optional-stop paths that leave the chain open must be
+ * closed by PlayController.runAiTurn / completeAiTurnIfChainOpen.
  */
 export function applyAiHops(
   session: FeatureSession,

@@ -152,9 +152,13 @@ Coordinates gameplay for any registered board variant: slides, optional captures
 
 Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for developer playtesting and engine validation.
 
+**Production PvE path:** `SmartBeadsEngine` → `FeatureSession` → `HonestAi.selectAiTurnPath` → `PlayController.runAiTurn` (the browser loop is the animated twin). Jest for that path: `src/playtest/web/__tests__/productionPve16.test.ts` and `PlayController.test.ts`. `HumanVsAiRunner` uses `executeAiRandomMove`, not HonestAi.
+
 ### src/simulation/
 
-Automated self-play execution and game metrics collection (`SelfPlayRunner.ts`).
+`SelfPlayRunner.ts` runs **Board4 random legal moves** (`executeAiRandomMove`). A 100-game JSON report from `npm run sim:board4` is not production 16-bead PvE and does not execute HonestAi.
+
+**Lab `.cjs` engines** under `prototype/board4/` certify geometry/balance on per-board copies. They do not execute production `SmartBeadsEngine` / `HonestAi` / PvE. G1–G9 Lab passes are not production gameplay proof.
 
 ### Documentation set (SmartBeads root)
 

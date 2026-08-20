@@ -16,6 +16,7 @@ import {
   openingSlideNodes,
   timingWindow,
   waitForHumanPlyCommitted,
+  waitForAiTurnComplete,
 } from './lib/live-ply.mjs';
 
 const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
@@ -156,16 +157,32 @@ async function main() {
         a41?.occupant == null && a42?.occupant === 'RED' && pve.after.moveCount === 1,
         JSON.stringify({ a41: a41?.occupant ?? null, a42: a42?.occupant ?? null, turns: pve.after.moveCount }),
       );
-      await page.waitForTimeout(timing.AI_REPLY_DELAY_MS + timing.HUMAN_JUMP_ANIM_MS + 200);
-      const afterAi = await liveSnap(page);
-      const afterIso = await isolatedFromSnaps(page, pve.start, afterAi, {
+      const aiDone = await waitForAiTurnComplete(page);
+      record(
+        '16 hanging A41→A42: AI turn completes (not stuck on AI is thinking)',
+        !aiDone.stalled
+          && aiDone.snap.moveCount >= 2
+          && aiDone.snap.aiThinking !== true
+          && !/AI is thinking/i.test(aiDone.snap.statusText || '')
+          && (aiDone.snap.gameOver === true || aiDone.snap.currentPlayer === 'RED')
+          && aiDone.snap.uiState !== 'chain',
+        JSON.stringify({
+          stalled: aiDone.stalled,
+          turns: aiDone.snap.moveCount,
+          player: aiDone.snap.currentPlayer,
+          uiState: aiDone.snap.uiState,
+          aiThinking: aiDone.snap.aiThinking,
+          statusText: aiDone.snap.statusText,
+        }),
+      );
+      const afterIso = await isolatedFromSnaps(page, pve.start, aiDone.snap, {
         from: pve.slide.from.id,
         to: pve.slide.to.id,
       }, 'RED');
       record(
         '16 hanging A41→A42: Medium AI capture is a later ply',
-        afterAi.moveCount >= 2 && !afterIso.ok,
-        JSON.stringify({ turns: afterAi.moveCount, player: afterAi.currentPlayer, stillIsolated: afterIso.ok }),
+        aiDone.snap.moveCount >= 2 && !afterIso.ok,
+        JSON.stringify({ turns: aiDone.snap.moveCount, player: aiDone.snap.currentPlayer, stillIsolated: afterIso.ok }),
       );
     }
   }

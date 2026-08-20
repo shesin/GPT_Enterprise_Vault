@@ -78,4 +78,26 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     expect(session.getEngine().getState().board.intersections[leftover.from]?.occupant).toBe('RED');
     expect(() => runAiTurn(session, [leftover])).toThrow(/stale hop/);
   });
+
+  it('optional-stop capture finishes the AI turn so PvE cannot stick on AI is thinking', () => {
+    const session = new FeatureSession('16', { mode: 'pve', ...off });
+    const engine = session.getEngine();
+    for (const point of engine.getState().board.intersections) {
+      point.occupant = undefined;
+    }
+    const id = (label: string) => engine.getState().board.intersections.find((p) => p.label === label)!.id;
+    engine.getState().board.intersections.find((p) => p.label === 'A00')!.occupant = 'BLUE';
+    engine.getState().board.intersections.find((p) => p.label === 'A01')!.occupant = 'RED';
+    engine.getState().board.intersections.find((p) => p.label === 'A03')!.occupant = 'RED';
+    engine.getState().currentPlayer = 'BLUE';
+
+    const oneHop = { from: id('A00'), to: id('A02') };
+    const hops = runAiTurn(session, [oneHop]);
+    expect(hops).toHaveLength(1);
+    expect(hops[0].fromOccupant).toBe('BLUE');
+    expect(session.getEngine().getChainPieceId()).toBeNull();
+    expect(session.getEngine().getState().currentPlayer).toBe('RED');
+    expect(session.getUiState()).not.toBe('chain');
+    expect(session.canHumanAct()).toBe(true);
+  });
 });
