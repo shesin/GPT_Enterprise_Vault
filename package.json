@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "jest",
+    "test": "jest && node PROJECTS/SmartBeads/scripts/m2-2step-npm-gate.mjs",
     "test:smartbeads": "jest PROJECTS/SmartBeads",
     "play:board4": "npx tsx PROJECTS/SmartBeads/src/playtest/HumanVsAiRunner.ts",
     "sim:board4": "npx tsx PROJECTS/SmartBeads/src/simulation/SelfPlayRunner.ts",
