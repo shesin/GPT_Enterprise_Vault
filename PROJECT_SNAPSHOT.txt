@@ -1,0 +1,1572 @@
+PROJECT_SNAPSHOT.txt
+Architect review export — GPT_Enterprise_Vault / SmartBeads
+Generated: 2026-08-20
+Production src path: PROJECTS/SmartBeads/src/
+Engine rules were not changed in this snapshot task.
+
+========== git status ==========
+On branch main
+Your branch is ahead of 'origin/main' by 2 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+
+========== git log -n 3 --oneline ==========
+f678f10 docs: refresh status and map before architect snapshot
+58615bc Fix PvE turn-boundary leaks and stop treating a green Jest run as UI proof.
+2d24a57 Add resignation flow: opponent may accept draw or claim win (PvP and PvE).
+
+========== tree PROJECTS/SmartBeads/src ==========
+Folder PATH listing for volume DATA
+Volume serial number is 420B-EB17
+D:\BUSINESS IDEA\GPT_ENTERPRISE_VAULT\PROJECTS\SMARTBEADS\SRC
++---boards
+|   |   Board10x5.ts
+|   |   Board12x6x5.ts
+|   |   Board16Sholo.ts
+|   |   Board4.ts
+|   |   Board5.ts
+|   |   Board6.ts
+|   |   Board6x3x5.ts
+|   |   Board7.ts
+|   |   Board8x4x6.ts
+|   |   
+|   \---__tests__
+|           Board10x5.test.ts
+|           Board10x5PrototypeParity.test.ts
+|           Board12x6x5.test.ts
+|           Board12x6x5PrototypeParity.test.ts
+|           Board16PrototypeParity.test.ts
+|           Board16Sholo.test.ts
+|           Board6.test.ts
+|           Board6PrototypeParity.test.ts
+|           Board6x3x5.test.ts
+|           Board6x3x5PrototypeParity.test.ts
+|           Board7.test.ts
+|           Board7PrototypeParity.test.ts
+|           Board8x4x6.test.ts
+|           Board8x4x6PrototypeParity.test.ts
+|           
++---config
+|   |   BoardCatalog.ts
+|   |   BoardConfig.ts
+|   |   
+|   \---__tests__
+|           BoardCatalog.test.ts
+|           
++---core
+|   |   SmartBeadsEngine.ts
+|   |   
+|   \---__tests__
+|           SmartBeadsEngine.test.ts
+|           SmartBeadsEngine16.test.ts
+|           
++---models
+|       GameState.ts
+|       
++---playtest
+|   |   HumanVsAiRunner.ts
+|   |   
+|   +---web
+|   |   |   BoardRenderer.ts
+|   |   |   main.ts
+|   |   |   play-shell.css
+|   |   |   PlayController.ts
+|   |   |   
+|   |   +---feature
+|   |   |   |   centerScoring.ts
+|   |   |   |   FeatureSession.ts
+|   |   |   |   firstMoveInvariants.ts
+|   |   |   |   GameFeatureSettings.ts
+|   |   |   |   HonestAi.ts
+|   |   |   |   pveTiming.ts
+|   |   |   |   
+|   |   |   \---__tests__
+|   |   |           FeatureSession.firstMove.test.ts
+|   |   |           FeatureSession.resignation.test.ts
+|   |   |           FeatureSession.turnControl.test.ts
+|   |   |           
+|   |   +---layout
+|   |   |   |   boardProjection.ts
+|   |   |   |   boardVisualProfile.ts
+|   |   |   |   canvasDisplay.ts
+|   |   |   |   prototypeProjectionOracle.ts
+|   |   |   |   
+|   |   |   \---__tests__
+|   |   |           boardProjection.test.ts
+|   |   |           prototypeVisualParity.test.ts
+|   |   |           
+|   |   +---render
+|   |   |       CanvasBoardRenderer.ts
+|   |   |       
+|   |   \---sholo16
+|   \---__tests__
+|           HumanVsAiRunner.test.ts
+|           
+\---simulation
+    |   SelfPlayRunner.ts
+    |   
+    \---__tests__
+            SelfPlayRunner.test.ts
+
+========== npm test ==========
+> test
+> jest
+
+Test Suites: 24 passed, 24 total
+Tests:       177 passed, 177 total
+Snapshots:   0 total
+Time:        19.764 s, estimated 70 s
+Ran all test suites.
+
+========== PROJECTS/SmartBeads/src/core/SmartBeadsEngine.ts ==========
+import { BoardVariant, resolveBoard } from '../config/BoardConfig';
+import {
+  cloneBoardDefinition,
+  findJumpPath,
+  getConnectedIds,
+  GameState,
+  hasReachedPlyLimit,
+  JumpPath,
+  Move,
+  Player,
+  requireIntersection,
+  TerminationProfile,
+} from '../models/GameState';
+
+/**
+ * Project gameplay engine.
+ * Board geometry, jump routes, centers, and ply limits come from BoardDefinition.
+ *
+ * Capture rules (project):
+ * - Jumps are optional (slides remain legal when not mid-chain).
+ * - Multi-jump chaining is allowed via sequential Move applications.
+ * - After a capture, further jumps from the same bead are optional; call endTurn() to stop.
+ */
+export class SmartBeadsEngine {
+  private readonly variant: BoardVariant;
+  private currentState: GameState;
+  /** When set, the current player must continue or end a capture chain with this bead. */
+  private chainPieceId: number | null = null;
+
+  constructor(variant: BoardVariant) {
+    this.variant = variant;
+    this.currentState = this.initializeInitialState(variant);
+  }
+
+  getVariant(): BoardVariant {
+    return this.variant;
+  }
+
+  getState(): GameState {
+    return this.currentState;
+  }
+
+  /** Deep snapshot for undo, AI search, and feature-layer restore. */
+  exportSnapshot(): { state: GameState; chainPieceId: number | null } {
+    return {
+      state: {
+        ...this.currentState,
+        board: cloneBoardDefinition(this.currentState.board),
+        captures: { ...this.currentState.captures },
+      },
+      chainPieceId: this.chainPieceId,
+    };
+  }
+
+  /** Restore a prior snapshot without changing match rules. */
+  loadSnapshot(snapshot: { state: GameState; chainPieceId: number | null }): void {
+    this.currentState = {
+      ...snapshot.state,
+      board: cloneBoardDefinition(snapshot.state.board),
+      captures: { ...snapshot.state.captures },
+    };
+    this.chainPieceId = snapshot.chainPieceId;
+  }
+
+  /** Counts remaining pieces on the board for the specified player. */
+  countPieces(playerId: Player): number {
+    return this.currentState.board.intersections.filter(
+      (point) => point.occupant === playerId,
+    ).length;
+  }
+
+  /** Bead id that must continue a multi-jump, if any. */
+  getChainPieceId(): number | null {
+    return this.chainPieceId;
+  }
+
+  /**
+   * Legal moves for the current player.
+   * - Normal turn: optional slides and optional jumps.
+   * - Mid multi-jump: only continuing jumps from the chaining bead.
+   */
+  getLegalMoves(): Move[] {
+    if (this.currentState.gameOver) {
+      return [];
+    }
+
+    if (this.chainPieceId !== null) {
+      return this.getJumpMovesFrom(this.chainPieceId);
+    }
+
+    const { board, currentPlayer } = this.currentState;
+    const moves: Move[] = [];
+
+    for (const intersection of board.intersections) {
+      if (intersection.occupant !== currentPlayer) {
+        continue;
+      }
+
+      for (const to of getConnectedIds(board, intersection.id)) {
+        const target = requireIntersection(board, to);
+        if (target.occupant === undefined) {
+          moves.push({ from: intersection.id, to });
+        }
+      }
+
+      moves.push(...this.getJumpMovesFrom(intersection.id));
+    }
+
+    return moves;
+  }
+
+  applyMove(move: Move): void {
+    if (this.currentState.gameOver) {
+      throw new Error('Game is already over.');
+    }
+
+    const isLegal = this.getLegalMoves().some(
+      (legal) => legal.from === move.from && legal.to === move.to,
+    );
+    if (!isLegal) {
+      throw new Error(`Illegal move: ${move.from} -> ${move.to}`);
+    }
+
+    const board = this.currentState.board;
+    const jump = this.resolveLegalJump(move);
+    const fromPoint = requireIntersection(board, move.from);
+    const toPoint = requireIntersection(board, move.to);
+    const mover = fromPoint.occupant!;
+
+    if (jump) {
+      requireIntersection(board, jump.over).occupant = undefined;
+      this.currentState.captures[mover] += 1;
+    }
+
+    toPoint.occupant = mover;
+    fromPoint.occupant = undefined;
+
+    if (jump && this.getJumpMovesFrom(move.to).length > 0) {
+      this.chainPieceId = move.to;
+      return;
+    }
+
+    this.chainPieceId = null;
+    this.completeTurn(mover);
+  }
+
+  /**
+   * Voluntarily end a multi-jump after one or more captures.
+   * Illegal when not mid-chain.
+   */
+  endTurn(): void {
+    if (this.currentState.gameOver) {
+      throw new Error('Game is already over.');
+    }
+    if (this.chainPieceId === null) {
+      throw new Error('Cannot end turn: no capture chain in progress.');
+    }
+
+    const mover = this.currentState.currentPlayer;
+    this.chainPieceId = null;
+    this.completeTurn(mover);
+  }
+
+  private completeTurn(mover: Player): void {
+    const profile = this.terminationProfile();
+
+    if (profile === 'sholo_guti') {
+      this.completeSholoTurn(mover);
+      return;
+    }
+
+    this.currentState.moveCount += 1;
+
+    if (hasReachedPlyLimit(this.currentState.board.maxPlies, this.currentState.moveCount)) {
+      this.currentState.gameOver = true;
+      this.evaluatePlyLimitWinner();
+      return;
+    }
+
+    this.currentState.currentPlayer = this.opponentOf(mover);
+  }
+
+  /** SHOLO_GUTI.html completeTurn semantics — elimination then stalemate. */
+  private completeSholoTurn(mover: Player): void {
+    this.currentState.moveCount += 1;
+
+    const redRemaining = this.countPieces('RED');
+    const blueRemaining = this.countPieces('BLUE');
+
+    if (redRemaining === 0) {
+      this.endGame('BLUE', 'elimination');
+      return;
+    }
+    if (blueRemaining === 0) {
+      this.endGame('RED', 'elimination');
+      return;
+    }
+
+    if (hasReachedPlyLimit(this.currentState.board.maxPlies, this.currentState.moveCount)) {
+      this.currentState.gameOver = true;
+      this.evaluatePlyLimitWinner();
+      return;
+    }
+
+    this.currentState.currentPlayer = this.opponentOf(mover);
+
+    if (this.getLegalMoves().length === 0) {
+      this.endGame(mover, 'stalemate');
+    }
+  }
+
+  private endGame(winner: Player, reason: string): void {
+    this.currentState.gameOver = true;
+    this.currentState.winner = winner;
+    this.currentState.endReason = reason;
+    this.chainPieceId = null;
+  }
+
+  private getJumpMovesFrom(pieceId: number): Move[] {
+    const { board, currentPlayer } = this.currentState;
+    const piece = requireIntersection(board, pieceId);
+    if (piece.occupant !== currentPlayer) {
+      return [];
+    }
+
+    const moves: Move[] = [];
+    for (const path of board.jumpPaths ?? []) {
+      if (path.from !== pieceId) {
+        continue;
+      }
+      if (this.isJumpCurrentlyLegal(path, currentPlayer)) {
+        moves.push({ from: path.from, to: path.to });
+      }
+    }
+    return moves;
+  }
+
+  private isJumpCurrentlyLegal(path: JumpPath, currentPlayer: Player): boolean {
+    const board = this.currentState.board;
+    const over = requireIntersection(board, path.over);
+    const landing = requireIntersection(board, path.to);
+    const opponent = this.opponentOf(currentPlayer);
+    return over.occupant === opponent && landing.occupant === undefined;
+  }
+
+  private resolveLegalJump(move: Move): JumpPath | undefined {
+    const path = findJumpPath(this.currentState.board, move.from, move.to);
+    if (!path) {
+      return undefined;
+    }
+    if (!this.isJumpCurrentlyLegal(path, this.currentState.currentPlayer)) {
+      return undefined;
+    }
+    return path;
+  }
+
+  private evaluatePlyLimitWinner(): void {
+    const { captures, board } = this.currentState;
+
+    if (captures.RED !== captures.BLUE) {
+      this.currentState.winner = captures.RED > captures.BLUE ? 'RED' : 'BLUE';
+      this.currentState.endReason = 'ply_limit_captures';
+      return;
+    }
+
+    const centerIds = board.centerNodeIds ?? [];
+    if (centerIds.length > 0) {
+      let redCenter = 0;
+      let blueCenter = 0;
+
+      for (const id of centerIds) {
+        const occupant = requireIntersection(board, id).occupant;
+        if (occupant === 'RED') {
+          redCenter += 1;
+        } else if (occupant === 'BLUE') {
+          blueCenter += 1;
+        }
+      }
+
+      if (redCenter !== blueCenter) {
+        this.currentState.winner = redCenter > blueCenter ? 'RED' : 'BLUE';
+        this.currentState.endReason = 'ply_limit_center';
+        return;
+      }
+    }
+
+    this.currentState.winner = 'DRAW';
+    this.currentState.endReason = 'ply_limit_draw';
+  }
+
+  private terminationProfile(): TerminationProfile {
+    return this.currentState.board.terminationProfile ?? 'ply_limit';
+  }
+
+  private opponentOf(player: Player): Player {
+    return player === 'RED' ? 'BLUE' : 'RED';
+  }
+
+  private initializeInitialState(variant: BoardVariant): GameState {
+    return {
+      board: cloneBoardDefinition(resolveBoard(variant)),
+      currentPlayer: 'RED',
+      moveCount: 0,
+      captures: { RED: 0, BLUE: 0 },
+      gameOver: false,
+      winner: undefined,
+      endReason: undefined,
+    };
+  }
+}
+
+========== PROJECTS/SmartBeads/src/playtest/web/feature/FeatureSession.ts ==========
+import { BoardVariant } from '../../../config/BoardConfig';
+import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
+import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
+import { countCenterOccupancy } from './centerScoring';
+import {
+  GameFeatureSettings,
+  parseMatchSeconds,
+  parseShotLimit,
+} from './GameFeatureSettings';
+
+export type UiInteractionState = 'idle' | 'selected' | 'chain' | 'game_over';
+
+export interface SessionSnapshot {
+  boardVariant: BoardVariant;
+  engineSnap: { state: GameState; chainPieceId: number | null };
+  settings: GameFeatureSettings;
+  uiState: UiInteractionState;
+  selectedId: number | null;
+  repetitionHistory: Record<string, number>;
+  p1Clock: number;
+  p2Clock: number;
+  globalMatchRemaining: number;
+  shotRemaining: number;
+  p1CenterScore: number;
+  p2CenterScore: number;
+  featureOver?: FeatureGameOver | null;
+}
+
+export interface FeatureGameOver {
+  winner: Player | 'DRAW';
+  reason: string;
+}
+
+function opponentOf(player: Player): Player {
+  return player === 'RED' ? 'BLUE' : 'RED';
+}
+
+function positionKey(state: GameState, mover: Player): string {
+  const occ = state.board.intersections.map((p) => {
+    if (p.occupant === 'RED') return 'R';
+    if (p.occupant === 'BLUE') return 'B';
+    return '0';
+  }).join('');
+  return `${occ}_${mover}`;
+}
+
+function cloneHistory(h: Record<string, number>): Record<string, number> {
+  return { ...h };
+}
+
+/**
+ * Feature-layer session wrapping M1 SmartBeadsEngine.
+ * Timers, repetition draw, center tiebreak, and undo live here — not in core rules.
+ */
+export class FeatureSession {
+  private boardVariant: BoardVariant;
+  private engine: SmartBeadsEngine;
+  private settings: GameFeatureSettings;
+  private uiState: UiInteractionState = 'idle';
+  private selectedId: number | null = null;
+  private repetitionHistory: Record<string, number> = {};
+  private p1Clock = 0;
+  private p2Clock = 0;
+  private globalMatchRemaining = 0;
+  private shotLimit = 0;
+  private shotRemaining = 0;
+  private p1CenterScore = 0;
+  private p2CenterScore = 0;
+  private featureOver: FeatureGameOver | null = null;
+
+  constructor(boardVariant: BoardVariant, settings: GameFeatureSettings) {
+    this.boardVariant = boardVariant;
+    this.settings = { ...settings };
+    this.engine = new SmartBeadsEngine(boardVariant);
+    this.applyTimerSettings();
+  }
+
+  getBoardVariant(): BoardVariant {
+    return this.boardVariant;
+  }
+
+  getSettings(): GameFeatureSettings {
+    return { ...this.settings };
+  }
+
+  updateSettings(settings: GameFeatureSettings): void {
+    this.settings = { ...settings };
+    this.applyTimerSettings();
+  }
+
+  reset(): void {
+    this.engine = new SmartBeadsEngine(this.boardVariant);
+    this.uiState = 'idle';
+    this.selectedId = null;
+    this.repetitionHistory = {};
+    this.p1CenterScore = 0;
+    this.p2CenterScore = 0;
+    this.featureOver = null;
+    this.applyTimerSettings();
+  }
+
+  exportSnapshot(): SessionSnapshot {
+    return {
+      boardVariant: this.boardVariant,
+      engineSnap: this.engine.exportSnapshot(),
+      settings: { ...this.settings },
+      uiState: this.uiState,
+      selectedId: this.selectedId,
+      repetitionHistory: cloneHistory(this.repetitionHistory),
+      p1Clock: this.p1Clock,
+      p2Clock: this.p2Clock,
+      globalMatchRemaining: this.globalMatchRemaining,
+      shotRemaining: this.shotRemaining,
+      p1CenterScore: this.p1CenterScore,
+      p2CenterScore: this.p2CenterScore,
+      featureOver: this.featureOver,
+    };
+  }
+
+  loadSnapshot(snap: SessionSnapshot): void {
+    this.boardVariant = snap.boardVariant;
+    this.engine.loadSnapshot(snap.engineSnap);
+    this.settings = { ...snap.settings };
+    this.uiState = snap.uiState;
+    this.selectedId = snap.selectedId;
+    this.repetitionHistory = cloneHistory(snap.repetitionHistory);
+    this.p1Clock = snap.p1Clock;
+    this.p2Clock = snap.p2Clock;
+    this.globalMatchRemaining = snap.globalMatchRemaining;
+    this.shotRemaining = snap.shotRemaining;
+    this.p1CenterScore = snap.p1CenterScore ?? 0;
+    this.p2CenterScore = snap.p2CenterScore ?? 0;
+    this.featureOver = snap.featureOver ?? null;
+    this.shotLimit = parseShotLimit(this.settings.shotClock);
+  }
+
+  getEngine(): SmartBeadsEngine {
+    return this.engine;
+  }
+
+  getUiState(): UiInteractionState {
+    return this.uiState;
+  }
+
+  getSelectedId(): number | null {
+    return this.selectedId;
+  }
+
+  getMoveCount(): number {
+    return this.engine.getState().moveCount;
+  }
+
+  getHumanPlayer(): Player {
+    return 'RED';
+  }
+
+  getAiPlayer(): Player {
+    return 'BLUE';
+  }
+
+  isGameOver(): boolean {
+    return this.engine.getState().gameOver || this.featureOver !== null;
+  }
+
+  getDisplayedWinner(): Player | 'DRAW' | undefined {
+    if (this.featureOver) return this.featureOver.winner;
+    return this.engine.getState().winner;
+  }
+
+  getDisplayedReason(): string | undefined {
+    if (this.featureOver) return this.featureOver.reason;
+    return this.engine.getState().endReason;
+  }
+
+  getP1Clock(): number {
+    return this.p1Clock;
+  }
+
+  getP2Clock(): number {
+    return this.p2Clock;
+  }
+
+  getGlobalMatchRemaining(): number {
+    return this.globalMatchRemaining;
+  }
+
+  getShotRemaining(): number {
+    return this.shotRemaining;
+  }
+
+  getShotLimit(): number {
+    return this.shotLimit;
+  }
+
+  getCenterDisplayScores(): { red: number; blue: number } {
+    const state = this.engine.getState();
+    if (this.settings.centerRule === 'cumulative') {
+      return { red: this.p1CenterScore, blue: this.p2CenterScore };
+    }
+    if (this.settings.centerRule === 'endgame') {
+      return {
+        red: countCenterOccupancy(state.board, 'RED'),
+        blue: countCenterOccupancy(state.board, 'BLUE'),
+      };
+    }
+    return { red: 0, blue: 0 };
+  }
+
+  getLegalMovesForSelection(): Move[] {
+    if (this.isGameOver()) return [];
+    const chain = this.engine.getChainPieceId();
+    if (chain !== null) {
+      return this.engine.getLegalMoves();
+    }
+    if (this.selectedId === null) return [];
+    return this.engine.getLegalMoves().filter((m) => m.from === this.selectedId);
+  }
+
+  getLegalTargetIds(): number[] {
+    return this.getLegalMovesForSelection().map((m) => m.to);
+  }
+
+  selectNode(nodeId: number): boolean {
+    if (this.isGameOver()) return false;
+    const state = this.engine.getState();
+    if (this.engine.getChainPieceId() !== null) return false;
+
+    const node = state.board.intersections.find((p) => p.id === nodeId);
+    if (node?.occupant !== state.currentPlayer) return false;
+
+    const hasMoves = this.engine.getLegalMoves().some((m) => m.from === nodeId);
+    if (!hasMoves) return false;
+
+    this.selectedId = nodeId;
+    this.uiState = 'selected';
+    return true;
+  }
+
+  canHumanAct(): boolean {
+    if (this.isGameOver()) return false;
+    if (this.settings.mode === 'pvp') return true;
+    return this.engine.getState().currentPlayer === 'RED';
+  }
+
+  applyMove(move: Move): void {
+    const stateBefore = this.engine.getState();
+    const mover = stateBefore.currentPlayer;
+
+    this.engine.applyMove(move);
+
+    const chain = this.engine.getChainPieceId();
+    if (chain !== null) {
+      this.selectedId = chain;
+      this.uiState = 'chain';
+      return;
+    }
+
+    this.afterTurnCompleted(mover);
+  }
+
+  finishChain(): void {
+    if (this.isGameOver()) return;
+    if (this.engine.getChainPieceId() === null) return;
+    const mover = this.engine.getState().currentPlayer;
+    this.engine.endTurn();
+    this.afterTurnCompleted(mover);
+  }
+
+  private afterTurnCompleted(mover: Player): void {
+    this.selectedId = null;
+    this.uiState = 'idle';
+
+    // FIX: Accumulate center occupancy per completed turn
+    if (this.settings.centerRule === 'cumulative') {
+      const board = this.engine.getState().board;
+      this.p1CenterScore += countCenterOccupancy(board, 'RED');
+      this.p2CenterScore += countCenterOccupancy(board, 'BLUE');
+    }
+
+    const engState = this.engine.getState();
+    if (engState.gameOver) {
+      this.uiState = 'game_over';
+      return;
+    }
+
+    const key = positionKey(engState, mover);
+    this.repetitionHistory[key] = (this.repetitionHistory[key] || 0) + 1;
+    if (this.repetitionHistory[key] >= 3) {
+      this.featureOver = { winner: 'DRAW', reason: 'Draw — 3-fold repetition.' };
+      this.uiState = 'game_over';
+      return;
+    }
+
+    this.shotRemaining = this.shotLimit;
+  }
+
+  endGameByFeature(winner: Player | 'DRAW', reason: string): void {
+    this.featureOver = { winner, reason };
+    this.uiState = 'game_over';
+    this.selectedId = null;
+  }
+
+  /** Resignation: opponent accepts draw, or declines and wins. */
+  resolveResignation(resigningPlayer: Player, acceptDraw: boolean): void {
+    if (this.isGameOver()) return;
+    const resignLabel = resigningPlayer === 'RED' ? 'P1' : 'P2';
+    const oppLabel = resigningPlayer === 'RED' ? 'P2' : 'P1';
+    if (acceptDraw) {
+      this.endGameByFeature('DRAW', `${resignLabel} resigned — ${oppLabel} agreed to a draw.`);
+      return;
+    }
+    const winner = resigningPlayer === 'RED' ? 'BLUE' : 'RED';
+    this.endGameByFeature(winner, `${resignLabel} resigned — ${oppLabel} declined the draw.`);
+  }
+
+  evaluateScoreAndEnd(prefixReason: string): void {
+    const state = this.engine.getState();
+    const redCaps = state.captures.RED;
+    const blueCaps = state.captures.BLUE;
+
+    if (redCaps > blueCaps) {
+      this.endGameByFeature('RED', `${prefixReason} P1 won on captures.`);
+      return;
+    }
+    if (blueCaps > redCaps) {
+      this.endGameByFeature('BLUE', `${prefixReason} P2 won on captures.`);
+      return;
+    }
+
+    if (this.settings.centerRule !== 'off') {
+      let c1 = 0;
+      let c2 = 0;
+      if (this.settings.centerRule === 'cumulative') {
+        c1 = this.p1CenterScore;
+        c2 = this.p2CenterScore;
+      } else {
+        c1 = countCenterOccupancy(state.board, 'RED');
+        c2 = countCenterOccupancy(state.board, 'BLUE');
+      }
+      if (c1 > c2) {
+        this.endGameByFeature('RED', `${prefixReason} captures tied — P1 won on center.`);
+        return;
+      }
+      if (c2 > c1) {
+        this.endGameByFeature('BLUE', `${prefixReason} captures tied — P2 won on center.`);
+        return;
+      }
+    }
+
+    const redPieces = this.engine.countPieces('RED');
+    const bluePieces = this.engine.countPieces('BLUE');
+    if (redPieces === bluePieces) {
+      this.endGameByFeature('DRAW', `${prefixReason} draw.`);
+      return;
+    }
+    this.endGameByFeature(
+      redPieces > bluePieces ? 'RED' : 'BLUE',
+      `${prefixReason} piece-count tiebreak.`,
+    );
+  }
+
+  timerTick(): void {
+    if (this.isGameOver()) return;
+
+    if (this.shotLimit > 0) {
+      this.shotRemaining -= 1;
+      if (this.shotRemaining <= 0) {
+        const loser = this.engine.getState().currentPlayer;
+        this.endGameByFeature(opponentOf(loser), 'Shot clock expired.');
+      }
+    }
+
+    const matchSecs = parseMatchSeconds(this.settings.matchTimer);
+    if (matchSecs <= 0) return;
+
+    if (this.settings.mode === 'pvp') {
+      if (this.engine.getState().currentPlayer === 'RED') this.p1Clock -= 1;
+      else this.p2Clock -= 1;
+      if (this.p1Clock <= 0) this.endGameByFeature('BLUE', 'P1 ran out of match time.');
+      else if (this.p2Clock <= 0) this.endGameByFeature('RED', 'P2 ran out of match time.');
+    } else {
+      this.globalMatchRemaining -= 1;
+      if (this.globalMatchRemaining <= 0) {
+        this.evaluateScoreAndEnd('Match timer expired.');
+      }
+    }
+  }
+
+  private trackCumulativeCenterLanding(nodeId: number): void {
+    const centerIds = this.engine.getState().board.centerNodeIds ?? [];
+    if (!centerIds.includes(nodeId)) return;
+    const occupant = this.engine.getState().board.intersections[nodeId]?.occupant;
+    if (occupant === 'RED') this.p1CenterScore += 1;
+    else if (occupant === 'BLUE') this.p2CenterScore += 1;
+  }
+
+  resetTurnClock(): void {
+    this.shotRemaining = this.shotLimit;
+  }
+
+  private applyTimerSettings(): void {
+    this.shotLimit = parseShotLimit(this.settings.shotClock);
+    this.shotRemaining = this.shotLimit;
+    const matchSecs = parseMatchSeconds(this.settings.matchTimer);
+
+    if (matchSecs <= 0) {
+      this.globalMatchRemaining = 0;
+      this.p1Clock = 0;
+      this.p2Clock = 0;
+      return;
+    }
+
+    if (this.settings.mode === 'pvp') {
+      this.p1Clock = matchSecs;
+      this.p2Clock = matchSecs;
+      this.globalMatchRemaining = 0;
+    } else {
+      this.globalMatchRemaining = matchSecs;
+      this.p1Clock = 0;
+      this.p2Clock = 0;
+    }
+  }
+}
+
+========== PROJECTS/SmartBeads/src/playtest/web/PlayController.ts ==========
+import {
+  DEFAULT_PRODUCT_BOARD,
+  getCatalogEntry,
+  getPlayConfig,
+  listProductBoards,
+  ProductBoardId,
+  resolveEngineVariant,
+} from '../../config/BoardCatalog';
+import { cloneBoardDefinition, findJumpPath, Move, Player } from '../../models/GameState';
+import { formatCenterDisplay } from './feature/centerScoring';
+import {
+  AiLevel,
+  BGM_TRACKS,
+  CenterRule,
+  formatCenterRuleLabel,
+  formatMatchTimerLabel,
+  formatShotClockLabel,
+  GameFeatureSettings,
+  MatchTimerMinutes,
+  parseMatchSeconds,
+  ShotClockSeconds,
+} from './feature/GameFeatureSettings';
+import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
+import { selectAiTurnPath, shouldAcceptResignationDraw } from './feature/HonestAi';
+import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
+import { getBoardCanvasSize } from './layout/boardVisualProfile';
+import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
+import {
+  BoardAnimState,
+  drawCanvasBoard,
+  hitTestNode,
+} from './render/CanvasBoardRenderer';
+
+function fmtClock(sec: number): string {
+  const clamped = sec < 0 ? 0 : sec;
+  const m = Math.floor(clamped / 60).toString().padStart(2, '0');
+  const s = (clamped % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function winnerLabel(winner: Player | 'DRAW' | undefined): string {
+  if (winner === 'RED') return 'Ivory wins';
+  if (winner === 'BLUE') return 'Ebony wins';
+  return 'Draw';
+}
+
+function playerDisplayName(player: Player): string {
+  return player === 'RED' ? 'Ivory (P1)' : 'Ebony (P2)';
+}
+
+export function bootstrapPlayShell(): void {
+  let currentBoardId: ProductBoardId = DEFAULT_PRODUCT_BOARD;
+
+  function createSession(boardId: ProductBoardId, settings?: GameFeatureSettings): FeatureSession {
+    const play = getPlayConfig(boardId);
+    return new FeatureSession(
+      resolveEngineVariant(boardId),
+      settings ?? { ...play.defaultSettings },
+    );
+  }
+
+  let session = createSession(currentBoardId);
+  let anim: BoardAnimState | null = null;
+  let animating = false;
+  let aiThinking = false;
+  let turnPulse = 0;
+  let timerId: ReturnType<typeof setInterval> | null = null;
+  let pulseRaf = 0;
+  let animRaf = 0;
+  let aiRunId = 0;
+  const undoStack: SessionSnapshot[] = [];
+  let pendingResignPlayer: Player | null = null;
+
+  const canvas = document.getElementById('board') as HTMLCanvasElement;
+  const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
+  const resignBtn = document.getElementById('resign-btn') as HTMLButtonElement;
+  const undoBtn = document.getElementById('undo-btn') as HTMLButtonElement;
+  const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
+  const playAgainBtn = document.getElementById('play-again-btn') as HTMLButtonElement;
+  const resultModal = document.getElementById('result-modal') as HTMLDivElement;
+  const resignOfferModal = document.getElementById('resign-offer-modal') as HTMLDivElement;
+  const resignOfferDesc = document.getElementById('resign-offer-desc') as HTMLParagraphElement;
+  const resignAgreeBtn = document.getElementById('resign-agree-btn') as HTMLButtonElement;
+  const resignDeclineBtn = document.getElementById('resign-decline-btn') as HTMLButtonElement;
+  const resultTitle = document.getElementById('result-title') as HTMLHeadingElement;
+  const resultDesc = document.getElementById('result-desc') as HTMLParagraphElement;
+  const statusEl = document.getElementById('status') as HTMLDivElement | null;
+
+  const boardSelect = document.getElementById('board-select') as HTMLSelectElement;
+  const gameModeSelect = document.getElementById('game-mode-select') as HTMLSelectElement;
+  const aiLevelSelect = document.getElementById('ai-level-select') as HTMLSelectElement;
+  const matchTimerSelect = document.getElementById('match-timer-select') as HTMLSelectElement;
+  const shotClockSelect = document.getElementById('shot-clock-select') as HTMLSelectElement;
+  const centerRuleSelect = document.getElementById('center-rule-select') as HTMLSelectElement;
+  const aiLevelContainer = document.getElementById('ai-level-container') as HTMLDivElement;
+
+  const bgmAudio = document.getElementById('bgm-audio') as HTMLAudioElement;
+  const bgmSelect = document.getElementById('bgm-select') as HTMLSelectElement;
+  const bgmVol = document.getElementById('bgm-vol') as HTMLInputElement;
+  const bgmPlay = document.getElementById('bgm-play') as HTMLButtonElement;
+  const bgmPause = document.getElementById('bgm-pause') as HTMLButtonElement;
+
+  populateBgmSelect(bgmSelect);
+  populateBoardSelect(boardSelect);
+
+  function readSettings(): GameFeatureSettings {
+    return {
+      mode: gameModeSelect.value as GameFeatureSettings['mode'],
+      aiLevel: parseInt(aiLevelSelect.value, 10) as AiLevel,
+      matchTimer: matchTimerSelect.value as GameFeatureSettings['matchTimer'],
+      shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
+      centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
+    };
+  }
+
+  function applyBoardDefaults(boardId: ProductBoardId): void {
+    const defaults = getPlayConfig(boardId).defaultSettings;
+    centerRuleSelect.value = defaults.centerRule;
+    matchTimerSelect.value = defaults.matchTimer;
+    shotClockSelect.value = defaults.shotClock;
+  }
+
+  function syncCenterRuleOptions(): void {
+    const options = getPlayConfig(currentBoardId).centerRuleOptions;
+    const current = centerRuleSelect.value as CenterRule;
+    centerRuleSelect.innerHTML = '';
+    for (const rule of options) {
+      const opt = document.createElement('option');
+      opt.value = rule;
+      opt.textContent = formatCenterRuleLabel(rule);
+      centerRuleSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      centerRuleSelect.value = current;
+    } else {
+      centerRuleSelect.value = getPlayConfig(currentBoardId).defaultSettings.centerRule;
+    }
+  }
+
+  function syncMatchTimerOptions(): void {
+    const options = getPlayConfig(currentBoardId).matchTimerOptions;
+    const current = matchTimerSelect.value as MatchTimerMinutes;
+    matchTimerSelect.innerHTML = '';
+    for (const value of options) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = formatMatchTimerLabel(value);
+      matchTimerSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      matchTimerSelect.value = current;
+    } else {
+      matchTimerSelect.value = getPlayConfig(currentBoardId).defaultSettings.matchTimer;
+    }
+  }
+
+  function syncShotClockOptions(): void {
+    const options = getPlayConfig(currentBoardId).shotClockOptions;
+    const current = shotClockSelect.value as ShotClockSeconds;
+    shotClockSelect.innerHTML = '';
+    for (const value of options) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = formatShotClockLabel(value);
+      shotClockSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      shotClockSelect.value = current;
+    } else {
+      shotClockSelect.value = getPlayConfig(currentBoardId).defaultSettings.shotClock;
+    }
+  }
+
+  function syncBoardPlayOptions(): void {
+    syncCenterRuleOptions();
+    syncMatchTimerOptions();
+    syncShotClockOptions();
+  }
+
+  function syncBoardTitle(): void {
+    const entry = getCatalogEntry(currentBoardId);
+    if (entry) {
+      document.title = `SmartBeads — ${entry.displayName}`;
+    }
+  }
+
+  function setStatus(text: string): void {
+    if (statusEl) statusEl.textContent = text;
+  }
+
+  function cancelAiWork(): void {
+    aiRunId += 1;
+    aiThinking = false;
+  }
+
+  function pushUndoSnapshot(): void {
+    undoStack.push(session.exportSnapshot());
+    if (undoStack.length > 80) undoStack.shift();
+    undoBtn.disabled = undoStack.length === 0;
+  }
+
+  function canOfferResignation(): boolean {
+    if (session.isGameOver() || animating || aiThinking) return false;
+    if (pendingResignPlayer !== null) return false;
+    return true;
+  }
+
+  function resigningPlayerForMode(): Player {
+    const settings = session.getSettings();
+    if (settings.mode === 'pve') return 'RED';
+    return session.getEngine().getState().currentPlayer;
+  }
+
+  function finishResignation(resigning: Player, acceptDraw: boolean): void {
+    if (timerId) clearInterval(timerId);
+    cancelAiWork();
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    session.resolveResignation(resigning, acceptDraw);
+    updateUI();
+  }
+
+  function beginResignation(): void {
+    if (!canOfferResignation()) return;
+    const settings = session.getSettings();
+    const resigning = resigningPlayerForMode();
+    const confirmed = window.confirm(
+      `Offer resignation as ${playerDisplayName(resigning)}? Opponent may accept a draw or claim a win.`,
+    );
+    if (!confirmed) return;
+
+    if (settings.mode === 'pve') {
+      const testOverride = sessionStorage.getItem('sb-test-resign-ai');
+      let acceptDraw: boolean;
+      if (testOverride === 'accept') {
+        acceptDraw = true;
+      } else if (testOverride === 'reject') {
+        acceptDraw = false;
+      } else {
+        acceptDraw = shouldAcceptResignationDraw(
+          session.getBoardVariant(),
+          session.getEngine().exportSnapshot(),
+          session.getAiPlayer(),
+        );
+      }
+      finishResignation(resigning, acceptDraw);
+      return;
+    }
+
+    pendingResignPlayer = resigning;
+    resignOfferDesc.textContent =
+      `${playerDisplayName(resigning)} offers resignation. Agree to a draw?`;
+    resignOfferModal.style.display = 'flex';
+  }
+
+  function turnStatusText(): string {
+    const player = session.getEngine().getState().currentPlayer;
+    const label = player === 'RED' ? 'P1' : 'P2';
+    const uiState = session.getUiState();
+    if (uiState === 'chain') return `${label} — continue chain or Finish`;
+    return `${label} turn — select a piece`;
+  }
+
+  function applyCanvasSizeForBoard(): void {
+    const boardName = session.getEngine().getState().board.name;
+    const { width, height } = getBoardCanvasSize(boardName);
+    canvas.width = width;
+    canvas.height = height;
+    fitCanvasToFrame(canvas);
+  }
+
+  installCanvasResizeObserver(canvas, () => {
+    fitCanvasToFrame(canvas);
+    drawBoard();
+  });
+
+  function drawBoard(): void {
+    const state = session.getEngine().getState();
+    const board = anim ? cloneBoardDefinition(state.board) : state.board;
+    if (anim && board.intersections[anim.from]) {
+      board.intersections[anim.from].occupant = undefined;
+    }
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: state.currentPlayer,
+      gameOver: session.isGameOver(),
+      selectedId: session.getSelectedId(),
+      legalTargets: session.getLegalTargetIds(),
+      chainPieceId: session.getEngine().getChainPieceId(),
+      anim,
+      turnPulse,
+    });
+  }
+
+  function updateUI(): void {
+    const state = session.getEngine().getState();
+    const settings = session.getSettings();
+    const redPieces = session.getEngine().countPieces('RED');
+    const bluePieces = session.getEngine().countPieces('BLUE');
+
+    (document.getElementById('p1-pieces') as HTMLElement).textContent = String(redPieces);
+    (document.getElementById('p2-pieces') as HTMLElement).textContent = String(bluePieces);
+    (document.getElementById('p1-caps') as HTMLElement).textContent = String(state.captures.RED);
+    (document.getElementById('p2-caps') as HTMLElement).textContent = String(state.captures.BLUE);
+    (document.getElementById('turn-count') as HTMLElement).textContent = String(session.getMoveCount());
+
+    const centerScores = session.getCenterDisplayScores();
+    (document.getElementById('p1-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, centerScores.red);
+    (document.getElementById('p2-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, centerScores.blue);
+
+    document.getElementById('pill-p1')?.classList.toggle('active', state.currentPlayer === 'RED' && !session.isGameOver());
+    document.getElementById('pill-p2')?.classList.toggle('active', state.currentPlayer === 'BLUE' && !session.isGameOver());
+
+    const uiState = session.getUiState();
+    const showFinish = uiState === 'chain'
+      && !animating
+      && !aiThinking
+      && (settings.mode === 'pvp' || state.currentPlayer === 'RED');
+    finishBtn.style.display = showFinish ? 'inline-block' : 'none';
+
+    undoBtn.disabled = undoStack.length === 0 || animating || aiThinking;
+    resignBtn.disabled = !canOfferResignation();
+
+    const matchSecs = parseMatchSeconds(settings.matchTimer);
+    if (matchSecs <= 0) {
+      (document.getElementById('p1-clock') as HTMLElement).textContent = '--:--';
+      (document.getElementById('p2-clock') as HTMLElement).textContent = '--:--';
+      (document.getElementById('match-clock-val') as HTMLElement).textContent = 'OFF';
+    } else if (settings.mode === 'pvp') {
+      (document.getElementById('p1-clock') as HTMLElement).textContent = fmtClock(session.getP1Clock());
+      (document.getElementById('p2-clock') as HTMLElement).textContent = fmtClock(session.getP2Clock());
+      (document.getElementById('match-clock-val') as HTMLElement).textContent = 'CHESS';
+    } else {
+      (document.getElementById('p1-clock') as HTMLElement).textContent = '--:--';
+      (document.getElementById('p2-clock') as HTMLElement).textContent = '--:--';
+      (document.getElementById('match-clock-val') as HTMLElement).textContent = fmtClock(session.getGlobalMatchRemaining());
+    }
+
+    const shotLimit = session.getShotLimit();
+    (document.getElementById('shot-clock-val') as HTMLElement).textContent =
+      shotLimit > 0 ? `${session.getShotRemaining()}s` : 'OFF';
+
+    (document.getElementById('p2-role') as HTMLElement).textContent = settings.mode === 'pve' ? '(AI)' : '(Human)';
+    aiLevelSelect.disabled = settings.mode === 'pvp';
+    aiLevelContainer.style.opacity = settings.mode === 'pvp' ? '0.45' : '1';
+
+    if (session.isGameOver() && pendingResignPlayer === null) {
+      resultModal.style.display = 'flex';
+      resultTitle.textContent = winnerLabel(session.getDisplayedWinner());
+      resultDesc.textContent = session.getDisplayedReason() ?? '';
+    } else if (pendingResignPlayer === null) {
+      resultModal.style.display = 'none';
+    }
+
+    drawBoard();
+  }
+
+  function startTimers(): void {
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(() => {
+      if (session.isGameOver() || animating) return;
+      if (aiThinking) return;
+      session.timerTick();
+      updateUI();
+    }, 1000);
+  }
+
+  function loopPulse(ts: number): void {
+    turnPulse = ts / 280;
+    if (!animating) drawBoard();
+    pulseRaf = requestAnimationFrame(loopPulse);
+  }
+
+  function afterHumanOrAiTurn(): void {
+    updateUI();
+    if (session.isGameOver()) {
+      cancelAiWork();
+      return;
+    }
+    const settings = session.getSettings();
+    const state = session.getEngine().getState();
+    if (settings.mode === 'pve' && state.currentPlayer === 'BLUE') {
+      const runId = aiRunId;
+      aiThinking = true;
+      setStatus('AI is thinking…');
+      setTimeout(() => {
+        if (runId !== aiRunId) return;
+        runAiTurn(runId);
+      }, AI_REPLY_DELAY_MS);
+    } else {
+      cancelAiWork();
+      setStatus(turnStatusText());
+    }
+  }
+
+  function playAnimated(move: Move, player: Player, onDone: () => void): void {
+    if (animating) return;
+    const state = session.getEngine().getState();
+    const jump = findJumpPath(state.board, move.from, move.to);
+    const captured = jump?.over;
+    const capturedPlayer = captured !== undefined
+      ? state.board.intersections[captured].occupant
+      : undefined;
+
+    animating = true;
+    anim = {
+      from: move.from,
+      to: move.to,
+      captured,
+      capturedPlayer,
+      player,
+      t: 0,
+      duration: jump ? HUMAN_JUMP_ANIM_MS : HUMAN_SLIDE_ANIM_MS,
+    };
+    drawBoard();
+
+    const start = performance.now();
+    function step(now: number): void {
+      if (!anim) return;
+      anim.t = Math.min(1, (now - start) / anim.duration);
+      drawBoard();
+      if (anim.t < 1) {
+        animRaf = requestAnimationFrame(step);
+      } else {
+        anim = null;
+        animating = false;
+        session.applyMove(move);
+        onDone();
+      }
+    }
+    animRaf = requestAnimationFrame(step);
+  }
+
+  function executeMoveAnimated(move: Move, player: Player): void {
+    playAnimated(move, player, () => {
+      if (session.getUiState() === 'chain') {
+        setStatus(turnStatusText());
+        updateUI();
+        return;
+      }
+      afterHumanOrAiTurn();
+    });
+  }
+
+  function runAiTurn(runId: number): void {
+    if (runId !== aiRunId) return;
+    const settings = session.getSettings();
+    const state = session.getEngine().getState();
+    if (session.isGameOver() || settings.mode !== 'pve' || state.currentPlayer !== 'BLUE') {
+      cancelAiWork();
+      return;
+    }
+
+    const path = selectAiTurnPath(
+      session.getBoardVariant(),
+      settings.aiLevel,
+      session.getEngine().exportSnapshot(),
+      'BLUE',
+    );
+    if (!path?.length) {
+      session.endGameByFeature('RED', 'AI has no legal moves.');
+      cancelAiWork();
+      updateUI();
+      return;
+    }
+
+    // FIX: Push snapshot before AI turn so Undo restores cleanly to human turn
+    pushUndoSnapshot();
+
+    let i = 0;
+    function playNext(): void {
+      if (runId !== aiRunId) return;
+      if (session.isGameOver()) {
+        cancelAiWork();
+        return;
+      }
+      if (i >= path.length) {
+        cancelAiWork();
+        updateUI();
+        setStatus(turnStatusText());
+        return;
+      }
+
+      const move = path[i];
+      i += 1;
+      playAnimated(move, 'BLUE', () => {
+        if (runId !== aiRunId) return;
+        const chain = session.getEngine().getChainPieceId();
+
+        // FIX: Only continue if chain is active AND there are remaining moves in path!
+        if (chain !== null && i < path.length) {
+          setTimeout(playNext, 380);
+          return;
+        }
+
+        // Turn is complete (chain is null). Stop AI execution immediately!
+        cancelAiWork();
+        afterHumanOrAiTurn();
+      });
+    }
+    playNext();
+  }
+
+  function handleCanvasClick(ev: MouseEvent): void {
+    if (session.isGameOver() || aiThinking || animating) return;
+    if (!session.canHumanAct()) return;
+
+    const nodeId = hitTestNode(canvas, session.getEngine().getState().board, ev.clientX, ev.clientY);
+    if (nodeId < 0) return;
+
+    const uiState = session.getUiState();
+    const state = session.getEngine().getState();
+
+    if (uiState === 'chain') {
+      const move = session.getEngine().getLegalMoves().find((m) => m.to === nodeId);
+      if (move) {
+        pushUndoSnapshot();
+        executeMoveAnimated(move, state.currentPlayer);
+      }
+      return;
+    }
+
+    if (state.board.intersections[nodeId]?.occupant === state.currentPlayer) {
+      session.selectNode(nodeId);
+      updateUI();
+      return;
+    }
+
+    if (uiState === 'selected') {
+      const move = session.getLegalMovesForSelection().find((m) => m.to === nodeId);
+      if (move) {
+        pushUndoSnapshot();
+        executeMoveAnimated(move, state.currentPlayer);
+      }
+    }
+  }
+
+  function undoMove(): void {
+    if (animating || aiThinking || undoStack.length === 0) return;
+    cancelAiWork();
+    anim = null;
+    animating = false;
+    const settings = session.getSettings();
+    const uiState = session.getUiState();
+
+    if (settings.mode === 'pve' && undoStack.length >= 2 && session.getEngine().getState().currentPlayer === 'RED' && uiState !== 'chain') {
+      undoStack.pop();
+      session.loadSnapshot(undoStack.pop()!);
+    } else {
+      session.loadSnapshot(undoStack.pop()!);
+    }
+
+    resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    undoBtn.disabled = undoStack.length === 0;
+    if (!session.isGameOver()) startTimers();
+    setStatus(turnStatusText());
+    updateUI();
+  }
+
+  function resetGame(): void {
+    if (timerId) clearInterval(timerId);
+    cancelAnimationFrame(pulseRaf);
+    cancelAnimationFrame(animRaf);
+    cancelAiWork();
+    undoStack.length = 0;
+    anim = null;
+    animating = false;
+    aiThinking = false;
+
+    const settings = readSettings();
+    session = createSession(currentBoardId, settings);
+    session.reset();
+    applyCanvasSizeForBoard();
+    resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    session.resetTurnClock();
+    setStatus(turnStatusText());
+    updateUI();
+    startTimers();
+    undoBtn.disabled = true;
+    pulseRaf = requestAnimationFrame(loopPulse);
+  }
+
+  resignBtn.addEventListener('click', beginResignation);
+  resignAgreeBtn.addEventListener('click', () => {
+    if (pendingResignPlayer === null) return;
+    finishResignation(pendingResignPlayer, true);
+  });
+  resignDeclineBtn.addEventListener('click', () => {
+    if (pendingResignPlayer === null) return;
+    finishResignation(pendingResignPlayer, false);
+  });
+
+  finishBtn.addEventListener('click', () => {
+    if (session.getUiState() !== 'chain' || animating) return;
+    pushUndoSnapshot();
+    session.finishChain();
+    afterHumanOrAiTurn();
+  });
+
+  function switchBoard(boardId: ProductBoardId): void {
+    if (timerId) clearInterval(timerId);
+    cancelAnimationFrame(pulseRaf);
+    cancelAnimationFrame(animRaf);
+    cancelAiWork();
+    undoStack.length = 0;
+    anim = null;
+    animating = false;
+    aiThinking = false;
+
+    currentBoardId = boardId;
+    boardSelect.value = boardId;
+    syncBoardTitle();
+    syncBoardPlayOptions();
+    applyBoardDefaults(boardId);
+    session = createSession(boardId, readSettings());
+    applyCanvasSizeForBoard();
+    resultModal.style.display = 'none';
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+    session.resetTurnClock();
+    setStatus(turnStatusText());
+    updateUI();
+    startTimers();
+    undoBtn.disabled = true;
+    pulseRaf = requestAnimationFrame(loopPulse);
+  }
+
+  restartBtn.addEventListener('click', resetGame);
+  playAgainBtn.addEventListener('click', resetGame);
+  undoBtn.addEventListener('click', undoMove);
+  boardSelect.addEventListener('change', () => {
+    switchBoard(boardSelect.value as ProductBoardId);
+  });
+  gameModeSelect.addEventListener('change', resetGame);
+  centerRuleSelect.addEventListener('change', resetGame);
+  matchTimerSelect.addEventListener('change', resetGame);
+  shotClockSelect.addEventListener('change', resetGame);
+  aiLevelSelect.addEventListener('change', resetGame);
+  canvas.addEventListener('click', handleCanvasClick);
+
+  bgmAudio.volume = parseFloat(bgmVol.value) || 0.3;
+  bgmSelect.addEventListener('change', () => {
+    if (bgmSelect.value) {
+      bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
+    } else {
+      bgmAudio.pause();
+    }
+  });
+  bgmPlay.addEventListener('click', () => {
+    if (!bgmAudio.src && bgmSelect.value) bgmAudio.src = bgmSelect.value;
+    if (bgmSelect.value) bgmAudio.play().catch(() => {});
+  });
+  bgmPause.addEventListener('click', () => bgmAudio.pause());
+  bgmVol.addEventListener('input', () => {
+    bgmAudio.volume = parseFloat(bgmVol.value) || 0;
+  });
+
+  syncBoardTitle();
+  syncBoardPlayOptions();
+  resetGame();
+
+  (window as unknown as { __SB_TEST__?: object }).__SB_TEST__ = {
+    snapshot: () => {
+      const state = session.getEngine().getState();
+      return {
+        currentPlayer: state.currentPlayer,
+        selectedId: session.getSelectedId(),
+        moveCount: session.getMoveCount(),
+        canHumanAct: session.canHumanAct(),
+        mode: session.getSettings().mode,
+        boardName: state.board.name,
+        uiState: session.getUiState(),
+        occupants: state.board.intersections.map((n) => ({
+          id: n.id,
+          label: n.label,
+          occupant: n.occupant,
+          x: n.x,
+          y: n.y,
+        })),
+        animating,
+        animFrom: anim?.from ?? null,
+        animTo: anim?.to ?? null,
+      };
+    },
+  };
+}
+
+function populateBoardSelect(select: HTMLSelectElement): void {
+  select.innerHTML = '';
+  for (const entry of listProductBoards()) {
+    const opt = document.createElement('option');
+    opt.value = entry.id;
+    opt.textContent = entry.displayName;
+    select.appendChild(opt);
+  }
+  select.value = DEFAULT_PRODUCT_BOARD;
+}
+
+function populateBgmSelect(select: HTMLSelectElement): void {
+  select.innerHTML = '<option value="">— Select Music —</option>';
+  for (const track of BGM_TRACKS) {
+    const opt = document.createElement('option');
+    opt.value = track.url;
+    opt.textContent = track.label;
+    select.appendChild(opt);
+  }
+}
+
