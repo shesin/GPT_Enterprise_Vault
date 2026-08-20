@@ -33,21 +33,23 @@ SmartBeads/
 │   │   │   ├── play-shell.css         # Feature shell layout/styles
 │   │   │   ├── BoardRenderer.ts       # Legacy SVG renderer (CLI / fallback)
 │   │   │   ├── feature/
-│   │   │   │   ├── FeatureSession.ts  # Board-agnostic session (engine + settings + undo)
+│   │   │   │   ├── FeatureSession.ts  # Session; interpretClick = landing or unique-over
 │   │   │   │   ├── GameFeatureSettings.ts
-│   │   │   │   ├── HonestAi.ts        # Complete-turn AI; follow-ups require live chain
+│   │   │   │   ├── HonestAi.ts        # Complete-turn AI; think budget; live chain only
+│   │   │   │   ├── aiTurnPath.ts
 │   │   │   │   ├── firstMoveInvariants.ts  # Isolated human-ply occupancy
-│   │   │   │   ├── pveTiming.ts       # Slide/jump anim vs AI reply delay
+│   │   │   │   ├── pveTiming.ts       # Slide/jump anim, AI reply delay, think budget
 │   │   │   │   ├── centerScoring.ts
-│   │   │   │   └── __tests__/         # firstMove, turnControl, resignation
+│   │   │   │   └── __tests__/         # firstMove, turnControl, resignation, HonestAi
 │   │   │   ├── layout/
 │   │   │   │   ├── boardProjection.ts
 │   │   │   │   ├── boardVisualProfile.ts
 │   │   │   │   ├── canvasDisplay.ts
 │   │   │   │   ├── prototypeProjectionOracle.ts
 │   │   │   │   └── __tests__/
-│   │   │   └── render/
-│   │   │       └── CanvasBoardRenderer.ts
+│   │   │   ├── render/
+│   │   │   │   └── CanvasBoardRenderer.ts
+│   │   │   └── __tests__/             # PlayController, productionPve16, v1ProductionSanity
 │   │   └── __tests__/
 │   │       └── HumanVsAiRunner.test.ts
 │   ├── simulation/                    # Automated self-play simulation runner
@@ -95,8 +97,8 @@ Repo-root `index.html` is the Vite entry for the production play shell (`npm run
 Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`npm run web:smartbeads`). Board selection reads `BoardCatalog.ts`; only catalog entries with `playable: true` appear in the UI. Authoritative entry is the repository root `index.html`, not anything under `prototype/`.
 
 - **`main.ts`** — calls `bootstrapPlayShell()`.
-- **`PlayController.ts`** — settings panel, timers, undo, honest AI, board `<select>`, result modal.
-- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`.
+- **`PlayController.ts`** — settings panel, timers, undo, honest AI, board `<select>`, result modal; canvas clicks go through `FeatureSession.interpretClick`.
+- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; unique capture-over / idle unique-victim clicks map to the same legal hop as the empty landing.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
 - **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas.
@@ -141,7 +143,7 @@ BoardDefinition variants. Each file owns geometry, starting layout, center nodes
 
 ### src/config/
 
-- **`BoardConfig.ts`** — maps `BoardVariant` (`4` / `5` / `6` / `7` / `16`) → `BoardDefinition`.
+- **`BoardConfig.ts`** — maps `BoardVariant` (`4` / `5` / `6` / `6x3x5` / `10x5` / `12x6x5` / `8x4x6` / `7` / `16`) → `BoardDefinition`.
 - **`BoardCatalog.ts`** — locked V1 seven product entries, per-board play defaults (centre rule, match timer, shot clock) and option lists; `playable` / `productVisible` flags.
 
 ### src/core/SmartBeadsEngine.ts
