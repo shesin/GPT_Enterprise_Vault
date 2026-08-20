@@ -65,6 +65,15 @@ describe('FeatureSession 16-bead triangular two-click path', () => {
     expect(session.selectNode(id('LT'))).toBe(true);
     const targets = session.getLegalTargetIds();
     expect(targets).toContain(id('A20'));
+    expect(targets).toContain(id('LIT'));
     expect(targets).not.toContain(id('LIM'));
+
+    const click = session.interpretClick(id('LIT'));
+    expect(click.kind).toBe('move');
+    if (click.kind !== 'move') return;
+    session.applyMove(click.move);
+    expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe('RED');
+    expect(engine.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant).toBeUndefined();
+    expect(engine.getState().captures.RED).toBe(1);
   });
 });

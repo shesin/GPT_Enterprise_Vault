@@ -9,5 +9,8 @@ export const HUMAN_JUMP_ANIM_MS = 280;
  */
 export const AI_REPLY_DELAY_MS = 40;
 
+/** Main-thread Medium/Hard search must return within this budget or fall back to scored-so-far. */
+export const AI_THINK_BUDGET_MS = 800;
+
 /** After dest click: animation has landed, AI has not started (200 + 40). */
 export const HUMAN_PLY_OBSERVE_MS = HUMAN_SLIDE_ANIM_MS + 15;

@@ -23,7 +23,7 @@ import {
 import { applyAiHops, AiHopRecord } from './feature/aiTurnPath';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
 import { selectAiTurnPath, shouldAcceptResignationDraw } from './feature/HonestAi';
-import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
+import { AI_REPLY_DELAY_MS, AI_THINK_BUDGET_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
 import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
 import {
@@ -66,9 +66,33 @@ export function completeAiTurnIfChainOpen(session: FeatureSession): void {
 }
 
 /**
+ * Choose an AI path without throwing: Medium/Hard with a think budget, then Easy, then first legal hop.
+ */
+export function planAiTurnPath(session: FeatureSession): Move[] | null {
+  const settings = session.getSettings();
+  const aiPlayer = session.getAiPlayer();
+  const variant = session.getBoardVariant();
+  const snap = session.getEngine().exportSnapshot();
+  try {
+    const planned = selectAiTurnPath(variant, settings.aiLevel, snap, aiPlayer, AI_THINK_BUDGET_MS);
+    if (planned?.length) return planned;
+  } catch {
+    /* Easy fallback below */
+  }
+  try {
+    const easy = selectAiTurnPath(variant, 1, snap, aiPlayer, 200);
+    if (easy?.length) return easy;
+  } catch {
+    /* first legal hop below */
+  }
+  const legal = session.getEngine().getLegalMoves();
+  return legal.length ? [legal[0]] : null;
+}
+
+/**
  * Live AI turn sequencer (same continue/stop as the play-shell hop loop).
  * Animation is not used — engine rules must hold with the renderer unplugged.
- * Pass `path` to inject hops (leftover/stale cases). Omit it to use selectAiTurnPath.
+ * Pass `path` to inject hops (leftover/stale cases). Omit it to use planAiTurnPath.
  */
 export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopRecord[] {
   const settings = session.getSettings();
@@ -78,12 +102,7 @@ export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopR
   }
 
   const planned = path === undefined
-    ? selectAiTurnPath(
-      session.getBoardVariant(),
-      settings.aiLevel,
-      session.getEngine().exportSnapshot(),
-      aiPlayer,
-    )
+    ? planAiTurnPath(session)
     : path;
 
   if (!planned?.length) {
@@ -495,6 +514,22 @@ export function bootstrapPlayShell(): void {
           session.applyMove(move);
         } catch {
           completeAiTurnIfChainOpen(session);
+          if (player === 'BLUE' && !session.isGameOver() && session.getEngine().getState().currentPlayer === 'BLUE') {
+            const fallback = session.getEngine().getLegalMoves()[0];
+            if (fallback) {
+              try {
+                session.applyMove(fallback);
+              } catch {
+                session.endGameByFeature('RED', 'AI move failed.');
+              }
+            } else {
+              session.endGameByFeature('RED', 'AI has no legal moves.');
+            }
+            completeAiTurnIfChainOpen(session);
+            cancelAiWork();
+            afterHumanOrAiTurn();
+            return;
+          }
           cancelAiWork();
           setStatus('Move failed.');
           updateUI();
@@ -534,12 +569,12 @@ export function bootstrapPlayShell(): void {
       return;
     }
 
-    const path = selectAiTurnPath(
-      session.getBoardVariant(),
-      settings.aiLevel,
-      session.getEngine().exportSnapshot(),
-      'BLUE',
-    );
+    let path: Move[] | null = null;
+    try {
+      path = planAiTurnPath(session);
+    } catch {
+      path = session.getEngine().getLegalMoves().slice(0, 1);
+    }
     if (!path?.length) {
       session.endGameByFeature('RED', 'AI has no legal moves.');
       cancelAiWork();
@@ -590,30 +625,17 @@ export function bootstrapPlayShell(): void {
     const nodeId = hitTestNode(canvas, session.getEngine().getState().board, ev.clientX, ev.clientY);
     if (nodeId < 0) return;
 
-    const uiState = session.getUiState();
     const state = session.getEngine().getState();
 
-    if (uiState === 'chain') {
-      const move = session.getEngine().getLegalMoves().find((m) => m.to === nodeId);
-      if (move) {
-        pushUndoSnapshot();
-        executeMoveAnimated(move, state.currentPlayer);
-      }
-      return;
-    }
-
-    if (state.board.intersections[nodeId]?.occupant === state.currentPlayer) {
-      session.selectNode(nodeId);
+    const click = session.interpretClick(nodeId);
+    if (click.kind === 'select') {
+      session.selectNode(click.nodeId);
       updateUI();
       return;
     }
-
-    if (uiState === 'selected') {
-      const move = session.getLegalMovesForSelection().find((m) => m.to === nodeId);
-      if (move) {
-        pushUndoSnapshot();
-        executeMoveAnimated(move, state.currentPlayer);
-      }
+    if (click.kind === 'move') {
+      pushUndoSnapshot();
+      executeMoveAnimated(click.move, state.currentPlayer);
     }
   }
 

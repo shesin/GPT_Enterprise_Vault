@@ -1,5 +1,5 @@
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
-import { generateTurnEnds } from '../HonestAi';
+import { generateTurnEnds, selectAiTurnPath } from '../HonestAi';
 
 describe('HonestAi generateTurnEnds (capture optionality)', () => {
   it('enumerates both optional stop after one hop and the continue hop on the same chain', () => {
@@ -21,5 +21,14 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
     expect(stop).toBeDefined();
     expect(cont).toBeDefined();
     expect(stop!.snapshot.chainPieceId).not.toBeNull();
+  });
+
+  it('returns a legal path even when the think budget is already exhausted', () => {
+    const engine = new SmartBeadsEngine('16');
+    engine.getState().currentPlayer = 'BLUE';
+    const path = selectAiTurnPath('16', 2, engine.exportSnapshot(), 'BLUE', 0);
+    expect(path?.length).toBeGreaterThan(0);
+    engine.applyMove(path![0]);
+    expect(engine.getState().board.intersections[path![0].to]?.occupant).toBe('BLUE');
   });
 });

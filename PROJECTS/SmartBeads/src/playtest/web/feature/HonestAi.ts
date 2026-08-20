@@ -85,6 +85,7 @@ export function generateTurnEnds(
   snapshot: { state: GameState; chainPieceId: number | null },
   player: Player,
   maxBranch: number,
+  deadlineMs = Infinity,
 ): TurnEnd[] {
   const eng = new SmartBeadsEngine(variant);
   eng.loadSnapshot({ ...snapshot, state: { ...snapshot.state, currentPlayer: player }, chainPieceId: null });
@@ -94,6 +95,7 @@ export function generateTurnEnds(
   const ends: TurnEnd[] = [];
 
   for (const move of root) {
+    if (ends.length > 0 && Date.now() > deadlineMs) return ends;
     const afterEng = new SmartBeadsEngine(variant);
     afterEng.loadSnapshot({ ...snapshot, state: { ...snapshot.state, currentPlayer: player }, chainPieceId: null });
     afterEng.applyMove(move);
@@ -108,6 +110,7 @@ export function generateTurnEnds(
     ];
 
     while (stack.length) {
+      if (Date.now() > deadlineMs) return ends;
       const node = stack.pop()!;
       if (node.depth > 8) continue;
       const jumps = getFollowUpJumps(variant, node.snap);
@@ -136,16 +139,18 @@ function minimaxTurns(
   beta: number,
   branchCap: number,
   aiPlayer: Player,
+  deadlineMs = Infinity,
 ): number {
-  if (depth === 0) return evaluate(snapshot.state, variant, aiPlayer);
+  if (depth === 0 || Date.now() > deadlineMs) return evaluate(snapshot.state, variant, aiPlayer);
   const player = maximizing ? aiPlayer : opponentOf(aiPlayer);
-  const ends = generateTurnEnds(variant, snapshot, player, branchCap);
+  const ends = generateTurnEnds(variant, snapshot, player, branchCap, deadlineMs);
   if (!ends.length) return maximizing ? -900 : 900;
 
   if (maximizing) {
     let best = -Infinity;
     for (const end of ends) {
-      const v = minimaxTurns(variant, end.snapshot, depth - 1, false, alpha, beta, branchCap, aiPlayer);
+      if (Date.now() > deadlineMs) break;
+      const v = minimaxTurns(variant, end.snapshot, depth - 1, false, alpha, beta, branchCap, aiPlayer, deadlineMs);
       if (v > best) best = v;
       if (v > alpha) alpha = v;
       if (beta <= alpha) break;
@@ -155,7 +160,8 @@ function minimaxTurns(
 
   let best = Infinity;
   for (const end of ends) {
-    const v = minimaxTurns(variant, end.snapshot, depth - 1, true, alpha, beta, branchCap, aiPlayer);
+    if (Date.now() > deadlineMs) break;
+    const v = minimaxTurns(variant, end.snapshot, depth - 1, true, alpha, beta, branchCap, aiPlayer, deadlineMs);
     if (v < best) best = v;
     if (v < beta) beta = v;
     if (beta <= alpha) break;
@@ -169,9 +175,11 @@ export function selectAiTurnPath(
   level: AiLevel,
   snapshot: { state: GameState; chainPieceId: number | null },
   aiPlayer: Player = 'BLUE',
+  budgetMs = 1500,
 ): Move[] | null {
+  const deadlineMs = Date.now() + Math.max(0, budgetMs);
   const branch = rootBranchForLevel(level);
-  const ends = generateTurnEnds(variant, snapshot, aiPlayer, branch);
+  const ends = generateTurnEnds(variant, snapshot, aiPlayer, branch, deadlineMs);
   if (!ends.length) return null;
 
   if (level <= 1) {
@@ -196,9 +204,10 @@ export function selectAiTurnPath(
   let best: TurnEnd[] = [];
 
   for (const end of ends) {
+    if (best.length > 0 && Date.now() > deadlineMs) break;
     let score = reply <= 0
       ? evaluate(end.snapshot.state, variant, aiPlayer)
-      : minimaxTurns(variant, end.snapshot, reply, false, -Infinity, Infinity, replyBranch, aiPlayer);
+      : minimaxTurns(variant, end.snapshot, reply, false, -Infinity, Infinity, replyBranch, aiPlayer, deadlineMs);
     score += pathCaptureCount(snapshot.state, end.path) * 0.05;
     if (score > bestScore) {
       bestScore = score;
@@ -208,6 +217,7 @@ export function selectAiTurnPath(
     }
   }
 
+  if (!best.length) return ends[0].path;
   return best[Math.floor(Math.random() * best.length)].path;
 }
 

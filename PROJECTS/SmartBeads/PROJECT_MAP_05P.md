@@ -152,7 +152,7 @@ Coordinates gameplay for any registered board variant: slides, optional captures
 
 Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for developer playtesting and engine validation.
 
-**Production PvE path:** `SmartBeadsEngine` → `FeatureSession` → `HonestAi.selectAiTurnPath` → `PlayController.runAiTurn` (the browser loop is the animated twin). Jest for that path: `src/playtest/web/__tests__/productionPve16.test.ts` and `PlayController.test.ts`. `HumanVsAiRunner` uses `executeAiRandomMove`, not HonestAi.
+**Production PvE path:** `SmartBeadsEngine` → `FeatureSession` → `HonestAi.selectAiTurnPath` → `PlayController.runAiTurn` (the browser loop is the animated twin). Jest for that path: `src/playtest/web/__tests__/v1ProductionSanity.test.ts` (all seven V1 boards: every `jumpPath` captures, unique-over click, Easy games) plus `productionPve16.test.ts` and `PlayController.test.ts`. `HumanVsAiRunner` uses `executeAiRandomMove`, not HonestAi.
 
 ### src/simulation/
 

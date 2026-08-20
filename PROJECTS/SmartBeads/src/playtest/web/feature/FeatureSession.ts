@@ -1,6 +1,6 @@
 import { BoardVariant } from '../../../config/BoardConfig';
 import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
-import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
+import { BoardDefinition, findJumpPath, GameState, Move, Player } from '../../../models/GameState';
 import { countCenterOccupancy } from './centerScoring';
 import {
   GameFeatureSettings,
@@ -46,6 +46,24 @@ function positionKey(state: GameState, mover: Player): string {
 
 function cloneHistory(h: Record<string, number>): Record<string, number> {
   return { ...h };
+}
+
+function jumpsOver(board: BoardDefinition, moves: Move[], overId: number): Move[] {
+  return moves.filter((m) => findJumpPath(board, m.from, m.to)?.over === overId);
+}
+
+function uniqueJumpOvers(board: BoardDefinition, moves: Move[]): number[] {
+  const counts = new Map<number, number>();
+  for (const move of moves) {
+    const over = findJumpPath(board, move.from, move.to)?.over;
+    if (over === undefined) continue;
+    counts.set(over, (counts.get(over) ?? 0) + 1);
+  }
+  const unique: number[] = [];
+  for (const [over, n] of counts) {
+    if (n === 1) unique.push(over);
+  }
+  return unique;
 }
 
 /**
@@ -216,8 +234,81 @@ export class FeatureSession {
     return this.engine.getLegalMoves().filter((m) => m.from === this.selectedId);
   }
 
+  /**
+   * Landing squares, plus the jumped-over enemy when exactly one legal jump
+   * uses that over. Clicking the captured bead is the same legal hop as
+   * clicking the empty landing beyond it — not a new capture line.
+   */
   getLegalTargetIds(): number[] {
-    return this.getLegalMovesForSelection().map((m) => m.to);
+    const moves = this.getLegalMovesForSelection();
+    const ids = new Set(moves.map((m) => m.to));
+    for (const over of uniqueJumpOvers(this.engine.getState().board, moves)) {
+      ids.add(over);
+    }
+    return [...ids];
+  }
+
+  /**
+   * Map a board click to the legal hop: empty landing, or unique capture-over.
+   * Returns null when the click is not a legal destination for the selection.
+   */
+  resolveClickMove(nodeId: number): Move | null {
+    const moves = this.getLegalMovesForSelection();
+    const landings = moves.filter((m) => m.to === nodeId);
+    if (landings.length === 1) return landings[0];
+    if (landings.length > 1) return null;
+    const overs = jumpsOver(this.engine.getState().board, moves, nodeId);
+    if (overs.length === 1) return overs[0];
+    return null;
+  }
+
+  /**
+   * Idle click on an enemy bead: apply the capture when exactly one legal
+   * jump from the current player goes over that bead.
+   */
+  resolveIdleCaptureClick(nodeId: number): Move | null {
+    if (this.isGameOver()) return null;
+    if (this.engine.getChainPieceId() !== null) return null;
+    if (this.selectedId !== null) return null;
+    const state = this.engine.getState();
+    if (state.board.intersections[nodeId]?.occupant !== this.opponentOfCurrent()) return null;
+    const overs = jumpsOver(state.board, this.engine.getLegalMoves(), nodeId);
+    if (overs.length === 1) return overs[0];
+    return null;
+  }
+
+  /**
+   * Two-click / chain / unique-victim mapping used by the play shell.
+   * Engine rules stay the same; this only chooses among already-legal hops.
+   */
+  interpretClick(nodeId: number):
+    | { kind: 'select'; nodeId: number }
+    | { kind: 'move'; move: Move }
+    | { kind: 'ignore' } {
+    if (this.isGameOver() || !this.canHumanAct()) return { kind: 'ignore' };
+    const state = this.engine.getState();
+    const occupant = state.board.intersections[nodeId]?.occupant;
+
+    if (this.engine.getChainPieceId() !== null) {
+      const move = this.resolveClickMove(nodeId);
+      return move ? { kind: 'move', move } : { kind: 'ignore' };
+    }
+
+    if (occupant === state.currentPlayer) {
+      return { kind: 'select', nodeId };
+    }
+
+    if (this.uiState === 'selected') {
+      const move = this.resolveClickMove(nodeId);
+      return move ? { kind: 'move', move } : { kind: 'ignore' };
+    }
+
+    const idleCapture = this.resolveIdleCaptureClick(nodeId);
+    return idleCapture ? { kind: 'move', move: idleCapture } : { kind: 'ignore' };
+  }
+
+  private opponentOfCurrent(): Player {
+    return opponentOf(this.engine.getState().currentPlayer);
   }
 
   selectNode(nodeId: number): boolean {
