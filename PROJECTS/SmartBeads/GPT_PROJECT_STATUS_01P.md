@@ -22,9 +22,9 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ## Current Focus
 
-1. **M3 — V1 seven boards complete** (7/7 in production).  
-2. Set product **timer defaults** from Feature Test when ready.  
-3. Decide **resignation** when ready.
+1. **V1 seven boards** are in the production play shell.  
+2. **Quality gates:** Human Oracle (failing Jest for exact screen clicks before engine fixes); do not treat a green `npm test` as UI proof.  
+3. Set product **timer defaults** from Feature Test when ready.
 
 **V1 locked set (authoritative):** 16-bead · 5×5 (reference), 6×4×4, 6×3×5, 10×5×5, 12×6×5, 8×4×6 hourglass, 7×4×5 hourglass — `VISION_05P.md`. Do not swap boards without documented Lab/gameplay failure.
 
@@ -55,7 +55,8 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 - **9/7/5/12/4-bead set (2026-08-17):** `LAB_EVALUATION_9_7_5_12_4_BEAD_SET.json` — 9-bead 5×5 and 5-bead 3×5 rear thin REJECT G2; 7-bead 5×5, 12-bead 6×5, 4-bead 3×5 rear NFT.
 - **Web REJECT cleanup (2026-08-17):** Removed 10 discovery REJECT playables + dedicated engines from `prototype/board4/`. Kept Lab audit JSON, KEEP/NFT playables, ladder playables, 16-bead reference.
 - **Playable folders (2026-08-18):** Locked V1 seven + ladder playables in `prototype/board4/` root; **left-out NFT only** (5) in `unrejected games/`. `playable-dir.cjs` resolves both.
-- **M0 + M1 (2026-08-18):** Production **16-bead Sholo Guti** — `Board16Sholo.ts`, `BoardCatalog.ts`, `terminationProfile: sholo_guti`. **99 Jest tests pass** (2026-08-19).
+- **M0 + M1 (2026-08-18):** Production **16-bead Sholo Guti** — `Board16Sholo.ts`, `BoardCatalog.ts`, `terminationProfile: sholo_guti`.
+- **Jest (2026-08-20):** **177 tests, 24 suites, all pass** (`npm test` at repo root). Technical verification only — not UI proof.
 - **M2 + M3 shell (2026-08-19):** Shared play shell — `PlayController.ts`, `FeatureSession.ts`, `CanvasBoardRenderer.ts`, board `<select>`, centre rules, undo, honest AI. Browser scripts: `m2-browser-verify.mjs`, `m2-6x4-browser-verify.mjs`, `m2-6x3x5-browser-verify.mjs`, `m2-10x5-browser-verify.mjs`, `m2-12x6x5-browser-verify.mjs`, `m2-8x4x6-browser-verify.mjs`, `m2-7x4x5-browser-verify.mjs`.
 - **6-bead · 4×4 (2026-08-19):** `Board6.ts` — full box cross, catalog `6x4`, default centre **End-Game**, unlimited plies. Prototype parity vs `cursor-index-fullturn-engine.cjs` (`fullBoxCross`).
 - **6-bead · 3×5 (2026-08-19):** `Board6x3x5.ts` — separate board module (not reused 4×4), catalog `6x3x5`, centre node index **7**. Prototype parity vs `sholo-6-bead-fullturn-engine.cjs` / `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html`.
@@ -63,8 +64,10 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 - **12-bead · 6×5 (2026-08-19):** `Board12x6x5.ts` — 30-node 6×5 Alquerque, two-file rank camps, empty centre file, catalog `12x6x5`, default centre **Off** (catalog; not in Feature Test KEEP set), centre nodes **12, 17**. Prototype parity vs `sholo-d4-12-6x5-fullturn-engine.cjs` / `SHOLO_GUTI_12_BEAD_6x5_WITH_FEATURE.html`.
 - **8-bead · 4×6 hourglass (2026-08-19):** `Board8x4x6.ts` — 24-node hourglass waist, catalog `8x4x6`, centre nodes **9, 10, 13, 14**. Prototype parity vs `sholo-f1a-8-4x6-fullturn-engine.cjs` / `SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html`.
 - **7-bead · 4×5 hourglass (2026-08-19):** `Board7.ts` — 20-node hourglass (5+2+2+5 camps), catalog `7x4x5`, centre nodes **9, 10**. Prototype parity vs `sholo-7-bead-fullturn-engine.cjs` / `SHOLO_GUTI_7_BEAD_WITH_FEATURE.html`. **V1 seven-board port complete.**
-- **Human-decided catalog settings (2026-08-19):** Per-board centre/timer/shot defaults and option lists in `BoardCatalog.ts`; UI reads catalog via `PlayController`. Timer expiry → opponent wins. Capture majority then centre tiebreak. **Resignation rule decided but not yet implemented** (requires UI + session flow).
+- **Human-decided catalog settings (2026-08-19):** Per-board centre/timer/shot defaults and option lists in `BoardCatalog.ts`; UI reads catalog via `PlayController`. Timer expiry → score hierarchy (`evaluateScoreAndEnd` on global match timeout). Capture majority then centre tiebreak.
 - **Resignation (2026-08-19):** P1/current player offers resignation; opponent accepts draw or claims win. PvP offer modal; PvE uses `shouldAcceptResignationDraw` (HonestAi eval). Browser: `m2-resignation-verify.mjs`.
+- **PvE turn boundary (2026-08-19):** `HonestAi.getFollowUpJumps` returns none when `chainPieceId` is null. `PlayController.runAiTurn` stops when the chain is over (no leftover-path hops). Live two-click gate: `scripts/m2-2step-observe.mjs` (16-bead hanging **A41→A42**). Session occupancy: `firstMoveInvariants.ts`.
+- **Human Oracle / engine vs animation (2026-08-19):** `GPT_PROJECT_RULES_01P.md` — screen bugs get a failing Jest test for those exact clicks before engine/session/AI changes; `SmartBeadsEngine` and `FeatureSession` must be correct with no renderer. A green `npm test` is not UI proof.
 
 ---
 
@@ -79,7 +82,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 | `SHOLO_GUTI_7_BEAD_WITH_FEATURE.html` | NEEDS FURTHER TESTING | **KEEP** | Complete |
 | `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html` | NEEDS FURTHER TESTING | **KEEP** | Complete |
 
-**Pending:** none for resignation (implemented 2026-08-19).
+**Pending:** none for resignation (implemented 2026-08-19). Open quality work: keep hanging-edge / turn-boundary gates honest; Lab READY is not production PvE proof.
 
 **Do not promote:** 4-bead, 5-bead 3×5 sketch, 8-bead 4×5, Cursor Index 4, **5-bead 3×5 LR**, **5-bead 4×4**, **12-bead miniwing**, **12-bead Baro**. **8-bead 5×5** is Lab-pass only until human playtest.
 
@@ -87,8 +90,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ## Next Step
 
-1. Commit remaining local work (visual parity, board order, doc dedup) as directed.  
-2. Ship / polish beyond V1 seven-board port as directed.
+Architect review of production play (`PROJECT_SNAPSHOT.txt`). Do not treat Jest green as a UI sign-off. Screen-reproduced bugs: failing named-click Jest first, then engine/session/AI.
 
 ---
 

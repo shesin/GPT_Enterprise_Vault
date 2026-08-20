@@ -23,7 +23,8 @@ SmartBeads/
 │   ├── core/
 │   │   ├── SmartBeadsEngine.ts        # Gameplay engine (slides, captures, chains, termination)
 │   │   └── __tests__/
-│   │       └── SmartBeadsEngine.test.ts
+│   │       ├── SmartBeadsEngine.test.ts
+│   │       └── SmartBeadsEngine16.test.ts
 │   ├── playtest/                      # Developer playtest interfaces
 │   │   ├── HumanVsAiRunner.ts         # CLI playtest interface
 │   │   ├── web/
@@ -34,10 +35,17 @@ SmartBeads/
 │   │   │   ├── feature/
 │   │   │   │   ├── FeatureSession.ts  # Board-agnostic session (engine + settings + undo)
 │   │   │   │   ├── GameFeatureSettings.ts
-│   │   │   │   ├── HonestAi.ts
-│   │   │   │   └── centerScoring.ts
+│   │   │   │   ├── HonestAi.ts        # Complete-turn AI; follow-ups require live chain
+│   │   │   │   ├── firstMoveInvariants.ts  # Isolated human-ply occupancy
+│   │   │   │   ├── pveTiming.ts       # Slide/jump anim vs AI reply delay
+│   │   │   │   ├── centerScoring.ts
+│   │   │   │   └── __tests__/         # firstMove, turnControl, resignation
 │   │   │   ├── layout/
-│   │   │   │   └── boardProjection.ts # Lattice → canvas coordinates
+│   │   │   │   ├── boardProjection.ts
+│   │   │   │   ├── boardVisualProfile.ts
+│   │   │   │   ├── canvasDisplay.ts
+│   │   │   │   ├── prototypeProjectionOracle.ts
+│   │   │   │   └── __tests__/
 │   │   │   └── render/
 │   │   │       └── CanvasBoardRenderer.ts
 │   │   └── __tests__/
@@ -52,8 +60,11 @@ SmartBeads/
 ├── scripts/                           # Browser verification (repo: PROJECTS/SmartBeads/scripts/)
 │   ├── m1-browser-verify.mjs
 │   ├── m2-browser-verify.mjs          # 16-bead feature shell
-│   ├── m2-2step-observe.mjs           # two-click occupancy gate (all V1 boards)
+│   ├── m2-2step-observe.mjs           # two-click occupancy gate (all V1 boards; 16 = A41→A42)
 │   ├── m2-gameplay-verify.mjs         # prototype-pixel + isolated first ply
+│   ├── m2-all-boards-visual-verify.mjs
+│   ├── lib/live-ply.mjs               # live snapshot / isolated ply helpers
+│   ├── lib/project-node.mjs           # Playwright canvas click by node
 │   ├── m2-6x4-browser-verify.mjs
 │   ├── m2-6x3x5-browser-verify.mjs
 │   ├── m2-10x5-browser-verify.mjs
