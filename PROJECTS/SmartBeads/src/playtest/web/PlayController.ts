@@ -20,6 +20,7 @@ import {
   parseMatchSeconds,
   ShotClockSeconds,
 } from './feature/GameFeatureSettings';
+import { applyAiHops, AiHopRecord } from './feature/aiTurnPath';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
 import { selectAiTurnPath, shouldAcceptResignationDraw } from './feature/HonestAi';
 import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
@@ -46,6 +47,54 @@ function winnerLabel(winner: Player | 'DRAW' | undefined): string {
 
 function playerDisplayName(player: Player): string {
   return player === 'RED' ? 'Ivory (P1)' : 'Ebony (P2)';
+}
+
+/** After a hop lands, the live AI loop continues only while a chain is still open. */
+export function shouldContinueAiTurn(chainPieceId: number | null, hopsRemaining: number): boolean {
+  return chainPieceId !== null && hopsRemaining > 0;
+}
+
+/**
+ * Live AI turn sequencer (same continue/stop as the play-shell hop loop).
+ * Animation is not used — engine rules must hold with the renderer unplugged.
+ * Pass `path` to inject hops (leftover/stale cases). Omit it to use selectAiTurnPath.
+ */
+export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopRecord[] {
+  const settings = session.getSettings();
+  const aiPlayer = session.getAiPlayer();
+  if (session.isGameOver() || settings.mode !== 'pve' || session.getEngine().getState().currentPlayer !== aiPlayer) {
+    throw new Error('stale hop: AI turn is not live');
+  }
+
+  const planned = path === undefined
+    ? selectAiTurnPath(
+      session.getBoardVariant(),
+      settings.aiLevel,
+      session.getEngine().exportSnapshot(),
+      aiPlayer,
+    )
+    : path;
+
+  if (!planned?.length) {
+    if (path === undefined) {
+      session.endGameByFeature('RED', 'AI has no legal moves.');
+      return [];
+    }
+    throw new Error('stale hop: empty leftover path');
+  }
+
+  const records: AiHopRecord[] = [];
+  for (let i = 0; i < planned.length; i++) {
+    if (i > 0 && !shouldContinueAiTurn(session.getEngine().getChainPieceId(), planned.length - i)) {
+      break;
+    }
+    const hopRecords = applyAiHops(session, [planned[i]], aiPlayer);
+    records.push({ ...hopRecords[0], index: i });
+    if (!shouldContinueAiTurn(session.getEngine().getChainPieceId(), planned.length - (i + 1))) {
+      break;
+    }
+  }
+  return records;
 }
 
 export function bootstrapPlayShell(): void {
@@ -487,8 +536,7 @@ export function bootstrapPlayShell(): void {
         if (runId !== aiRunId) return;
         const chain = session.getEngine().getChainPieceId();
 
-        // FIX: Only continue if chain is active AND there are remaining moves in path!
-        if (chain !== null && i < path.length) {
+        if (shouldContinueAiTurn(chain, path.length - i)) {
           setTimeout(playNext, 380);
           return;
         }

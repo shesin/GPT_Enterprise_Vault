@@ -26,6 +26,9 @@ function oldFollowUpJumps(snapshot: { state: ReturnType<SmartBeadsEngine['getSta
 }
 
 describe('1a A41→A42 AI hop log', () => {
+  /** Independent calls of unseeded Math.random inside selectAiTurnPath. Not a seed. */
+  const SELECT_AI_TURN_PATH_INDEPENDENT_RUNS = 16;
+
   it('old follow-ups after a completed capture are not BLUE / not the chain piece', () => {
     const session = hangingSession();
     const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
@@ -41,32 +44,42 @@ describe('1a A41→A42 AI hop log', () => {
     expect(occupant).not.toBe('BLUE');
   });
 
-  it('Medium AI path after A41→A42 is BLUE-only, chain-bounded, and stops when chainPieceId is null', () => {
-    const startEngine = new SmartBeadsEngine('16');
-    const hang = moveByLabel(startEngine, 'A41', 'A42');
-    const startOcc = engineOccupancy(startEngine);
+  it('Medium AI path after A41→A42 is BLUE-only, chain-bounded, and leftover-stale across 16 independent unseeded runs', () => {
+    for (let run = 0; run < SELECT_AI_TURN_PATH_INDEPENDENT_RUNS; run++) {
+      const startEngine = new SmartBeadsEngine('16');
+      const hang = moveByLabel(startEngine, 'A41', 'A42');
+      const startOcc = engineOccupancy(startEngine);
 
-    const session = hangingSession();
-    expect(isolatedPly(startOcc, engineOccupancy(session.getEngine()), hang, 'RED').ok).toBe(true);
+      const session = hangingSession();
+      expect(isolatedPly(startOcc, engineOccupancy(session.getEngine()), hang, 'RED').ok).toBe(true);
 
-    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
-    expect(path?.length).toBeGreaterThan(0);
-    const hops = applyAiHops(session, path!, 'BLUE');
+      const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
+      expect(path?.length).toBeGreaterThan(0);
+      const hops = applyAiHops(session, path!, 'BLUE');
 
-    expect(hops.map((h) => `${h.from}->${h.to}:${h.fromOccupant}`)).toEqual(
-      hops.map((h) => `${h.from}->${h.to}:BLUE`),
-    );
-    for (const hop of hops) {
-      expect(hop.player).toBe('BLUE');
-      expect(hop.fromOccupant).toBe('BLUE');
-      if (hop.chainPieceIdBefore !== null) {
-        expect(hop.from).toBe(hop.chainPieceIdBefore);
+      expect(hops.map((h) => `${h.from}->${h.to}:${h.fromOccupant}`)).toEqual(
+        hops.map((h) => `${h.from}->${h.to}:BLUE`),
+      );
+      for (let i = 0; i < hops.length; i++) {
+        const hop = hops[i];
+        expect(hop.player).toBe('BLUE');
+        expect(hop.fromOccupant).toBe('BLUE');
+        if (hop.chainPieceIdBefore !== null) {
+          expect(hop.from).toBe(hop.chainPieceIdBefore);
+        }
+        if (i > 0) {
+          expect(hop.from).toBe(hops[i - 1].to);
+        }
       }
+      const last = hops[hops.length - 1];
+      expect(last.chainPieceIdAfter).toBeNull();
+      expect(session.getEngine().getChainPieceId()).toBeNull();
+      expect(session.getEngine().getState().currentPlayer).toBe('RED');
+
+      const leftover = session.getEngine().getLegalMoves()[0];
+      expect(leftover).toBeDefined();
+      expect(() => applyAiHops(session, [leftover], 'BLUE')).toThrow(/stale hop/);
     }
-    const last = hops[hops.length - 1];
-    expect(last.chainPieceIdAfter).toBeNull();
-    expect(session.getEngine().getChainPieceId()).toBeNull();
-    expect(session.getEngine().getState().currentPlayer).toBe('RED');
   });
 });
 

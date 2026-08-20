@@ -1,0 +1,81 @@
+import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
+import { FeatureSession } from '../feature/FeatureSession';
+import { engineOccupancy, isolatedPly, moveByLabel } from '../feature/firstMoveInvariants';
+import { selectAiTurnPath } from '../feature/HonestAi';
+import { runAiTurn } from '../PlayController';
+
+const off = {
+  aiLevel: 2 as const,
+  matchTimer: 'off' as const,
+  shotClock: 'off' as const,
+  centerRule: 'off' as const,
+};
+
+function hangingSession(): FeatureSession {
+  const session = new FeatureSession('16', { mode: 'pve', ...off });
+  session.applyMove(moveByLabel(session.getEngine(), 'A41', 'A42'));
+  return session;
+}
+
+describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
+  it('every hop after A41→A42 is one BLUE chain and stops when chainPieceId is null', () => {
+    const startEngine = new SmartBeadsEngine('16');
+    const hang = moveByLabel(startEngine, 'A41', 'A42');
+    const startOcc = engineOccupancy(startEngine);
+
+    const session = hangingSession();
+    expect(isolatedPly(startOcc, engineOccupancy(session.getEngine()), hang, 'RED').ok).toBe(true);
+    expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
+
+    const hops = runAiTurn(session);
+    expect(hops.length).toBeGreaterThan(0);
+    expect(hops.map((h) => h.fromOccupant)).toEqual(hops.map(() => 'BLUE'));
+    for (let i = 0; i < hops.length; i++) {
+      const hop = hops[i];
+      expect(hop.player).toBe('BLUE');
+      expect(hop.fromOccupant).toBe('BLUE');
+      if (hop.chainPieceIdBefore !== null) {
+        expect(hop.from).toBe(hop.chainPieceIdBefore);
+      }
+      if (i > 0) {
+        expect(hop.from).toBe(hops[i - 1].to);
+      }
+    }
+    const last = hops[hops.length - 1];
+    expect(last.chainPieceIdAfter).toBeNull();
+    expect(session.getEngine().getChainPieceId()).toBeNull();
+    expect(session.getEngine().getState().currentPlayer).toBe('RED');
+  });
+
+  it('does not apply a leftover hop still sitting on the selected path after the chain ends', () => {
+    const session = hangingSession();
+    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
+    expect(path?.length).toBeGreaterThan(0);
+
+    const probe = hangingSession();
+    probe.applyMove(path![0]);
+    expect(probe.getEngine().getChainPieceId()).toBeNull();
+    const leftover = probe.getEngine().getLegalMoves()[0];
+    expect(leftover).toBeDefined();
+    expect(probe.getEngine().getState().board.intersections[leftover.from]?.occupant).toBe('RED');
+
+    const hops = runAiTurn(session, [path![0], leftover]);
+    expect(hops).toHaveLength(1);
+    expect(hops[0].fromOccupant).toBe('BLUE');
+    expect(session.getEngine().getChainPieceId()).toBeNull();
+    expect(session.getEngine().getState().currentPlayer).toBe('RED');
+    expect(session.getMoveCount()).toBe(2);
+  });
+
+  it('rejects a leftover/stale hop path fed in after the AI turn has ended', () => {
+    const session = hangingSession();
+    runAiTurn(session);
+    expect(session.getEngine().getChainPieceId()).toBeNull();
+    expect(session.getEngine().getState().currentPlayer).toBe('RED');
+
+    const leftover = session.getEngine().getLegalMoves()[0];
+    expect(leftover).toBeDefined();
+    expect(session.getEngine().getState().board.intersections[leftover.from]?.occupant).toBe('RED');
+    expect(() => runAiTurn(session, [leftover])).toThrow(/stale hop/);
+  });
+});

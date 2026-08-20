@@ -1,6 +1,7 @@
 import { listProductBoards, resolveEngineVariant } from '../../../../config/BoardCatalog';
 import { findJumpPath } from '../../../../models/GameState';
 import { FeatureSession } from '../FeatureSession';
+import { applyAiHops, AiHopRecord } from '../aiTurnPath';
 import { selectAiTurnPath } from '../HonestAi';
 import {
   engineOccupancy,
@@ -20,6 +21,21 @@ const off = {
 };
 
 const productBoards = listProductBoards();
+
+function expectBoundedAiHops(hops: AiHopRecord[], aiPlayer: 'BLUE'): void {
+  expect(hops.length).toBeGreaterThan(0);
+  for (let i = 0; i < hops.length; i++) {
+    const hop = hops[i];
+    expect(hop.player).toBe(aiPlayer);
+    expect(hop.fromOccupant).toBe(aiPlayer);
+    if (hop.chainPieceIdBefore !== null) {
+      expect(hop.from).toBe(hop.chainPieceIdBefore);
+    }
+    if (i > 0) {
+      expect(hop.from).toBe(hops[i - 1].to);
+    }
+  }
+}
 
 describe('first-ply occupancy (app session — no DOM)', () => {
   it.each(productBoards)('$id selecting a piece does not move any bead', (entry) => {
@@ -81,9 +97,8 @@ describe('first-ply occupancy (app session — no DOM)', () => {
 
     const path = selectAiTurnPath(variant, 2, session.getEngine().exportSnapshot(), 'BLUE');
     expect(path?.length).toBeGreaterThan(0);
-    for (const move of path!) {
-      session.applyMove(move);
-    }
+    const hops = applyAiHops(session, path!, 'BLUE');
+    expectBoundedAiHops(hops, 'BLUE');
     if (session.getUiState() === 'chain') session.finishChain();
 
     const afterAi = engineOccupancy(engine);
@@ -106,11 +121,16 @@ describe('first-ply occupancy (app session — no DOM)', () => {
 
     const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
     expect(path?.length).toBeGreaterThan(0);
-    for (const move of path!) session.applyMove(move);
+    const hops = applyAiHops(session, path!, 'BLUE');
+    expectBoundedAiHops(hops, 'BLUE');
+    const last = hops[hops.length - 1];
+    expect(last.chainPieceIdAfter).toBeNull();
     if (session.getUiState() === 'chain') session.finishChain();
 
     expect(occupancyDiff(afterHuman, engineOccupancy(engine)).length).toBeGreaterThan(0);
     expect(isolatedPly(start, engineOccupancy(engine), hang, 'RED').ok).toBe(false);
+    expect(engine.getChainPieceId()).toBeNull();
+    expect(engine.getState().currentPlayer).toBe('RED');
   });
 
   it.each(productBoards)('$id every hanging opening slide is an isolated Ivory ply', (entry) => {
