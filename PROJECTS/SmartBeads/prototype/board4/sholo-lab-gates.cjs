@@ -56,7 +56,10 @@ function applyGates(d1, d2, d3, geoOk, crash, swap, reproducible, protocolCheck,
   g('G3', 'Game alive', d2.avgCaptures >= 2 && d2.avgLength >= 5, { avgCaptures: d2.avgCaptures, avgLength: d2.avgLength });
   g('G4', 'Captures matter', !(d1.avgCaptures < 2 && d2.avgCaptures < 2), { d1Caps: d1.avgCaptures, d2Caps: d2.avgCaptures });
   g('G5', 'Elimination possible', d1.eliminationPct > 0 || d3.eliminationPct > 0, { d1Elim: d1.eliminationPct, d3Elim: d3.eliminationPct });
-  g('G6', 'Draws legitimate', true, { moveCapDrawPct: d2.moveCapDrawPct, repetitionDrawPct: d2.repetitionDrawPct });
+  // G6 "Draws legitimate" removed: LAB_TERMINOLOGY_05P.md and WEB_REPORT_16_BEAD_05P.md
+  // require reporting moveCapDrawPct / repetitionDrawPct without failing the board
+  // (16-bead D2 move-cap ~98.9% is the expected reference profile). No project-supported
+  // fail threshold exists; a hardcoded-true gate cannot fail, so the gate is gone.
   g('G7', 'Reasonable length', d2.avgLength >= 5, { d2Length: d2.avgLength });
   g('G8', 'Depth/seed stability', reproducible && d3.avgCaptures >= d2.avgCaptures - 1, { reproducible, d2Caps: d2.avgCaptures, d3Caps: d3.avgCaptures });
   const g9 = protocolCheck || { ok: false, reason: 'no protocol metadata' };
