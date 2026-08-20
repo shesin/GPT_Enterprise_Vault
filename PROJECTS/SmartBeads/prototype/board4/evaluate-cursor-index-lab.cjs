@@ -2,6 +2,7 @@
 /**
  * Authoritative G1-G9 verdict evaluator for Cursor Index 4×4 active playable.
  * Uses certified complete-turn engine + sholo-lab-protocol.cjs (same as 16-bead reference).
+ * Lab G1-G9 verdicts are produced against per-board .cjs reimplementations of the rules, not against the production SmartBeadsEngine/HonestAi, and therefore certify geometry/balance only, not production PvE correctness.
  *
  * Audit trail (2026-08-15 comparison — do not overwrite):
  *   INDEX_6 / CURSOR_INDEX_6_LAB_EVAL.json — rays geometry (removed playable)
@@ -92,6 +93,7 @@ function main() {
   const batchProtocol = protocol.protocolMeta();
   const out = {
     purpose: 'Authoritative Cursor Index G1-G9 — certified complete-turn protocol',
+    labInstrumentDisclaimer: gates.LAB_INSTRUMENT_DISCLAIMER,
     authoritativeEvaluator: 'evaluate-cursor-index-lab.cjs',
     headlessEngine: 'cursor-index-fullturn-engine.cjs',
     protocol: batchProtocol,
@@ -149,6 +151,7 @@ function main() {
       failedGates: ev.failed,
       rejectTriggers: ev.rejectTriggers,
       selectionVerdict: selection,
+      labInstrumentDisclaimer: gates.ladderVerdict.labInstrumentDisclaimer,
     };
     fs.writeFileSync(path.join(ROOT, c.smokeOut), JSON.stringify(out.boards[c.id], null, 2));
     process.stderr.write(c.id + ' selection=' + selection + '\n');

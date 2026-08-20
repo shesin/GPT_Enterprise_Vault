@@ -4,6 +4,8 @@ Plain-language definitions for every Lab and board-testing term used in SmartBea
 
 **Read this before interpreting any Lab number.**
 
+Lab G1-G9 verdicts are produced against per-board .cjs reimplementations of the rules, not against the production SmartBeadsEngine/HonestAi, and therefore certify geometry/balance only, not production PvE correctness.
+
 This document covers **headless board Lab only**. Match timers, turn shot clocks, BGM, undo, and UI polish are **product features** — tested separately; their code correctness does **not** prove the timer values are good for humans.
 
 ---

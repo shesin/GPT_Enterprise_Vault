@@ -2,6 +2,7 @@
 /**
  * Authoritative G1-G9 ladder verdict evaluator (Sholo family).
  * Compare scripts supply metrics only — no board verdicts.
+ * Lab G1-G9 verdicts are produced against per-board .cjs reimplementations of the rules, not against the production SmartBeadsEngine/HonestAi, and therefore certify geometry/balance only, not production PvE correctness.
  */
 const fs = require('fs');
 const path = require('path');
@@ -111,6 +112,7 @@ function main() {
   const refProtocolOk = protocol.matchesCanonical(ref.baselineProtocol);
   const out = {
     purpose: 'Authoritative ladder G1-G9 evaluation — LAB_TERMINOLOGY_05P.md',
+    labInstrumentDisclaimer: gates.LAB_INSTRUMENT_DISCLAIMER,
     authoritativeEvaluator: 'evaluate-ladder-lab.cjs',
     reference16: { role: 'REFERENCE ANCHOR', perDepth: ref.perDepth, firstPlayerSwap: ref.firstPlayerSwap },
     referenceProtocolCheck: refProtocolOk,
@@ -154,6 +156,7 @@ function main() {
       failedGates: ev.failed,
       rejectTriggers: ev.rejectTriggers,
       selectionVerdict: selection,
+      labInstrumentDisclaimer: gates.ladderVerdict.labInstrumentDisclaimer,
     };
     process.stderr.write('bead=' + c.beads + ' selection=' + selection + '\n');
   }

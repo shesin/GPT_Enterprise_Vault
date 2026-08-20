@@ -3,8 +3,12 @@
  * Shared G1-G9 gate logic and authoritative ladder verdict mapping.
  * G2 fairness failure is a hard REJECT (g2_fairness_fail). Other gate failures
  * without reject triggers map to NEEDS FURTHER TESTING.
+ * Lab G1-G9 verdicts are produced against per-board .cjs reimplementations of the rules, not against the production SmartBeadsEngine/HonestAi, and therefore certify geometry/balance only, not production PvE correctness.
  */
 const protocol = require('./sholo-lab-protocol.cjs');
+
+const LAB_INSTRUMENT_DISCLAIMER =
+  'Lab G1-G9 verdicts are produced against per-board .cjs reimplementations of the rules, not against the production SmartBeadsEngine/HonestAi, and therefore certify geometry/balance only, not production PvE correctness.';
 
 function checkFairness(d1, d2, swap, swapKeys) {
   const k1 = swapKeys ? swapKeys.first : 'whenFirstP1';
@@ -44,6 +48,7 @@ function ladderVerdict(allPass, rejectTriggers, failedGates) {
   if (failedGates && failedGates.length) return 'NEEDS FURTHER TESTING';
   return 'NOT TESTED';
 }
+ladderVerdict.labInstrumentDisclaimer = LAB_INSTRUMENT_DISCLAIMER;
 
 function applyGates(d1, d2, d3, geoOk, crash, swap, reproducible, protocolCheck, swapKeys) {
   const gates = [];
@@ -74,6 +79,7 @@ function applyGates(d1, d2, d3, geoOk, crash, swap, reproducible, protocolCheck,
     failed: failed.map((x) => x.id),
     rejectTriggers,
     allPass: failed.length === 0 && rejectTriggers.length === 0,
+    labInstrumentDisclaimer: LAB_INSTRUMENT_DISCLAIMER,
   };
 }
 
@@ -82,5 +88,6 @@ module.exports = {
   checkRejectTriggers,
   ladderVerdict,
   applyGates,
+  LAB_INSTRUMENT_DISCLAIMER,
   CANONICAL_PROTOCOL: protocol.protocolMeta(),
 };

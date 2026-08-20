@@ -1,12 +1,14 @@
 'use strict';
 /**
  * Feature Test evaluator — runs ONLY on human-confirmed KEEP boards (FEATURE_TEST_KEEP_REGISTRY.json).
+ * Lab G1-G9 verdicts are produced against per-board .cjs reimplementations of the rules, not against the production SmartBeadsEngine/HonestAi, and therefore certify geometry/balance only, not production PvE correctness.
  */
 const fs = require('fs');
 const path = require('path');
 const { performance } = require('perf_hooks');
 const protocol = require('./sholo-lab-protocol.cjs');
 const metrics = require('./sholo-lab-metrics.cjs');
+const gates = require('./sholo-lab-gates.cjs');
 const loader = require('./feature-playable-loader.cjs');
 const cursorIndex = require('./cursor-index-fullturn-engine.cjs');
 
@@ -236,6 +238,7 @@ function main() {
 
   const out = {
     purpose: 'Feature Test — settings recommendation for human-confirmed KEEP boards only',
+    labInstrumentDisclaimer: gates.LAB_INSTRUMENT_DISCLAIMER,
     authoritativeEvaluator: 'evaluate-feature-test-lab.cjs',
     evaluatedAt: new Date().toISOString(),
     status: keep.length ? 'COMPLETE' : 'BLOCKED_NO_KEEP_BOARDS',

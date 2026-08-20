@@ -2,11 +2,13 @@
 /**
  * Per-board End-Game vs Cumulative centre-rule Feature Test (KEEP boards only).
  * Output: FEATURE_TEST_CENTRE_RULE_EVALUATION.json + merges summary into FEATURE_TEST_EVALUATION.json
+ * Lab G1-G9 verdicts are produced against per-board .cjs reimplementations of the rules, not against the production SmartBeadsEngine/HonestAi, and therefore certify geometry/balance only, not production PvE correctness.
  */
 const fs = require('fs');
 const path = require('path');
 const protocol = require('./sholo-lab-protocol.cjs');
 const metrics = require('./sholo-lab-metrics.cjs');
+const gates = require('./sholo-lab-gates.cjs');
 const centreLab = require('./sholo-centre-lab.cjs');
 
 const ROOT = __dirname;
@@ -158,6 +160,7 @@ function main() {
 
   const out = {
     purpose: 'Per-board End-Game vs Cumulative centre-rule Feature Test (KEEP boards only)',
+    labInstrumentDisclaimer: gates.LAB_INSTRUMENT_DISCLAIMER,
     evaluator: 'evaluate-centre-rule-feature-test.cjs',
     evaluatedAt: new Date().toISOString(),
     protocol: {

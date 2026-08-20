@@ -2,6 +2,7 @@
 /**
  * Authoritative G1–G9 Lab for active 7/8/12-bead compact survivors (Web REJECT boards removed).
  * Protocol: D1/D2/D3 · seeds 101/202/303 · N=30/seed · move-cap 120 · 16-bead anchor.
+ * Lab G1-G9 verdicts are produced against per-board .cjs reimplementations of the rules, not against the production SmartBeadsEngine/HonestAi, and therefore certify geometry/balance only, not production PvE correctness.
  */
 const fs = require('fs');
 const path = require('path');
@@ -180,6 +181,7 @@ function main() {
   const batchProtocol = protocol.protocolMeta();
   const out = {
     purpose: 'Active 7/8/12-bead compact survivors G1–G9 evaluation',
+    labInstrumentDisclaimer: gates.LAB_INSTRUMENT_DISCLAIMER,
     removedRejectPlayables: [
       '5_BEAD_4x3_HOURGLASS',
       '8_BEAD_5x4',
@@ -243,6 +245,7 @@ function main() {
       failedGates: ev.failed,
       rejectTriggers: ev.rejectTriggers,
       selectionVerdict: selection,
+      labInstrumentDisclaimer: gates.ladderVerdict.labInstrumentDisclaimer,
       totalGamesCompared: compare.totalGames,
     };
     fs.writeFileSync(labEvalPath(ROOT, c.playable), JSON.stringify(out.boards[c.boardKey], null, 2));
