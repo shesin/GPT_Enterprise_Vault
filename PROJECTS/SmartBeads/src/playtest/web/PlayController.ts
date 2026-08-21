@@ -768,8 +768,12 @@ export function bootstrapPlayShell(): void {
   syncBoardPlayOptions();
   resetGame();
 
-  (window as unknown as { __SB_TEST__?: object }).__SB_TEST__ = {
+    (window as unknown as { __SB_TEST__?: any }).__SB_TEST__ = {
+    session,
+    updateUI,
+    afterHumanOrAiTurn,
     snapshot: () => {
+
       const state = session.getEngine().getState();
       return {
         currentPlayer: state.currentPlayer,
