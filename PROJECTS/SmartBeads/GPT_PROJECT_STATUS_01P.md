@@ -57,6 +57,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 - **M0 + M1 (2026-08-18):** Production **16-bead Sholo Guti** — `Board16Sholo.ts`, `BoardCatalog.ts`, `terminationProfile: sholo_guti`.
 - **Jest (2026-08-20):** Production PvE sanity is `FeatureSession` + `HonestAi` + `runAiTurn` on **all seven V1 boards** (`v1ProductionSanity.test.ts`): every `jumpPath` captures, unique-over click, optional-stop AI closes the chain, Easy games return the turn. Lab `.cjs` N=100 and Board4 `SelfPlayRunner` are not that path. Technical verification only — not UI proof.
 - **Capture click (2026-08-20):** `FeatureSession.interpretClick` — unique capture-over (and idle unique-victim) is the same legal hop as clicking the empty landing. All seven V1 boards.
+- **AI turn finish (2026-08-20):** optional-stop closes the chain (`completeAiTurnIfChainOpen`); Medium/Hard think budget 800ms with Easy/first-legal fallback so the shell cannot stick on “AI is thinking…”. **Regression-proven** on 2026-08-23 via Playwright browser stall verification (`m2-stall-verify-browser.mjs` fails when commented out, passes when restored).
 - **Catalog timers (2026-08-19):** Per-board match/shot defaults are already in `BoardCatalog.ts` (human-decided). Not an open item.
 - **M2 + M3 shell (2026-08-19):** Shared play shell — `PlayController.ts`, `FeatureSession.ts`, `CanvasBoardRenderer.ts`, board `<select>`, centre rules, undo, honest AI. Browser scripts: `m2-browser-verify.mjs`, `m2-6x4-browser-verify.mjs`, `m2-6x3x5-browser-verify.mjs`, `m2-10x5-browser-verify.mjs`, `m2-12x6x5-browser-verify.mjs`, `m2-8x4x6-browser-verify.mjs`, `m2-7x4x5-browser-verify.mjs`.
 - **6-bead · 4×4 (2026-08-19):** `Board6.ts` — full box cross, catalog `6x4`, default centre **End-Game**, unlimited plies. Prototype parity vs `cursor-index-fullturn-engine.cjs` (`fullBoxCross`).
@@ -74,7 +75,7 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 
 ## Open Items
 
-- **AI turn finish:** optional-stop closes the chain (`completeAiTurnIfChainOpen`); it is not regression-proven (per Section 3 and Section D) and requires further verification. Medium/Hard think budget 800ms with Easy/first-legal fallback so the shell cannot stick on “AI is thinking…”.
+**None** for the locked V1 seven-board production app.
 
 The four 2026-08-15 human KEEP HTML playables (6×4, 10, 7, 6×3×5) are already production TypeScript boards in the V1 seven. Lab Web “NEEDS FURTHER TESTING” on those HTML files is archive, not an open product task.
 
