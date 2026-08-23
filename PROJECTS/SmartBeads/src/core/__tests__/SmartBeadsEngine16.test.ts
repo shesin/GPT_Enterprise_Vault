@@ -185,6 +185,69 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     expect(engineB.getState().board.intersections.find((p) => p.label === 'RIT')?.occupant).toBeUndefined();
   });
 
+  it('allows collinear captures from the grid into the wings across the junction (A20→LT over LIT, A20→LB over LIB)', () => {
+    const engineA = new SmartBeadsEngine('16');
+    clearBoard(engineA);
+    const boardA = engineA.getState().board;
+    const idA = (label: string) => boardA.intersections.find((point) => point.label === label)!.id;
+    boardA.intersections.find((point) => point.label === 'A20')!.occupant = 'RED';
+    boardA.intersections.find((point) => point.label === 'LIT')!.occupant = 'BLUE';
+    engineA.getState().currentPlayer = 'RED';
+    expect(engineA.getLegalMoves().some((m) => m.from === idA('A20') && m.to === idA('LT'))).toBe(true);
+    engineA.applyMove({ from: idA('A20'), to: idA('LT') });
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'LT')?.occupant).toBe('RED');
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant).toBeUndefined();
+
+    const engineB = new SmartBeadsEngine('16');
+    clearBoard(engineB);
+    const boardB = engineB.getState().board;
+    const idB = (label: string) => boardB.intersections.find((point) => point.label === label)!.id;
+    boardB.intersections.find((point) => point.label === 'A20')!.occupant = 'RED';
+    boardB.intersections.find((point) => point.label === 'LIB')!.occupant = 'BLUE';
+    engineB.getState().currentPlayer = 'RED';
+    expect(engineB.getLegalMoves().some((m) => m.from === idB('A20') && m.to === idB('LB'))).toBe(true);
+    engineB.applyMove({ from: idB('A20'), to: idB('LB') });
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'LB')?.occupant).toBe('RED');
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'LIB')?.occupant).toBeUndefined();
+  });
+
+  it('allows multi-jump capture sequences crossing the triangle-to-rectangle junction (LT→A20 over LIT, then A20→LM over LIM)', () => {
+    const engine = new SmartBeadsEngine('16');
+    clearBoard(engine);
+    const board = engine.getState().board;
+    const id = (label: string) => board.intersections.find((point) => point.label === label)!.id;
+
+    board.intersections.find((point) => point.label === 'LT')!.occupant = 'RED';
+    board.intersections.find((point) => point.label === 'LIT')!.occupant = 'BLUE';
+    board.intersections.find((point) => point.label === 'LIM')!.occupant = 'BLUE';
+    // Spare Ebony bead on the far side: without it both victims are the whole army,
+    // the chain wins by elimination, and the turn never hands over.
+    board.intersections.find((point) => point.label === 'A44')!.occupant = 'BLUE';
+    engine.getState().currentPlayer = 'RED';
+
+    // Step 1: Jump from LT to A20 over LIT
+    expect(engine.getLegalMoves().some((m) => m.from === id('LT') && m.to === id('A20'))).toBe(true);
+    engine.applyMove({ from: id('LT'), to: id('A20') });
+
+    // Sits in chain on A20
+    expect(engine.getChainPieceId()).toBe(id('A20'));
+    expect(engine.getState().currentPlayer).toBe('RED');
+
+    // Step 2: Continue from A20 to LM over LIM
+    const followUp = engine.getLegalMoves();
+    expect(followUp.some((m) => m.from === id('A20') && m.to === id('LM'))).toBe(true);
+    engine.applyMove({ from: id('A20'), to: id('LM') });
+
+    // Turn is complete
+    expect(engine.getChainPieceId()).toBeNull();
+    expect(engine.getState().currentPlayer).toBe('BLUE');
+    expect(engine.getState().captures.RED).toBe(2);
+    expect(board.intersections.find((p) => p.label === 'LT')?.occupant).toBeUndefined();
+    expect(board.intersections.find((p) => p.label === 'LIT')?.occupant).toBeUndefined();
+    expect(board.intersections.find((p) => p.label === 'LIM')?.occupant).toBeUndefined();
+    expect(board.intersections.find((p) => p.label === 'LM')?.occupant).toBe('RED');
+  });
+
   it('rejects a non-collinear triangle-corner hop that only looks like a capture', () => {
     const engine = new SmartBeadsEngine('16');
     clearBoard(engine);

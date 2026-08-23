@@ -768,12 +768,15 @@ export function bootstrapPlayShell(): void {
   syncBoardPlayOptions();
   resetGame();
 
-    (window as unknown as { __SB_TEST__?: any }).__SB_TEST__ = {
-    session,
+  (window as unknown as { __SB_TEST__?: any }).__SB_TEST__ = {
+    // switchBoard/resetGame rebind `session`; a captured value would hand browser
+    // gates a dead session while snapshot() reported the live one.
+    get session() {
+      return session;
+    },
     updateUI,
     afterHumanOrAiTurn,
     snapshot: () => {
-
       const state = session.getEngine().getState();
       return {
         currentPlayer: state.currentPlayer,

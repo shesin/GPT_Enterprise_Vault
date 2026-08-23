@@ -70,6 +70,10 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 - **Resignation (2026-08-19):** P1/current player offers resignation; opponent accepts draw or claims win. PvP offer modal; PvE uses `shouldAcceptResignationDraw` (HonestAi eval). Browser: `m2-resignation-verify.mjs`.
 - **PvE turn boundary (2026-08-19):** `HonestAi.getFollowUpJumps` returns none when `chainPieceId` is null. `PlayController.runAiTurn` stops when the chain is over (no leftover-path hops). Live two-click gate: `scripts/m2-2step-observe.mjs` (16-bead hanging **A41→A42**). Session occupancy: `firstMoveInvariants.ts`.
 - **Human Oracle / engine vs animation (2026-08-19):** `GPT_PROJECT_RULES_01P.md` — screen bugs get a failing Jest test for those exact clicks before engine/session/AI changes; `SmartBeadsEngine` and `FeatureSession` must be correct with no renderer. A green `npm test` is not UI proof.
+- **Geometry/capture audit, all seven boards (2026-08-23):** `v1GeometryCaptureAudit.test.ts` — per board: reciprocal adjacency; every collinear edge pair is a real capture route; every `jumpPath` is two drawn edges, collinear and reversible; no duplicate `from/to`; no landing that is also a slide neighbour; every `jumpPath` captures and hands the turn over; capture refused on an occupied landing / friendly or absent middle bead; every drawn line slides both ways; bent two-steps never capture; two-hop chain plus optional stop; landing-click and victim-click agree. Renderer checked separately: the canvas strokes **exactly** `board.connections`, every node is on screen, each node's drawn centre hit-tests to itself, and no line passes within 12px of an unconnected node. 16-bead junction covered in both directions including multi-jump through the apex and the no-continuing-line refusal.
+- **Click-layer defect FIXED (2026-08-23):** clicking an own bead with no legal move left a **different** bead armed on all seven boards, so the next click could move a piece the player never chose. `FeatureSession.selectNode` now clears the selection. Failing-first regression: `v1GeometryCaptureAudit.test.ts` (7 boards) + live browser check.
+- **Test-harness defect FIXED (2026-08-23):** `window.__SB_TEST__.session` captured the session by value, so after `switchBoard`/`resetGame` browser gates drove a dead session while `snapshot()` read the live one. Now a live getter. This is why the new browser gate initially reported a default board position.
+- **Browser capture gate (2026-08-23):** `m2-capture-geometry-browser.mjs` runs in `npm test` beside the two-click gate — real mouse clicks on the real canvas: victim-click capture on all seven boards, 16-bead junction captures in both directions, multi-jump through the apex, Finish-chain optional stop, illegal apex hop refused, immobile-bead selection cleared.
 
 ---
 
@@ -86,6 +90,8 @@ The four 2026-08-15 human KEEP HTML playables (6×4, 10, 7, 6×3×5) are already
 ## Next Step
 
 No open implementation item. Standing quality rule: screen-reproduced bugs get a failing named-click Jest first, then engine/session/AI. Jest green is not UI proof.
+
+**Awaiting a human decision (not a defect):** an idle click on an enemy bead that exactly one of your beads can capture executes that capture immediately, with no prior select and no highlight on the victim. It was added on request so the victim bead is clickable, but in the idle state it is a one-click move that the board does not advertise. Keep, highlight, or restrict to the selected state — product call.
 
 ---
 

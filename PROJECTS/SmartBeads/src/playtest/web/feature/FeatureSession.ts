@@ -319,8 +319,14 @@ export class FeatureSession {
     const node = state.board.intersections.find((p) => p.id === nodeId);
     if (node?.occupant !== state.currentPlayer) return false;
 
+    // Clicking an own bead that cannot move must not leave a different bead armed,
+    // or the next click would move a piece the player did not choose.
     const hasMoves = this.engine.getLegalMoves().some((m) => m.from === nodeId);
-    if (!hasMoves) return false;
+    if (!hasMoves) {
+      this.selectedId = null;
+      this.uiState = 'idle';
+      return false;
+    }
 
     this.selectedId = nodeId;
     this.uiState = 'selected';

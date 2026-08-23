@@ -49,7 +49,8 @@ SmartBeads/
 │   │   │   │   └── __tests__/
 │   │   │   ├── render/
 │   │   │   │   └── CanvasBoardRenderer.ts
-│   │   │   └── __tests__/             # PlayController, productionPve16, v1ProductionSanity
+│   │   │   └── __tests__/             # PlayController, productionPve16, v1ProductionSanity,
+│   │   │                              #   v1GeometryCaptureAudit (geometry/capture/renderer, 7 boards)
 │   │   └── __tests__/
 │   │       └── HumanVsAiRunner.test.ts
 │   ├── simulation/                    # Automated self-play simulation runner
@@ -63,6 +64,8 @@ SmartBeads/
 │   ├── m1-browser-verify.mjs
 │   ├── m2-browser-verify.mjs          # 16-bead feature shell
 │   ├── m2-2step-observe.mjs           # two-click occupancy gate (all V1 boards; 16 = A41→A42)
+│   ├── m2-2step-npm-gate.mjs          # boots Vite once, runs both live gates for `npm test`
+│   ├── m2-capture-geometry-browser.mjs # real-click captures, 16 junction both ways, chain, optional stop
 │   ├── m2-gameplay-verify.mjs         # prototype-pixel + isolated first ply
 │   ├── m2-all-boards-visual-verify.mjs
 │   ├── lib/live-ply.mjs               # live snapshot / isolated ply helpers
@@ -101,7 +104,7 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; unique capture-over / idle unique-victim clicks map to the same legal hop as the empty landing.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
-- **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas.
+- **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas. Board lines are stroked straight from `board.connections`, so a drawn line is always a legal slide; `v1GeometryCaptureAudit.test.ts` pins that with a recording 2D context.
 
 ### prototype/board4/
 
@@ -154,7 +157,9 @@ Coordinates gameplay for any registered board variant: slides, optional captures
 
 Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for developer playtesting and engine validation.
 
-**Production PvE path:** `SmartBeadsEngine` → `FeatureSession` → `HonestAi.selectAiTurnPath` → `PlayController.runAiTurn` (the browser loop is the animated twin). Jest for that path: `src/playtest/web/__tests__/v1ProductionSanity.test.ts` (all seven V1 boards: every `jumpPath` captures, unique-over click, Easy games) plus `productionPve16.test.ts` and `PlayController.test.ts`. `HumanVsAiRunner` uses `executeAiRandomMove`, not HonestAi.
+**Production PvE path:** `SmartBeadsEngine` → `FeatureSession` → `HonestAi.selectAiTurnPath` → `PlayController.runAiTurn` (the browser loop is the animated twin). Jest for that path: `src/playtest/web/__tests__/v1ProductionSanity.test.ts` (all seven V1 boards: every `jumpPath` captures, unique-over click, Easy games), `v1GeometryCaptureAudit.test.ts` (geometry, slides, captures, multi-jump, optional stop, illegal hops, renderer-vs-legality on all seven), plus `productionPve16.test.ts` and `PlayController.test.ts`. `HumanVsAiRunner` uses `executeAiRandomMove`, not HonestAi.
+
+**Live browser evidence** is separate from Jest and runs in `npm test`: `m2-2step-observe.mjs` (two-click occupancy) and `m2-capture-geometry-browser.mjs` (real-click captures and the 16-bead junction). `window.__SB_TEST__` exposes the session through a getter — it must never capture the session by value, because `switchBoard`/`resetGame` rebind it.
 
 ### src/simulation/
 
