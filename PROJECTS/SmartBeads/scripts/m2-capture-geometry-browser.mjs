@@ -317,21 +317,23 @@ async function main() {
     JSON.stringify({ armed: armed.selectedId, after: afterStale.selectedId, turns: afterStale.moveCount }),
   );
 
-  // Live browser check: opponent beads are completely inert to idle clicks
-  await setup(page, '16');
-  await clickPrototypeNode(page, { x: 50, y: 50 }); // click empty/neutral area
-  await page.waitForTimeout(100);
-  const idleSnapBefore = await liveSnap(page);
-  const enemyNode = idleSnapBefore.occupants.find((n) => n.occupant === 'BLUE');
-  if (enemyNode) {
-    await clickPrototypeNode(page, enemyNode);
-    await page.waitForTimeout(150);
-    const idleSnapAfter = await liveSnap(page);
-    record(
-      '16 opponent bead is completely inert: idle click on enemy bead does not select or move',
-      idleSnapAfter.selectedId === null && idleSnapAfter.moveCount === 0,
-      JSON.stringify({ selectedId: idleSnapAfter.selectedId, moveCount: idleSnapAfter.moveCount }),
-    );
+  // Live browser check: opponent beads are completely inert to idle clicks across all 7 boards
+  for (const { catalogId } of BOARDS) {
+    await setup(page, catalogId);
+    await clickPrototypeNode(page, { x: 50, y: 50 }); // click neutral area
+    await page.waitForTimeout(100);
+    const idleSnapBefore = await liveSnap(page);
+    const enemyNode = idleSnapBefore.occupants.find((n) => n.occupant === 'BLUE');
+    if (enemyNode) {
+      await clickPrototypeNode(page, enemyNode);
+      await page.waitForTimeout(150);
+      const idleSnapAfter = await liveSnap(page);
+      record(
+        `${catalogId} opponent bead is completely inert: idle click on enemy bead does not select or move`,
+        idleSnapAfter.selectedId === null && idleSnapAfter.moveCount === 0,
+        JSON.stringify({ selectedId: idleSnapAfter.selectedId, moveCount: idleSnapAfter.moveCount }),
+      );
+    }
   }
 
   console.log('\n--- CAPTURE GEOMETRY ---');
