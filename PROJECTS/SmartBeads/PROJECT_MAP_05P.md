@@ -13,8 +13,8 @@ SmartBeads/
 │   │   ├── Board6x3x5.ts              # 6-bead · 3×5 top–bottom (V1 #3)
 │   │   ├── Board10x5.ts               # 10-bead · 5×5 two-file (V1 #4)
 │   │   ├── Board12x6x5.ts             # 12-bead · 6×5 two-file rank (V1 #5)
-│   │   ├── Board8x4x6.ts              # 8-bead · 4×6 hourglass (V1 #6)
-│   │   ├── Board7.ts                  # 7-bead · 4×5 hourglass (V1 #7)
+│   │   ├── Board8x4x6.ts              # 8-bead · 4×6 (V1 #6)
+│   │   ├── Board7.ts                  # 7-bead · 4×5 (V1 #7)
 │   │   ├── Board16Sholo.ts            # 16-bead · 5×5 + wings (V1 #1 reference; collinear wing & junction geometry)
 │   │   └── __tests__/                 # Board geometry + prototype parity tests
 │   ├── config/
@@ -117,8 +117,8 @@ Standalone HTML gameplay laboratory. Lives outside `src/` per the Prototype Clas
 - **SHOLO_GUTI_6_BEAD_WITH_FEATURE.html** — Prototype reference for production `Board6x3x5.ts` (6-bead · 3×5).
 - **SHOLO_GUTI_10_BEAD_WITH_FEATURE.html** — Prototype reference for production `Board10x5.ts` (10-bead · 5×5).
 - **SHOLO_GUTI_12_BEAD_6x5_WITH_FEATURE.html** — Prototype reference for production `Board12x6x5.ts` (12-bead · 6×5).
-- **SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html** — Prototype reference for production `Board8x4x6.ts` (8-bead · 4×6 hourglass).
-- **SHOLO_GUTI_7_BEAD_WITH_FEATURE.html** — Prototype reference for production `Board7.ts` (7-bead · 4×5 hourglass).
+- **SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html** — Prototype reference for production `Board8x4x6.ts` (8-bead · 4×6).
+- **SHOLO_GUTI_7_BEAD_WITH_FEATURE.html** — Prototype reference for production `Board7.ts` (7-bead · 4×5).
 - **SHOLO_GUTI_WITH_FEATURE.html** — Prototype reference for production `Board16Sholo.ts` (16-bead).
 - **sholo-guti-fullturn-engine.cjs** — Headless full-turn engine for 16-bead reference parity tests.
 - **evaluate-feature-test-lab.cjs** / **FEATURE_TEST_KEEP_REGISTRY.json** — Feature Test (human-confirmed KEEP only). Report: **`WEB_FEATURE_TEST_05P.md`**.
@@ -133,14 +133,14 @@ Authoritative board model: intersections, connections, optional jumpPaths / cent
 BoardDefinition variants. Each file owns geometry, starting layout, center nodes, and match config for one physical board.
 
 | Module | V1 # | Status |
-|--------|------|--------|
+|---|---|---|
 | `Board16Sholo.ts` | 1 · 16-bead 5×5 | **Production playable** |
 | `Board6.ts` | 2 · 6-bead 4×4 | **Production playable** |
 | `Board6x3x5.ts` | 3 · 6-bead 3×5 | **Production playable** |
 | `Board10x5.ts` | 4 · 10-bead 5×5 | **Production playable** |
 | `Board12x6x5.ts` | 5 · 12-bead 6×5 | **Production playable** |
-| `Board8x4x6.ts` | 6 · 8-bead 4×6 hourglass | **Production playable** |
-| `Board7.ts` | 7 · 7-bead 4×5 hourglass | **Production playable** |
+| `Board8x4x6.ts` | 6 · 8-bead 4×6 | **Production playable** |
+| `Board7.ts` | 7 · 7-bead 4×5 | **Production playable** |
 | `Board4.ts` | — | Lab orthogonal 4×4 (4-bead) |
 | `Board5.ts` | — | Stub |
 
@@ -218,4 +218,4 @@ The physical board model (`BoardDefinition`: intersections and connections) is t
 
 The objective is to ship the **V1 seven-board app** (locked in `VISION_05P.md`) via one production engine, configurable board geometry, and a shared feature shell. Prototype HTML playables remain the Lab/reference implementation; they do not ship as separate apps.
 
-**Current production playables:** all **V1 seven** — 16-bead · 5×5 (`Board16Sholo`), 6-bead · 4×4 (`Board6`), 6-bead · 3×5 (`Board6x3x5`), 10-bead · 5×5 (`Board10x5`), 12-bead · 6×5 (`Board12x6x5`), 8-bead · 4×6 hourglass (`Board8x4x6`), 7-bead · 4×5 hourglass (`Board7`).
+**Current production playables:** all **V1 seven** — 16-bead · 5×5 (`Board16Sholo`), 6-bead · 4×4 (`Board6`), 6-bead · 3×5 (`Board6x3x5`), 10-bead · 5×5 (`Board10x5`), 12-bead · 6×5 (`Board12x6x5`), 8-bead · 4×6 (`Board8x4x6`), 7-bead · 4×5 (`Board7`).

@@ -18,6 +18,7 @@ Depending on the workspace mode, your responsibilities, permissions, and output 
 ## 2. Universal Principles (All Modes)
 
 - **Always show understanding on top:** Every agent response must begin with an explicit "Understanding of the Task" summary at the top before continuing execution.
+- **Git Commit on Request Only:** Never execute `git commit` unless explicitly instructed by the user.
 - **Evidence Before Conclusion:** Repository inspection and direct command execution always beat chat memory, previous assumptions, or documentation. Never invent repository facts.
 - **Verified Source:** Always read and inspect files before changing or referencing them.
 - **Resource Management:** Keep modifications small and incremental. If AI context/usage limits are tight, divide work into small verified modules.

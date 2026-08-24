@@ -19,17 +19,17 @@ The production codebase is fully implemented in clean TypeScript (`src/`), with 
 
 ## 7 Locked V1 Boards Status
 
-All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and verified via automated test suites (369 Jest unit tests) and headless browser click gates (Playwright):
+All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and verified via automated test suites (391 Jest unit tests) and headless browser click gates (Playwright):
 
 | # | Board Variant | Geometry & Architecture | Status |
 |---|---|---|---|
-| 1 | **16-bead · 5×5 + wings** | 37-node Alquerque + 2 triangular wings (`Board16Sholo.ts`). Corrected collinear lattice coordinates (`x \in [-4, 12]`), true square 5×5 central playing area (400×400px), compact wing caps (200px height). All straight & diagonal apex junction captures verified. | **VERIFIED CLEAN** |
-| 2 | **6-bead · 4×4** | 16-node full box-cross lattice (`Board6.ts`). Default endgame center scoring. | **VERIFIED CLEAN** |
-| 3 | **6-bead · 3×5** | 15-node Alquerque top-bottom camp lattice (`Board6x3x5.ts`). Single center point (Node 7). | **VERIFIED CLEAN** |
-| 4 | **10-bead · 5×5** | 25-node Alquerque with empty center file (`Board10x5.ts`). Center point (Node 12). | **VERIFIED CLEAN** |
-| 5 | **12-bead · 6×5** | 30-node Alquerque stretch (`Board12x6x5.ts`). Dual center points (Nodes 12, 17). | **VERIFIED CLEAN** |
-| 6 | **8-bead · 4×6 hourglass** | 24-node hourglass waist lattice (`Board8x4x6.ts`). Quad center points (Nodes 9, 10, 13, 14). | **VERIFIED CLEAN** |
-| 7 | **7-bead · 4×5 hourglass** | 20-node hourglass (5+2+2+5 camps) (`Board7.ts`). Dual center points (Nodes 9, 10). | **VERIFIED CLEAN** |
+| 1 | **16-bead · 5×5 + wings** | 37-node Alquerque + 2 triangular wings (`Board16Sholo.ts`). Corrected collinear lattice coordinates (`x \in [-4, 12]`), true square 5×5 central playing area (400×400px), compact wing caps (200px height). All straight & diagonal apex junction captures verified. Single amber center plate. | **VERIFIED CLEAN** |
+| 2 | **6-bead · 4×4** | 16-node full box-cross lattice (`Board6.ts`). Quad amber center scoring plates (2×2 box). Default endgame center scoring. | **VERIFIED CLEAN** |
+| 3 | **6-bead · 3×5** | 15-node Alquerque top-bottom camp lattice (`Board6x3x5.ts`). Single amber center plate (Node 7). Default endgame center scoring. | **VERIFIED CLEAN** |
+| 4 | **10-bead · 5×5** | 25-node Alquerque with empty center file (`Board10x5.ts`). Single amber center plate (Node 12). Default center off. | **VERIFIED CLEAN** |
+| 5 | **12-bead · 6×5** | 30-node Alquerque stretch (`Board12x6x5.ts`). Dual amber center plates (Nodes 12, 17). Default center off. | **VERIFIED CLEAN** |
+| 6 | **8-bead · 4×6** | 24-node waist lattice (`Board8x4x6.ts`). Quad amber center scoring plates (Nodes 9, 10, 13, 14). Default endgame center scoring. | **VERIFIED CLEAN** |
+| 7 | **7-bead · 4×5** | 20-node lattice (5+2+2+5 camps) (`Board7.ts`). Dual amber center scoring plates (Nodes 9, 10). Default endgame center scoring. | **VERIFIED CLEAN** |
 
 ---
 
@@ -48,6 +48,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Target Highlighting:** Clicking an active piece highlights empty landing spots exclusively; clicking the empty landing executes the capture/slide.
 - **Selection Safety:** Clicking an immobile own bead safely deselects without leaving accidental armed states.
 - **16-Bead Visual Layout:** Central 5×5 grid is rendered as a prominent 400×400px square (two-thirds of total board area) with compact wings.
+- **Unified Center Plates:** Consistent glowing amber square plates render under center nodes for all 7 boards.
 
 ### 3. PvE & AI Opponent (`HonestAi.ts`, `PlayController.ts`)
 - **Complete-Turn Search:** Generates and evaluates full multi-jump sequences rather than single hops.
@@ -56,31 +57,31 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI).
-- **Timers:** Per-board match timers, shot clocks, and unlimited play modes.
-- **Center Scoring:** Configurable per board (Off, Cumulative, End-Game).
+- **Default Feature Settings:**
+  - `centerRule: 'endgame'` on 6 (4×4), 6 (3×5), 7 (4×5), and 8 (4×6).
+  - `centerRule: 'off'` on 10 (5×5), 12 (6×5), and 16 (5×5).
+  - `matchTimer: 'off'` and `shotClock: 'off'` across all 7 games.
 - **Resignation Protocol:** Resignation offer modal; opponent can accept draw or claim victory.
 
 ### 5. Test & Quality Gates
-- **Jest Test Suite:** 369 unit tests passing across 31 test suites (100% deterministic).
+- **Jest Test Suite:** 391 unit tests passing across 31 test suites (100% deterministic).
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety.
 
 ---
 
 ## What Is Pending
 
-1. **Human Playtesting (Immediate):**
-   - Direct human playtesting of all 7 boards via `npm run web:smartbeads` at `http://localhost:5173/` to evaluate touch feel, pacing, and AI balance.
-2. **Post-V1 Visual & Audio Polish (Planned):**
+
+1. **Post-V1 Visual & Audio Polish (Planned):**
    - Sound effects for slides, captures, and turn ticks.
    - Smooth particle/fade capture animations.
    - Additional bead themes and board texture skins.
-3. **V2 Platform Roadmap (Future):**
+2. **V2 Platform Roadmap (Future):**
    - Game move history log (PGN format) and replay viewer.
    - AI coach / post-match tactical analysis.
    - Online multiplayer via WebSocket matchmaking.
 
----
+## Human Playtesting method
 
-## Next Step
 
-Launch and play the 7 boards via run command 'npx.cmd vite ' from D:\Business Idea\Gpt_Enterprise_Vault or `npm run web:smartbeads`. Standing quality gate: any screen-reproduced defect must receive a failing named-click Jest test before engine modification.
+   - Direct human playtesting of all 7 boards via 'npx.cmd vite ' from D:\Business Idea\Gpt_Enterprise_Vault or `npm run web:smartbeads`    at `http://localhost:5173/`or 5174 to evaluate touch feel, pacing, and AI balance.

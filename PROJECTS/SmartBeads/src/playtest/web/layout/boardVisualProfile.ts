@@ -18,7 +18,7 @@ export interface BoardVisualProfile {
   canvasHeight: number;
   /** Amber filled squares behind centre nodes (lattice coords). */
   centerSquares?: LatticePoint[];
-  /** Amber band + line between two lattice points (hourglass waist). */
+  /** Amber band + line between two lattice points (waist). */
   centerLine?: [LatticePoint, LatticePoint];
   /** Nodes that receive amber rings / highlight dots (canvas only). */
   centerRingPoints?: LatticePoint[];
@@ -33,12 +33,19 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   'Sholo-Guti-16x5x5': {
     projection: 'sholo16',
     ...SHOLO16_CANVAS,
+    centerSquares: [{ x: 4, y: 4 }],
     centerRingPoints: [{ x: 4, y: 4 }],
   },
   'SmartBeads-6x4x4': {
     projection: 'square-fit',
     ...SQUARE_CANVAS,
     turnWashAxis: 'vertical',
+    centerSquares: [
+      { x: 2, y: 2 },
+      { x: 4, y: 2 },
+      { x: 2, y: 4 },
+      { x: 4, y: 4 },
+    ],
     centerRingPoints: [
       { x: 2, y: 2 },
       { x: 4, y: 2 },
@@ -73,6 +80,12 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   'SmartBeads-8x4x6': {
     projection: 'grid-stretch',
     ...SQUARE_CANVAS,
+    centerSquares: [
+      { x: 2, y: 4 },
+      { x: 4, y: 4 },
+      { x: 2, y: 6 },
+      { x: 4, y: 6 },
+    ],
     centerRingPoints: [
       { x: 2, y: 4 },
       { x: 4, y: 4 },
@@ -83,6 +96,10 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   'SmartBeads-7x4x5': {
     projection: 'portrait45',
     ...SQUARE_CANVAS,
+    centerSquares: [
+      { x: 2, y: 4 },
+      { x: 4, y: 4 },
+    ],
     centerRingPoints: [
       { x: 2, y: 4 },
       { x: 4, y: 4 },
@@ -98,4 +115,4 @@ export function getBoardCanvasSize(boardName: string): { width: number; height: 
   const profile = getBoardVisualProfile(boardName);
   return { width: profile.canvasWidth, height: profile.canvasHeight };
 }
-
+

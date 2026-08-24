@@ -1,5 +1,5 @@
 /**
- * Browser verification for 8-bead · 4×6 hourglass (catalog id 8x4x6).
+ * Browser verification for 8-bead · 4×6 (catalog id 8x4x6).
  * Requires: npm run web:smartbeads (http://localhost:5173/)
  */
 import { chromium } from 'playwright';

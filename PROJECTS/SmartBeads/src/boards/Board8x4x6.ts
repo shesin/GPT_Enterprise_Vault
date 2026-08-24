@@ -1,9 +1,9 @@
 import { BoardDefinition, Connection, Intersection, JumpPath } from '../models/GameState';
 
 /**
- * 8-bead · 4×6 hourglass board (locked V1 #6).
+ * 8-bead · 4×6 board (locked V1 #6).
  * Geometry and starting layout match prototype/board4/SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html
- * and sholo-f1a-8-4x6-fullturn-engine.cjs — 24-node hourglass waist (not full Alquerque rectangle camps).
+ * and sholo-f1a-8-4x6-fullturn-engine.cjs — 24-node waist camps (not full Alquerque rectangle camps).
  */
 
 const ROWS = 6;

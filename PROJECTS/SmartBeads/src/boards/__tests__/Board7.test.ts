@@ -8,7 +8,7 @@ import {
   Board7,
 } from '../Board7';
 
-describe('Board7 (7-bead · 4×5 hourglass)', () => {
+describe('Board7 (7-bead · 4×5)', () => {
   it('matches reference geometry counts (20 nodes, 55 edges, 68 jumps)', () => {
     expect(BOARD7_NODE_COUNT).toBe(20);
     expect(BOARD7_EDGE_COUNT).toBe(55);
@@ -18,7 +18,7 @@ describe('Board7 (7-bead · 4×5 hourglass)', () => {
     expect(Board7.jumpPaths).toHaveLength(68);
   });
 
-  it('starts with 7 RED and 7 BLUE on hourglass rank camps', () => {
+  it('starts with 7 RED and 7 BLUE on rank camps', () => {
     const red = Board7.intersections.filter((point) => point.occupant === 'RED');
     const blue = Board7.intersections.filter((point) => point.occupant === 'BLUE');
     const empty = Board7.intersections.filter((point) => point.occupant === undefined);

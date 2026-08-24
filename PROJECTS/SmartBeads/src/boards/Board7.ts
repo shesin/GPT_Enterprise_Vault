@@ -1,9 +1,9 @@
 import { BoardDefinition, Connection, Intersection, JumpPath } from '../models/GameState';
 
 /**
- * 7-bead · 4×5 hourglass board (locked V1 #7).
+ * 7-bead · 4×5 board (locked V1 #7).
  * Geometry and starting layout match prototype/board4/SHOLO_GUTI_7_BEAD_WITH_FEATURE.html
- * and sholo-7-bead-fullturn-engine.cjs — 20-node hourglass (column layout 5+2+2+5).
+ * and sholo-7-bead-fullturn-engine.cjs — 20-node board (column layout 5+2+2+5).
  */
 
 const ROWS = 5;
