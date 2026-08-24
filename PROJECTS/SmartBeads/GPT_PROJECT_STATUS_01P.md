@@ -83,4 +83,4 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 
 ## Next Step
 
-Launch and play the 7 boards via `npm run web:smartbeads`. Standing quality gate: any screen-reproduced defect must receive a failing named-click Jest test before engine modification.
+Launch and play the 7 boards via run command 'npx.cmd vite ' from D:\Business Idea\Gpt_Enterprise_Vault or `npm run web:smartbeads`. Standing quality gate: any screen-reproduced defect must receive a failing named-click Jest test before engine modification.
