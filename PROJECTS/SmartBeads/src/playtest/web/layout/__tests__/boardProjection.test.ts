@@ -12,8 +12,8 @@ describe('boardVisualProfile', () => {
   it('maps each V1 board to a distinct projection and canvas size', () => {
     expect(getBoardVisualProfile(Board16Sholo.name)).toMatchObject({
       projection: 'sholo16',
-      canvasWidth: 480,
-      canvasHeight: 872,
+      canvasWidth: 560,
+      canvasHeight: 700,
     });
     expect(getBoardVisualProfile(Board6.name)).toMatchObject({
       projection: 'square-fit',
@@ -90,19 +90,19 @@ describe('boardProjection per-board parity', () => {
     expect(pt.y).toBeGreaterThanOrEqual(44);
   });
 
-  it('16-bead maps top-left corner node RT to top-left padding on 480×872', () => {
+  it('16-bead maps top-left corner node RT to top-left padding on 560×700', () => {
     const node = Board16Sholo.intersections.find((n) => n.x === 12 && n.y === 0);
     expect(node).toBeDefined();
-    const pt = projectIntersectionOnCanvas(node!, 480, 872, Board16Sholo);
+    const pt = projectIntersectionOnCanvas(node!, 560, 700, Board16Sholo);
     expect(pt.x).toBeCloseTo(40, 0);
     expect(pt.y).toBeCloseTo(36, 0);
   });
 
   it('16-bead junction diagonals are perfectly collinear on canvas', () => {
     const byLabel = new Map(Board16Sholo.intersections.map((n) => [n.label!, n]));
-    const lib = projectIntersectionOnCanvas(byLabel.get('LIB')!, 480, 872, Board16Sholo);
-    const a20 = projectIntersectionOnCanvas(byLabel.get('A20')!, 480, 872, Board16Sholo);
-    const a11 = projectIntersectionOnCanvas(byLabel.get('A11')!, 480, 872, Board16Sholo);
+    const lib = projectIntersectionOnCanvas(byLabel.get('LIB')!, 560, 700, Board16Sholo);
+    const a20 = projectIntersectionOnCanvas(byLabel.get('A20')!, 560, 700, Board16Sholo);
+    const a11 = projectIntersectionOnCanvas(byLabel.get('A11')!, 560, 700, Board16Sholo);
 
     // LIB -> A20 vector and A20 -> A11 vector must have identical direction on canvas
     const dx1 = a20.x - lib.x;
@@ -112,17 +112,16 @@ describe('boardProjection per-board parity', () => {
     expect(Math.abs(dx1 * dy2 - dy1 * dx2)).toBeLessThan(1e-6);
   });
 
-  it('16-bead central 5x5 grid is a perfect square on canvas (400px x 400px)', () => {
+  it('16-bead central 5x5 grid covers prominent area on canvas (480px width, 314px height)', () => {
     const byLabel = new Map(Board16Sholo.intersections.map((n) => [n.label!, n]));
-    const a00 = projectIntersectionOnCanvas(byLabel.get('A00')!, 480, 872, Board16Sholo);
-    const a04 = projectIntersectionOnCanvas(byLabel.get('A04')!, 480, 872, Board16Sholo);
-    const a40 = projectIntersectionOnCanvas(byLabel.get('A40')!, 480, 872, Board16Sholo);
+    const a00 = projectIntersectionOnCanvas(byLabel.get('A00')!, 560, 700, Board16Sholo);
+    const a04 = projectIntersectionOnCanvas(byLabel.get('A04')!, 560, 700, Board16Sholo);
+    const a40 = projectIntersectionOnCanvas(byLabel.get('A40')!, 560, 700, Board16Sholo);
 
     const gridWidth = Math.abs(a40.x - a00.x);
     const gridHeight = Math.abs(a04.y - a00.y);
-    expect(gridWidth).toBeCloseTo(400, 0);
-    expect(gridHeight).toBeCloseTo(400, 0);
-    expect(gridWidth).toBeCloseTo(gridHeight, 0);
+    expect(gridWidth).toBeCloseTo(480, 0);
+    expect(gridHeight).toBeCloseTo(314, 0);
   });
 });
 
