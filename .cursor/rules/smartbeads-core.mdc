@@ -7,6 +7,7 @@ alwaysApply: true
 
 Apply when work touches `PROJECTS/SmartBeads/` (full rules load via `smartbeads-rules.mdc` when matching files are in context).
 
+- **Always show understanding on top** — Every response must begin with an explicit 'Understanding of the Task' summary before continuing execution.
 - **Evidence before conclusion** — repo inspection and execution beat chat history or status docs.
 - **Prototype ≠ production** — `prototype/` must not share code with `src/`; port geometry/rules only.
 - **Verified source** — read files before changing; never invent project state from memory.
