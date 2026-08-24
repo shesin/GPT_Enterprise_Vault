@@ -10,7 +10,7 @@ import {
 
 const requireRef = createRequire(path.join(__dirname, 'Board6PrototypeParity.test.ts'));
 const refEngine = requireRef(
-  path.resolve(process.cwd(), 'PROJECTS/SmartBeads/prototype/board4/cursor-index-fullturn-engine.cjs'),
+  path.resolve(__dirname, '../../../prototype/board4/cursor-index-fullturn-engine.cjs'),
 );
 
 const FULL_BOX_CROSS_ADJ = buildFullBoxCrossAdjacency(refEngine.ROWS, refEngine.COLS);

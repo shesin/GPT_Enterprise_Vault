@@ -5,7 +5,7 @@ import { BOARD16_EDGE_COUNT, BOARD16_NODE_COUNT, Board16Sholo } from '../Board16
 
 const requireRef = createRequire(path.join(__dirname, 'Board16PrototypeParity.test.ts'));
 const refEngine = requireRef(
-  path.resolve(process.cwd(), 'PROJECTS/SmartBeads/prototype/board4/sholo-guti-fullturn-engine.cjs'),
+  path.resolve(__dirname, '../../../prototype/board4/sholo-guti-fullturn-engine.cjs'),
 );
 
 describe('Board16Sholo prototype parity', () => {

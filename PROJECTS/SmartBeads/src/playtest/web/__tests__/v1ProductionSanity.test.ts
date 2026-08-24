@@ -49,8 +49,9 @@ describe('V1 production sanity (SmartBeadsEngine + FeatureSession + HonestAi + r
       expect(legal.some((m) => m.from === path.from && m.to === path.to)).toBe(true);
       session.selectNode(path.from);
       expect(session.getLegalTargetIds()).toContain(path.to);
-      expect(session.getLegalTargetIds()).toContain(path.over);
-      const click = session.interpretClick(path.over);
+      expect(session.getLegalTargetIds()).not.toContain(path.over);
+      expect(session.interpretClick(path.over).kind).toBe('ignore');
+      const click = session.interpretClick(path.to);
       expect(click.kind).toBe('move');
       if (click.kind !== 'move') continue;
       expect(click.move).toEqual({ from: path.from, to: path.to });
@@ -61,18 +62,16 @@ describe('V1 production sanity (SmartBeadsEngine + FeatureSession + HonestAi + r
     }
   });
 
-  it.each(productBoards)('$id idle click on a unique victim captures without a prior select', (entry) => {
+  it.each(productBoards)('$id opponent beads are inert: idle click on an enemy bead is ignored', (entry) => {
     const variant = resolveEngineVariant(entry.id);
     const session = new FeatureSession(variant, { mode: 'pve', ...off });
     const path = session.getEngine().getState().board.jumpPaths![0];
     isolateJump(session, path);
     expect(session.getSelectedId()).toBeNull();
     const click = session.interpretClick(path.over);
-    expect(click.kind).toBe('move');
-    if (click.kind !== 'move') return;
-    session.applyMove(click.move);
-    expect(requireIntersection(session.getEngine().getState().board, path.to).occupant).toBe('RED');
-    expect(session.getEngine().getState().captures.RED).toBe(1);
+    expect(click.kind).toBe('ignore');
+    expect(session.getSelectedId()).toBeNull();
+    expect(requireIntersection(session.getEngine().getState().board, path.over).occupant).toBe('BLUE');
   });
 
   it.each(productBoards)('$id optional-stop AI hop closes the chain so PvE cannot stick thinking', (entry) => {

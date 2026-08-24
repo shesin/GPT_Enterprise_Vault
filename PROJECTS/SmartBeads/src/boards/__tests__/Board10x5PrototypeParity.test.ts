@@ -10,7 +10,7 @@ import {
 
 const requireRef = createRequire(path.join(__dirname, 'Board10x5PrototypeParity.test.ts'));
 const refEngine = requireRef(
-  path.resolve(process.cwd(), 'PROJECTS/SmartBeads/prototype/board4/sholo-10-bead-fullturn-engine.cjs'),
+  path.resolve(__dirname, '../../../prototype/board4/sholo-10-bead-fullturn-engine.cjs'),
 );
 
 describe('Board10x5 prototype parity', () => {

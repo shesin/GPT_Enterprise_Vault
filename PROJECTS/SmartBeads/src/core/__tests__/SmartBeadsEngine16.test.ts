@@ -259,4 +259,65 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     engine.getState().currentPlayer = 'RED';
     expect(() => engine.applyMove({ from: id('LT'), to: id('LIM') })).toThrow(/Illegal move/);
   });
+
+  it('allows diagonal cross-apex captures: LIB→A11 over A20 (and reverse A11→LIB over A20)', () => {
+    // Forward: LIB -> A11 over A20
+    const engineA = new SmartBeadsEngine('16');
+    clearBoard(engineA);
+    const boardA = engineA.getState().board;
+    const idA = (label: string) => boardA.intersections.find((p) => p.label === label)!.id;
+    boardA.intersections.find((p) => p.label === 'LIB')!.occupant = 'RED';
+    boardA.intersections.find((p) => p.label === 'A20')!.occupant = 'BLUE';
+    boardA.intersections.find((p) => p.label === 'A44')!.occupant = 'BLUE';
+    engineA.getState().currentPlayer = 'RED';
+
+    expect(engineA.getLegalMoves().some((m) => m.from === idA('LIB') && m.to === idA('A11'))).toBe(true);
+    engineA.applyMove({ from: idA('LIB'), to: idA('A11') });
+    expect(boardA.intersections.find((p) => p.label === 'A11')?.occupant).toBe('RED');
+    expect(boardA.intersections.find((p) => p.label === 'A20')?.occupant).toBeUndefined();
+    expect(engineA.getState().captures.RED).toBe(1);
+
+    // Reverse: A11 -> LIB over A20
+    const engineB = new SmartBeadsEngine('16');
+    clearBoard(engineB);
+    const boardB = engineB.getState().board;
+    const idB = (label: string) => boardB.intersections.find((p) => p.label === label)!.id;
+    boardB.intersections.find((p) => p.label === 'A11')!.occupant = 'RED';
+    boardB.intersections.find((p) => p.label === 'A20')!.occupant = 'BLUE';
+    boardB.intersections.find((p) => p.label === 'A44')!.occupant = 'BLUE';
+    engineB.getState().currentPlayer = 'RED';
+
+    expect(engineB.getLegalMoves().some((m) => m.from === idB('A11') && m.to === idB('LIB'))).toBe(true);
+    engineB.applyMove({ from: idB('A11'), to: idB('LIB') });
+    expect(boardB.intersections.find((p) => p.label === 'LIB')?.occupant).toBe('RED');
+    expect(boardB.intersections.find((p) => p.label === 'A20')?.occupant).toBeUndefined();
+    expect(engineB.getState().captures.RED).toBe(1);
+  });
+
+  it('allows full diagonal multi-jump across apex: LB→A20 over LIB, then A20→A02 over A11', () => {
+    const engine = new SmartBeadsEngine('16');
+    clearBoard(engine);
+    const board = engine.getState().board;
+    const id = (label: string) => board.intersections.find((p) => p.label === label)!.id;
+
+    board.intersections.find((p) => p.label === 'LB')!.occupant = 'RED';
+    board.intersections.find((p) => p.label === 'LIB')!.occupant = 'BLUE';
+    board.intersections.find((p) => p.label === 'A11')!.occupant = 'BLUE';
+    board.intersections.find((p) => p.label === 'A44')!.occupant = 'BLUE';
+    engine.getState().currentPlayer = 'RED';
+
+    // Hop 1: LB -> A20 over LIB
+    expect(engine.getLegalMoves().some((m) => m.from === id('LB') && m.to === id('A20'))).toBe(true);
+    engine.applyMove({ from: id('LB'), to: id('A20') });
+    expect(engine.getChainPieceId()).toBe(id('A20'));
+
+    // Hop 2: A20 -> A02 over A11
+    expect(engine.getLegalMoves().some((m) => m.from === id('A20') && m.to === id('A02'))).toBe(true);
+    engine.applyMove({ from: id('A20'), to: id('A02') });
+
+    expect(engine.getState().captures.RED).toBe(2);
+    expect(board.intersections.find((p) => p.label === 'A02')?.occupant).toBe('RED');
+    expect(board.intersections.find((p) => p.label === 'LIB')?.occupant).toBeUndefined();
+    expect(board.intersections.find((p) => p.label === 'A11')?.occupant).toBeUndefined();
+  });
 });

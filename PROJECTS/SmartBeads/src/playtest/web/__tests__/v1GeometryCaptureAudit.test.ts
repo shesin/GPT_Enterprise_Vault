@@ -354,7 +354,8 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       expect(session.getEngine().getChainPieceId()).toBe(first.to);
       expect(session.getUiState()).toBe('chain');
 
-      const click = session.interpretClick(second.over);
+      // Second hop is executed by clicking the landing square
+      const click = session.interpretClick(second.to);
       expect(click.kind).toBe('move');
       if (click.kind !== 'move') return;
       expect(click.move).toEqual({ from: second.from, to: second.to });
@@ -392,7 +393,7 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       if (!state.gameOver) expect(state.currentPlayer).toBe('BLUE');
     });
 
-    it('clicking the landing and clicking the victim resolve to the same legal hop', () => {
+    it('clicking the landing executes the capture, while the victim bead is inert and unhighlighted', () => {
       const failures: string[] = [];
       for (const path of jumpPaths) {
         const session = new FeatureSession(variant, { mode: 'pvp', ...off });
@@ -409,9 +410,9 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
         const onLanding = session.interpretClick(path.to);
         const onVictim = session.interpretClick(path.over);
         if (onLanding.kind !== 'move' || onLanding.move.to !== expected.to) failures.push(`${tag} landing click refused`);
-        if (onVictim.kind !== 'move' || onVictim.move.to !== expected.to) failures.push(`${tag} victim click refused`);
+        if (onVictim.kind !== 'ignore') failures.push(`${tag} victim click was not ignored (inert rule violated)`);
         if (!session.getLegalTargetIds().includes(path.to)) failures.push(`${tag} landing not highlighted`);
-        if (!session.getLegalTargetIds().includes(path.over)) failures.push(`${tag} victim not highlighted`);
+        if (session.getLegalTargetIds().includes(path.over)) failures.push(`${tag} victim should not be highlighted`);
       }
       expect(failures).toEqual([]);
     });
@@ -609,15 +610,40 @@ describe('16-bead triangle-to-rectangle junction', () => {
     }
   });
 
-  it('the wing inner points cannot hop the apex where the board has no continuing line', () => {
+  it('the wing inner points continue collinear diagonal and horizontal hops across the apex into the grid', () => {
     const board = new SmartBeadsEngine('16').getState().board;
-    for (const [wing, apex] of [['L', 'A20'], ['R', 'A24']] as const) {
-      for (const inner of [`${wing}IT`, `${wing}IB`]) {
-        const bent = (board.jumpPaths ?? []).filter(
-          (path) => path.from === idOf(board, inner) && path.over === idOf(board, apex),
-        );
-        expect([inner, bent]).toEqual([inner, []]);
-      }
+    const expectedJunctionJumps = [
+      // Left wing across apex A20
+      { from: idOf(board, 'LIT'), over: idOf(board, 'A20'), to: idOf(board, 'A31') },
+      { from: idOf(board, 'A31'), over: idOf(board, 'A20'), to: idOf(board, 'LIT') },
+      { from: idOf(board, 'LIB'), over: idOf(board, 'A20'), to: idOf(board, 'A11') },
+      { from: idOf(board, 'A11'), over: idOf(board, 'A20'), to: idOf(board, 'LIB') },
+      { from: idOf(board, 'LIM'), over: idOf(board, 'A20'), to: idOf(board, 'A21') },
+      { from: idOf(board, 'A21'), over: idOf(board, 'A20'), to: idOf(board, 'LIM') },
+      // Right wing across apex A24
+      { from: idOf(board, 'RIT'), over: idOf(board, 'A24'), to: idOf(board, 'A33') },
+      { from: idOf(board, 'A33'), over: idOf(board, 'A24'), to: idOf(board, 'RIT') },
+      { from: idOf(board, 'RIB'), over: idOf(board, 'A24'), to: idOf(board, 'A13') },
+      { from: idOf(board, 'A13'), over: idOf(board, 'A24'), to: idOf(board, 'RIB') },
+      { from: idOf(board, 'RIM'), over: idOf(board, 'A24'), to: idOf(board, 'A23') },
+      { from: idOf(board, 'A23'), over: idOf(board, 'A24'), to: idOf(board, 'RIM') },
+    ];
+    expect(board.jumpPaths).toEqual(expect.arrayContaining(expectedJunctionJumps));
+  });
+
+  it('non-collinear hops across the apex (e.g. LIT to horizontal A21) are strictly rejected', () => {
+    const board = new SmartBeadsEngine('16').getState().board;
+    const illegalBends = [
+      { from: idOf(board, 'LIT'), over: idOf(board, 'A20'), to: idOf(board, 'A21') },
+      { from: idOf(board, 'LIB'), over: idOf(board, 'A20'), to: idOf(board, 'A21') },
+      { from: idOf(board, 'RIT'), over: idOf(board, 'A24'), to: idOf(board, 'A23') },
+      { from: idOf(board, 'RIB'), over: idOf(board, 'A24'), to: idOf(board, 'A23') },
+    ];
+    for (const bend of illegalBends) {
+      const match = (board.jumpPaths ?? []).find(
+        (p) => p.from === bend.from && p.over === bend.over && p.to === bend.to,
+      );
+      expect(match).toBeUndefined();
     }
   });
 

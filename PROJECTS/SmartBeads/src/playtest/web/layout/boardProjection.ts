@@ -1,13 +1,13 @@
 import { BoardDefinition, Intersection } from '../../../models/GameState';
 import { getBoardVisualProfile, ProjectionKind } from './boardVisualProfile';
 
-/** Default lattice projection matching SHOLO_GUTI_WITH_FEATURE.html / 16-bead canvas. */
+/** Default lattice projection matching 16-bead canvas (x in [-4, 12], y in [0, 8]). */
 export const SHOLO_LATTICE_PROJECTION = {
   padX: 40,
   padY: 36,
   latticeYSpan: 8,
-  latticeXBase: 10,
-  latticeXSpan: 12,
+  latticeXBase: 12,
+  latticeXSpan: 16,
   widthInset: 80,
   heightInset: 72,
 } as const;

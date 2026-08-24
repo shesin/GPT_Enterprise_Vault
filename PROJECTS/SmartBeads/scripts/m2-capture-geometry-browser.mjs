@@ -104,17 +104,23 @@ async function waitFor(page, predicate, maxMs = 3000) {
   return liveSnap(page);
 }
 
-/** Two real clicks: arm the bead, then click the enemy bead itself. */
+/** Two real clicks: arm the bead, then click the empty landing intersection. */
 async function clickCapture(page, route, shots) {
   await armPosition(page, [route.from.id], route.spare ? [route.over.id, route.spare.id] : [route.over.id]);
   if (shots?.before) await page.locator('#board').screenshot({ path: shots.before });
 
+  // 1. Click the piece to select it
   await clickPrototypeNode(page, route.from);
   await page.waitForTimeout(120);
   const selected = await liveSnap(page);
   if (shots?.selected) await page.locator('#board').screenshot({ path: shots.selected });
 
+  // 2. Clicking the enemy bead itself must be inert (no move, no deselect)
   await clickPrototypeNode(page, route.over);
+  await page.waitForTimeout(100);
+
+  // 3. Click the empty landing intersection to execute the capture
+  await clickPrototypeNode(page, route.to);
   const after = await waitFor(page, (s) => s.moveCount >= 1 && !s.animating);
   if (shots?.after) await page.locator('#board').screenshot({ path: shots.after });
   return { selected, after };
@@ -150,7 +156,7 @@ async function main() {
     });
     const at = (id) => after.occupants.find((n) => n.id === id)?.occupant ?? null;
     record(
-      `${catalogId} live click on the enemy bead performs the capture (${route.from.label} x${route.over.label} -> ${route.to.label})`,
+      `${catalogId} live two-click landing capture (${route.from.label} -> ${route.to.label} jumping ${route.over.label})`,
       captureOk(route, selected, after),
       JSON.stringify({
         selected: selected.selectedId,
@@ -201,7 +207,11 @@ async function main() {
   await armPosition(page, [chain.LT.id], [chain.LIT.id, chain.A21.id, chain.A44.id]);
   await clickPrototypeNode(page, chain.LT);
   await page.waitForTimeout(120);
+  // Clicking enemy bead is inert
   await clickPrototypeNode(page, chain.LIT);
+  await page.waitForTimeout(100);
+  // Click landing square A20
+  await clickPrototypeNode(page, chain.A20);
   const midChain = await waitFor(page, (s) => s.uiState === 'chain' && !s.animating);
   record(
     '16 junction multi-jump: first hop opens the chain on A20',
@@ -211,7 +221,11 @@ async function main() {
   const finishVisible = await page.locator('#finish-btn').isVisible();
   record('16 capture optionality: Finish chain button is offered mid-chain', finishVisible, `visible=${finishVisible}`);
 
+  // Clicking enemy bead is inert mid-chain
   await clickPrototypeNode(page, chain.A21);
+  await page.waitForTimeout(100);
+  // Click landing square A22
+  await clickPrototypeNode(page, chain.A22);
   const chainDone = await waitFor(page, (s) => s.moveCount >= 1 && s.uiState !== 'chain' && !s.animating);
   record(
     '16 junction multi-jump: second hop lands on A22 and ends the turn',
@@ -227,7 +241,7 @@ async function main() {
   await armPosition(page, [chain.LT.id], [chain.LIT.id, chain.A21.id, chain.A44.id]);
   await clickPrototypeNode(page, chain.LT);
   await page.waitForTimeout(120);
-  await clickPrototypeNode(page, chain.LIT);
+  await clickPrototypeNode(page, chain.A20);
   await waitFor(page, (s) => s.uiState === 'chain' && !s.animating);
   await page.locator('#finish-btn').click();
   const stopped = await waitFor(page, (s) => s.uiState !== 'chain' && !s.animating);
@@ -240,23 +254,34 @@ async function main() {
     JSON.stringify({ player: stopped.currentPlayer, a20: stopped.occupants.find((n) => n.label === 'A20')?.occupant ?? null }),
   );
 
-  // An illegal-looking hop must stay illegal on screen: LIT cannot jump the apex A20.
+  // Live browser check: Diagonal cross-apex capture LIB -> A20 -> A11 (exact user screenshot scenario)
   await setup(page, '16');
-  const bent = await pickRoute(page, '16', ['LT', 'LIT', 'A20']);
-  await armPosition(page, [chain.LIT.id], [chain.A20.id, chain.A44.id]);
-  await clickPrototypeNode(page, chain.LIT);
+  const crossApex = await page.evaluate(async () => {
+    const { SmartBeadsEngine } = await import('/PROJECTS/SmartBeads/src/core/SmartBeadsEngine.ts');
+    const board = new SmartBeadsEngine('16').getState().board;
+    const byLabel = (l) => board.intersections.find((p) => p.label === l);
+    const pack = (l) => {
+      const n = byLabel(l);
+      return { id: n.id, label: n.label, x: n.x, y: n.y };
+    };
+    return { LIB: pack('LIB'), A20: pack('A20'), A11: pack('A11'), A44: pack('A44') };
+  });
+  await armPosition(page, [crossApex.LIB.id], [crossApex.A20.id, crossApex.A44.id]);
+  await clickPrototypeNode(page, crossApex.LIB);
   await page.waitForTimeout(120);
-  await clickPrototypeNode(page, chain.A20);
-  await page.waitForTimeout(400);
-  const refused = await liveSnap(page);
+  // Clicking enemy bead is inert
+  await clickPrototypeNode(page, crossApex.A20);
+  await page.waitForTimeout(100);
+  // Click landing square A11 to execute diagonal capture
+  await clickPrototypeNode(page, crossApex.A11);
+  const capturedApex = await waitFor(page, (s) => s.moveCount >= 1 && !s.animating);
   record(
-    '16 illegal hop: LIT cannot jump the apex A20 (no continuing line) — click refused',
-    refused.moveCount === 0
-      && refused.occupants.find((n) => n.label === 'A20')?.occupant === 'BLUE'
-      && refused.occupants.find((n) => n.label === 'LIT')?.occupant === 'RED',
-    JSON.stringify({ turns: refused.moveCount, lit: refused.occupants.find((n) => n.label === 'LIT')?.occupant ?? null }),
+    '16 diagonal cross-apex capture: LIB jumps over A20 to land on A11 in live browser',
+    capturedApex.occupants.find((n) => n.label === 'A11')?.occupant === 'RED'
+      && capturedApex.occupants.find((n) => n.label === 'A20')?.occupant == null
+      && capturedApex.occupants.find((n) => n.label === 'LIB')?.occupant == null,
+    JSON.stringify({ a11: capturedApex.occupants.find((n) => n.label === 'A11')?.occupant ?? null, a20: capturedApex.occupants.find((n) => n.label === 'A20')?.occupant ?? null }),
   );
-  void bent;
 
   // Clicking an immobile own bead must not leave a different bead armed.
   await setup(page, '6x4');
@@ -291,6 +316,23 @@ async function main() {
     armed.selectedId === stale.mover.id && afterStale.selectedId !== stale.mover.id && afterStale.moveCount === 0,
     JSON.stringify({ armed: armed.selectedId, after: afterStale.selectedId, turns: afterStale.moveCount }),
   );
+
+  // Live browser check: opponent beads are completely inert to idle clicks
+  await setup(page, '16');
+  await clickPrototypeNode(page, { x: 50, y: 50 }); // click empty/neutral area
+  await page.waitForTimeout(100);
+  const idleSnapBefore = await liveSnap(page);
+  const enemyNode = idleSnapBefore.occupants.find((n) => n.occupant === 'BLUE');
+  if (enemyNode) {
+    await clickPrototypeNode(page, enemyNode);
+    await page.waitForTimeout(150);
+    const idleSnapAfter = await liveSnap(page);
+    record(
+      '16 opponent bead is completely inert: idle click on enemy bead does not select or move',
+      idleSnapAfter.selectedId === null && idleSnapAfter.moveCount === 0,
+      JSON.stringify({ selectedId: idleSnapAfter.selectedId, moveCount: idleSnapAfter.moveCount }),
+    );
+  }
 
   console.log('\n--- CAPTURE GEOMETRY ---');
   results.forEach((r) => console.log(`${r.ok ? 'CONFIRMED' : 'UNCONFIRMED'}  ${r.name}`));

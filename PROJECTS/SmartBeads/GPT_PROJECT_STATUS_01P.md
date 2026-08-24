@@ -55,8 +55,9 @@ V1 app integration — **7 boards locked** in `VISION_05P.md` (2026-08)
 - **Web REJECT cleanup (2026-08-17):** Removed 10 discovery REJECT playables + dedicated engines from `prototype/board4/`. Kept Lab audit JSON, KEEP/NFT playables, ladder playables, 16-bead reference.
 - **Playable folders (2026-08-18):** Locked V1 seven + ladder playables in `prototype/board4/` root; **left-out NFT only** (5) in `unrejected games/`. `playable-dir.cjs` resolves both.
 - **M0 + M1 (2026-08-18):** Production **16-bead Sholo Guti** — `Board16Sholo.ts`, `BoardCatalog.ts`, `terminationProfile: sholo_guti`.
-- **Jest (2026-08-20):** Production PvE sanity is `FeatureSession` + `HonestAi` + `runAiTurn` on **all seven V1 boards** (`v1ProductionSanity.test.ts`): every `jumpPath` captures, unique-over click, optional-stop AI closes the chain, Easy games return the turn. Lab `.cjs` N=100 and Board4 `SelfPlayRunner` are not that path. Technical verification only — not UI proof.
-- **Capture click (2026-08-20):** `FeatureSession.interpretClick` — unique capture-over (and idle unique-victim) is the same legal hop as clicking the empty landing. All seven V1 boards.
+- **Jest (2026-08-20):** Production PvE sanity is `FeatureSession` + `HonestAi` + `runAiTurn` on **all seven V1 boards** (`v1ProductionSanity.test.ts`): every `jumpPath` captures, two-click landing capture, optional-stop AI closes the chain, Easy games return the turn. Lab `.cjs` N=100 and Board4 `SelfPlayRunner` are not that path. Technical verification only — not UI proof.
+- **Turn interaction & inert opponent beads (2026-08-24):** Only current player's beads glow/pulse and are selectable. Opponent beads are completely inert in all interaction states (idle, selected, mid-chain). Idle victim-click removed; landing clicks execute captures. Legal targets highlight empty landing squares exclusively.
+- **16-bead wing geometry & collinear apex alignment (2026-08-24):** Corrected triangular wing lattice coordinates (`x=-4,-2` left, `x=10,12` right) in `Board16Sholo.ts`, `boardProjection.ts`, and `sholo-guti-fullturn-engine.cjs`. Diagonals crossing the apex (`LIB->A20->A11`, `LIT->A20->A31`, `RIB->A24->A13`, `RIT->A24->A33`) are now mathematically and visually collinear. Straight diagonal captures and multi-jumps across the apex work seamlessly and are verified across Jest unit tests (368 passed) and Playwright live-browser gates.
 - **AI turn finish (2026-08-20):** optional-stop closes the chain (`completeAiTurnIfChainOpen`); Medium/Hard think budget 800ms with Easy/first-legal fallback so the shell cannot stick on “AI is thinking…”. **Regression-proven** on 2026-08-23 via Playwright browser stall verification (`m2-stall-verify-browser.mjs` fails when commented out, passes when restored).
 - **Catalog timers (2026-08-19):** Per-board match/shot defaults are already in `BoardCatalog.ts` (human-decided). Not an open item.
 - **M2 + M3 shell (2026-08-19):** Shared play shell — `PlayController.ts`, `FeatureSession.ts`, `CanvasBoardRenderer.ts`, board `<select>`, centre rules, undo, honest AI. Browser scripts: `m2-browser-verify.mjs`, `m2-6x4-browser-verify.mjs`, `m2-6x3x5-browser-verify.mjs`, `m2-10x5-browser-verify.mjs`, `m2-12x6x5-browser-verify.mjs`, `m2-8x4x6-browser-verify.mjs`, `m2-7x4x5-browser-verify.mjs`.
@@ -89,9 +90,7 @@ The four 2026-08-15 human KEEP HTML playables (6×4, 10, 7, 6×3×5) are already
 
 ## Next Step
 
-No open implementation item. Standing quality rule: screen-reproduced bugs get a failing named-click Jest first, then engine/session/AI. Jest green is not UI proof.
-
-**Awaiting a human decision (not a defect):** an idle click on an enemy bead that exactly one of your beads can capture executes that capture immediately, with no prior select and no highlight on the victim. It was added on request so the victim bead is clickable, but in the idle state it is a one-click move that the board does not advertise. Keep, highlight, or restrict to the selected state — product call.
+No open implementation item. The locked seven V1 boards, engine mechanics, AI turn sequencing, timer/resignation controls, and inert-opponent turn interactions are all verified clean and ready for human playtesting via `npm run web:smartbeads`. Standing quality rule: screen-reproduced bugs get a failing named-click Jest first, then engine/session/AI. Jest green is not UI proof.
 
 ---
 

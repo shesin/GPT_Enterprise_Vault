@@ -50,18 +50,18 @@ function buildNodeSpecs(): NodeSpec[] {
     }
   }
   const wings: NodeSpec[] = [
-    { id: 'LT', x: -2, y: 0 },
-    { id: 'LM', x: -2, y: 4 },
-    { id: 'LB', x: -2, y: 8 },
-    { id: 'LIT', x: -1, y: 2 },
-    { id: 'LIM', x: -1, y: 4 },
-    { id: 'LIB', x: -1, y: 6 },
-    { id: 'RT', x: 10, y: 0 },
-    { id: 'RM', x: 10, y: 4 },
-    { id: 'RB', x: 10, y: 8 },
-    { id: 'RIT', x: 9, y: 2 },
-    { id: 'RIM', x: 9, y: 4 },
-    { id: 'RIB', x: 9, y: 6 },
+    { id: 'LT', x: -4, y: 0 },
+    { id: 'LM', x: -4, y: 4 },
+    { id: 'LB', x: -4, y: 8 },
+    { id: 'LIT', x: -2, y: 2 },
+    { id: 'LIM', x: -2, y: 4 },
+    { id: 'LIB', x: -2, y: 6 },
+    { id: 'RT', x: 12, y: 0 },
+    { id: 'RM', x: 12, y: 4 },
+    { id: 'RB', x: 12, y: 8 },
+    { id: 'RIT', x: 10, y: 2 },
+    { id: 'RIM', x: 10, y: 4 },
+    { id: 'RIB', x: 10, y: 6 },
   ];
   return nodes.concat(wings);
 }

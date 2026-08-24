@@ -53,7 +53,7 @@ const STALL_RED = ['LT', 'LM', 'LB', 'LIT', 'LIM', 'A00', 'A01', 'A10', 'A21', '
 const STALL_BLUE = ['RT', 'RM', 'RB', 'RIT', 'RIM', 'RIB', 'A03', 'A04', 'A14', 'A20', 'A23', 'A24', 'A33', 'A34', 'A43', 'A44'];
 
 describe('Chrome 16-bead screenshot positions (human oracle)', () => {
-  it('two-click capture of the black bead: select jumper then click the enemy (unique over)', () => {
+  it('two-click capture of the black bead: select jumper then click the empty landing (enemy bead is inert)', () => {
     const session = new FeatureSession('16', { mode: 'pve', ...off });
     const engine = session.getEngine();
     for (const point of engine.getState().board.intersections) {
@@ -65,10 +65,13 @@ describe('Chrome 16-bead screenshot positions (human oracle)', () => {
 
     applyClick(session, idOf(session, 'A10'));
     expect(session.getSelectedId()).toBe(idOf(session, 'A10'));
-    expect(session.getLegalTargetIds()).toContain(idOf(session, 'A20'));
     expect(session.getLegalTargetIds()).toContain(idOf(session, 'A30'));
+    expect(session.getLegalTargetIds()).not.toContain(idOf(session, 'A20'));
 
-    applyClick(session, idOf(session, 'A20'));
+    // Enemy bead itself is completely inert
+    expect(session.interpretClick(idOf(session, 'A20')).kind).toBe('ignore');
+
+    applyClick(session, idOf(session, 'A30'));
     expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBeUndefined();
     expect(engine.getState().board.intersections.find((p) => p.label === 'A10')?.occupant).toBeUndefined();
     expect(engine.getState().board.intersections.find((p) => p.label === 'A30')?.occupant).toBe('RED');
@@ -89,13 +92,44 @@ describe('Chrome 16-bead screenshot positions (human oracle)', () => {
     expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe('BLUE');
   });
 
-  it('LIT has no collinear landing over A20 — click does not invent a hop', () => {
+  it('LIT has collinear diagonal landing A31 over A20, but not non-collinear horizontal A21', () => {
     const session = new FeatureSession('16', { mode: 'pve', ...off });
     loadOccupancy(session, CAPTURE_RED, CAPTURE_BLUE);
     session.getEngine().getState().currentPlayer = 'RED';
     applyClick(session, idOf(session, 'LIT'));
+    // Enemy bead itself is inert
     expect(session.interpretClick(idOf(session, 'A20')).kind).toBe('ignore');
+    // Horizontal bend is illegal
     expect(findJumpPath(session.getEngine().getState().board, idOf(session, 'LIT'), idOf(session, 'A21'))).toBeUndefined();
+    // Diagonal continuation into grid is legal
+    expect(findJumpPath(session.getEngine().getState().board, idOf(session, 'LIT'), idOf(session, 'A31'))).toBeDefined();
+  });
+
+  it('LIB can capture black bead on A20 landing on empty A11 (the exact screenshot scenario)', () => {
+    const session = new FeatureSession('16', { mode: 'pve', ...off });
+    // Clear board and place jumper on LIB, victim on A20, landing A11 empty
+    const engine = session.getEngine();
+    for (const point of engine.getState().board.intersections) {
+      point.occupant = undefined;
+    }
+    engine.getState().board.intersections.find((p) => p.label === 'LIB')!.occupant = 'RED';
+    engine.getState().board.intersections.find((p) => p.label === 'A20')!.occupant = 'BLUE';
+    engine.getState().board.intersections.find((p) => p.label === 'A44')!.occupant = 'BLUE';
+    engine.getState().currentPlayer = 'RED';
+
+    applyClick(session, idOf(session, 'LIB'));
+    expect(session.getSelectedId()).toBe(idOf(session, 'LIB'));
+    expect(session.getLegalTargetIds()).toContain(idOf(session, 'A11'));
+
+    // Enemy bead is inert
+    expect(session.interpretClick(idOf(session, 'A20')).kind).toBe('ignore');
+
+    // Clicking landing square executes the capture
+    applyClick(session, idOf(session, 'A11'));
+    expect(engine.getState().board.intersections.find((p) => p.label === 'LIB')?.occupant).toBeUndefined();
+    expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBeUndefined();
+    expect(engine.getState().board.intersections.find((p) => p.label === 'A11')?.occupant).toBe('RED');
+    expect(engine.getState().captures.RED).toBe(1);
   });
 
   it('stall screenshot: Medium runAiTurn finishes and returns the turn to Ivory', () => {

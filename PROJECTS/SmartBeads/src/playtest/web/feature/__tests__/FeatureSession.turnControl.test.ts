@@ -51,7 +51,7 @@ describe('FeatureSession natural turn taking (all V1 boards)', () => {
 });
 
 describe('FeatureSession 16-bead triangular two-click path', () => {
-  it('selecting LT offers collinear LIT capture to A20 and does not offer the LIM corner', () => {
+  it('selecting LT offers collinear landing A20, keeps LIT inert, and does not offer the LIM corner', () => {
     const session = new FeatureSession('16', { mode: 'pvp', ...off });
     const engine = session.getEngine();
     for (const point of engine.getState().board.intersections) {
@@ -65,10 +65,14 @@ describe('FeatureSession 16-bead triangular two-click path', () => {
     expect(session.selectNode(id('LT'))).toBe(true);
     const targets = session.getLegalTargetIds();
     expect(targets).toContain(id('A20'));
-    expect(targets).toContain(id('LIT'));
+    expect(targets).not.toContain(id('LIT'));
     expect(targets).not.toContain(id('LIM'));
 
-    const click = session.interpretClick(id('LIT'));
+    // Enemy bead is inert
+    expect(session.interpretClick(id('LIT')).kind).toBe('ignore');
+
+    // Clicking landing square executes capture
+    const click = session.interpretClick(id('A20'));
     expect(click.kind).toBe('move');
     if (click.kind !== 'move') return;
     session.applyMove(click.move);

@@ -15,7 +15,7 @@ SmartBeads/
 │   │   ├── Board12x6x5.ts             # 12-bead · 6×5 two-file rank (V1 #5)
 │   │   ├── Board8x4x6.ts              # 8-bead · 4×6 hourglass (V1 #6)
 │   │   ├── Board7.ts                  # 7-bead · 4×5 hourglass (V1 #7)
-│   │   ├── Board16Sholo.ts            # 16-bead · 5×5 + wings (V1 #1 reference)
+│   │   ├── Board16Sholo.ts            # 16-bead · 5×5 + wings (V1 #1 reference; collinear wing & junction geometry)
 │   │   └── __tests__/                 # Board geometry + prototype parity tests
 │   ├── config/
 │   │   ├── BoardConfig.ts             # BoardVariant → BoardDefinition registry
@@ -33,7 +33,7 @@ SmartBeads/
 │   │   │   ├── play-shell.css         # Feature shell layout/styles
 │   │   │   ├── BoardRenderer.ts       # Legacy SVG renderer (CLI / fallback)
 │   │   │   ├── feature/
-│   │   │   │   ├── FeatureSession.ts  # Session; interpretClick = landing or unique-over
+│   │   │   │   ├── FeatureSession.ts  # Session; interpretClick = landing (opponent beads inert)
 │   │   │   │   ├── GameFeatureSettings.ts
 │   │   │   │   ├── HonestAi.ts        # Complete-turn AI; think budget; live chain only
 │   │   │   │   ├── aiTurnPath.ts
@@ -101,7 +101,7 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 
 - **`main.ts`** — calls `bootstrapPlayShell()`.
 - **`PlayController.ts`** — settings panel, timers, undo, honest AI, board `<select>`, result modal; canvas clicks go through `FeatureSession.interpretClick`.
-- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; unique capture-over / idle unique-victim clicks map to the same legal hop as the empty landing.
+- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
 - **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas. Board lines are stroked straight from `board.connections`, so a drawn line is always a legal slide; `v1GeometryCaptureAudit.test.ts` pins that with a recording 2D context.

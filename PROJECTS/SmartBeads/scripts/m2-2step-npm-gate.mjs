@@ -68,8 +68,15 @@ async function main() {
       await runGate(gate);
     }
   } finally {
-    if (started) started.kill();
+    if (started?.pid) {
+      if (process.platform === 'win32') {
+        spawn('taskkill', ['/pid', String(started.pid), '/T', '/F'], { stdio: 'ignore' });
+      } else {
+        started.kill();
+      }
+    }
   }
+  process.exit(0);
 }
 
 main().catch((err) => {
