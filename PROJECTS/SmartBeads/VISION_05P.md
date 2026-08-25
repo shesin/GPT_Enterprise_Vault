@@ -114,7 +114,10 @@ Draw is a legitimate, accepted outcome of the hierarchy above — not a failure 
 
 ### Resignation
 
-Not yet designed. No resignation protocol exists in rules, code, or this document today. This is flagged as a future Major-tier decision, to be designed and evidenced before it's implemented — not assumed from an external draft.
+In bead strategy games, positions can reach mutually recognized deadlocks. Resignation is designed as a mutual-resolution mechanism: a player may offer resignation during their turn.
+- If the opponent **agrees** to the resignation, the game ends in a **Draw**.
+- If the opponent **declines** the resignation, the resigning player **Loses**.
+This protocol allows players to gracefully conclude drawn or non-viable endgames by mutual agreement, while ensuring that unilateral resignation yields a loss.
 
 ---
 
@@ -317,8 +320,8 @@ The project should continue improving through evidence while preserving the iden
 | 3 | **6-bead · 3×5** | Product |
 | 4 | **10-bead · 5×5** | Product |
 | 5 | **12-bead · 6×5** | Product |
-| 6 | **8-bead · 4×6 hourglass** | Product |
-| 7 | **7-bead · 4×5 hourglass** | Product |
+| 6 | **8-bead · 4×6** | Product |
+| 7 | **7-bead · 4×5** | Product |
 
 Lab verdicts may remain **NEEDS FURTHER TESTING**; the set is locked for app integration. Optional follow-up: size-adjusted move-cap sensitivity (see `LAB_TERMINOLOGY_05P.md`) and human playtest — not grounds to swap boards without a documented failure.
 

@@ -10,7 +10,7 @@ Your responsibility is to implement safely, verify thoroughly, and preserve the 
 
 The verified repository is the implementation source of truth.
 
-Agent roles, approval tiers, workflow, safety rules, the verification checklist, Knowledge Classification, and Engineering Principles are defined once in AGENT_RULE_05P.md — this file does not repeat them.
+Agent roles, approval tiers, workflow, safety rules, the verification checklist, Knowledge Classification, and Engineering Principles are defined once in `VISION/AGENT_RULE_05P.md` — this file does not repeat them.
 
 ---
 # Instrument Verification & Certification Rule
@@ -122,7 +122,7 @@ Before implementation:
 
 Before modifying code:
 
-1. Read GPT_PROJECT_RULES_01P.md, GPT_PROJECT_STATUS_01P.md, AGENT_RULE_05P.md, and PROJECT_MAP_05P.md.
+1. Read `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md`, `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md`, `VISION/AGENT_RULE_05P.md`, and `PROJECTS/SmartBeads/PROJECT_MAP_05P.md`.
 2. Inspect the repository. Identify authoritative implementation, existing architecture, affected modules, existing tests.
 
 Never assume filenames, classes, methods, folder structure, or missing functionality. Always use repository evidence.
@@ -192,11 +192,17 @@ Never invent files, tests, build results, errors, or implementation status. Repo
 
 When building or modifying a **playable HTML board** (Human vs AI / PvP shell):
 
-1. **Reference diff** — Identify the approved reference playable (e.g. `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html`) and match its shell: 4-column layout, Ivory/Ebony labels, settings panel IDs, undo, animations, turn highlight, and colour tokens unless the task explicitly changes them.
+1. **Reference diff** — Identify the approved reference playable (e.g. `SHOLO_GUTI_6_BEAD_WITH_FEATURE.html`) and match its shell: 3-column layout (Players panel, Board canvas, Settings panel), Ivory/Ebony labels, settings panel IDs, undo, animations, turn highlight, and colour tokens unless the task explicitly changes them.
 2. **Geometry vs cosmetics** — Board node count, adjacency, starting position, and centre/endgame rules are geometry; panel chrome is shell. Do not ship a compact single-column lab UI when the reference is the full feature shell.
 3. **Smoke test ≠ visual parity** — Headless VM smoke tests (legal moves, game finish) do not confirm drawing, centre highlight, or layout. After smoke passes, assert in code or report explicitly what was **not** visually verified.
-4. **Centre highlight** — Endgame centre zones are drawn as **per-node amber rings** on the designated centre node(s), not a large filled square covering the whole centre region unless explicitly requested.
-5. **Completion claim** — Per AGENT_RULE_05P.md: user-visible behaviour is CONFIRMED only when directly observed (browser open, screenshot, or explicit human sign-off). Smoke-only passes are Technical Verification, not UI confirmation.
+4. **Centre highlight** — Endgame centre zones are drawn as **per-node amber glowing plates and rings** on the designated centre node(s), not an arbitrary filled square covering the whole centre region unless explicitly requested.
+5. **Completion claim** — Per `VISION/AGENT_RULE_05P.md`: user-visible behaviour is CONFIRMED only when directly observed (browser open, screenshot, or explicit human sign-off). Smoke-only passes are Technical Verification, not UI confirmation.
+
+---
+
+# Output Formatting & Word Compatibility Rule
+
+When providing summaries, reports, or lists of tasks, format content with structured bullet points and bold key-value headers (e.g., `• Item Name: Description`) rather than wide markdown tables. This ensures the output copies and pastes cleanly into word processors (such as Microsoft Word or Google Docs) without table disorientation. Always begin responses with an explicit 'Understanding of the Task' summary.
 
 ---
 

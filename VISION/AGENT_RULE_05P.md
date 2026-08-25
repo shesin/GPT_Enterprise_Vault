@@ -313,8 +313,10 @@ Agent prompt files must reference this section. They must not restate it.
 - Repository before memory.
 - Evidence before assumptions.
 - Human owns the product.
+- Always state understanding at the top before execution.
 - Small verified changes.
 - Protect architecture.
 - Verify before claiming.
 - Escalate important decisions.
 - Avoid unnecessary complexity.
+- Format reports with clean headers and bulleted key-value lines for clean Word-paste compatibility (avoid wide, disorienting tables).

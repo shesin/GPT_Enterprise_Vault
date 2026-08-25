@@ -61,7 +61,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
   - `centerRule: 'endgame'` on 6 (4×4), 6 (3×5), 7 (4×5), and 8 (4×6).
   - `centerRule: 'off'` on 10 (5×5), 12 (6×5), and 16 (5×5).
   - `matchTimer: 'off'` and `shotClock: 'off'` across all 7 games.
-- **Resignation Protocol:** Resignation offer modal; opponent can accept draw or claim victory.
+- **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`).
 
 ### 5. Test & Quality Gates
 - **Jest Test Suite:** 391 unit tests passing across 31 test suites (100% deterministic).
@@ -72,16 +72,46 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 ## What Is Pending
 
 
-1. **Post-V1 Visual & Audio Polish (Planned):**
-   - Sound effects for slides, captures, and turn ticks.
-   - Smooth particle/fade capture animations.
-   - Additional bead themes and board texture skins.
-2. **V2 Platform Roadmap (Future):**
-   - Game move history log (PGN format) and replay viewer.
-   - AI coach / post-match tactical analysis.
-   - Online multiplayer via WebSocket matchmaking.
+### Complete Launch Path (Web → Android → Platform)
 
-## Human Playtesting method
+```text
+Phase 1 (Current)          Phase 2 (Immediate)           Phase 3 (Core Commercial)          Phase 4 (Future)
+Web Playtesting & QA  ──►  Web Polish & Audio     ──►    Android App Packaging      ──►     V2 Online Ecosystem
+(7 Locked Boards)          (SFX, Viewport, Log)          (Engine Wrap, Native UI)           (Multiplayer, PGN, AI Coach)
 
+## Pending — Web Game Launch (Phase 1 & 2)
 
-   - Direct human playtesting of all 7 boards via 'npx.cmd vite ' from D:\Business Idea\Gpt_Enterprise_Vault or `npm run web:smartbeads`    at `http://localhost:5173/`or 5174 to evaluate touch feel, pacing, and AI balance.
+| Task | Responsible | Time | Notes |
+|---|---|---|---|
+| Human playtest, all 7 boards | Shekhar | 2–4 hrs | Run `npm run web:smartbeads`, play each of the 7 boards. Only human-verifiable step — no AI can sign off on feel/balance. |
+| Fix bugs found in playtest (if any) | Shekhar decides, Developer AI implements | Unknown until found | Repro steps required as a failing test case before any fix — no vague bug reports. |
+| Add `vite build` production script | Developer AI | 15–30 min | App currently only runs in dev mode; this adds the command to package it into static files for hosting. |
+| Choose hosting (Vercel/Netlify/other) | Shekhar | Decision | Where the website will live. Vercel/Netlify are simplest free-tier options for a static app. |
+| Deploy + smoke-test live URL | Developer AI deploys, Shekhar confirms | 30 min | Confirm the live link plays the same as local dev. |
+
+## Pending — Android App (V1 Launch)
+
+| Task | Responsible | Time | Notes |
+|---|---|---|---|
+| Confirm approach: Capacitor wrap | Shekhar | Decision — Confirmed | Wraps existing web app in native shell. Native WebView bridge rejected. |
+| Install/configure Capacitor, add Android platform | Developer AI | 1–2 hrs | Turns web app into installable Android project. |
+| Touch-input verification on real device/emulator | Developer AI builds, Shekhar confirms | 2–4 hrs | Confirms taps land accurately on beads/nodes, especially on crowded boards like 16-bead. |
+| Screen-size/responsiveness pass for phones | Developer AI builds, Shekhar confirms | 1–3 hrs | Board and panel must fit and be readable on phone screens. |
+| App icon, splash screen, package ID | Shekhar provides assets/name, Developer AI wires in | 1 hr | Branding for home screen and store listing. |
+| Signed release .aab (keystore + Gradle) | Developer AI; Shekhar backs up keystore | 1–2 hrs | Keystore loss = cannot update app under same listing again. Shekhar must keep personal backup. |
+| Google Play Console: dev account, listing, privacy policy, content rating | Shekhar | 2–4 hrs | Business/legal steps only Shekhar can do. |
+| Google review queue | Google | 1–3 days | Outside anyone's control. |
+
+Excluded from V1 Android scope: haptic feedback, offline local match persistence, native WebView bridge (rejected in favor of Capacitor).
+
+## Human Playtesting Method
+
+To play and test the current V1 production release:
+1. Run the local dev server from npx.cmd vite:
+   ```powershell
+   npx.cmd vite
+   or
+   npm run web:smartbeads
+   ```
+2. Open `http://localhost:5173/` or 5174 in your browser.
+3. Select any of the 7 locked boards from the board dropdown to verify gameplay, AI response, and rules.

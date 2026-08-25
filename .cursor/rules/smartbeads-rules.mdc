@@ -48,7 +48,22 @@ Three configurable end modes (move/time/unlimited), never hardcoded. On limit, r
 
 ## Rule - Resignation
 
-Not yet decided. Do not implement until an explicit decision is recorded in `GPT_PROJECT_RULES_01P.md`.
+Either player (human or AI) may resign at any time during their own turn.
+- If the opponent AGREES to the resignation, the game ends in a DRAW.
+- If the opponent DECLINES the resignation, the resigning player LOSES.
+This applies identically regardless of whether the resigning or responding side is human or AI.
+
+## Rule - Always Show Understanding
+
+Every response from an AI agent must begin with an explicit 'Understanding of the Task' summary before continuing execution.
+
+## Rule - Git Commit on Request Only
+
+Never execute `git commit` unless explicitly instructed by the user.
+
+## Rule - Word-Compatible Output Formatting
+
+When generating responses, reports, or lists for the user, format content with structured bullet points and bold key-value headers (e.g., `• Item: Description`) rather than wide markdown tables, ensuring clean copy-pasting into word processors without disorientation.
 
 ## Rule - Configurable Parameters
 
