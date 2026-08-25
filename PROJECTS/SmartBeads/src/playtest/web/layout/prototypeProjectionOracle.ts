@@ -10,8 +10,8 @@ export interface ProtoPoint {
 
 export function protoSholo16(x: number, y: number, w: number, h: number): ProtoPoint {
   return {
-    x: 40 + (y / 8) * (w - 80),
-    y: 36 + ((12 - x) / 16) * (h - 72),
+    x: 44 + (y / 8) * (w - 88),
+    y: 44 + ((10 - x) / 12) * (h - 88),
   };
 }
 

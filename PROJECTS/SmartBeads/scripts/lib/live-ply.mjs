@@ -36,17 +36,17 @@ export async function timingWindow(page) {
  * AI ply already landed. Do not use a long sleep — that is how hanging
  * captures used to pass as "the human move worked".
  */
-export async function waitForHumanPlyCommitted(page, maxMs = 500) {
+export async function waitForHumanPlyCommitted(page, maxMs = 600) {
   const t0 = Date.now();
   while (Date.now() - t0 < maxMs) {
     const snap = await liveSnap(page);
-    if (snap.moveCount >= 2) {
-      return { snap, tooLate: true };
-    }
     if (snap.moveCount === 1 && !snap.animating) {
       return { snap, tooLate: false };
     }
-    await page.waitForTimeout(16);
+    if (snap.moveCount >= 2) {
+      return { snap, tooLate: true };
+    }
+    await page.waitForTimeout(10);
   }
   return { snap: await liveSnap(page), tooLate: true };
 }

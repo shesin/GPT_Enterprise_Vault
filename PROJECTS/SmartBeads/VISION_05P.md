@@ -97,6 +97,23 @@ Build long-term trust through quality.
 
 A board is a graph of nodes and legal connections — never a plain square grid, even where nodes happen to be indexed by row/col internally for convenience. Diagonal and orthogonal jump paths must follow the same real physical adjacency the traditional board has. This is why "Board Fidelity" is a hard rule: representing coordinates as `row * width + col` is fine; silently dropping the diagonal edges that a real board has is not.
 
+### 16-Bead Geometry & Proportion Standard (Web & Mobile Reference)
+
+To ensure visual clarity, touch ergonomics, and strict line straightness across both Web and Android native apps, the 16-bead board follows these architectural proportions:
+- **Central 5×5 Grid Baseline:** The 10-bead 5×5 square board serves as the dimensional reference. The central 5×5 box occupies prominent width and height (~70% of vertical playable height, full width across columns `c1` to `c5`).
+- **Column Lattice (`c1`–`c5`):** 
+  - `c1` = Left outer vertical boundary
+  - `c2` = Left inner vertical line
+  - `c3` = Center vertical line (board spine)
+  - `c4` = Right inner vertical line
+  - `c5` = Right outer vertical boundary
+- **Triangle Caps (Top & Bottom Wings):**
+  - **Apex:** Meets the 5×5 rectangle at the center node (`c3`) of the outer rank.
+  - **Mid-Row (Inner Triangle Row):** 3 nodes placed strictly at columns `c2`, `c3`, and `c4` (narrower span).
+  - **Outer Base Row:** 3 nodes placed at columns `c1`, `c3`, and `c5` along the continuous diagonal trajectories.
+  - **Vertical Row Height:** The vertical height between triangle rows is compact (~50% of the 5×5 rectangular cell height).
+- **Collinearity Invariant:** All diagonal lines (`c3` ➔ `c2` ➔ `c1` and `c3` ➔ `c4` ➔ `c5`) maintain continuous straight-line alignment across the apex junction, preserving legal slide and jump-capture mechanics across both Web canvas and Android viewports.
+
 ### Multi-Jump & Capture Optionality
 
 Chain jumps are permitted whenever a legal consecutive capture exists, but never forced. A player — human or AI — may always stop after completing a legal jump. This is "Capture Optionality," and it exists because traditional bead games have always treated continuing a capture as the player's choice, not an obligation. A specific AI's internal continue-vs-stop policy (e.g. a random opponent's odds of continuing) is an implementation detail of that AI only — it must never be promoted to a gameplay rule.

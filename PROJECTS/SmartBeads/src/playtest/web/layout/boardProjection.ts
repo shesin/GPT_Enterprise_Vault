@@ -1,15 +1,15 @@
 import { BoardDefinition, Intersection } from '../../../models/GameState';
 import { getBoardVisualProfile, ProjectionKind } from './boardVisualProfile';
 
-/** Default lattice projection matching 16-bead canvas (x in [-4, 12], y in [0, 8]). */
+/** Default lattice projection matching 16-bead canvas (x in [-2, 10], y in [0, 8]). */
 export const SHOLO_LATTICE_PROJECTION = {
-  padX: 40,
-  padY: 36,
+  padX: 44,
+  padY: 44,
   latticeYSpan: 8,
-  latticeXBase: 12,
-  latticeXSpan: 16,
-  widthInset: 80,
-  heightInset: 72,
+  latticeXBase: 10,
+  latticeXSpan: 12,
+  widthInset: 88,
+  heightInset: 88,
 } as const;
 
 export function getLatticeBounds(board: BoardDefinition): { maxX: number; maxY: number } {

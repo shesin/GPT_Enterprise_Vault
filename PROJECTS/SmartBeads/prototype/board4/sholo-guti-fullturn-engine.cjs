@@ -67,8 +67,8 @@ function addNode(id, x, y) {
 }
 for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) addNode('A' + r + c, 2 * c, 2 * r);
 [
-  ['LT', -4, 0], ['LM', -4, 4], ['LB', -4, 8], ['LIT', -2, 2], ['LIM', -2, 4], ['LIB', -2, 6],
-  ['RT', 12, 0], ['RM', 12, 4], ['RB', 12, 8], ['RIT', 10, 2], ['RIM', 10, 4], ['RIB', 10, 6],
+  ['LT', -2, 2], ['LM', -2, 4], ['LB', -2, 6], ['LIT', -1, 3], ['LIM', -1, 4], ['LIB', -1, 5],
+  ['RT', 10, 2], ['RM', 10, 4], ['RB', 10, 6], ['RIT', 9, 3], ['RIM', 9, 4], ['RIB', 9, 5],
 ].forEach(([id, x, y]) => addNode(id, x, y));
 const N = NODES.length;
 const ADJ = Array.from({ length: N }, () => []);

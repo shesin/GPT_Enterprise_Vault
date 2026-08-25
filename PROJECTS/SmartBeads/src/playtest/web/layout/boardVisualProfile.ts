@@ -27,7 +27,7 @@ export interface BoardVisualProfile {
 }
 
 const SQUARE_CANVAS = { canvasWidth: 560, canvasHeight: 560 } as const;
-const SHOLO16_CANVAS = { canvasWidth: 560, canvasHeight: 700 } as const;
+const SHOLO16_CANVAS = { canvasWidth: 560, canvasHeight: 796 } as const;
 
 const PROFILES: Record<string, BoardVisualProfile> = {
   'Sholo-Guti-16x5x5': {

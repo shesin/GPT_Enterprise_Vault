@@ -47,7 +47,7 @@ function assertMatchesPrototype(
 describe('production projection vs prototype HTML toXY', () => {
   it('16-bead matches SHOLO_GUTI_WITH_FEATURE.html', () => {
     const { width: w, height: h } = getBoardCanvasSize(Board16Sholo.name);
-    expect([w, h]).toEqual([560, 700]);
+    expect([w, h]).toEqual([560, 796]);
     assertMatchesPrototype(Board16Sholo, (x, y) => protoSholo16(x, y, w, h));
   });
 

@@ -23,7 +23,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 
 | # | Board Variant | Geometry & Architecture | Status |
 |---|---|---|---|
-| 1 | **16-bead · 5×5 + wings** | 37-node Alquerque + 2 triangular wings (`Board16Sholo.ts`). Corrected collinear lattice coordinates (`x \in [-4, 12]`), prominent 5×5 central playing area (480px width), compact wing caps (157px height). All straight & diagonal apex junction captures verified. Single amber center plate. | **VERIFIED CLEAN** |
+| 1 | **16-bead · 5×5 + wings** | 37-node Alquerque + 2 triangular wings (`Board16Sholo.ts`). Compact wing caps aligned with columns `c2` to `c4` with 50% row height; prominent 5×5 central playing area (472px width by 472px height on 560×796 canvas). All straight & diagonal apex junction captures verified. Single amber center plate. | **VERIFIED CLEAN** |
 | 2 | **6-bead · 4×4** | 16-node full box-cross lattice (`Board6.ts`). Quad amber center scoring plates (2×2 box). Default endgame center scoring. | **VERIFIED CLEAN** |
 | 3 | **6-bead · 3×5** | 15-node Alquerque top-bottom camp lattice (`Board6x3x5.ts`). Single amber center plate (Node 7). Default endgame center scoring. | **VERIFIED CLEAN** |
 | 4 | **10-bead · 5×5** | 25-node Alquerque with empty center file (`Board10x5.ts`). Single amber center plate (Node 12). Default center off. | **VERIFIED CLEAN** |
@@ -47,7 +47,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Inert Opponent Beads:** Only active player beads glow and are clickable. Opponent beads are 100% inert in all states (idle, selected, mid-chain).
 - **Target Highlighting:** Clicking an active piece highlights empty landing spots exclusively; clicking the empty landing executes the capture/slide.
 - **Selection Safety:** Clicking an immobile own bead safely deselects without leaving accidental armed states.
-- **16-Bead Visual Layout:** Central 5×5 grid is rendered as a prominent 480px-wide playing area with compact 157px wing caps (0.80 aspect ratio).
+- **16-Bead Visual Layout:** Central 5×5 grid is rendered as a prominent 472px square matching 10-bead width with compact 59px-high wing caps (560×796 canvas, 0.70 aspect ratio).
 - **Unified Center Plates:** Consistent glowing amber square plates render under center nodes for all 7 boards.
 
 ### 3. PvE & AI Opponent (`HonestAi.ts`, `PlayController.ts`)
