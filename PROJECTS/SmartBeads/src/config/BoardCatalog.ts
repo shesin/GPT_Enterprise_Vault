@@ -131,7 +131,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     play: {
       defaultSettings: {
         ...BASE_SETTINGS,
-        centerRule: 'endgame',
+        centerRule: 'off',
         matchTimer: 'off',
         shotClock: 'off',
       },
@@ -152,7 +152,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     play: {
       defaultSettings: {
         ...BASE_SETTINGS,
-        centerRule: 'endgame',
+        centerRule: 'off',
         matchTimer: 'off',
         shotClock: 'off',
       },
@@ -173,7 +173,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     play: {
       defaultSettings: {
         ...BASE_SETTINGS,
-        centerRule: 'endgame',
+        centerRule: 'off',
         matchTimer: 'off',
         shotClock: 'off',
       },
@@ -194,7 +194,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
     play: {
       defaultSettings: {
         ...BASE_SETTINGS,
-        centerRule: 'endgame',
+        centerRule: 'off',
         matchTimer: 'off',
         shotClock: 'off',
       },

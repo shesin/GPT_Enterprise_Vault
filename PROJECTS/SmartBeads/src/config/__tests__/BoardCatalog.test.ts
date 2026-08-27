@@ -34,11 +34,11 @@ describe('BoardCatalog human-decided settings', () => {
     }
   });
 
-  it('6-bead boards: Cumulative/End-Game/Off centre, default End-Game; timers default Off', () => {
+  it('6-bead boards: Cumulative/End-Game/Off centre, default Off; timers default Off', () => {
     for (const id of ['6x4', '6x3x5'] as const) {
       const play = byId[id].play;
       expect(play.centerRuleOptions).toEqual(['off', 'cumulative', 'endgame']);
-      expect(play.defaultSettings.centerRule).toBe('endgame');
+      expect(play.defaultSettings.centerRule).toBe('off');
       expect(play.matchTimerOptions).toEqual(['off', '3', '5', '10']);
       expect(play.defaultSettings.matchTimer).toBe('off');
       expect(play.shotClockOptions).toEqual(['off', '30', '60']);
@@ -46,11 +46,11 @@ describe('BoardCatalog human-decided settings', () => {
     }
   });
 
-  it('7/8-bead boards: Cumulative/End-Game/Off centre, default End-Game; timers default Off', () => {
+  it('7/8-bead boards: Cumulative/End-Game/Off centre, default Off; timers default Off', () => {
     for (const id of ['7x4x5', '8x4x6'] as const) {
       const play = byId[id].play;
       expect(play.centerRuleOptions).toEqual(['off', 'cumulative', 'endgame']);
-      expect(play.defaultSettings.centerRule).toBe('endgame');
+      expect(play.defaultSettings.centerRule).toBe('off');
       expect(play.matchTimerOptions).toEqual(['off', '3', '5', '10']);
       expect(play.defaultSettings.matchTimer).toBe('off');
       expect(play.shotClockOptions).toEqual(['off', '30', '60']);

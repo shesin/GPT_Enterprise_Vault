@@ -355,3 +355,28 @@ Lab verdicts may remain **NEEDS FURTHER TESTING**; the set is locked for app int
 9. **Do not reopen** board selection unless a genuine Lab or gameplay failure is found.
 
 Detail on gates, move-cap bands, and sensitivity runs: `LAB_TERMINOLOGY_05P.md`.
+
+## Pending — Web Game Launch (Phase 1 & 2)
+
+| Task | Responsible | Time | Notes |
+|---|---|---|---|
+| Human playtest, all 7 boards | Shekhar | 2–4 hrs | Run `npm run web:smartbeads`, play each of the 7 boards. Only human-verifiable step — no AI can sign off on feel/balance. |
+| Fix bugs found in playtest (if any) | Shekhar decides, Developer AI implements | Unknown until found | Repro steps required as a failing test case before any fix — no vague bug reports. |
+| Add `vite build` production script | Developer AI | 15–30 min | App currently only runs in dev mode; this adds the command to package it into static files for hosting. |
+| Choose hosting (Vercel/Netlify/other) | Shekhar | Decision | Where the website will live. Vercel/Netlify are simplest free-tier options for a static app. |
+| Deploy + smoke-test live URL | Developer AI deploys, Shekhar confirms | 30 min | Confirm the live link plays the same as local dev. |
+
+## Pending — Android App (V1 Launch)
+
+| Task | Responsible | Time | Notes |
+|---|---|---|---|
+| Confirm approach: Capacitor wrap | Shekhar | Decision — Confirmed | Wraps existing web app in native shell. Native WebView bridge rejected. |
+| Install/configure Capacitor, add Android platform | Developer AI | 1–2 hrs | Turns web app into installable Android project. |
+| Touch-input verification on real device/emulator | Developer AI builds, Shekhar confirms | 2–4 hrs | Confirms taps land accurately on beads/nodes, especially on crowded boards like 16-bead. |
+| Screen-size/responsiveness pass for phones | Developer AI builds, Shekhar confirms | 1–3 hrs | Board and panel must fit and be readable on phone screens. |
+| App icon, splash screen, package ID | Shekhar provides assets/name, Developer AI wires in | 1 hr | Branding for home screen and store listing. |
+| Signed release .aab (keystore + Gradle) | Developer AI; Shekhar backs up keystore | 1–2 hrs | Keystore loss = cannot update app under same listing again. Shekhar must keep personal backup. |
+| Google Play Console: dev account, listing, privacy policy, content rating | Shekhar | 2–4 hrs | Business/legal steps only Shekhar can do. |
+| Google review queue | Google | 1–3 days | Outside anyone's control. |
+
+Excluded from V1 Android scope: haptic feedback, offline local match persistence, native WebView bridge (rejected in favor of Capacitor).

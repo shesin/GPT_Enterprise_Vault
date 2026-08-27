@@ -36,13 +36,34 @@
     </aside>
 
     <main class="main">
-      <div class="board-frame"><canvas id="board" width="500" height="680"></canvas></div>
+      <div class="board-frame">
+        <canvas id="board" width="500" height="680"></canvas>
+        <div id="start-screen-overlay" class="start-screen-overlay">
+          <div class="start-screen-card">
+            <div class="start-screen-badge">★ SMARTBEADS ★</div>
+            <h2 class="start-screen-heading" id="start-screen-heading">16-BEAD TOURNAMENT</h2>
+            <button type="button" id="start-game-btn" class="start-game-btn">▶ START GAME</button>
+            <p class="start-screen-hint">Tap to play with music & sound</p>
+          </div>
+        </div>
+        <div id="board-celebration-fx" class="board-celebration-fx">
+          <div id="celebration-halo" class="celebration-halo"></div>
+          <div id="celebration-particles" class="celebration-particles"></div>
+          <div id="start-banner" class="start-banner">
+            <div class="start-banner-card">
+              <div id="start-banner-subtitle" class="start-banner-subtitle">★ SMARTBEADS TOURNAMENT ★</div>
+              <div id="start-banner-title" class="start-banner-title">READY... PLAY!</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div id="status"></div>
       <div class="controls">
         <button class="finish" id="finish-btn">Finish chain</button>
         <button id="resign-btn" type="button">Resign</button>
         <button id="undo-btn" type="button">Undo</button>
         <button id="restart-btn">New game</button>
+        <button id="sfx-mute-btn" type="button" title="Toggle sound effects">🔊 Sound</button>
       </div>
     </main>
 
@@ -112,10 +133,15 @@
   </div>
 
   <div class="modal" id="result-modal">
-    <div class="modal-card">
-      <h3 id="result-title">Game Over</h3>
-      <p id="result-desc"></p>
-      <button id="play-again-btn">Play again</button>
+    <div id="modal-celebration-halo" class="celebration-halo"></div>
+    <div id="modal-celebration-particles" class="celebration-particles"></div>
+    <div class="modal-card result-card">
+      <div class="modal-badge" id="result-badge">★ MATCH COMPLETED ★</div>
+      <h3 id="result-title" class="result-title">CONGRATULATIONS! YOU WON!</h3>
+      <p id="result-desc" class="result-desc"></p>
+      <div class="modal-actions">
+        <button type="button" id="play-again-btn" class="play-again-btn">↻ PLAY AGAIN</button>
+      </div>
     </div>
   </div>
 

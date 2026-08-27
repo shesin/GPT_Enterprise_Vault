@@ -35,12 +35,18 @@ SmartBeads/
 │   │   │   ├── feature/
 │   │   │   │   ├── FeatureSession.ts  # Session; interpretClick = landing (opponent beads inert)
 │   │   │   │   ├── GameFeatureSettings.ts
-│   │   │   │   ├── HonestAi.ts        # Complete-turn AI; think budget; live chain only
+│   │   │   │   ├── HonestAi.ts        # Easy/Medium/Hard contract; center-aware eval
+│   │   │   │   ├── clockPolicy.ts     # Shell timers tick during AI think
 │   │   │   │   ├── aiTurnPath.ts
 │   │   │   │   ├── firstMoveInvariants.ts  # Isolated human-ply occupancy
 │   │   │   │   ├── pveTiming.ts       # Slide/jump anim, AI reply delay, think budget
 │   │   │   │   ├── centerScoring.ts
-│   │   │   │   └── __tests__/         # firstMove, turnControl, resignation, HonestAi
+│   │   │   │   └── __tests__/         # firstMove, turnControl, resignation, difficulty,
+│   │   │   │                          #   featureRules, clockPolicy, allBoards.smoke
+│   │   │   ├── audio/
+│   │   │   │   ├── SoundEffects.ts    # Procedural sweet-acoustic SFX + BGM
+│   │   │   │   ├── SoundAssets.ts
+│   │   │   │   └── assets/            # Optional sample/voice assets
 │   │   │   ├── layout/
 │   │   │   │   ├── boardProjection.ts
 │   │   │   │   ├── boardVisualProfile.ts
@@ -76,7 +82,12 @@ SmartBeads/
 │   ├── m2-12x6x5-browser-verify.mjs
 │   ├── m2-8x4x6-browser-verify.mjs
 │   ├── m2-7x4x5-browser-verify.mjs
-│   └── m2-catalog-settings-verify.mjs
+│   ├── m2-catalog-settings-verify.mjs
+│   └── lab-ai-difficulty-eval.mjs     # Production HonestAi Lab (not prototype .cjs)
+│
+├── gpt_project_audit/                 # Process failure audits + strict Cursor paste prompts
+│   ├── AI_FAILURE_AUDIT_4TH_CYCLE_01P.md
+│   └── CURSOR_STRICT_PROMPTS_01P.md
 │
 ├── prototype/                         # Design/UX prototypes (outside production src/)
 │   └── board4/                        # Standalone HTML gameplay lab for Board4-scale boards
@@ -101,7 +112,10 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 
 - **`main.ts`** — calls `bootstrapPlayShell()`.
 - **`PlayController.ts`** — settings panel, timers, undo, honest AI, board `<select>`, result modal; canvas clicks go through `FeatureSession.interpretClick`.
-- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution.
+- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. No 3-fold repetition in production.
+- **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center valued when rule is on.
+- **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.
+- **`audio/SoundEffects.ts`** — procedural SFX, start overlay unlock, end celebration audio.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
 - **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas. Board lines are stroked straight from `board.connections`, so a drawn line is always a legal slide; `v1GeometryCaptureAudit.test.ts` pins that with a recording 2D context.
@@ -175,6 +189,7 @@ Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for
 | `VISION_05P.md` | Vision, locked V1 seven, design reasoning |
 | `GPT_PROJECT_STATUS_01P.md` | Milestone status and next step |
 | `PROJECT_MAP_05P.md` | This file — structure and navigation |
+| `gpt_project_audit/` | Process failure audits + strict Cursor prompts (supporting) |
 | `WEB_FEATURE_TEST_05P.md` | Per-board feature defaults (centre rule, timers) |
 | `LAB_TERMINOLOGY_05P.md` / `WEB_REPORT_*.md` | Lab methodology and board verdicts |
 

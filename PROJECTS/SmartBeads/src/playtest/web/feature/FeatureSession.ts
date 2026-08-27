@@ -16,7 +16,6 @@ export interface SessionSnapshot {
   settings: GameFeatureSettings;
   uiState: UiInteractionState;
   selectedId: number | null;
-  repetitionHistory: Record<string, number>;
   p1Clock: number;
   p2Clock: number;
   globalMatchRemaining: number;
@@ -35,22 +34,10 @@ function opponentOf(player: Player): Player {
   return player === 'RED' ? 'BLUE' : 'RED';
 }
 
-function positionKey(state: GameState, mover: Player): string {
-  const occ = state.board.intersections.map((p) => {
-    if (p.occupant === 'RED') return 'R';
-    if (p.occupant === 'BLUE') return 'B';
-    return '0';
-  }).join('');
-  return `${occ}_${mover}`;
-}
-
-function cloneHistory(h: Record<string, number>): Record<string, number> {
-  return { ...h };
-}
-
 /**
  * Feature-layer session wrapping M1 SmartBeadsEngine.
- * Timers, repetition draw, center tiebreak, and undo live here — not in core rules.
+ * Timers, center tiebreak, and undo live here — not in core rules.
+ * 3-fold repetition was removed by product decision (never approved for V1).
  */
 export class FeatureSession {
   private boardVariant: BoardVariant;
@@ -58,7 +45,6 @@ export class FeatureSession {
   private settings: GameFeatureSettings;
   private uiState: UiInteractionState = 'idle';
   private selectedId: number | null = null;
-  private repetitionHistory: Record<string, number> = {};
   private p1Clock = 0;
   private p2Clock = 0;
   private globalMatchRemaining = 0;
@@ -92,7 +78,6 @@ export class FeatureSession {
     this.engine = new SmartBeadsEngine(this.boardVariant);
     this.uiState = 'idle';
     this.selectedId = null;
-    this.repetitionHistory = {};
     this.p1CenterScore = 0;
     this.p2CenterScore = 0;
     this.featureOver = null;
@@ -106,7 +91,6 @@ export class FeatureSession {
       settings: { ...this.settings },
       uiState: this.uiState,
       selectedId: this.selectedId,
-      repetitionHistory: cloneHistory(this.repetitionHistory),
       p1Clock: this.p1Clock,
       p2Clock: this.p2Clock,
       globalMatchRemaining: this.globalMatchRemaining,
@@ -123,7 +107,6 @@ export class FeatureSession {
     this.settings = { ...snap.settings };
     this.uiState = snap.uiState;
     this.selectedId = snap.selectedId;
-    this.repetitionHistory = cloneHistory(snap.repetitionHistory);
     this.p1Clock = snap.p1Clock;
     this.p2Clock = snap.p2Clock;
     this.globalMatchRemaining = snap.globalMatchRemaining;
@@ -335,14 +318,6 @@ export class FeatureSession {
       return;
     }
 
-    const key = positionKey(engState, mover);
-    this.repetitionHistory[key] = (this.repetitionHistory[key] || 0) + 1;
-    if (this.repetitionHistory[key] >= 3) {
-      this.featureOver = { winner: 'DRAW', reason: 'Draw — 3-fold repetition.' };
-      this.uiState = 'game_over';
-      return;
-    }
-
     this.shotRemaining = this.shotLimit;
   }
 
@@ -436,14 +411,6 @@ export class FeatureSession {
         this.evaluateScoreAndEnd('Match timer expired.');
       }
     }
-  }
-
-  private trackCumulativeCenterLanding(nodeId: number): void {
-    const centerIds = this.engine.getState().board.centerNodeIds ?? [];
-    if (!centerIds.includes(nodeId)) return;
-    const occupant = this.engine.getState().board.intersections[nodeId]?.occupant;
-    if (occupant === 'RED') this.p1CenterScore += 1;
-    else if (occupant === 'BLUE') this.p2CenterScore += 1;
   }
 
   resetTurnClock(): void {

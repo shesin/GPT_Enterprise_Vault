@@ -37,6 +37,8 @@ function record(name, ok, detail) {
 }
 
 async function setup(page, catalogId, mode) {
+  await page.waitForFunction(() => document.querySelectorAll('#board-select option').length > 0);
+  await page.evaluate(() => document.getElementById('start-screen-overlay')?.classList.add('hidden'));
   await page.selectOption('#board-select', catalogId);
   await page.selectOption('#game-mode-select', mode);
   await page.selectOption('#match-timer-select', 'off');

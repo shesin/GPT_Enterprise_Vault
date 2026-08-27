@@ -254,6 +254,19 @@ describe('SmartBeadsEngine', () => {
     expect(state.winner).toBe('RED');
   });
 
+  it('ply_limit profile ends immediately on elimination (not only at maxPlies)', () => {
+    const engine = new SmartBeadsEngine('4');
+    const state = engine.getState();
+    for (const point of state.board.intersections) point.occupant = undefined;
+    state.board.intersections[0].occupant = 'RED';
+    state.board.intersections[4].occupant = 'BLUE';
+    engine.applyMove({ from: 0, to: 8 });
+    expect(engine.countPieces('BLUE')).toBe(0);
+    expect(state.gameOver).toBe(true);
+    expect(state.winner).toBe('RED');
+    expect(state.endReason).toBe('elimination');
+  });
+
   it('uses center-node control as a tie-breaker when captures are equal', () => {
     const engine = new SmartBeadsEngine('4');
     const state = engine.getState();
@@ -316,6 +329,8 @@ describe('SmartBeadsEngine', () => {
     }
     state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
     state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
+    // Keep a second BLUE so the game continues after one capture
+    state.board.intersections.find((point) => point.id === 15)!.occupant = 'BLUE';
 
     engine.applyMove({ from: 0, to: 8 });
 
@@ -323,6 +338,7 @@ describe('SmartBeadsEngine', () => {
     expect(state.board.intersections.find((point) => point.id === 4)?.occupant).toBeUndefined();
     expect(state.board.intersections.find((point) => point.id === 8)?.occupant).toBe('RED');
     expect(state.captures.RED).toBe(1);
+    expect(state.gameOver).toBe(false);
     expect(state.currentPlayer).toBe('BLUE');
     expect(engine.getChainPieceId()).toBeNull();
   });
@@ -338,6 +354,7 @@ describe('SmartBeadsEngine', () => {
     state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
     state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
     state.board.intersections.find((point) => point.id === 9)!.occupant = 'BLUE';
+    state.board.intersections.find((point) => point.id === 15)!.occupant = 'BLUE';
 
     engine.applyMove({ from: 0, to: 8 });
 
@@ -364,6 +381,7 @@ describe('SmartBeadsEngine', () => {
     state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
     state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
     state.board.intersections.find((point) => point.id === 9)!.occupant = 'BLUE';
+    state.board.intersections.find((point) => point.id === 15)!.occupant = 'BLUE';
 
     engine.applyMove({ from: 0, to: 8 });
     engine.applyMove({ from: 8, to: 10 });
@@ -373,6 +391,7 @@ describe('SmartBeadsEngine', () => {
     expect(state.board.intersections.find((point) => point.id === 9)?.occupant).toBeUndefined();
     expect(state.board.intersections.find((point) => point.id === 10)?.occupant).toBe('RED');
     expect(engine.getChainPieceId()).toBeNull();
+    expect(state.gameOver).toBe(false);
     expect(state.currentPlayer).toBe('BLUE');
   });
 

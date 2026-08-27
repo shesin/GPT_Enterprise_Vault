@@ -1,10 +1,10 @@
 # CHATGPT_PROMPT_01.md (personal — not referenced in repo docs)
 
-# AI_PROMPT_01.md (Merged Additions)
+your messages must not be of pages, it must be concise to the point, having all imp points and details
 
 # PROMPT to CURSOR OR CLINE
 
-It must be precise, to the point. It should not be very long but concise, having all important points.
+It must be precise, to the point and short. It should not be long and have all imp points .
 
 ## Core Operating Principles
 

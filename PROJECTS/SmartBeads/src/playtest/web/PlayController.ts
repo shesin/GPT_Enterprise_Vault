@@ -22,8 +22,14 @@ import {
 } from './feature/GameFeatureSettings';
 import { applyAiHops, AiHopRecord } from './feature/aiTurnPath';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
-import { selectAiTurnPath, shouldAcceptResignationDraw } from './feature/HonestAi';
-import { AI_REPLY_DELAY_MS, AI_THINK_BUDGET_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
+import { shellTimerShouldSkip } from './feature/clockPolicy';
+import {
+  selectAiTurnPath,
+  shouldAcceptResignationDraw,
+  thinkBudgetForLevel,
+  AiCenterContext,
+} from './feature/HonestAi';
+import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
 import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
 import {
@@ -31,6 +37,7 @@ import {
   drawCanvasBoard,
   hitTestNode,
 } from './render/CanvasBoardRenderer';
+import { soundEffects } from './audio/SoundEffects';
 
 function fmtClock(sec: number): string {
   const clamped = sec < 0 ? 0 : sec;
@@ -65,25 +72,36 @@ export function completeAiTurnIfChainOpen(session: FeatureSession): void {
   }
 }
 
+function aiCenterFromSession(session: FeatureSession): AiCenterContext {
+  const settings = session.getSettings();
+  const scores = session.getCenterDisplayScores();
+  return {
+    centerRule: settings.centerRule,
+    cumulativeRed: scores.red,
+    cumulativeBlue: scores.blue,
+  };
+}
+
 /**
- * Choose an AI path without throwing: Medium/Hard with a think budget, then Easy, then first legal hop.
+ * Choose an AI path without throwing.
+ * Never silently downgrade Hard/Medium to Easy — that broke the difficulty contract.
+ * Only emergency fallback: first legal hop if search returns empty.
+ * Center rule is always passed so Endgame/Cumulative affect Medium/Hard eval.
  */
 export function planAiTurnPath(session: FeatureSession): Move[] | null {
   const settings = session.getSettings();
   const aiPlayer = session.getAiPlayer();
   const variant = session.getBoardVariant();
   const snap = session.getEngine().exportSnapshot();
+  const center = aiCenterFromSession(session);
   try {
-    const planned = selectAiTurnPath(variant, settings.aiLevel, snap, aiPlayer, AI_THINK_BUDGET_MS);
+    const planned = selectAiTurnPath(variant, settings.aiLevel, snap, aiPlayer, {
+      budgetMs: thinkBudgetForLevel(settings.aiLevel),
+      center,
+    });
     if (planned?.length) return planned;
   } catch {
-    /* Easy fallback below */
-  }
-  try {
-    const easy = selectAiTurnPath(variant, 1, snap, aiPlayer, 200);
-    if (easy?.length) return easy;
-  } catch {
-    /* first legal hop below */
+    /* fall through to emergency legal hop — do not substitute Easy search */
   }
   const legal = session.getEngine().getLegalMoves();
   return legal.length ? [legal[0]] : null;
@@ -150,6 +168,8 @@ export function bootstrapPlayShell(): void {
   let aiRunId = 0;
   const undoStack: SessionSnapshot[] = [];
   let pendingResignPlayer: Player | null = null;
+  let lastGameOverPlayed = false;
+  let turnCaptures = 0;
 
   const canvas = document.getElementById('board') as HTMLCanvasElement;
   const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
@@ -157,6 +177,7 @@ export function bootstrapPlayShell(): void {
   const undoBtn = document.getElementById('undo-btn') as HTMLButtonElement;
   const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
   const playAgainBtn = document.getElementById('play-again-btn') as HTMLButtonElement;
+  const sfxMuteBtn = document.getElementById('sfx-mute-btn') as HTMLButtonElement | null;
   const resultModal = document.getElementById('result-modal') as HTMLDivElement;
   const resignOfferModal = document.getElementById('resign-offer-modal') as HTMLDivElement;
   const resignOfferDesc = document.getElementById('resign-offer-desc') as HTMLParagraphElement;
@@ -165,6 +186,106 @@ export function bootstrapPlayShell(): void {
   const resultTitle = document.getElementById('result-title') as HTMLHeadingElement;
   const resultDesc = document.getElementById('result-desc') as HTMLParagraphElement;
   const statusEl = document.getElementById('status') as HTMLDivElement | null;
+  const startScreenOverlay = document.getElementById('start-screen-overlay') as HTMLDivElement | null;
+  const startGameBtn = document.getElementById('start-game-btn') as HTMLButtonElement | null;
+  const celebrationFx = document.getElementById('board-celebration-fx') as HTMLDivElement | null;
+  const celebrationParticles = document.getElementById('celebration-particles') as HTMLDivElement | null;
+  const modalCelebrationParticles = document.getElementById('modal-celebration-particles') as HTMLDivElement | null;
+  const modalCelebrationHalo = document.getElementById('modal-celebration-halo') as HTMLDivElement | null;
+  const startBanner = document.getElementById('start-banner') as HTMLDivElement | null;
+  const startBannerTitle = document.getElementById('start-banner-title') as HTMLDivElement | null;
+  const startBannerSubtitle = document.getElementById('start-banner-subtitle') as HTMLDivElement | null;
+  let bannerTimer: number | null = null;
+  let bannerPhase2Timer: number | null = null;
+
+  function emitCelebrationSparkles(targetContainer: HTMLElement | null = celebrationParticles): void {
+    if (!targetContainer) return;
+    targetContainer.innerHTML = '';
+
+    const colors = ['#ffd700', '#fbbf24', '#ffffff', '#f8fafc', '#fef08a'];
+    const shapes = ['★', '✦', '✧', '★', '✦'];
+    const count = 20;
+
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'celebration-particle';
+      const shape = shapes[i % shapes.length];
+      p.textContent = shape;
+
+      const angle = (i / count) * 2 * Math.PI + (Math.random() - 0.5) * 0.3;
+      const distance = 60 + Math.random() * 130;
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
+      const rot = (Math.random() - 0.5) * 360;
+      const dur = 1.4 + Math.random() * 0.6;
+      const delay = Math.random() * 0.25;
+      const size = 12 + Math.random() * 12;
+      const color = colors[i % colors.length];
+
+      p.style.setProperty('--dx', `${dx.toFixed(1)}px`);
+      p.style.setProperty('--dy', `${dy.toFixed(1)}px`);
+      p.style.setProperty('--rot', `${rot.toFixed(0)}deg`);
+      p.style.setProperty('--dur', `${dur.toFixed(2)}s`);
+      p.style.setProperty('--delay', `${delay.toFixed(2)}s`);
+      p.style.setProperty('--size', `${size.toFixed(0)}px`);
+      p.style.setProperty('--color', color);
+
+      targetContainer.appendChild(p);
+    }
+  }
+
+  function triggerStartBanner(initialTitle?: string, subtitle?: string): void {
+    if (!startBanner || !startBannerTitle || !startBannerSubtitle) return;
+    const boardName = subtitle ?? getCatalogEntry(currentBoardId)?.displayName ?? 'SMARTBEADS';
+    startBannerSubtitle.textContent = `★ ${boardName.toUpperCase()} ★`;
+    startBannerTitle.textContent = initialTitle ?? '★ MATCH START ★';
+
+    if (bannerTimer !== null) {
+      clearTimeout(bannerTimer);
+      bannerTimer = null;
+    }
+    if (bannerPhase2Timer !== null) {
+      clearTimeout(bannerPhase2Timer);
+      bannerPhase2Timer = null;
+    }
+
+    // Reset and trigger animations
+    celebrationFx?.classList.remove('animate');
+    startBanner.classList.remove('animate');
+    void startBanner.offsetWidth;
+
+    celebrationFx?.classList.add('animate');
+    startBanner.classList.add('animate');
+    emitCelebrationSparkles();
+
+    // Phase 2: Pop into "READY... PLAY!" at 0.75s
+    bannerPhase2Timer = window.setTimeout(() => {
+      if (startBannerTitle && startBanner.classList.contains('animate')) {
+        startBannerTitle.textContent = 'READY... PLAY!';
+        emitCelebrationSparkles();
+      }
+      bannerPhase2Timer = null;
+    }, 750);
+
+    // Total duration: 2.0 seconds
+    bannerTimer = window.setTimeout(() => {
+      dismissStartBanner();
+    }, 2000);
+  }
+
+  function dismissStartBanner(): void {
+    if (celebrationFx) celebrationFx.classList.remove('animate');
+    if (startBanner) startBanner.classList.remove('animate');
+    if (celebrationParticles) celebrationParticles.innerHTML = '';
+    if (bannerTimer !== null) {
+      clearTimeout(bannerTimer);
+      bannerTimer = null;
+    }
+    if (bannerPhase2Timer !== null) {
+      clearTimeout(bannerPhase2Timer);
+      bannerPhase2Timer = null;
+    }
+  }
 
   const boardSelect = document.getElementById('board-select') as HTMLSelectElement;
   const gameModeSelect = document.getElementById('game-mode-select') as HTMLSelectElement;
@@ -181,6 +302,9 @@ export function bootstrapPlayShell(): void {
   const bgmPause = document.getElementById('bgm-pause') as HTMLButtonElement;
 
   populateBgmSelect(bgmSelect);
+  if (bgmSelect.value) {
+    bgmAudio.src = bgmSelect.value;
+  }
   populateBoardSelect(boardSelect);
 
   function readSettings(): GameFeatureSettings {
@@ -261,6 +385,10 @@ export function bootstrapPlayShell(): void {
     const entry = getCatalogEntry(currentBoardId);
     if (entry) {
       document.title = `SmartBeads — ${entry.displayName}`;
+      const startHeading = document.getElementById('start-screen-heading');
+      if (startHeading) {
+        startHeading.textContent = `${entry.displayName.toUpperCase()} TOURNAMENT`;
+      }
     }
   }
 
@@ -282,6 +410,11 @@ export function bootstrapPlayShell(): void {
   function canOfferResignation(): boolean {
     if (session.isGameOver() || animating || aiThinking) return false;
     if (pendingResignPlayer !== null) return false;
+    // Only the side to move may resign (PvE: human only on Ivory's turn).
+    if (session.getSettings().mode === 'pve'
+      && session.getEngine().getState().currentPlayer !== 'RED') {
+      return false;
+    }
     return true;
   }
 
@@ -321,6 +454,7 @@ export function bootstrapPlayShell(): void {
           session.getBoardVariant(),
           session.getEngine().exportSnapshot(),
           session.getAiPlayer(),
+          aiCenterFromSession(session),
         );
       }
       finishResignation(resigning, acceptDraw);
@@ -426,10 +560,66 @@ export function bootstrapPlayShell(): void {
 
     if (session.isGameOver() && pendingResignPlayer === null) {
       resultModal.style.display = 'flex';
-      resultTitle.textContent = winnerLabel(session.getDisplayedWinner());
-      resultDesc.textContent = session.getDisplayedReason() ?? '';
+      const winner = session.getDisplayedWinner();
+      const settings = session.getSettings();
+      const redCaps = state.captures.RED;
+      const blueCaps = state.captures.BLUE;
+      resultTitle.className = 'result-title';
+
+      let scoreLine = '';
+      if (winner === 'DRAW') {
+        resultTitle.textContent = "WELL PLAYED! IT'S A DRAW";
+        resultTitle.classList.add('draw');
+        scoreLine = `Tied in captures (${redCaps} vs ${blueCaps} beads)`;
+      } else if (winner === 'RED') {
+        const diff = redCaps - blueCaps;
+        if (settings.mode === 'pve') {
+          resultTitle.textContent = "CONGRATULATIONS! YOU WON!";
+          scoreLine = diff > 0 ? `You won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})` : `You won (${redCaps} vs ${blueCaps} beads)`;
+        } else {
+          resultTitle.textContent = "CONGRATULATIONS! PLAYER 1 WON!";
+          scoreLine = diff > 0 ? `P1 won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})` : `P1 won (${redCaps} vs ${blueCaps} beads)`;
+        }
+        resultTitle.classList.add('victory');
+      } else if (winner === 'BLUE') {
+        const diff = blueCaps - redCaps;
+        if (settings.mode === 'pve') {
+          resultTitle.textContent = "WELL PLAYED! BETTER LUCK NEXT TIME";
+          scoreLine = diff > 0 ? `AI won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})` : `AI won (${blueCaps} vs ${redCaps} beads)`;
+          resultTitle.classList.add('defeat');
+        } else {
+          resultTitle.textContent = "CONGRATULATIONS! PLAYER 2 WON!";
+          scoreLine = diff > 0 ? `P2 won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})` : `P2 won (${blueCaps} vs ${redCaps} beads)`;
+          resultTitle.classList.add('victory');
+        }
+      }
+
+      const reason = session.getDisplayedReason();
+      resultDesc.textContent = reason && reason !== 'Normal' ? `${scoreLine} • ${reason}` : scoreLine;
+
+      if (!lastGameOverPlayed) {
+        lastGameOverPlayed = true;
+        resultModal.classList.remove('animate');
+        void resultModal.offsetWidth;
+        resultModal.classList.add('animate');
+        emitCelebrationSparkles(modalCelebrationParticles);
+
+        if (winner === 'DRAW') {
+          soundEffects.playDraw();
+        } else if (winner === 'RED') {
+          soundEffects.playVictory();
+        } else if (winner === 'BLUE') {
+          if (settings.mode === 'pve') {
+            soundEffects.playDefeat();
+          } else {
+            soundEffects.playVictory();
+          }
+        }
+      }
     } else if (pendingResignPlayer === null) {
       resultModal.style.display = 'none';
+      resultModal.classList.remove('animate');
+      lastGameOverPlayed = false;
     }
 
     drawBoard();
@@ -438,9 +628,21 @@ export function bootstrapPlayShell(): void {
   function startTimers(): void {
     if (timerId) clearInterval(timerId);
     timerId = setInterval(() => {
-      if (session.isGameOver() || animating) return;
-      if (aiThinking) return;
+      if (shellTimerShouldSkip({
+        gameOver: session.isGameOver(),
+        aiThinking,
+        animating,
+      })) return;
+      // Clocks must keep running during AI think and piece animation.
+      // Freezing on aiThinking made Ebony immune to shot clock in PvE.
       session.timerTick();
+      const shotRem = session.getShotRemaining();
+      const matchRem = session.getGlobalMatchRemaining();
+      const shotLimit = session.getShotLimit();
+      const matchLimit = parseMatchSeconds(session.getSettings().matchTimer);
+      if ((shotLimit > 0 && shotRem <= 3 && shotRem > 0) || (matchLimit > 0 && matchRem <= 5 && matchRem > 0)) {
+        soundEffects.playTimerWarning();
+      }
       updateUI();
     }, 1000);
   }
@@ -487,6 +689,14 @@ export function bootstrapPlayShell(): void {
     const capturedPlayer = captured !== undefined
       ? state.board.intersections[captured].occupant
       : undefined;
+
+    if (jump) {
+      soundEffects.playCapture(turnCaptures);
+      turnCaptures += 1;
+    } else {
+      soundEffects.playSlide();
+      turnCaptures = 0;
+    }
 
     animating = true;
     anim = {
@@ -548,6 +758,10 @@ export function bootstrapPlayShell(): void {
         updateUI();
         return;
       }
+      if (turnCaptures >= 3 && !session.isGameOver()) {
+        soundEffects.playFlourish();
+      }
+      turnCaptures = 0;
       afterHumanOrAiTurn();
     });
   }
@@ -595,6 +809,10 @@ export function bootstrapPlayShell(): void {
       if (i >= path.length) {
         completeAiTurnIfChainOpen(session);
         cancelAiWork();
+        if (turnCaptures >= 3) {
+          soundEffects.playFlourish();
+        }
+        turnCaptures = 0;
         afterHumanOrAiTurn();
         return;
       }
@@ -612,6 +830,10 @@ export function bootstrapPlayShell(): void {
 
         completeAiTurnIfChainOpen(session);
         cancelAiWork();
+        if (turnCaptures >= 3) {
+          soundEffects.playFlourish();
+        }
+        turnCaptures = 0;
         afterHumanOrAiTurn();
       });
     }
@@ -619,6 +841,7 @@ export function bootstrapPlayShell(): void {
   }
 
   function handleCanvasClick(ev: MouseEvent): void {
+    dismissStartBanner();
     if (session.isGameOver() || aiThinking || animating) return;
     if (!session.canHumanAct()) return;
 
@@ -629,6 +852,7 @@ export function bootstrapPlayShell(): void {
 
     const click = session.interpretClick(nodeId);
     if (click.kind === 'select') {
+      soundEffects.playSelect();
       session.selectNode(click.nodeId);
       updateUI();
       return;
@@ -644,6 +868,7 @@ export function bootstrapPlayShell(): void {
     cancelAiWork();
     anim = null;
     animating = false;
+    turnCaptures = 0;
     const settings = session.getSettings();
     const uiState = session.getUiState();
 
@@ -672,12 +897,14 @@ export function bootstrapPlayShell(): void {
     anim = null;
     animating = false;
     aiThinking = false;
+    turnCaptures = 0;
 
     const settings = readSettings();
     session = createSession(currentBoardId, settings);
     session.reset();
     applyCanvasSizeForBoard();
     resultModal.style.display = 'none';
+    resultModal.classList.remove('animate');
     resignOfferModal.style.display = 'none';
     pendingResignPlayer = null;
     session.resetTurnClock();
@@ -686,6 +913,24 @@ export function bootstrapPlayShell(): void {
     startTimers();
     undoBtn.disabled = true;
     pulseRaf = requestAnimationFrame(loopPulse);
+    if (!startScreenOverlay || startScreenOverlay.classList.contains('hidden')) {
+      triggerStartBanner();
+      soundEffects.playGameStart();
+    }
+  }
+
+  if (startGameBtn) {
+    startGameBtn.addEventListener('click', () => {
+      if (startScreenOverlay) {
+        startScreenOverlay.classList.add('hidden');
+      }
+      if (bgmSelect.value && bgmAudio.paused) {
+        if (!bgmAudio.src) bgmAudio.src = bgmSelect.value;
+        bgmAudio.play().catch(() => {});
+      }
+      triggerStartBanner();
+      soundEffects.playGameStart();
+    });
   }
 
   resignBtn.addEventListener('click', beginResignation);
@@ -700,8 +945,13 @@ export function bootstrapPlayShell(): void {
 
   finishBtn.addEventListener('click', () => {
     if (session.getUiState() !== 'chain' || animating) return;
+    soundEffects.playButtonTap();
     pushUndoSnapshot();
     session.finishChain();
+    if (turnCaptures >= 3 && !session.isGameOver()) {
+      soundEffects.playFlourish();
+    }
+    turnCaptures = 0;
     afterHumanOrAiTurn();
   });
 
@@ -714,6 +964,7 @@ export function bootstrapPlayShell(): void {
     anim = null;
     animating = false;
     aiThinking = false;
+    turnCaptures = 0;
 
     currentBoardId = boardId;
     boardSelect.value = boardId;
@@ -723,6 +974,7 @@ export function bootstrapPlayShell(): void {
     session = createSession(boardId, readSettings());
     applyCanvasSizeForBoard();
     resultModal.style.display = 'none';
+    resultModal.classList.remove('animate');
     resignOfferModal.style.display = 'none';
     pendingResignPlayer = null;
     session.resetTurnClock();
@@ -731,11 +983,41 @@ export function bootstrapPlayShell(): void {
     startTimers();
     undoBtn.disabled = true;
     pulseRaf = requestAnimationFrame(loopPulse);
+    if (!startScreenOverlay || startScreenOverlay.classList.contains('hidden')) {
+      soundEffects.playGameStart();
+      triggerStartBanner();
+    }
   }
 
-  restartBtn.addEventListener('click', resetGame);
-  playAgainBtn.addEventListener('click', resetGame);
-  undoBtn.addEventListener('click', undoMove);
+  function updateSfxButton(): void {
+    if (!sfxMuteBtn) return;
+    const isMuted = soundEffects.isMuted();
+    sfxMuteBtn.textContent = isMuted ? '🔇 Sound: Off' : '🔊 Sound: On';
+    if (isMuted) {
+      sfxMuteBtn.classList.add('muted');
+    } else {
+      sfxMuteBtn.classList.remove('muted');
+    }
+  }
+
+  sfxMuteBtn?.addEventListener('click', () => {
+    soundEffects.toggleMuted();
+    updateSfxButton();
+    if (!soundEffects.isMuted()) {
+      soundEffects.playButtonTap();
+    }
+  });
+
+  restartBtn.addEventListener('click', () => {
+    resetGame();
+  });
+  playAgainBtn.addEventListener('click', () => {
+    resetGame();
+  });
+  undoBtn.addEventListener('click', () => {
+    soundEffects.playButtonTap();
+    undoMove();
+  });
   boardSelect.addEventListener('change', () => {
     switchBoard(boardSelect.value as ProductBoardId);
   });
@@ -766,6 +1048,7 @@ export function bootstrapPlayShell(): void {
 
   syncBoardTitle();
   syncBoardPlayOptions();
+  updateSfxButton();
   resetGame();
 
   (window as unknown as { __SB_TEST__?: any }).__SB_TEST__ = {
@@ -822,6 +1105,9 @@ function populateBgmSelect(select: HTMLSelectElement): void {
     const opt = document.createElement('option');
     opt.value = track.url;
     opt.textContent = track.label;
+    if (track.label.includes("Cool Puzzle Groovin' 2")) {
+      opt.selected = true;
+    }
     select.appendChild(opt);
   }
 }

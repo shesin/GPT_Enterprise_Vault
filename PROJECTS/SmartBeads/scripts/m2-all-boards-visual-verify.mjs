@@ -21,6 +21,10 @@ async function main() {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     await page.goto(URL, { waitUntil: 'networkidle' });
     await page.waitForSelector('#board');
+    if (await page.locator('#start-game-btn').isVisible()) {
+      await page.locator('#start-game-btn').click();
+    }
+    await page.waitForTimeout(200);
 
     for (const boardId of BOARDS) {
       await page.selectOption('#board-select', boardId);

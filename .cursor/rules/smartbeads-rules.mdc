@@ -26,6 +26,30 @@ Every conclusion, recommendation, or implementation decision must be supported b
 
 Distinguish Technical Verification (repository/tests/execution) from Gameplay/UX Evaluation (subjective, requires human review). Automated verification never implies gameplay quality, balance, or enjoyment unless explicitly evaluated. A green `npm test` / Jest run is not proof the UI or a human two-click path is bug-free.
 
+## Rule - Behavioral Gates
+
+AI difficulty, center/timer outcomes, and human-feel bugs need assertions that would fail if the label is wrong (Easy≠Easy). `path.length > 0` / “doesn’t hang” alone is not enough. Production AI Lab must use `HonestAi.ts`, never prototype `.cjs` AI as a substitute.
+
+## Rule - No Half Features
+
+If Cumulative/Endgame/timers/AI levels ship in the UI, AI and session must fully honor them with tests. Do not leave evaluate/search ignoring an enabled rule.
+
+## Rule - No Silent AI Downgrade
+
+Hard/Medium must not fall back to Easy search on failure; emergency = first legal hop only.
+
+## Rule - Clocks Run During AI
+
+Shot/match timers must tick on Ebony’s turn; never freeze the interval while `aiThinking`.
+
+## Rule - No Unapproved Product Rules
+
+Never port prototype Lab/HTML rules (e.g. 3-fold repetition draw) into `src/` without explicit human approval or text in Rules / `VISION_05P.md`. STOP and ask.
+
+## Rule - Audit Completeness
+
+Listing gaps without failing behavioral tests + fixes is incomplete. No “open issues / Lab breadth / low urgency” dumps when the human required full coverage. If a shipped feature cannot be tested on all relevant boards: remove it or stop with an explicit blocker.
+
 ## Rule - Human Oracle
 
 When a bug is found by clicking on screen, do not guess a fix. Encode those exact clicks as a Jest test first. Confirm the test FAILS, then fix engine/session/AI code until it passes. Do not start with CSS, canvas delay, or layout.
@@ -83,4 +107,4 @@ Group related verification into a single command block.
 
 ## Rule - Project Documentation Set
 
-Exactly four files: `GPT_PROJECT_RULES_01P.md`, `VISION_05P.md`, `GPT_PROJECT_STATUS_01P.md`, `PROJECT_MAP_05P.md`. Agent behavior lives in `VISION/AGENT_RULE_05P.md`, not here.
+Exactly four product docs: `GPT_PROJECT_RULES_01P.md`, `VISION_05P.md`, `GPT_PROJECT_STATUS_01P.md`, `PROJECT_MAP_05P.md`. Agent behavior lives in `VISION/AGENT_RULE_05P.md`, not here. Process failure audits live under `PROJECTS/SmartBeads/gpt_project_audit/`.

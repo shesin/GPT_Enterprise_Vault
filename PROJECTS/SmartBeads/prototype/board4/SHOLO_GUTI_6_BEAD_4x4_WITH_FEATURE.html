@@ -357,13 +357,13 @@
     ADJ[from].forEach((over) => {
       const r1 = Math.floor(from / COLS), c1 = from % COLS;
       const r2 = Math.floor(over / COLS), c2 = over % COLS;
-      const tr = r2 + (r2 - r1), tc = c2 + (c2 - c1);
+        const tr = r2 + (r2 - r1), tc = c2 + (c2 - c1);
       if (tr >= 0 && tr < ROWS && tc >= 0 && tc < COLS) {
         const to = tr * COLS + tc;
         if (ADJ[over].includes(to)) JUMPS.push([from, over, to]);
-      }
-    });
-  }
+        }
+      });
+    }
 
   function isEndgameCenterNode(node) {
     return CENTER_IDX.includes(NODE_INDEX[node.id]);
@@ -781,15 +781,15 @@
         const dimOpp = currentState !== STATE.GAME_OVER && board[i] !== currentTurn ? 0.72 : 1;
         const r = (selected === i ? 18 : 16) * pulse;
         drawPieceAt(x, y, board[i], r, dimOpp);
-        if (isTurnPiece) {
-          ctx.beginPath();
+      if (isTurnPiece) {
+        ctx.beginPath();
           ctx.arc(x, y, r + 3, 0, Math.PI * 2);
           ctx.strokeStyle = currentTurn === P1 ? 'rgba(255,230,170,0.55)' : 'rgba(120,180,255,0.5)';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        }
+        ctx.lineWidth = 2;
+        ctx.stroke();
       }
     }
+  }
 
     if (anim) {
       if (anim.captured != null && hideCap >= 0) {
@@ -945,7 +945,7 @@
       return endGame(currentTurn === P1 ? P2 : P1, 'Stalemate — no legal moves.');
     }
     resetTurnClock();
-    updateUI();
+      updateUI();
     drawBoard();
     if (mode === 'pve' && currentTurn === P2) {
       aiThinking = true;
@@ -977,7 +977,7 @@
         validMoves = follow;
         if (player === P1) {
           setStatus('Continue chain or Finish.');
-          updateUI();
+      updateUI();
           drawBoard();
           return;
         }
@@ -1008,7 +1008,7 @@
       drawBoard();
       if (anim.t < 1) {
         rafId = requestAnimationFrame(step);
-      } else {
+    } else {
         board[move.from] = savedFrom;
         done();
       }
@@ -1051,8 +1051,8 @@
         }
         if (i >= path.length) {
           completeTurn();
-          aiThinking = false;
-        } else {
+    aiThinking = false;
+    } else {
           setTimeout(playNext, 60);
         }
       });
@@ -1086,8 +1086,8 @@
       selected = hit;
       validMoves = getMovesForNode(board, hit, currentTurn);
       currentState = STATE.SELECTED;
-      updateUI();
-      drawBoard();
+    updateUI();
+    drawBoard();
       return;
     }
     if (currentState === STATE.SELECTED) {
@@ -1153,20 +1153,20 @@
     bgmAudio.volume = parseFloat(bgmVol.value) || 0.3;
     bgmSelect.addEventListener('change', () => {
       if (bgmSelect.value) {
-        bgmAudio.src = bgmSelect.value;
-        bgmAudio.play().catch(() => {});
+      bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
       } else {
         bgmAudio.pause();
       }
     });
     if (bgmPlay) {
-      bgmPlay.addEventListener('click', () => {
+    bgmPlay.addEventListener('click', () => {
         if (!bgmAudio.src && bgmSelect.value) bgmAudio.src = bgmSelect.value;
         if (bgmSelect.value) bgmAudio.play().catch(() => {});
-      });
+    });
     }
     if (bgmPause) {
-      bgmPause.addEventListener('click', () => bgmAudio.pause());
+    bgmPause.addEventListener('click', () => bgmAudio.pause());
     }
     bgmVol.addEventListener('input', () => { bgmAudio.volume = parseFloat(bgmVol.value) || 0; });
   })();
@@ -1177,14 +1177,14 @@
       completeTurn();
     }
   });
-  document.getElementById('restart-btn').addEventListener('click', resetGame);
+    document.getElementById('restart-btn').addEventListener('click', resetGame);
   document.getElementById('play-again-btn').addEventListener('click', resetGame);
   if (undoBtn) undoBtn.addEventListener('click', undoMove);
   document.getElementById('game-mode-select').addEventListener('change', () => {
     const hlEl = document.getElementById('move-highlight-select');
     if (hlEl) delete hlEl.dataset.userSet;
-    resetGame();
-  });
+      resetGame();
+    });
   document.getElementById('center-rule-select').addEventListener('change', resetGame);
   document.getElementById('match-timer-select').addEventListener('change', resetGame);
   document.getElementById('shot-clock-select').addEventListener('change', resetGame);
@@ -1232,7 +1232,7 @@
         hlEl.value = opts.moveHighlight ? 'on' : 'off';
         hlEl.dataset.userSet = '1';
       }
-      resetGame();
+    resetGame();
     },
     resetGame,
     undoMove,

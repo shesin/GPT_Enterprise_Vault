@@ -169,7 +169,19 @@ export class SmartBeadsEngine {
       return;
     }
 
+    // ply_limit profile: still end immediately on wipeout / stalemate (not only at maxPlies).
     this.currentState.moveCount += 1;
+
+    const redRemaining = this.countPieces('RED');
+    const blueRemaining = this.countPieces('BLUE');
+    if (redRemaining === 0) {
+      this.endGame('BLUE', 'elimination');
+      return;
+    }
+    if (blueRemaining === 0) {
+      this.endGame('RED', 'elimination');
+      return;
+    }
 
     if (hasReachedPlyLimit(this.currentState.board.maxPlies, this.currentState.moveCount)) {
       this.currentState.gameOver = true;
@@ -178,6 +190,10 @@ export class SmartBeadsEngine {
     }
 
     this.currentState.currentPlayer = this.opponentOf(mover);
+
+    if (this.getLegalMoves().length === 0) {
+      this.endGame(mover, 'stalemate');
+    }
   }
 
   /** SHOLO_GUTI.html completeTurn semantics — elimination then stalemate. */

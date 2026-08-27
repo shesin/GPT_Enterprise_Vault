@@ -264,11 +264,25 @@ export function drawCanvasBoard(
         && node.occupant === currentPlayer
         && !animating
         && (chainPieceId === null || isChainPiece);
+      const isSelected = selectedId === node.id;
       const pulse = isTurnPiece ? 1 + 0.08 * Math.sin(turnPulse) : 1;
       const dimOpp = !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
-      const r = (selectedId === node.id ? 18 : 16) * pulse;
+      const r = (isSelected ? 18 : 16) * pulse;
       drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
-      if (isTurnPiece) {
+      if (isSelected) {
+        // Clear, prominent red/orange glowing double-ring for the active selected piece
+        ctx.beginPath();
+        ctx.arc(x, y, r + 5, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 95, 25, 0.95)';
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(x, y, r + 8, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 60, 20, 0.45)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      } else if (isTurnPiece) {
         ctx.beginPath();
         ctx.arc(x, y, r + 3, 0, Math.PI * 2);
         ctx.strokeStyle = node.occupant === 'RED' ? 'rgba(255,230,170,0.55)' : 'rgba(120,180,255,0.5)';

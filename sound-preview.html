@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBeads — Pure Sweet Acoustic Audition Room</title>
+  <style>
+    :root {
+      --bg: #0d231a;
+      --card-bg: #15382a;
+      --gold: #e5c158;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --blue: #38bdf8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 720px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    h1 {
+      color: var(--gold);
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    p.subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .section {
+      background: var(--card-bg);
+      border: 1px solid rgba(229, 193, 88, 0.25);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .section-title {
+      font-size: 1.15rem;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 8px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 540px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .btn-sound {
+      background: #1e4d3b;
+      border: 1px solid rgba(229, 193, 88, 0.4);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      font-weight: 600;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+    .btn-sound:hover {
+      background: #28634d;
+      border-color: var(--gold);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(229, 193, 88, 0.2);
+    }
+    .btn-sound:active {
+      transform: scale(0.98);
+    }
+    .btn-sound .label {
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #fff;
+    }
+    .btn-sound .desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: normal;
+    }
+    .back-bar {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .back-link {
+      display: inline-block;
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 10px 20px;
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      background: rgba(229, 193, 88, 0.1);
+    }
+    .back-link:hover {
+      background: rgba(229, 193, 88, 0.25);
+    }
+    .now-playing {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: var(--green);
+      min-height: 1.2em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sweet Acoustic Sound Audition Room</h1>
+      <p class="subtitle">Pure sweet acoustic instruments (Concert Harp Glissando, Rosewood Marimba, Bubble Tap, Kalimba).</p>
+      <div id="status" class="now-playing">Click any button below to audition</div>
+    </header>
+
+    <!-- SECTION 1: Pure Sweet Acoustic Instruments -->
+    <div class="section">
+      <div class="section-title">🎵 1. Sweet Acoustic Instruments (Candy Crush Style)</div>
+      <div class="grid">
+        <button class="btn-sound" onclick="playAudio('/audio/sfx_start.wav', 'Match Start: Concert Harp & Celesta Glissando')">
+          <span class="label">▶ Match Start Fanfare</span>
+          <span class="desc">Sweet concert harp & celesta glissando (1.6s)</span>
+        </button>
+
+        <button class="btn-sound" onclick="playAudio('/audio/sfx_select.wav', 'Bead Touch / Selection: Juicy Wooden Bubble-Tap')">
+          <span class="label">▶ Bead Touch / Selection</span>
+          <span class="desc">Juicy wooden bubble-tap on selection (35ms)</span>
+        </button>
+
+        <button class="btn-sound" onclick="playAudio('/audio/sfx_slide.wav', 'Slide / Normal Move: Soft Wood Settle')">
+          <span class="label">▶ Slide / Move</span>
+          <span class="desc">Soft wooden piece settling on felt (45ms)</span>
+        </button>
+
+        <button class="btn-sound" onclick="playAudio('/audio/sfx_capture.wav', '1-Hop Capture: Rosewood Marimba Strike')">
+          <span class="label">▶ 1-Hop Capture</span>
+          <span class="desc">Luscious rosewood Marimba strike C5 (180ms)</span>
+        </button>
+
+        <button class="btn-sound" onclick="playAudio('/audio/sfx_flourish.wav', '3+ Multi-Hop Chain: Ascending Marimba & Celesta Arpeggio')">
+          <span class="label">▶ 3+ Multi-Hop Flourish</span>
+          <span class="desc">Ascending 4-note Marimba C5-E5-G5-C6 (380ms)</span>
+        </button>
+
+        <button class="btn-sound" onclick="playAudio('/audio/sfx_victory.wav', 'Victory Celebration: Triumphant Marimba Fanfare')">
+          <span class="label">▶ Victory Celebration</span>
+          <span class="desc">Triumphant sweet Marimba celebration (1.2s)</span>
+        </button>
+
+        <button class="btn-sound" onclick="playAudio('/audio/sfx_defeat.wav', 'Defeat / Loss: Gentle Comforting Kalimba Resolution')">
+          <span class="label">▶ Defeat Resolution</span>
+          <span class="desc">Gentle comforting Kalimba G4-E4-C4 (600ms)</span>
+        </button>
+
+        <button class="btn-sound" onclick="playAudio('/audio/sfx_draw.wav', 'Draw: Peaceful Twin Chime')">
+          <span class="label">▶ Draw Chime</span>
+          <span class="desc">Peaceful twin chime G4-C5 (450ms)</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="back-bar">
+      <a class="back-link" href="/">← Return to SmartBeads Game</a>
+    </div>
+  </div>
+
+  <script>
+    let currentAudio = null;
+    function playAudio(src, title) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = '🔊 Playing: ' + title;
+      currentAudio = new Audio(src);
+      currentAudio.play().catch(err => {
+        statusEl.textContent = '⚠️ Click on the page first to enable audio';
+      });
+      currentAudio.onended = () => {
+        statusEl.textContent = '✓ Finished: ' + title;
+      };
+    }
+  </script>
+</body>
+</html>

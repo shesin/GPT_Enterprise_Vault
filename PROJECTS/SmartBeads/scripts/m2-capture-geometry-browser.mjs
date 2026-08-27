@@ -28,6 +28,8 @@ function record(name, ok, detail) {
 }
 
 async function setup(page, catalogId) {
+  await page.waitForFunction(() => document.querySelectorAll('#board-select option').length > 0);
+  await page.evaluate(() => document.getElementById('start-screen-overlay')?.classList.add('hidden'));
   await page.selectOption('#board-select', catalogId);
   await page.selectOption('#game-mode-select', 'pvp');
   await page.selectOption('#match-timer-select', 'off');
@@ -169,8 +171,7 @@ async function main() {
   }
 
   // 16-bead junction, both directions, driven by real clicks.
-  // Restart per route: repeating an identical armed position would otherwise trip
-  // the session's 3-fold repetition draw and freeze every later click.
+  // Restart per route so each capture starts from a clean armed position.
   for (const want of [
     ['LT', 'LIT', 'A20'],
     ['LB', 'LIB', 'A20'],

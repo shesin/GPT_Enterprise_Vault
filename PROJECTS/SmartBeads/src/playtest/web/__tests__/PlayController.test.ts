@@ -2,7 +2,7 @@ import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
 import { FeatureSession } from '../feature/FeatureSession';
 import { engineOccupancy, isolatedPly, moveByLabel } from '../feature/firstMoveInvariants';
 import { selectAiTurnPath } from '../feature/HonestAi';
-import { runAiTurn } from '../PlayController';
+import { planAiTurnPath, runAiTurn } from '../PlayController';
 
 const off = {
   aiLevel: 2 as const,
@@ -99,5 +99,43 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
     expect(session.getUiState()).not.toBe('chain');
     expect(session.canHumanAct()).toBe(true);
+  });
+
+  it('planAiTurnPath uses configured Medium level (does not silently plan as Easy)', () => {
+    const session = hangingSession();
+    const path = planAiTurnPath(session);
+    expect(path?.length).toBeGreaterThan(0);
+    // Medium search returns a legal BLUE hop from the hanging reply position
+    const eng = session.getEngine();
+    expect(eng.getState().currentPlayer).toBe('BLUE');
+    const legal = eng.getLegalMoves().some((m) => m.from === path![0].from && m.to === path![0].to);
+    expect(legal).toBe(true);
+  });
+
+  it('Medium runAiTurn completes short 6x3x5 games without mid-chain stuck', () => {
+    for (let g = 0; g < 3; g++) {
+      const session = new FeatureSession('6x3x5', { mode: 'pve', ...off, aiLevel: 2 });
+      let guard = 0;
+      while (!session.isGameOver() && guard < 40) {
+        guard += 1;
+        const player = session.getEngine().getState().currentPlayer;
+        if (player === 'RED') {
+          const moves = session.getEngine().getLegalMoves();
+          if (!moves.length) break;
+          const slide = moves.find((m) => {
+            const jump = session.getEngine().getState().board.jumpPaths?.some(
+              (j) => j.from === m.from && j.to === m.to,
+            );
+            return !jump;
+          }) ?? moves[0];
+          session.applyMove(slide);
+          if (session.getUiState() === 'chain') session.finishChain();
+        } else {
+          runAiTurn(session);
+        }
+        expect(session.getEngine().getChainPieceId()).toBeNull();
+      }
+      expect(guard).toBeLessThan(40);
+    }
   });
 });
