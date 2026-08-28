@@ -9,7 +9,9 @@ When work touches `PROJECTS/SmartBeads/`, enforce detail in `GPT_PROJECT_RULES_0
 
 - **Understanding first** — every response begins with 'Understanding of the Task'.
 - **Big change → list & get approval** before implementing.
-- **Git commit on request only**
+- **Git on request** — human says commit/push → commit **and push to GitHub**; report hash + push output (see AGENT_RULE Git — human instructions)
+- **Ask if unsure** — no work until scope and "done" are clear
+- **One playtest bug ⇒ full sweep** — failing test + run suite + fix related gaps; human catches 1–2, agent finds the rest
 - **Word-friendly output** — no wide tables
 - **Evidence before conclusion** — repo beats chat/status docs; grep/read before "already does"; see AGENT_RULE Evidence-Based Claims
 - **Three labels only** — FUNCTIONAL, TESTED / FUNCTIONAL, UNTESTED / NOT FUNCTIONAL; no hedge labels

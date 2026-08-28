@@ -108,6 +108,16 @@ Always verify before claiming completion.
 
 ---
 
+# Human workflow (owner language — not git jargon)
+
+**Commit / push / save to git** means changes land on **GitHub** (`git commit` then **`git push`**), unless the human explicitly says local only or do not push. Report commit hash and push result.
+
+**If you have any doubt** about what the human wants (scope, product rule, whether to push, what "done" means): **ask first**. Do not start implementation until doubts are cleared.
+
+**One bug the human found in play** means assume **more of the same class** exist — run tests, search related paths, fix the sweep; do not fix only the single line they mentioned and stop.
+
+---
+
 # Resource Management
 
 Before implementation:

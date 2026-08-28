@@ -163,6 +163,24 @@ Ask.
 
 ---
 
+# Git — human instructions (owner language)
+
+When the human says **commit**, **push**, **save to git**, or similar, they mean the work ends up on the **remote repository (GitHub)** — not only on the local machine.
+
+Default workflow unless they explicitly say **local only** or **do not push**:
+
+1. `git status` / `git diff` — see what changed  
+2. `git add` relevant files  
+3. `git commit` with a clear message  
+4. **`git push`** to `origin` on the current branch  
+5. Report the commit hash **and** raw push output (or the exact error if push fails)
+
+Do not treat a local commit alone as done when the human asked to commit or push.
+
+If unsure what they mean, **ask before starting work**. Do not begin implementation while doubts remain.
+
+---
+
 # Git Verification
 
 When a git checkpoint is requested before implementation:
@@ -304,6 +322,21 @@ Before any **FUNCTIONAL, TESTED** label, the report must include all of:
 Missing any item → label must be **FUNCTIONAL, UNTESTED** or **NOT FUNCTIONAL / DOES NOT EXIST**.
 
 Mislabeling after a failed human spot-check is a **stop condition**: discard the turn's implementation claims, redo the audit with evidence, do not proceed until corrected.
+
+---
+
+# One human bug ⇒ full sweep (not one-line fixes)
+
+When the human reports a **basic issue they found in play** (UI wrong, rule not applied, AI misbehaving, counter stuck, etc.), treat it as evidence that **tests and engine coverage are incomplete** — not as an isolated ticket.
+
+Default response:
+
+1. Reproduce or write a **failing** test for what they saw (when possible).  
+2. **Search the same class of problem** across boards, settings, and related code paths — do not wait for a list of 100 bugs.  
+3. Run the **full relevant test suite** (Jest, browser gates when applicable).  
+4. Fix what fails; report what was found and what was verified with raw output.
+
+The human will catch one or two issues in minutes of play. Finding those same gaps in tests and sweeping related failures is the agent's job.
 
 ---
 
