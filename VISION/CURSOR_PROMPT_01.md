@@ -122,7 +122,7 @@ Before implementation:
 
 Before modifying code:
 
-1. Read `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md`, `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md`, `VISION/AGENT_RULE_05P.md`, and `PROJECTS/SmartBeads/PROJECT_MAP_05P.md`.
+1. Read `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md`, `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md`, `VISION/AGENT_RULE_05P.md`, `PROJECTS/SmartBeads/PROJECT_MAP_05P.md`, and `VISION/CURSOR_PROMPT_01.md` (SmartBeads Production Gates when touching SmartBeads).
 2. Inspect the repository. Identify authoritative implementation, existing architecture, affected modules, existing tests.
 
 Never assume filenames, classes, methods, folder structure, or missing functionality. Always use repository evidence.
@@ -181,6 +181,55 @@ When the human found the bug by clicking:
 4. Do not guess CSS, canvas delay, or layout as the first patch. A green `npm test` is not proof the UI is bug-free.
 
 Engine rules stay independent of animation: session/engine state must be correct with the renderer unplugged.
+
+---
+
+# SmartBeads Production Gates (strict — always apply on `PROJECTS/SmartBeads/`)
+
+From 4th-cycle failure audit (`GPT_PROJECT_AUDIT_05P.md`). Violation = process failure.  
+`.cursor/rules/smartbeads-core.mdc` carries one-line reminders only; **this section is authoritative detail**.
+
+## Behavioral gates
+
+- AI difficulty, center/timer, and human-feel bugs need Jest that would fail if the label is wrong (Easy≠Easy).
+- `path.length > 0` / “doesn’t hang” alone is not enough.
+- Production AI Lab must use `HonestAi.ts`, never prototype `.cjs` AI.
+- If Cumulative/Endgame/timers/AI levels ship in the UI, AI and session must honor them with tests — no half-wired evaluate/search.
+- Hard/Medium must not silently fall back to Easy; emergency = first legal hop only.
+- Shot/match timers must tick on Ebony’s turn; never freeze the interval while `aiThinking`.
+- Every shipped feature must be tested on all relevant boards; if untestable → remove or stop with explicit blocker.
+
+## Never add unapproved product rules
+
+You MUST NOT add, port, or “complete” any gameplay / end-condition / scoring / timer / AI-difficulty product rule into `PROJECTS/SmartBeads/src/` unless it is already explicit in `GPT_PROJECT_RULES_01P.md` or `VISION_05P.md`, OR the human has explicitly approved it in the current task.
+
+Forbidden without approval:
+- 3-fold / N-fold repetition draws
+- New draw conditions, move caps, alternate first-player as product defaults
+- New AI levels or silent strength changes beyond the approved contract
+- Copying prototype/board4 Lab rules into production “for completeness”
+
+If prototype has a rule and production docs do not: STOP. Report. Ask. Do not “helpfully” port it. Do not add a test that freezes an unapproved rule into the product.
+
+Do not edit `VISION_05P.md` or `GPT_PROJECT_RULES_01P.md` to fit an implementation — stop and report conflicts.
+
+## Never audit without failing tests + fixes
+
+An audit is NOT done when you only list gaps.
+
+For every defect or coverage hole that affects shipped play (AI feel, timers, center, two-click, Finish, New game, all 7 boards):
+1. Write a FAILING behavioral Jest first (would fail if the bug returned).
+2. Fix production code until it passes.
+3. Do not mark complete on `path.length > 0`, “doesn’t hang,” or status prose alone.
+
+Forbidden:
+- Closing with “nice to have / Lab breadth / low urgency” when the human said no open issues
+- Using prototype AI Lab as proof of production HonestAi
+- Freezing clocks on aiThinking
+- Silent Hard/Medium → Easy fallback
+- Claiming CONFIRMED without direct observation of the requested outcome
+
+If you cannot test a shipped feature on all relevant boards: remove the feature or explain blockers and wait — do not leave it as an open human chore.
 
 ---
 

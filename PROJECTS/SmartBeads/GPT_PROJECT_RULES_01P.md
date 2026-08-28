@@ -1,5 +1,5 @@
 # SmartBeads Project Rules
-Short, actionable engineering rules. Cursor loads them via `.cursor/rules/smartbeads-core.mdc` (always) and `smartbeads-rules.mdc` (when editing SmartBeads files). This file is the canonical source — sync the `.mdc` copies when rules change.
+Short, actionable engineering rules. Cursor loads **minimal pointers** via `.cursor/rules/smartbeads-core.mdc` (always) and `smartbeads-rules.mdc` (SmartBeads paths). **Full implementer detail** for SmartBeads gates lives in `VISION/CURSOR_PROMPT_01.md` (SmartBeads Production Gates). Edit this file first for rule changes, then sync the slim `.mdc` pointers if needed.
 
 ## Purpose
 Permanent, actionable engineering rules only. State the rule, not the reasoning — reasoning lives in VISION_05P.md. No status, no temporary details, no numeric defaults here.
@@ -41,11 +41,28 @@ Shot/match timers must tick on Ebony’s turn; never freeze the interval while `
 
 ---
 ## Rule - No Unapproved Product Rules
-Never port prototype Lab/HTML rules (e.g. 3-fold repetition draw) into `src/` without explicit human approval or text in this Rules file / `VISION_05P.md`. STOP and ask.
+Never port prototype Lab/HTML rules into `src/` without explicit human approval or text in this Rules file / `VISION_05P.md`. STOP and ask.
+
+Forbidden without approval:
+- 3-fold / N-fold repetition draws
+- New draw conditions, move caps, alternate first-player as product defaults
+- New AI levels or silent strength changes beyond the approved contract
+- Copying prototype/board4 Lab rules into production “for completeness”
+
+Do not add a Jest test that freezes an unapproved rule into the product.
 
 ---
 ## Rule - Audit Completeness
-Listing gaps without failing behavioral tests + fixes is incomplete. No “open issues / Lab breadth / low urgency” dumps when the human required full coverage. If a shipped feature cannot be tested on all relevant boards: remove it or stop with an explicit blocker.
+An audit is NOT done when you only list gaps.
+
+For every defect or coverage hole that affects shipped play (AI feel, timers, center, two-click, Finish, New game, all 7 boards):
+1. Write a FAILING behavioral Jest first (would fail if the bug returned).
+2. Fix production code until it passes.
+3. Do not mark complete on `path.length > 0`, “doesn’t hang,” or status prose alone.
+
+Forbidden: “nice to have / Lab breadth / low urgency” when human required full coverage; prototype AI Lab as proof of HonestAi; freezing clocks on aiThinking; silent Hard/Medium → Easy fallback; CONFIRMED without direct observation.
+
+If a shipped feature cannot be tested on all relevant boards: remove it or stop with an explicit blocker.
 
 ---
 ## Rule - Human Oracle
@@ -111,4 +128,4 @@ Group related verification into a single command block.
 
 ---
 ## Rule - Project Documentation Set
-Exactly four product docs: this one, VISION_05P.md, GPT_PROJECT_STATUS_01P.md, PROJECT_MAP_05P.md. Agent behavior lives in AGENT_RULE_05P.md, not here. Process failure audits and paste-ready Cursor prompts live under `gpt_project_audit/` (supporting, not a fifth product doc).
+Exactly four product docs: this one, VISION_05P.md, GPT_PROJECT_STATUS_01P.md, PROJECT_MAP_05P.md. Agent behavior lives in AGENT_RULE_05P.md, not here. Process failure audit: `GPT_PROJECT_AUDIT_05P.md` (supporting, not a fifth product doc).

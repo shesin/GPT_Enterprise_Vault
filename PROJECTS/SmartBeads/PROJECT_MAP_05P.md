@@ -85,13 +85,10 @@ SmartBeads/
 │   ├── m2-catalog-settings-verify.mjs
 │   └── lab-ai-difficulty-eval.mjs     # Production HonestAi Lab (not prototype .cjs)
 │
-├── gpt_project_audit/                 # Process failure audits + strict Cursor paste prompts
-│   ├── AI_FAILURE_AUDIT_4TH_CYCLE_01P.md
-│   └── CURSOR_STRICT_PROMPTS_01P.md
-│
 ├── prototype/                         # Design/UX prototypes (outside production src/)
 │   └── board4/                        # Standalone HTML gameplay lab for Board4-scale boards
 │
+├── GPT_PROJECT_AUDIT_05P.md           # 4th-cycle AI process failure audit (supporting)
 ├── BOARD_DISCOVERY_05P.md             # New-board shortlist + discovery Lab outcomes
 ├── LAB_TERMINOLOGY_05P.md             # Web glossary, gates G1–G9, board-quality ruler
 ├── WEB_REPORT_16_BEAD_05P.md          # 16-bead reference baseline report
@@ -189,7 +186,7 @@ Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for
 | `VISION_05P.md` | Vision, locked V1 seven, design reasoning |
 | `GPT_PROJECT_STATUS_01P.md` | Milestone status and next step |
 | `PROJECT_MAP_05P.md` | This file — structure and navigation |
-| `gpt_project_audit/` | Process failure audits + strict Cursor prompts (supporting) |
+| `GPT_PROJECT_AUDIT_05P.md` | 4th-cycle process failure audit (supporting) |
 | `WEB_FEATURE_TEST_05P.md` | Per-board feature defaults (centre rule, timers) |
 | `LAB_TERMINOLOGY_05P.md` / `WEB_REPORT_*.md` | Lab methodology and board verdicts |
 

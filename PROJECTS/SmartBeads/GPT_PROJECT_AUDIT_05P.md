@@ -1,8 +1,10 @@
-# SmartBeads — AI Absolute Failure Audit (4th cycle)
+# SmartBeads — GPT Project Audit (4th cycle)
 
 Date: 2026-08-27  
 Scope: Production `src/` (not prototype)  
-Status: FAILURE RECORD + corrective prompts (permanent)
+Status: FAILURE RECORD + corrective actions (permanent)
+
+Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`, `smartbeads-rules.mdc`, and `VISION/CURSOR_PROMPT_01.md` — not duplicated here.
 
 ---
 
@@ -17,8 +19,8 @@ Humans found basic defects in minutes. Prior AI audits listed gaps but did **not
 ## What the human ordered (this cycle)
 
 1. **Remove 3-fold repetition entirely** from production FeatureSession (not only delete a test). It was never approved for V1 Rules/VISION.
-2. **Explain how unapproved features entered** and write a **strict Cursor prompt** so agents never add product rules without approval.
-3. **Explain how major bugs survived 3 prior audits** and write a **strict Cursor prompt** against audit-without-fix behavior.
+2. **Explain how unapproved features entered** and write strict Cursor enforcement so agents never add product rules without approval.
+3. **Explain how major bugs survived 3 prior audits** and write strict enforcement against audit-without-fix behavior.
 4. Soften **Medium** so Hard feels tougher (especially on 8-bead); Easy already OK on 6×3×5.
 5. **Verify shot clock** during AI think (AI moves too fast for human to see freeze — agent must prove clocks tick).
 6. Explain “16 + one small board” smoke (own beads, capture + Finish, New game / Play again).
@@ -91,60 +93,6 @@ What they did **not** do:
 
 ---
 
-## Strict Cursor prompts (paste into rules / task briefs)
-
-### Prompt 1 — Never ship unapproved product rules
-
-```
-STRICT — SmartBeads product ownership
-
-You MUST NOT add, port, or “complete” any gameplay / end-condition / scoring /
-timer / AI-difficulty product rule into PROJECTS/SmartBeads/src/ unless it is
-already explicit in GPT_PROJECT_RULES_01P.md or VISION_05P.md, OR the human
-has explicitly approved it in the current task.
-
-Forbidden without approval:
-- 3-fold / N-fold repetition draws
-- new draw conditions, move caps, alternate first-player as product defaults
-- new AI levels or silent strength changes beyond the approved contract
-- copying prototype/board4 Lab rules into production “for completeness”
-
-If prototype has a rule and production docs do not: STOP. Report. Ask.
-Do not “helpfully” port it. Do not add a test that freezes an unapproved rule
-into the product.
-
-Violation = absolute process failure.
-```
-
-### Prompt 2 — Never audit-without-fix; never leave open P0 gaps
-
-```
-STRICT — SmartBeads audit / verification integrity
-
-An audit is NOT done when you only list gaps.
-
-For every defect or coverage hole that affects shipped play (AI feel, timers,
-center, two-click, Finish, New game, all 7 boards):
-1. Write a FAILING behavioral Jest first (would fail if the bug returned).
-2. Fix production code until it passes.
-3. Do not mark complete on path.length > 0, “doesn’t hang,” or status prose alone.
-
-Forbidden:
-- Closing with “nice to have / Lab breadth / low urgency” when the human said
-  no open issues
-- Using prototype AI Lab as proof of production HonestAi
-- Freezing clocks on aiThinking
-- Silent Hard/Medium → Easy fallback
-- Claiming CONFIRMED without direct observation of the requested outcome
-
-If you cannot test a shipped feature on all relevant boards: remove the feature
-or explain blockers and wait — do not leave it as an open human chore.
-
-Repeating audit-without-fix after this notice = absolute failure.
-```
-
----
-
 ## Explainers for human playtest items
 
 ### “16 + one small board” smoke
@@ -173,4 +121,4 @@ Human: Easy OK on 6×3×5; Medium≈Hard on 8-bead. Fix: Medium soft-miss ~20%; 
 
 ## Recommendation
 
-Keep this file under `gpt_project_audit/`. Do not soft-pedal language in future status docs. Prefer failing tests over narrative confidence.
+Do not soft-pedal language in future status docs. Prefer failing tests over narrative confidence. When adding a new failure cycle, append a dated section here or create `GPT_PROJECT_AUDIT_06P.md` — do not scatter audits in subfolders.

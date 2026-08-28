@@ -62,7 +62,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
   - **Medium:** 1 opponent complete-turn reply + full eval **including center when Cumulative/Endgame is on**; ~20% soft-miss so Medium feels softer than Hard (esp. 8-bead).
   - **Hard:** 2 opponent complete-turn replies + full eval including center; **0% soft-miss**; ~2.8s think budget so depth-2 completes.
   - Strength gates: Medium > Easy and Hard ≥ Medium on 6×3×5; Hard > Medium head-to-head on **8x4x6**; Hard coverage on **16**.
-- **3-fold repetition:** removed from production (never approved for V1). See `gpt_project_audit/`.
+- **3-fold repetition:** removed from production (never approved for V1). See `GPT_PROJECT_AUDIT_05P.md`.
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI).
@@ -76,7 +76,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Jest:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, ply_limit, all-7-board smoke (own beads / AI reply / reset), Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick.
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety.
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
-- **Failure audit:** `gpt_project_audit/AI_FAILURE_AUDIT_4TH_CYCLE_01P.md` + strict Cursor prompts — audits without failing tests+fixes are process failure.
+- **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; strict gate detail in `VISION/CURSOR_PROMPT_01.md`; one-line reminders in `.cursor/rules/smartbeads-core.mdc`.
 
 ---
 

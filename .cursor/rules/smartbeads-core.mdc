@@ -5,28 +5,21 @@ alwaysApply: true
 
 # SmartBeads — always-on gates
 
-Apply when work touches `PROJECTS/SmartBeads/` (full rules load via `smartbeads-rules.mdc` when matching files are in context).
+When work touches `PROJECTS/SmartBeads/`, enforce detail in `GPT_PROJECT_RULES_01P.md` and `VISION/CURSOR_PROMPT_01.md` (SmartBeads Production Gates).
 
-- **Always show understanding on top** — Every response must begin with an explicit 'Understanding of the Task' summary before continuing execution.
-- **Big implementation**-- If it is big implementation/change, u must list everything before implementation , no summary or technical shortcut/jargon. If its diagram, board then give sketch first.' Take approval and then start implementing.
-- **UR review and comment**-- If u feel u have some better idea, u must express it. Suggested plan is too big, too short, not suitable or not very good etc all kind of suggestion r welcome.
-- **Git commit on request only** — Never execute `git commit` unless explicitly instructed by the user.
-- **Word-compatible output formatting** — Avoid wide markdown tables that disorient in MS Word; use clean headers, bullets, and key-value lines.
-- **Evidence before conclusion** — repo inspection and execution beat chat history or status docs.
-- **Prototype ≠ production** — `prototype/` must not share code with `src/`; port geometry/rules only.
-- **Verified source** — read files before changing; never invent project state from memory.
-- **Verification scope** — tests/builds are technical verification only; a green `npm test` does not prove the UI or a human two-click path is bug-free.
-- **Behavioral gates required** — AI difficulty, center/timer/repetition outcomes, and human-feel bugs need assertions that would fail if the label is wrong (Easy≠Easy). `path.length > 0` / “doesn’t hang” alone is not enough. Production Lab for AI must use `HonestAi.ts`, never prototype `.cjs` AI as a substitute.
-- **No half features** — if Cumulative/Endgame/timers/AI levels ship in the UI, AI and session must fully honor them with tests; do not leave evaluate/search ignoring an enabled rule.
-- **No silent AI downgrade** — Hard/Medium must not fall back to Easy search on failure; emergency = first legal hop only.
-- **Clocks run during AI** — shot/match timers must tick on Ebony’s turn; never freeze the interval while `aiThinking`.
-- **No unapproved product rules** — never port prototype Lab/HTML rules (e.g. 3-fold draw) into `src/` without explicit human approval or Rules/VISION text. STOP and ask.
-- **Audit ≠ done** — listing gaps without failing behavioral tests + fixes is incomplete; P0 defects get Jest first, then code. No “open issues / Lab breadth / low urgency” dumps when the human required full coverage.
-- **If untestable → remove or block** — every shipped feature must be tested on all relevant boards; otherwise remove the feature or stop with an explicit blocker.
-- **Human oracle** — screen-reproduced bugs: failing Jest for those exact clicks first, then engine fix. No CSS/animation-first patches.
-- **Engine ≠ animation** — `SmartBeadsEngine` / `FeatureSession` must be correct with no renderer.
-- **Protected docs** — do not edit `VISION_05P.md` or `GPT_PROJECT_RULES_01P.md` to fit an implementation; stop and report conflicts.
-- **Reuse before build** — extend existing engine/shell components; no new abstraction without demonstrated need.
+- **Understanding first** — every response begins with 'Understanding of the Task'.
+- **Big change → list & get approval** before implementing.
+- **Git commit on request only**
+- **Word-friendly output** — no wide tables
+- **Evidence before conclusion** — repo beats chat/status docs
+- **Prototype ≠ production** — no shared code with `src/`
+- **Green Jest ≠ shipped play** — behavioral gates (Easy≠Easy); not `path.length > 0` alone
+- **No unapproved product rules** — STOP and ask (see CURSOR_PROMPT)
+- **Audit = failing Jest + fix** — not gap lists (see CURSOR_PROMPT)
+- **Human oracle** — exact-click Jest first, then engine; no CSS-first patches
+- **Engine ≠ animation** — session/engine correct without renderer
+- **Clocks run during AI** — never freeze timers on `aiThinking`
+- **HonestAi only** — production Lab uses `HonestAi.ts`, not prototype `.cjs`
+- **Protected docs** — do not edit `VISION_05P.md` or `GPT_PROJECT_RULES_01P.md` to fit code
 
-Canonical full rules: `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md`
-Strict failure audit + paste prompts: `PROJECTS/SmartBeads/gpt_project_audit/`
+Canonical rules: `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md` | Audit: `GPT_PROJECT_AUDIT_05P.md`
