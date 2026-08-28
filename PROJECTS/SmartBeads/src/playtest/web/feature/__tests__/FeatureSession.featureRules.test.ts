@@ -23,7 +23,16 @@ function setOcc(session: FeatureSession, label: string, player: 'RED' | 'BLUE'):
 }
 
 describe('FeatureSession center / timer (runtime rules)', () => {
-  it('endgame center tiebreak awards winner when captures tied (6x3x5 default rule)', () => {
+  it('preserves centerRule when match timer is off (center is independent of timer)', () => {
+    const session = new FeatureSession('6x3x5', {
+      ...base,
+      centerRule: 'endgame',
+      matchTimer: 'off',
+    });
+    expect(session.getSettings().centerRule).toBe('endgame');
+  });
+
+  it('endgame center tiebreak awards winner when captures tied with match timer off', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,
       centerRule: 'endgame',
@@ -35,7 +44,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     session.getEngine().getState().captures.RED = 2;
     session.getEngine().getState().captures.BLUE = 2;
 
-    session.evaluateScoreAndEnd('Match timer expired.');
+    session.evaluateScoreAndEnd('Game ended.');
     expect(session.isGameOver()).toBe(true);
     expect(session.getDisplayedWinner()).toBe('RED');
     expect(session.getDisplayedReason()).toContain('center');
@@ -60,7 +69,6 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     const afterRed = session.getCenterDisplayScores();
     expect(afterRed.red).toBe(1);
 
-    // BLUE completes a non-center slide so RED's centre seat accrues again next turn
     const blueFrom = session.getEngine().getState().board.intersections.find((p) => p.label === 'A40')!.id;
     session.selectNode(blueFrom);
     const blueTargets = session.getLegalTargetIds();
@@ -69,8 +77,6 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     expect(blueMove).not.toBeNull();
     session.applyMove(blueMove!);
 
-    // RED still on centre — after BLUE's turn completed, cumulative should have added RED's seat again
-    // (accrual runs for both colors each completed turn)
     const afterBlue = session.getCenterDisplayScores();
     expect(afterBlue.red).toBeGreaterThanOrEqual(afterRed.red);
   });
@@ -85,17 +91,15 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     setOcc(session, 'A40', 'BLUE');
     session.getEngine().getState().captures.RED = 2;
     session.getEngine().getState().captures.BLUE = 2;
-    // Inject cumulative lead for BLUE via one completed turn on centre
     setOcc(session, 'A21', 'BLUE');
     session.getEngine().getState().currentPlayer = 'BLUE';
-    // Force accrual by finishing a dummy turn path: use evaluate after manually setting scores
     const snap = session.exportSnapshot();
     session.loadSnapshot({
       ...snap,
       p1CenterScore: 1,
       p2CenterScore: 4,
     });
-    session.evaluateScoreAndEnd('Match timer expired.');
+    session.evaluateScoreAndEnd('Game ended.');
     expect(session.getDisplayedWinner()).toBe('BLUE');
     expect(session.getDisplayedReason()).toContain('center');
   });
@@ -132,6 +136,25 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     expect(session.isGameOver()).toBe(true);
     expect(session.getDisplayedWinner()).toBe('BLUE');
     expect(session.getDisplayedReason()).toContain('Shot clock');
+  });
+
+  it('PvE match timer expiry uses endgame center tiebreak when captures tied (full timerTick path)', () => {
+    const session = new FeatureSession('6x3x5', {
+      ...base,
+      matchTimer: '3',
+      centerRule: 'endgame',
+    });
+    clearOccupants(session);
+    setOcc(session, 'A21', 'RED');
+    setOcc(session, 'A00', 'RED');
+    setOcc(session, 'A40', 'BLUE');
+    session.getEngine().getState().captures.RED = 2;
+    session.getEngine().getState().captures.BLUE = 2;
+    const ticks = 3 * 60;
+    for (let i = 0; i < ticks; i++) session.timerTick();
+    expect(session.isGameOver()).toBe(true);
+    expect(session.getDisplayedWinner()).toBe('RED');
+    expect(session.getDisplayedReason()).toContain('center');
   });
 
   it('PvE match timer expiry uses capture score hierarchy', () => {

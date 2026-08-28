@@ -266,6 +266,47 @@ Never invent results.
 
 ---
 
+# Evidence-Based Claims (no fabrication)
+
+Before stating that any component **already does**, **already handles**, **already values**, or **already accounts for** some behavior — as opposed to being asked to check whether it does — you must have searched or read the actual file(s) that would implement it and quoted what you found. A claim about existing behavior with no search performed is not a technical claim; it is a guess formatted as one.
+
+This applies with no exception to:
+
+- Claims that engine/AI code already implements a rule, setting, or feature.
+- Claims that a bug is already fixed or a fix is already in place.
+- Claims that a test already covers some behavior.
+
+If you did not grep, read, or otherwise directly inspect the specific file that would contain the behavior, you may not assert the behavior exists. Say **not checked** instead of describing what you assume is probably there.
+
+## Feature status — exactly three labels
+
+Any feature, setting, or rule you are asked about must be reported as one of:
+
+- **FUNCTIONAL, TESTED** — code path traced end-to-end, and a named test (existing or newly written) exercises the full claim and passes; raw test output pasted in the completion report when the human requires proof.
+- **FUNCTIONAL, UNTESTED** — code path traced end-to-end and appears correct, but no test currently exercises the full claim. State exactly what a test would need to check.
+- **NOT FUNCTIONAL / DOES NOT EXIST** — code path does not exist, is unreachable under current settings/defaults, or was found to be decorative (e.g. a UI value with no effect on outcome).
+
+"It's implemented but I haven't checked if it works" is not a valid label — that means **FUNCTIONAL, UNTESTED**, not a hedge on top of an unverified claim. There is no fourth option where you describe what the feature is supposed to do and imply that is what it does. If the honest answer is "this exists only in documentation/UI, not in the logic that decides outcomes," say exactly that.
+
+## Silence is not confirmation
+
+Do not report a feature as working because no test failed. A green test suite proves the tests that exist passed — it says nothing about behavior no test touches. Before reporting **FUNCTIONAL, TESTED**, name the specific test(s) that exercise the full claim. If none exist, the feature is **UNTESTED** or **NOT FUNCTIONAL**, never functional by default.
+
+## Evidence block required before TESTED
+
+Before any **FUNCTIONAL, TESTED** label, the report must include all of:
+
+1. File path and line range inspected (or grep command used).
+2. Quoted snippet (≤15 lines) showing the behavior.
+3. Exact test file and `it('...')` name covering the **full** claim.
+4. One sentence on what that test does **not** cover (if anything).
+
+Missing any item → label must be **FUNCTIONAL, UNTESTED** or **NOT FUNCTIONAL / DOES NOT EXIST**.
+
+Mislabeling after a failed human spot-check is a **stop condition**: discard the turn's implementation claims, redo the audit with evidence, do not proceed until corrected.
+
+---
+
 # Completion Claims
 
 A task is not "complete" until the specific outcome the human asked for has been

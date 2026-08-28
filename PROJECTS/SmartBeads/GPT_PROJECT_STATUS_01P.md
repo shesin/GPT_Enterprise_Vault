@@ -41,7 +41,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Collinear Jump Captures:** Short jump capture routes governed by strict collinearity algorithms (`sameDir`).
 - **Multi-Jump Chains:** Consecutive capture chaining with live state tracking (`chainPieceId`).
 - **Capture Optionality:** Players (and AI) can voluntarily stop multi-jump sequences at any hop via "Finish".
-- **Game Termination & Victory:** Elimination wins, stalemate wins, capture-count victories, center-hold tiebreaks, and ply-limit handling.
+- **Game Termination & Victory:** Elimination wins, stalemate wins, and capture-count victories on all V1 boards (`maxPlies: null` — no ply-cap endings in shipped boards). Center tiebreak at match-timer expiry lives in `FeatureSession.evaluateScoreAndEnd` (not core engine elimination path).
 
 ### 2. Turn Interaction & UI Protocol (`FeatureSession.ts` & `CanvasBoardRenderer.ts`)
 - **Inert Opponent Beads:** Only active player beads glow and are clickable. Opponent beads are 100% inert in all states (idle, selected, mid-chain).
@@ -58,22 +58,23 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Complete-Turn Search:** Generates and evaluates full multi-jump sequences rather than single hops.
 - **Pacing & Timing:** Level-based think budgets (Easy ~250ms, Medium ~800ms, Hard ~2800ms).
 - **Difficulty contract (Jest + production Lab `lab-ai-difficulty-eval.mjs`):**
-  - **Easy:** 0 opponent lookahead; ~70% max-capture greedy (no positional eval); ~30% soft-miss (still captures when possible, not silly pure-random).
-  - **Medium:** 1 opponent complete-turn reply + full eval **including center when Cumulative/Endgame is on**; ~20% soft-miss so Medium feels softer than Hard (esp. 8-bead).
-  - **Hard:** 2 opponent complete-turn replies + full eval including center; **0% soft-miss**; ~2.8s think budget so depth-2 completes.
+  - **Easy:** 0 opponent lookahead; ~70% max-capture greedy (no positional/center eval); ~30% soft-miss (still captures when possible, not silly pure-random).
+  - **Medium:** 1 opponent complete-turn reply + full eval **including center when End-Game/Cumulative is selected**; ~20% soft-miss so Medium feels softer than Hard (esp. 8-bead).
+  - **Hard:** 2 opponent complete-turn replies + full eval including center when rule is on; **0% soft-miss**; ~2.8s think budget so depth-2 completes.
   - Strength gates: Medium > Easy and Hard ≥ Medium on 6×3×5; Hard > Medium head-to-head on **8x4x6**; Hard coverage on **16**.
 - **3-fold repetition:** removed from production (never approved for V1). See `GPT_PROJECT_AUDIT_05P.md`.
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI).
 - **Default Feature Settings:**
-  - `centerRule: 'off'` default on all 7 boards (Cumulative/Endgame remain selectable on 6/7/8 where offered).
+  - `centerRule: 'off'` default on all 7 boards (End-Game/Cumulative selectable per board catalog).
   - `matchTimer: 'off'` and `shotClock: 'off'` across all 7 games.
+- **Center scoring contract:** End-Game/Cumulative tiebreak in `evaluateScoreAndEnd()` and on engine game-over when captures are tied; cumulative accrual each completed turn; Medium/Hard AI eval via `planAiTurnPath`. Independent of match timer on/off.
 - **Clocks during AI:** shot/match timers tick while Ebony thinks (`shellTimerShouldSkip`); shot expiry on BLUE awards Ivory.
 - **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`).
 
 ### 5. Test & Quality Gates
-- **Jest:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, ply_limit, all-7-board smoke (own beads / AI reply / reset), Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick.
+- **Jest:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers (center tiebreak with timer off, full timerTick path when timer on, planAiTurnPath center wiring), ply_limit on Board4 reference only, all-7-board smoke, Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick.
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety.
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
 - **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; strict gate detail in `VISION/CURSOR_PROMPT_01.md`; one-line reminders in `.cursor/rules/smartbeads-core.mdc`.

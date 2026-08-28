@@ -181,6 +181,64 @@ describe('HonestAi difficulty contract', () => {
     const movedToCenter = path!.some((m) => m.to === centerId);
     expect(onCenter || movedToCenter).toBe(true);
   });
+
+  it('Medium prefers center seat under cumulative when totals favor occupying centre', () => {
+    const engine = new SmartBeadsEngine('6x3x5');
+    clearBoard(engine);
+    setOcc(engine, 'A11', 'BLUE');
+    setOcc(engine, 'A00', 'RED');
+    setOcc(engine, 'A02', 'RED');
+    setOcc(engine, 'A40', 'BLUE');
+    engine.getState().currentPlayer = 'BLUE';
+    const snap = engine.exportSnapshot();
+    const centerId = engine.getState().board.intersections.find((p) => p.label === 'A21')!.id;
+
+    const withoutCum = selectAiTurnPath('6x3x5', 2, snap, 'BLUE', {
+      budgetMs: 1500,
+      rng: () => 0,
+      mediumSoftMissRate: 0,
+      center: { centerRule: 'off' },
+    });
+    const withCum = selectAiTurnPath('6x3x5', 2, snap, 'BLUE', {
+      budgetMs: 1500,
+      rng: () => 0,
+      mediumSoftMissRate: 0,
+      center: { centerRule: 'cumulative', cumulativeRed: 0, cumulativeBlue: 0 },
+    });
+    expect(withoutCum).not.toBeNull();
+    expect(withCum).not.toBeNull();
+
+    const engCum = new SmartBeadsEngine('6x3x5');
+    engCum.loadSnapshot(snap);
+    applyPath(engCum, withCum!);
+    const onCenter = engCum.getState().board.intersections[centerId]?.occupant === 'BLUE';
+    const movedToCenter = withCum!.some((m) => m.to === centerId);
+    expect(onCenter || movedToCenter).toBe(true);
+  });
+
+  it('Easy ignores center eval even when endgame rule is on (capture-only contract)', () => {
+    const engine = new SmartBeadsEngine('6x3x5');
+    clearBoard(engine);
+    setOcc(engine, 'A11', 'BLUE');
+    setOcc(engine, 'A21', 'RED');
+    setOcc(engine, 'A00', 'RED');
+    setOcc(engine, 'A40', 'BLUE');
+    engine.getState().currentPlayer = 'BLUE';
+    const snap = engine.exportSnapshot();
+    const withCenter = selectAiTurnPath('6x3x5', 1, snap, 'BLUE', {
+      budgetMs: 400,
+      rng: () => 0,
+      easySoftMissRate: 0,
+      center: { centerRule: 'endgame' },
+    });
+    const withoutCenter = selectAiTurnPath('6x3x5', 1, snap, 'BLUE', {
+      budgetMs: 400,
+      rng: () => 0,
+      easySoftMissRate: 0,
+      center: { centerRule: 'off' },
+    });
+    expect(withCenter).toEqual(withoutCenter);
+  });
 });
 
 describe('HonestAi production strength gates (6x3x5)', () => {

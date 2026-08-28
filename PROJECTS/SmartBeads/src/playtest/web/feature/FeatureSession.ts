@@ -314,11 +314,42 @@ export class FeatureSession {
 
     const engState = this.engine.getState();
     if (engState.gameOver) {
+      this.maybeApplyCenterTiebreakAfterEngineEnd();
       this.uiState = 'game_over';
       return;
     }
 
     this.shotRemaining = this.shotLimit;
+  }
+
+  /**
+   * When the engine ends with tied captures and center rule is on, apply center tiebreak
+   * (independent of match timer — user-selected center rule always affects outcome here).
+   */
+  private maybeApplyCenterTiebreakAfterEngineEnd(): void {
+    if (this.featureOver) return;
+    const state = this.engine.getState();
+    if (!state.gameOver || this.settings.centerRule === 'off') return;
+    if (state.captures.RED !== state.captures.BLUE) return;
+
+    let c1 = 0;
+    let c2 = 0;
+    if (this.settings.centerRule === 'cumulative') {
+      c1 = this.p1CenterScore;
+      c2 = this.p2CenterScore;
+    } else {
+      c1 = countCenterOccupancy(state.board, 'RED');
+      c2 = countCenterOccupancy(state.board, 'BLUE');
+    }
+
+    const prefix = state.endReason ? `${state.endReason} — ` : '';
+    if (c1 > c2) {
+      this.endGameByFeature('RED', `${prefix}captures tied — P1 won on center.`);
+      return;
+    }
+    if (c2 > c1) {
+      this.endGameByFeature('BLUE', `${prefix}captures tied — P2 won on center.`);
+    }
   }
 
   endGameByFeature(winner: Player | 'DRAW', reason: string): void {

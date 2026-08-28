@@ -195,6 +195,7 @@ From 4th-cycle failure audit (`GPT_PROJECT_AUDIT_05P.md`). Violation = process f
 - `path.length > 0` / “doesn’t hang” alone is not enough.
 - Production AI Lab must use `HonestAi.ts`, never prototype `.cjs` AI.
 - If Cumulative/Endgame/timers/AI levels ship in the UI, AI and session must honor them with tests — no half-wired evaluate/search.
+- **Anti-fabrication:** see `VISION/AGENT_RULE_05P.md` — Evidence-Based Claims. Never label **FUNCTIONAL, TESTED** without file:line evidence, named test, and (when required) pasted Jest output for that test. Partial tests do not prove full claims.
 - Hard/Medium must not silently fall back to Easy; emergency = first legal hop only.
 - Shot/match timers must tick on Ebony’s turn; never freeze the interval while `aiThinking`.
 - Every shipped feature must be tested on all relevant boards; if untestable → remove or stop with explicit blocker.

@@ -112,6 +112,36 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     expect(legal).toBe(true);
   });
 
+  it('planAiTurnPath values center when endgame rule is on (independent of match timer)', () => {
+    const session = new FeatureSession('6x3x5', {
+      mode: 'pve',
+      aiLevel: 2,
+      matchTimer: 'off',
+      shotClock: 'off',
+      centerRule: 'endgame',
+    });
+    const engine = session.getEngine();
+    for (const point of engine.getState().board.intersections) {
+      point.occupant = undefined;
+    }
+    const id = (label: string) => engine.getState().board.intersections.find((p) => p.label === label)!.id;
+    engine.getState().board.intersections.find((p) => p.label === 'A11')!.occupant = 'BLUE';
+    engine.getState().board.intersections.find((p) => p.label === 'A00')!.occupant = 'RED';
+    engine.getState().board.intersections.find((p) => p.label === 'A02')!.occupant = 'RED';
+    engine.getState().board.intersections.find((p) => p.label === 'A40')!.occupant = 'BLUE';
+    engine.getState().currentPlayer = 'BLUE';
+    const centerId = id('A21');
+
+    const path = planAiTurnPath(session);
+    expect(path).not.toBeNull();
+    const probe = new SmartBeadsEngine('6x3x5');
+    probe.loadSnapshot(engine.exportSnapshot());
+    for (const move of path!) probe.applyMove(move);
+    const onCenter = probe.getState().board.intersections[centerId]?.occupant === 'BLUE';
+    const movedToCenter = path!.some((m) => m.to === centerId);
+    expect(onCenter || movedToCenter).toBe(true);
+  });
+
   it('Medium runAiTurn completes short 6x3x5 games without mid-chain stuck', () => {
     for (let g = 0; g < 3; g++) {
       const session = new FeatureSession('6x3x5', { mode: 'pve', ...off, aiLevel: 2 });

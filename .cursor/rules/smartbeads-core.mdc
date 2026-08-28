@@ -11,7 +11,8 @@ When work touches `PROJECTS/SmartBeads/`, enforce detail in `GPT_PROJECT_RULES_0
 - **Big change → list & get approval** before implementing.
 - **Git commit on request only**
 - **Word-friendly output** — no wide tables
-- **Evidence before conclusion** — repo beats chat/status docs
+- **Evidence before conclusion** — repo beats chat/status docs; grep/read before "already does"; see AGENT_RULE Evidence-Based Claims
+- **Three labels only** — FUNCTIONAL, TESTED / FUNCTIONAL, UNTESTED / NOT FUNCTIONAL; no hedge labels
 - **Prototype ≠ production** — no shared code with `src/`
 - **Green Jest ≠ shipped play** — behavioral gates (Easy≠Easy); not `path.length > 0` alone
 - **No unapproved product rules** — STOP and ask (see CURSOR_PROMPT)
