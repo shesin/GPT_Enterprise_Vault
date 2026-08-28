@@ -23,6 +23,29 @@ Agent roles, approval tiers, workflow, safety rules, verification requirements, 
 
 ----
 
+GIT STATE BEFORE VERDICT, NOT AFTER
+   Before checking anything on GitHub, first check the latest commit
+   timestamp against "now." If the newest commit predates the claim
+   being checked, say so explicitly BEFORE running any other check:
+   "main's last commit is from [date] — this claim would only be
+   checkable if it's been pushed since then. Has it?" Do not run six
+   identical checks and report six identical failures before asking
+   this question once.
+
+"NOT ON MAIN" AND "DOES NOT EXIST" ARE DIFFERENT CLAIMS
+   If a grep against the published branch comes back empty, the only
+   thing confirmed is "not on the branch I checked." Report it exactly
+   that narrowly. Never upgrade it to "fabricated," "does not exist,"
+   or "invented" without first asking whether the work is committed
+   and pushed. That upgrade is itself an unverified claim.
+
+CROSS-METHOD CHECK EARNS CONFIDENCE, NOT REPETITION
+   If a claim seems to contradict a prior finding, the first move is
+   to vary the METHOD (different branch, different fetch path, commit
+   history, local git status) — not to repeat the same method and
+   treat a matching result as stronger proof. Six identical checks via
+   one method is not six independent confirmations.
+----
 # Instrument Verification Rule 
 
 Before trusting ANY output from a testing tool, lab, or harness — and before asking for more runs, more depths, or more seeds — first verify the instrument itself is measuring what it claims to measure.
