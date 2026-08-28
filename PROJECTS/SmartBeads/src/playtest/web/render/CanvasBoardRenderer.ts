@@ -12,6 +12,17 @@ export interface BoardAnimState {
   duration: number;
 }
 
+export interface LastMoveHighlight {
+  from: number;
+  to: number;
+}
+
+export interface CapturePulse {
+  nodeId: number;
+  /** 0 at flash start, 1 when faded out */
+  progress: number;
+}
+
 export interface CanvasBoardView {
   board: BoardDefinition;
   currentPlayer: Player;
@@ -21,6 +32,8 @@ export interface CanvasBoardView {
   chainPieceId: number | null;
   anim: BoardAnimState | null;
   turnPulse: number;
+  lastMove?: LastMoveHighlight | null;
+  capturePulses?: CapturePulse[];
 }
 
 function resolveCenterHighlight(board: BoardDefinition): Set<number> {
@@ -99,6 +112,53 @@ function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number): vo
   ctx.strokeStyle = 'rgba(232, 168, 60, 0.7)';
   ctx.lineWidth = 2;
   ctx.stroke();
+}
+
+function drawLastMoveTrail(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): void {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(95, 191, 138, 0.55)';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([8, 6]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawLastMoveNodeRing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.beginPath();
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(120, 210, 170, 0.7)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x, y, 24, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(95, 191, 138, 0.28)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: number, progress: number): void {
+  const life = 1 - progress;
+  if (life <= 0) return;
+  const radius = 14 + progress * 20;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(255, 200, 80, ${0.9 * life})`;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x, y, radius * 0.55, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(255, 215, 100, ${0.3 * life})`;
+  ctx.fill();
 }
 
 function drawTurnWash(
@@ -197,6 +257,8 @@ export function drawCanvasBoard(
   const w = canvas.width;
   const h = canvas.height;
   const { board, currentPlayer, gameOver, selectedId, legalTargets, chainPieceId, anim, turnPulse } = view;
+  const lastMove = view.lastMove ?? null;
+  const capturePulses = view.capturePulses ?? [];
   const visualProfile = getBoardVisualProfile(board.name);
   const centerHighlight = resolveCenterHighlight(board);
   const project = (node: { x?: number; y?: number; id: number }) =>
@@ -231,6 +293,16 @@ export function drawCanvasBoard(
 
   drawCenterDecorations(ctx, board, w, h);
 
+  if (lastMove && lastMove.from !== lastMove.to) {
+    const fromNode = board.intersections[lastMove.from];
+    const toNode = board.intersections[lastMove.to];
+    if (fromNode?.x !== undefined && toNode?.x !== undefined) {
+      const fromPt = project(fromNode);
+      const toPt = project(toNode);
+      drawLastMoveTrail(ctx, fromPt.x, fromPt.y, toPt.x, toPt.y);
+    }
+  }
+
   const hideFrom = anim ? anim.from : -1;
   const hideTo = animating && anim ? anim.to : -1;
   const hideCap = anim && anim.captured != null ? anim.captured : -1;
@@ -242,6 +314,17 @@ export function drawCanvasBoard(
 
     if (center) {
       drawCenterRing(ctx, x, y);
+    }
+
+    for (const pulse of capturePulses) {
+      if (pulse.nodeId === node.id && pulse.progress < 1) {
+        drawGoldenCapturePulse(ctx, x, y, pulse.progress);
+      }
+    }
+
+    const isLastMoveNode = lastMove && (node.id === lastMove.from || node.id === lastMove.to);
+    if (isLastMoveNode && node.id !== hideFrom && node.id !== hideTo) {
+      drawLastMoveNodeRing(ctx, x, y);
     }
 
     ctx.beginPath();

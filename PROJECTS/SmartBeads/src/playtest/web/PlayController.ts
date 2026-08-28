@@ -36,6 +36,8 @@ import {
   BoardAnimState,
   drawCanvasBoard,
   hitTestNode,
+  LastMoveHighlight,
+  CapturePulse,
 } from './render/CanvasBoardRenderer';
 import { soundEffects } from './audio/SoundEffects';
 
@@ -170,6 +172,10 @@ export function bootstrapPlayShell(): void {
   let pendingResignPlayer: Player | null = null;
   let lastGameOverPlayed = false;
   let turnCaptures = 0;
+  let lastMove: LastMoveHighlight | null = null;
+  const capturePulseStarts: Array<{ nodeId: number; startMs: number }> = [];
+  const CAPTURE_PULSE_MS = 420;
+  let prevCaptures = { RED: 0, BLUE: 0 };
 
   const canvas = document.getElementById('board') as HTMLCanvasElement;
   const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
@@ -488,6 +494,30 @@ export function bootstrapPlayShell(): void {
     drawBoard();
   });
 
+  function clearMoveFeedback(): void {
+    lastMove = null;
+    capturePulseStarts.length = 0;
+  }
+
+  function activeCapturePulses(): CapturePulse[] {
+    const now = performance.now();
+    return capturePulseStarts
+      .map((pulse) => ({
+        nodeId: pulse.nodeId,
+        progress: (now - pulse.startMs) / CAPTURE_PULSE_MS,
+      }))
+      .filter((pulse) => pulse.progress < 1);
+  }
+
+  function flashCaptureTick(player: 'p1' | 'p2'): void {
+    const el = document.getElementById(`${player}-cap-tick`) as HTMLElement | null;
+    if (!el) return;
+    el.textContent = '+1';
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+  }
+
   function drawBoard(): void {
     const state = session.getEngine().getState();
     const board = anim ? cloneBoardDefinition(state.board) : state.board;
@@ -503,6 +533,8 @@ export function bootstrapPlayShell(): void {
       chainPieceId: session.getEngine().getChainPieceId(),
       anim,
       turnPulse,
+      lastMove,
+      capturePulses: activeCapturePulses(),
     });
   }
 
@@ -516,6 +548,13 @@ export function bootstrapPlayShell(): void {
     (document.getElementById('p2-pieces') as HTMLElement).textContent = String(bluePieces);
     (document.getElementById('p1-caps') as HTMLElement).textContent = String(state.captures.RED);
     (document.getElementById('p2-caps') as HTMLElement).textContent = String(state.captures.BLUE);
+    if (state.captures.RED > prevCaptures.RED) {
+      flashCaptureTick('p1');
+    }
+    if (state.captures.BLUE > prevCaptures.BLUE) {
+      flashCaptureTick('p2');
+    }
+    prevCaptures = { RED: state.captures.RED, BLUE: state.captures.BLUE };
     (document.getElementById('turn-count') as HTMLElement).textContent = String(session.getMoveCount());
 
     const centerScores = session.getCenterDisplayScores();
@@ -649,7 +688,14 @@ export function bootstrapPlayShell(): void {
 
   function loopPulse(ts: number): void {
     turnPulse = ts / 280;
-    if (!animating) drawBoard();
+    const now = performance.now();
+    for (let i = capturePulseStarts.length - 1; i >= 0; i -= 1) {
+      if (now - capturePulseStarts[i].startMs >= CAPTURE_PULSE_MS) {
+        capturePulseStarts.splice(i, 1);
+      }
+    }
+    const pulsesActive = capturePulseStarts.length > 0;
+    if (!animating || pulsesActive) drawBoard();
     pulseRaf = requestAnimationFrame(loopPulse);
   }
 
@@ -693,6 +739,9 @@ export function bootstrapPlayShell(): void {
     if (jump) {
       soundEffects.playCapture(turnCaptures);
       turnCaptures += 1;
+      if (captured !== undefined) {
+        capturePulseStarts.push({ nodeId: captured, startMs: performance.now() });
+      }
     } else {
       soundEffects.playSlide();
       turnCaptures = 0;
@@ -722,6 +771,7 @@ export function bootstrapPlayShell(): void {
         animating = false;
         try {
           session.applyMove(move);
+          lastMove = { from: move.from, to: move.to };
         } catch {
           completeAiTurnIfChainOpen(session);
           if (player === 'BLUE' && !session.isGameOver() && session.getEngine().getState().currentPlayer === 'BLUE') {
@@ -869,6 +919,7 @@ export function bootstrapPlayShell(): void {
     anim = null;
     animating = false;
     turnCaptures = 0;
+    clearMoveFeedback();
     const settings = session.getSettings();
     const uiState = session.getUiState();
 
@@ -898,6 +949,8 @@ export function bootstrapPlayShell(): void {
     animating = false;
     aiThinking = false;
     turnCaptures = 0;
+    clearMoveFeedback();
+    prevCaptures = { RED: 0, BLUE: 0 };
 
     const settings = readSettings();
     session = createSession(currentBoardId, settings);
@@ -965,6 +1018,8 @@ export function bootstrapPlayShell(): void {
     animating = false;
     aiThinking = false;
     turnCaptures = 0;
+    clearMoveFeedback();
+    prevCaptures = { RED: 0, BLUE: 0 };
 
     currentBoardId = boardId;
     boardSelect.value = boardId;

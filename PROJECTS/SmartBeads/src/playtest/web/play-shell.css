@@ -358,6 +358,33 @@ canvas {
 .finish { background: #2f8c66; color: #06261b; display: none; }
 #undo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .stat { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.val-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 1.5rem;
+  justify-content: flex-end;
+}
+.capture-tick {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+.capture-tick.show {
+  animation: capture-tick-pop 0.85s ease-out forwards;
+}
+@keyframes capture-tick-pop {
+  0% { opacity: 0; transform: translateY(calc(-50% + 4px)) scale(0.85); }
+  18% { opacity: 1; transform: translateY(-50%) scale(1); }
+  100% { opacity: 0; transform: translateY(calc(-50% - 12px)) scale(1); }
+}
 .val { font-weight: 700; font-variant-numeric: tabular-nums; }
 .pill { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 10px; border: 1px solid transparent; margin-bottom: 8px; }
 .pill.active { border-color: rgba(212,168,75,0.7); background: rgba(212,168,75,0.1); }
