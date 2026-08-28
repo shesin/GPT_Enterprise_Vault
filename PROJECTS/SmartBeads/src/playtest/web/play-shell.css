@@ -532,12 +532,6 @@ canvas {
   flex: 1;
   accent-color: var(--gold);
 }
-#status {
-  font-size: 0.82rem;
-  color: var(--muted);
-  text-align: center;
-  min-height: 1.2em;
-}
 @media (max-width: 980px) {
   .shell { grid-template-columns: 1fr; }
   .board-frame {

@@ -33,19 +33,12 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   'Sholo-Guti-16x5x5': {
     projection: 'sholo16',
     ...SHOLO16_CANVAS,
-    centerSquares: [{ x: 4, y: 4 }],
     centerRingPoints: [{ x: 4, y: 4 }],
   },
   'SmartBeads-6x4x4': {
     projection: 'square-fit',
     ...SQUARE_CANVAS,
     turnWashAxis: 'vertical',
-    centerSquares: [
-      { x: 2, y: 2 },
-      { x: 4, y: 2 },
-      { x: 2, y: 4 },
-      { x: 4, y: 4 },
-    ],
     centerRingPoints: [
       { x: 2, y: 2 },
       { x: 4, y: 2 },
@@ -56,22 +49,16 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   'SmartBeads-6x3x5': {
     projection: 'square-fit',
     ...SQUARE_CANVAS,
-    centerSquares: [{ x: 2, y: 4 }],
     centerRingPoints: [{ x: 2, y: 4 }],
   },
   'SmartBeads-10x5': {
     projection: 'square5',
     ...SQUARE_CANVAS,
-    centerSquares: [{ x: 4, y: 4 }],
     centerRingPoints: [{ x: 4, y: 4 }],
   },
   'SmartBeads-12x6x5': {
     projection: 'grid-stretch',
     ...SQUARE_CANVAS,
-    centerSquares: [
-      { x: 4, y: 4 },
-      { x: 4, y: 6 },
-    ],
     centerRingPoints: [
       { x: 4, y: 4 },
       { x: 4, y: 6 },
@@ -80,12 +67,6 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   'SmartBeads-8x4x6': {
     projection: 'grid-stretch',
     ...SQUARE_CANVAS,
-    centerSquares: [
-      { x: 2, y: 4 },
-      { x: 4, y: 4 },
-      { x: 2, y: 6 },
-      { x: 4, y: 6 },
-    ],
     centerRingPoints: [
       { x: 2, y: 4 },
       { x: 4, y: 4 },
@@ -96,10 +77,6 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   'SmartBeads-7x4x5': {
     projection: 'portrait45',
     ...SQUARE_CANVAS,
-    centerSquares: [
-      { x: 2, y: 4 },
-      { x: 4, y: 4 },
-    ],
     centerRingPoints: [
       { x: 2, y: 4 },
       { x: 4, y: 4 },

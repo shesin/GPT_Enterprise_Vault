@@ -51,6 +51,20 @@ describe('FeatureSession natural turn taking (all V1 boards)', () => {
 });
 
 describe('FeatureSession 16-bead triangular two-click path', () => {
+  it('shows no landing highlights until a piece is selected', () => {
+    const session = new FeatureSession('16', { mode: 'pvp', ...off });
+    const engine = session.getEngine();
+    for (const point of engine.getState().board.intersections) {
+      point.occupant = undefined;
+    }
+    engine.getState().board.intersections.find((p) => p.label === 'LT')!.occupant = 'RED';
+    engine.getState().board.intersections.find((p) => p.label === 'LIT')!.occupant = 'BLUE';
+    engine.getState().currentPlayer = 'RED';
+
+    expect(session.getSelectedId()).toBeNull();
+    expect(session.getLegalTargetIds()).toEqual([]);
+  });
+
   it('selecting LT offers collinear landing A20, keeps LIT inert, and does not offer the LIM corner', () => {
     const session = new FeatureSession('16', { mode: 'pvp', ...off });
     const engine = session.getEngine();

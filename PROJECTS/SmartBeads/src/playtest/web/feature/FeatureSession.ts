@@ -200,8 +200,8 @@ export class FeatureSession {
   }
 
   /**
-   * Landing squares for the active piece selection.
-   * Opponent beads are inert and not included in target highlights.
+   * Landing squares for the armed piece only (selected or chaining).
+   * No highlights when idle — board shows last-move trail, not every legal square.
    */
   getLegalTargetIds(): number[] {
     const moves = this.getLegalMovesForSelection();

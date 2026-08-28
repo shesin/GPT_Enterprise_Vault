@@ -15,6 +15,7 @@ import {
   formatCenterRuleLabel,
   formatMatchTimerLabel,
   formatShotClockLabel,
+  formatAiLevelLabel,
   GameFeatureSettings,
   MatchTimerMinutes,
   parseMatchSeconds,
@@ -191,7 +192,6 @@ export function bootstrapPlayShell(): void {
   const resignDeclineBtn = document.getElementById('resign-decline-btn') as HTMLButtonElement;
   const resultTitle = document.getElementById('result-title') as HTMLHeadingElement;
   const resultDesc = document.getElementById('result-desc') as HTMLParagraphElement;
-  const statusEl = document.getElementById('status') as HTMLDivElement | null;
   const startScreenOverlay = document.getElementById('start-screen-overlay') as HTMLDivElement | null;
   const startGameBtn = document.getElementById('start-game-btn') as HTMLButtonElement | null;
   const celebrationFx = document.getElementById('board-celebration-fx') as HTMLDivElement | null;
@@ -398,10 +398,6 @@ export function bootstrapPlayShell(): void {
     }
   }
 
-  function setStatus(text: string): void {
-    if (statusEl) statusEl.textContent = text;
-  }
-
   function cancelAiWork(): void {
     aiRunId += 1;
     aiThinking = false;
@@ -471,14 +467,6 @@ export function bootstrapPlayShell(): void {
     resignOfferDesc.textContent =
       `${playerDisplayName(resigning)} offers resignation. Agree to a draw?`;
     resignOfferModal.style.display = 'flex';
-  }
-
-  function turnStatusText(): string {
-    const player = session.getEngine().getState().currentPlayer;
-    const label = player === 'RED' ? 'P1' : 'P2';
-    const uiState = session.getUiState();
-    if (uiState === 'chain') return `${label} — continue chain or Finish`;
-    return `${label} turn — select a piece`;
   }
 
   function applyCanvasSizeForBoard(): void {
@@ -593,7 +581,8 @@ export function bootstrapPlayShell(): void {
     (document.getElementById('shot-clock-val') as HTMLElement).textContent =
       shotLimit > 0 ? `${session.getShotRemaining()}s` : 'OFF';
 
-    (document.getElementById('p2-role') as HTMLElement).textContent = settings.mode === 'pve' ? '(AI)' : '(Human)';
+    (document.getElementById('p2-role') as HTMLElement).textContent =
+      settings.mode === 'pve' ? `(AI · ${formatAiLevelLabel(settings.aiLevel)})` : '(Human)';
     aiLevelSelect.disabled = settings.mode === 'pvp';
     aiLevelContainer.style.opacity = settings.mode === 'pvp' ? '0.45' : '1';
 
@@ -710,14 +699,12 @@ export function bootstrapPlayShell(): void {
     if (settings.mode === 'pve' && state.currentPlayer === 'BLUE') {
       const runId = aiRunId;
       aiThinking = true;
-      setStatus('AI is thinking…');
       setTimeout(() => {
         if (runId !== aiRunId) return;
         runAiTurn(runId);
       }, AI_REPLY_DELAY_MS);
     } else {
       cancelAiWork();
-      setStatus(turnStatusText());
     }
   }
 
@@ -725,7 +712,6 @@ export function bootstrapPlayShell(): void {
     if (animating) {
       completeAiTurnIfChainOpen(session);
       cancelAiWork();
-      setStatus(turnStatusText());
       updateUI();
       return;
     }
@@ -791,7 +777,6 @@ export function bootstrapPlayShell(): void {
             return;
           }
           cancelAiWork();
-          setStatus('Move failed.');
           updateUI();
           return;
         }
@@ -804,7 +789,6 @@ export function bootstrapPlayShell(): void {
   function executeMoveAnimated(move: Move, player: Player): void {
     playAnimated(move, player, () => {
       if (session.getUiState() === 'chain') {
-        setStatus(turnStatusText());
         updateUI();
         return;
       }
@@ -935,7 +919,6 @@ export function bootstrapPlayShell(): void {
     pendingResignPlayer = null;
     undoBtn.disabled = undoStack.length === 0;
     if (!session.isGameOver()) startTimers();
-    setStatus(turnStatusText());
     updateUI();
   }
 
@@ -961,7 +944,6 @@ export function bootstrapPlayShell(): void {
     resignOfferModal.style.display = 'none';
     pendingResignPlayer = null;
     session.resetTurnClock();
-    setStatus(turnStatusText());
     updateUI();
     startTimers();
     undoBtn.disabled = true;
@@ -1033,7 +1015,6 @@ export function bootstrapPlayShell(): void {
     resignOfferModal.style.display = 'none';
     pendingResignPlayer = null;
     session.resetTurnClock();
-    setStatus(turnStatusText());
     updateUI();
     startTimers();
     undoBtn.disabled = true;
@@ -1135,7 +1116,6 @@ export function bootstrapPlayShell(): void {
         })),
         animating,
         aiThinking,
-        statusText: statusEl?.textContent ?? '',
         animFrom: anim?.from ?? null,
         animTo: anim?.to ?? null,
       };

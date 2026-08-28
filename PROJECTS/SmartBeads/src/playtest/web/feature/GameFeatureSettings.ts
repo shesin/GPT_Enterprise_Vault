@@ -66,3 +66,10 @@ export function formatCenterRuleLabel(rule: CenterRule): string {
   if (rule === 'endgame') return 'End-Game';
   return 'Cumulative';
 }
+
+/** Player-facing AI difficulty names (values 1–3 unchanged in settings). */
+export function formatAiLevelLabel(level: AiLevel): string {
+  if (level === 1) return 'Casual';
+  if (level === 2) return 'Standard';
+  return 'Expert';
+}
