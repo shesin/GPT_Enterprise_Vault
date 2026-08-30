@@ -19,12 +19,12 @@ The production codebase is fully implemented in clean TypeScript (`src/`), with 
 
 ## 7 Locked V1 Boards Status
 
-All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and verified via automated test suites (**455 Jest tests**, 36 suites) and headless browser click gates (Playwright):
+All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and verified via automated test suites (**474 Jest tests**, 41 suites) and headless browser click gates (Playwright):
 
 | # | Board Variant | Geometry & Architecture | Status |
 |---|---|---|---|
 | 1 | **16-bead · 5×5 + wings** | 37-node Alquerque + 2 triangular wings (`Board16Sholo.ts`). Compact wing caps aligned with columns `c2` to `c4` with 50% row height; prominent 5×5 central playing area (472px width by 472px height on 560×796 canvas). All straight & diagonal apex junction captures verified. Single amber center plate. | **VERIFIED CLEAN** |
-| 2 | **6-bead · 4×4** | 16-node full box-cross lattice (`Board6.ts`). Quad amber center scoring plates (2×2 box). Default center Off (Cumulative/Endgame selectable). | **VERIFIED CLEAN** |
+| 2 | **6-bead · 4×4** | 16-node full box-cross lattice (`Board6.ts`). Quad amber center scoring plates (2×2 box). **Production convention:** cream (RED) camps on bottom ranks. Default center Off (Cumulative/Endgame selectable). | **VERIFIED CLEAN** |
 | 3 | **6-bead · 3×5** | 15-node Alquerque top-bottom camp lattice (`Board6x3x5.ts`). Single amber center plate (Node 7). Default center Off (Cumulative/Endgame selectable). | **VERIFIED CLEAN** |
 | 4 | **10-bead · 5×5** | 25-node Alquerque with empty center file (`Board10x5.ts`). Single amber center plate (Node 12). Default center off. | **VERIFIED CLEAN** |
 | 5 | **12-bead · 6×5** | 30-node Alquerque stretch (`Board12x6x5.ts`). Dual amber center plates (Nodes 12, 17). Default center off. | **VERIFIED CLEAN** |
@@ -48,7 +48,9 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Prominent Selection Ring:** Selected active bead is highlighted with an unmistakable glowing red/orange double-ring.
 - **Target Highlighting:** Clicking an active piece highlights empty landing spots exclusively in emerald green; clicking the empty landing executes the capture/slide.
 - **Audio & Sound Effects (`SoundEffects.ts`):** Pure sweet acoustic instrument audio suite (Concert harp & celesta glissando kickoff, soft wooden piece settle, luscious rosewood marimba strike C5, rising major triad pitch scaling on multi-jumps, ascending 4-note marimba & celesta flourish C5-E5-G5-C6 on 3+ hops, triumphant marimba victory celebration, gentle comforting kalimba defeat resolution, and peaceful twin chime draw). Zero harshness, zero white noise. Default BGM set to "Cool Puzzle Groovin' 2".
-- **Start Screen Overlay & First-Tap Unlock (Option B):** Clean gold-accented "▶ START GAME" button card over board to unlock browser AudioContext & start default BGM on initial page load. Subsequent board switches and new games start instantly with the animated kickoff banner and fanfare without requiring another start click.
+- **Start Screen Overlay & First-Tap Unlock (Option B):** Gold-accented start card over board (mode select + **▶ START GAME**) unlocks browser AudioContext and BGM. **Start** always opens with human (cream / RED); AI must not move first. **New game / Play again** alternates opener (game 2 → AI in PvE). **Board switch** returns to start overlay with human first (does not consume alternation counter). Match then runs with animated kickoff banner and fanfare.
+- **Production play shell layout (2026-08):** Four-column shell — left play panel (AI top, match `mm:ss` centre, human bottom, shot rings, capture/centre/beads), board-only centre column, settings right, optional ad column. Bottom controls: single nowrap row (Resign · Sound · Undo · New game). Viewport height-first sizing on `.shell`; 16-bead bump (`shell--board-16`, max frame height 860px); verified at 1366×768 and 1280×720 @ 100% zoom.
+- **Cream-camp orientation:** Jest gate `creamCampRendersLower.test.ts` — on every V1 board, cream (RED) beads average lower on canvas than ebony (BLUE). Board6 starting camps aligned to bottom convention.
 - **End-of-Game Celebration & Clear Outcome Statements:** Balanced celebratory sparkles (`★`, `✦`, `✧`) across all outcomes (Victory, Defeat, and Draw), clear result statements (*"CONGRATULATIONS! YOU WON!"*, *"WELL PLAYED! BETTER LUCK NEXT TIME"*, *"WELL PLAYED! IT'S A DRAW"*), clear bead capture differential display (e.g., *"You won by 3 beads (8 vs 5)"*), and a clean *"↻ PLAY AGAIN"* action button.
 - **Selection Safety & Highlight:** Clicking an immobile own bead safely deselects; prominent glowing red/orange double-ring locks onto the selected piece.
 - **16-Bead Visual Layout:** Central 5×5 grid is rendered as a prominent 472px square matching 10-bead width with compact 59px-high wing caps (560×796 canvas, 0.70 aspect ratio).
@@ -74,7 +76,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`).
 
 ### 5. Test & Quality Gates
-- **Jest:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers (center tiebreak with timer off, full timerTick path when timer on, planAiTurnPath center wiring), ply_limit on Board4 reference only, all-7-board smoke, Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick.
+- **Jest:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, starter-policy browser checks, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick.
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety.
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
 - **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; strict gate detail in `VISION/CURSOR_PROMPT_01.md`; one-line reminders in `.cursor/rules/smartbeads-core.mdc`.
@@ -91,10 +93,12 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
   - Symmetrical radial countdown timer rings on player panels (defaults: 90 min for 16, 12, 10-bead; 60 min for 8, 7, 6-bead; low-time pulse warning).
 - **Capture Reward Feedback:**
   - Subtle golden glowing ripple at captured intersections on canvas (clean, elegant visual juice without screen shake).
-- **Alternating First Player:**
-  - Fairness toggle on "Play Again" to alternate starting piece color across consecutive matches; session score counter.
+- **Alternating First Player:** **FUNCTIONAL** on New game / Play again (Start overlay always human first). Session score counter across matches — still pending.
+- **Play hub & onboarding (Chess.com-style):** Two-step flow — (1) mode hub cards (vs AI, vs Friend same-device, Learn, Tournament), (2) match setup, (3) live board. Left-panel / settings dedup on hub. Planned; not implemented.
 - **1 to 2-Minute Audiovisual Onboarding Tutorial:**
-  - Fast interactive guide explaining (1) Slide, (2) Jump & Multi-jump, (3) Center scoring, and (4) Timers.
+  - Fast interactive guide explaining (1) Slide, (2) Jump & Multi-jump, (3) Center scoring, and (4) Timers. Entry via **Learn** hub card (not Start button).
+- **Dual player clocks (Chess.com-style UI):** When match timer on, show top/bottom player clocks on play view (replace centre-only mm:ss for timed modes).
+- **Tournament mode:** Local session tracker first; online brackets later.
 - **Mobile Viewport Scaling & Touch Hitbox Optimization:**
   - Fluid canvas scaling for mobile browsers, enlarged tap targets for responsive thumb control.
 - **Production Packaging & Deployment:**
@@ -112,4 +116,4 @@ To play and test the current V1 production release:
    npm run web:smartbeads
    ```
 2. Open `http://localhost:5173/` or 5174 in your browser.
-3. Select any of the 7 locked boards from the board dropdown to verify gameplay, AI response, and rules.
+3. Tap **▶ START GAME** on the overlay (human moves first). Use **New game** for rematches with alternating opener in PvE.

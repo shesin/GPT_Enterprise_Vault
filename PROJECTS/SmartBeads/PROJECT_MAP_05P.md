@@ -29,8 +29,8 @@ SmartBeads/
 │   │   ├── HumanVsAiRunner.ts         # CLI playtest interface
 │   │   ├── web/
 │   │   │   ├── main.ts                # Vite entry — bootstraps shared play shell
-│   │   │   ├── PlayController.ts      # 3-column feature UI + canvas input loop
-│   │   │   ├── play-shell.css         # Feature shell layout/styles
+│   │   │   ├── PlayController.ts      # 4-column play shell + left panel + starter policy + canvas input
+│   │   │   ├── play-shell.css         # Feature shell layout, viewport fit, shell--board-16
 │   │   │   ├── BoardRenderer.ts       # Legacy SVG renderer (CLI / fallback)
 │   │   │   ├── feature/
 │   │   │   │   ├── FeatureSession.ts  # Session; interpretClick = landing (opponent beads inert)
@@ -50,13 +50,13 @@ SmartBeads/
 │   │   │   ├── layout/
 │   │   │   │   ├── boardProjection.ts
 │   │   │   │   ├── boardVisualProfile.ts
-│   │   │   │   ├── canvasDisplay.ts
+│   │   │   │   ├── canvasDisplay.ts   # --board-aspect on .shell; fitCanvasToFrame
 │   │   │   │   ├── prototypeProjectionOracle.ts
-│   │   │   │   └── __tests__/
+│   │   │   │   └── __tests__/         # prototypeVisualParity, creamCampRendersLower
 │   │   │   ├── render/
 │   │   │   │   └── CanvasBoardRenderer.ts
-│   │   │   └── __tests__/             # PlayController, productionPve16, v1ProductionSanity,
-│   │   │                              #   v1GeometryCaptureAudit (geometry/capture/renderer, 7 boards)
+│   │   │   └── __tests__/             # PlayController, playerBarShell, viewportFit,
+│   │   │                              #   productionPve16, v1ProductionSanity, v1GeometryCaptureAudit
 │   │   └── __tests__/
 │   │       └── HumanVsAiRunner.test.ts
 │   ├── simulation/                    # Automated self-play simulation runner
@@ -99,7 +99,7 @@ SmartBeads/
 └── GPT_PROJECT_STATUS_01P.md          # Current milestone and next step
 ```
 
-Repo-root `index.html` is the Vite entry for the production play shell (`npm run web:smartbeads`). Do not confuse it with `prototype/board4/index.html`.
+Repo-root `index.html` is the Vite entry for the production play shell (`npm run web:smartbeads`): **left play panel · board · settings · ad**. Do not confuse it with `prototype/board4/index.html`.
 
 ## File Responsibilities
 
@@ -108,7 +108,7 @@ Repo-root `index.html` is the Vite entry for the production play shell (`npm run
 Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`npm run web:smartbeads`). Board selection reads `BoardCatalog.ts`; only catalog entries with `playable: true` appear in the UI. Authoritative entry is the repository root `index.html`, not anything under `prototype/`.
 
 - **`main.ts`** — calls `bootstrapPlayShell()`.
-- **`PlayController.ts`** — settings panel, timers, undo, honest AI, board `<select>`, result modal; canvas clicks go through `FeatureSession.interpretClick`.
+- **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`.
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. No 3-fold repetition in production.
 - **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center valued when rule is on.
 - **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.
@@ -146,7 +146,7 @@ BoardDefinition variants. Each file owns geometry, starting layout, center nodes
 | Module | V1 # | Status |
 |---|---|---|
 | `Board16Sholo.ts` | 1 · 16-bead 5×5 | **Production playable** |
-| `Board6.ts` | 2 · 6-bead 4×4 | **Production playable** |
+| `Board6.ts` | 2 · 6-bead 4×4 | **Production playable** (cream camps bottom) |
 | `Board6x3x5.ts` | 3 · 6-bead 3×5 | **Production playable** |
 | `Board10x5.ts` | 4 · 10-bead 5×5 | **Production playable** |
 | `Board12x6x5.ts` | 5 · 12-bead 6×5 | **Production playable** |
