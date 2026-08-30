@@ -2,8 +2,8 @@
 
 ## Purpose
 
-This document records the authoritative implementation status of SmartBeads.
-It provides a concise, structured snapshot of what has been achieved across all 7 boards and what is currently pending.
+This document records **what is built and verified** for SmartBeads.  
+Pending and roadmap work lives in **`GPT_PROJECT_PENDING_01P.md`** only.
 
 Target: 01P (~1 page)
 
@@ -74,35 +74,13 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Center scoring contract:** End-Game/Cumulative tiebreak in `evaluateScoreAndEnd()` and on engine game-over when captures are tied; cumulative accrual each completed turn; Medium/Hard AI eval via `planAiTurnPath`. Independent of match timer on/off.
 - **Clocks during AI:** shot/match timers tick while Ebony thinks (`shellTimerShouldSkip`); shot expiry on BLUE awards Ivory.
 - **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`).
+- **Alternating opener (local):** Start overlay → human (cream) first; **New game / Play again** alternates opener in PvE. **FUNCTIONAL** (Jest + browser policy checks).
 
 ### 5. Test & Quality Gates
 - **Jest:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, starter-policy browser checks, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick.
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety.
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
 - **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; strict gate detail in `VISION/CURSOR_PROMPT_01.md`; one-line reminders in `.cursor/rules/smartbeads-core.mdc`.
-
----
-
-## What Is Pending
-
-### Pending Tasks for Web Games
-
-- **Visual Move Highlight & Jump Trail:**
-  - Distinct highlight rings on last move start and destination nodes; connecting visual trail showing captured jump paths.
-- **Circular Match Timer Progress Rings:**
-  - Symmetrical radial countdown timer rings on player panels (defaults: 90 min for 16, 12, 10-bead; 60 min for 8, 7, 6-bead; low-time pulse warning).
-- **Capture Reward Feedback:**
-  - Subtle golden glowing ripple at captured intersections on canvas (clean, elegant visual juice without screen shake).
-- **Alternating First Player:** **FUNCTIONAL** on New game / Play again (Start overlay always human first). Session score counter across matches — still pending.
-- **Play hub & onboarding (Chess.com-style):** Two-step flow — (1) mode hub cards (vs AI, vs Friend same-device, Learn, Tournament), (2) match setup, (3) live board. Left-panel / settings dedup on hub. Planned; not implemented.
-- **1 to 2-Minute Audiovisual Onboarding Tutorial:**
-  - Fast interactive guide explaining (1) Slide, (2) Jump & Multi-jump, (3) Center scoring, and (4) Timers. Entry via **Learn** hub card (not Start button).
-- **Dual player clocks (Chess.com-style UI):** When match timer on, show top/bottom player clocks on play view (replace centre-only mm:ss for timed modes).
-- **Tournament mode:** Local session tracker first; online brackets later.
-- **Mobile Viewport Scaling & Touch Hitbox Optimization:**
-  - Fluid canvas scaling for mobile browsers, enlarged tap targets for responsive thumb control.
-- **Production Packaging & Deployment:**
-  - Add `vite build` production script, generate static assets bundle, and deploy to live URL (Vercel/Netlify).
 
 ---
 

@@ -96,7 +96,8 @@ SmartBeads/
 ├── WEB_FEATURE_TEST_05P.md            # Feature Test (KEEP boards only) — settings & timer ranges
 ├── PROJECT_MAP_05P.md                 # Project structure and navigation
 ├── GPT_PROJECT_RULES_01P.md           # Permanent engineering and design principles
-└── GPT_PROJECT_STATUS_01P.md          # Current milestone and next step
+├── GPT_PROJECT_STATUS_01P.md          # Milestone status (shipped only)
+└── GPT_PROJECT_PENDING_01P.md         # Pending & roadmap (single list)
 ```
 
 Repo-root `index.html` is the Vite entry for the production play shell (`npm run web:smartbeads`): **left play panel · board · settings · ad**. Do not confuse it with `prototype/board4/index.html`.
@@ -184,7 +185,8 @@ Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for
 |------|------|
 | `GPT_PROJECT_RULES_01P.md` | Permanent engineering rules |
 | `VISION_05P.md` | Vision, locked V1 seven, design reasoning |
-| `GPT_PROJECT_STATUS_01P.md` | Milestone status and next step |
+| `GPT_PROJECT_STATUS_01P.md` | Milestone status (shipped only) |
+| `GPT_PROJECT_PENDING_01P.md` | Pending work & roadmap (single list) |
 | `PROJECT_MAP_05P.md` | This file — structure and navigation |
 | `GPT_PROJECT_AUDIT_05P.md` | 4th-cycle process failure audit (supporting) |
 | `WEB_FEATURE_TEST_05P.md` | Per-board feature defaults (centre rule, timers) |
