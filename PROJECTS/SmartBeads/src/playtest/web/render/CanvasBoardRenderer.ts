@@ -114,34 +114,33 @@ function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number): vo
   ctx.stroke();
 }
 
-function drawLastMoveTrail(
+function drawAmberOrangeRing(
   ctx: CanvasRenderingContext2D,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
+  x: number,
+  y: number,
+  pieceRadius: number,
 ): void {
-  ctx.save();
-  ctx.strokeStyle = 'rgba(95, 191, 138, 0.55)';
-  ctx.lineWidth = 3;
-  ctx.setLineDash([8, 6]);
   ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
+  ctx.arc(x, y, pieceRadius + 5, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255, 95, 25, 0.95)';
+  ctx.lineWidth = 3.5;
   ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.restore();
+  ctx.beginPath();
+  ctx.arc(x, y, pieceRadius + 8, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255, 60, 20, 0.45)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
 }
 
 function drawLastMoveNodeRing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.beginPath();
   ctx.arc(x, y, 20, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(120, 210, 170, 0.7)';
+  ctx.strokeStyle = 'rgba(180, 255, 80, 0.95)';
   ctx.lineWidth = 2.5;
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(x, y, 24, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(95, 191, 138, 0.28)';
+  ctx.strokeStyle = 'rgba(180, 255, 80, 0.38)';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 }
@@ -293,16 +292,6 @@ export function drawCanvasBoard(
 
   drawCenterDecorations(ctx, board, w, h);
 
-  if (lastMove && lastMove.from !== lastMove.to) {
-    const fromNode = board.intersections[lastMove.from];
-    const toNode = board.intersections[lastMove.to];
-    if (fromNode?.x !== undefined && toNode?.x !== undefined) {
-      const fromPt = project(fromNode);
-      const toPt = project(toNode);
-      drawLastMoveTrail(ctx, fromPt.x, fromPt.y, toPt.x, toPt.y);
-    }
-  }
-
   const hideFrom = anim ? anim.from : -1;
   const hideTo = animating && anim ? anim.to : -1;
   const hideCap = anim && anim.captured != null ? anim.captured : -1;
@@ -333,11 +322,7 @@ export function drawCanvasBoard(
     ctx.fill();
 
     if (legalTargets.includes(node.id) && !animating) {
-      ctx.beginPath();
-      ctx.arc(x, y, 18, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(60,184,154,0.85)';
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
+      drawAmberOrangeRing(ctx, x, y, 16);
     }
 
     if (node.occupant && node.id !== hideFrom && node.id !== hideTo) {
@@ -353,18 +338,7 @@ export function drawCanvasBoard(
       const r = (isSelected ? 18 : 16) * pulse;
       drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
       if (isSelected) {
-        // Clear, prominent red/orange glowing double-ring for the active selected piece
-        ctx.beginPath();
-        ctx.arc(x, y, r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255, 95, 25, 0.95)';
-        ctx.lineWidth = 3.5;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(x, y, r + 8, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255, 60, 20, 0.45)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        drawAmberOrangeRing(ctx, x, y, r);
       } else if (isTurnPiece) {
         ctx.beginPath();
         ctx.arc(x, y, r + 3, 0, Math.PI * 2);

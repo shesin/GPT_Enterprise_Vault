@@ -49,14 +49,25 @@ function fmtClock(sec: number): string {
   return `${m}:${s}`;
 }
 
-function winnerLabel(winner: Player | 'DRAW' | undefined): string {
-  if (winner === 'RED') return 'Ivory wins';
-  if (winner === 'BLUE') return 'Ebony wins';
-  return 'Draw';
-}
-
-function playerDisplayName(player: Player): string {
-  return player === 'RED' ? 'Ivory (P1)' : 'Ebony (P2)';
+function updateShotRing(
+  ringEl: HTMLElement | null,
+  secEl: HTMLElement | null,
+  secs: number,
+  limit: number,
+  active: boolean,
+): void {
+  if (!ringEl || !secEl) return;
+  if (limit <= 0) {
+    ringEl.classList.add('off');
+    ringEl.style.setProperty('--shot-pct', '1');
+    secEl.textContent = '—';
+    return;
+  }
+  ringEl.classList.toggle('off', !active);
+  const clamped = Math.max(0, secs);
+  const pct = limit > 0 ? clamped / limit : 0;
+  ringEl.style.setProperty('--shot-pct', String(pct));
+  secEl.textContent = String(clamped);
 }
 
 /** After a hop lands, the live AI loop continues only while a chain is still open. */
@@ -177,7 +188,22 @@ export function bootstrapPlayShell(): void {
   const capturePulseStarts: Array<{ nodeId: number; startMs: number }> = [];
   const CAPTURE_PULSE_MS = 420;
   let prevCaptures = { RED: 0, BLUE: 0 };
+  /** Alternates who opens each new match (New game / Play again). RED = cream/human in PvE. */
+  let nextGameStarter: Player = 'RED';
 
+  /** Start overlay + board switch: human (RED) always opens. New game alternates via applyGameStarter(). */
+  function ensureHumanOpensStartScreen(): void {
+    session.setStartingPlayer('RED');
+  }
+
+  function applyGameStarter(): void {
+    session.setStartingPlayer(nextGameStarter);
+    nextGameStarter = nextGameStarter === 'RED' ? 'BLUE' : 'RED';
+  }
+
+  const creamNameInput = document.getElementById('pvp-cream-name') as HTMLInputElement;
+  const blackNameInput = document.getElementById('pvp-black-name') as HTMLInputElement;
+  const pvpNamesContainer = document.getElementById('pvp-names-container') as HTMLDivElement;
   const canvas = document.getElementById('board') as HTMLCanvasElement;
   const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
   const resignBtn = document.getElementById('resign-btn') as HTMLButtonElement;
@@ -194,6 +220,7 @@ export function bootstrapPlayShell(): void {
   const resultDesc = document.getElementById('result-desc') as HTMLParagraphElement;
   const startScreenOverlay = document.getElementById('start-screen-overlay') as HTMLDivElement | null;
   const startGameBtn = document.getElementById('start-game-btn') as HTMLButtonElement | null;
+  const startModeSelect = document.getElementById('start-mode-select') as HTMLSelectElement | null;
   const celebrationFx = document.getElementById('board-celebration-fx') as HTMLDivElement | null;
   const celebrationParticles = document.getElementById('celebration-particles') as HTMLDivElement | null;
   const modalCelebrationParticles = document.getElementById('modal-celebration-particles') as HTMLDivElement | null;
@@ -398,6 +425,95 @@ export function bootstrapPlayShell(): void {
     }
   }
 
+  function isAwaitingStart(): boolean {
+    return !!startScreenOverlay && !startScreenOverlay.classList.contains('hidden');
+  }
+
+  function showStartScreen(): void {
+    if (!startScreenOverlay) return;
+    if (timerId) clearInterval(timerId);
+    timerId = null;
+    cancelAiWork();
+    if (startModeSelect) {
+      startModeSelect.value = gameModeSelect.value;
+    }
+    syncModeUi();
+    startScreenOverlay.classList.remove('hidden');
+  }
+
+  function applyStartOverlayModeToSession(): void {
+    if (startModeSelect) {
+      gameModeSelect.value = startModeSelect.value;
+    }
+    syncModeUi();
+    session = createSession(currentBoardId, readSettings());
+    session.reset();
+    ensureHumanOpensStartScreen();
+    updateUI();
+  }
+
+  function beginPlayAfterStart(): void {
+    applyStartOverlayModeToSession();
+    if (startScreenOverlay) {
+      startScreenOverlay.classList.add('hidden');
+    }
+    // Start overlay always opens with human (RED). Next New game / Play again alternates from AI (BLUE).
+    nextGameStarter = 'BLUE';
+    if (bgmSelect.value && bgmAudio.paused) {
+      if (!bgmAudio.src) bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
+    }
+    startTimers();
+    maybeScheduleAiTurn();
+    triggerStartBanner();
+    soundEffects.playGameStart();
+  }
+
+  function creamPlayerLabel(): string {
+    const settings = session.getSettings();
+    if (settings.mode === 'pve') return 'You';
+    const name = creamNameInput?.value.trim();
+    return name || 'Player 1';
+  }
+
+  function blackPlayerLabel(): string {
+    const settings = session.getSettings();
+    if (settings.mode === 'pve') {
+      return `AI · ${formatAiLevelLabel(settings.aiLevel)}`;
+    }
+    const name = blackNameInput?.value.trim();
+    return name || 'Player 2';
+  }
+
+  function sideDisplayName(player: Player): string {
+    return player === 'RED' ? creamPlayerLabel() : blackPlayerLabel();
+  }
+
+  function syncModeUi(): void {
+    const settings = session.getSettings();
+    const pve = settings.mode === 'pve';
+    if (pvpNamesContainer) {
+      pvpNamesContainer.style.display = pve ? 'none' : 'flex';
+      pvpNamesContainer.style.flexDirection = 'column';
+      pvpNamesContainer.style.gap = '4px';
+    }
+    aiLevelSelect.disabled = !pve;
+    aiLevelContainer.style.opacity = pve ? '1' : '0.45';
+  }
+
+  function maybeScheduleAiTurn(): void {
+    if (session.isGameOver()) return;
+    const settings = session.getSettings();
+    if (settings.mode === 'pve' && session.getEngine().getState().currentPlayer === 'BLUE') {
+      const runId = aiRunId;
+      aiThinking = true;
+      setTimeout(() => {
+        if (runId !== aiRunId) return;
+        runAiTurn(runId);
+      }, AI_REPLY_DELAY_MS);
+    }
+  }
+
   function cancelAiWork(): void {
     aiRunId += 1;
     aiThinking = false;
@@ -412,7 +528,7 @@ export function bootstrapPlayShell(): void {
   function canOfferResignation(): boolean {
     if (session.isGameOver() || animating || aiThinking) return false;
     if (pendingResignPlayer !== null) return false;
-    // Only the side to move may resign (PvE: human only on Ivory's turn).
+    // Only the side to move may resign (PvE: human only on cream's turn).
     if (session.getSettings().mode === 'pve'
       && session.getEngine().getState().currentPlayer !== 'RED') {
       return false;
@@ -440,7 +556,7 @@ export function bootstrapPlayShell(): void {
     const settings = session.getSettings();
     const resigning = resigningPlayerForMode();
     const confirmed = window.confirm(
-      `Offer resignation as ${playerDisplayName(resigning)}? Opponent may accept a draw or claim a win.`,
+      `Offer resignation as ${sideDisplayName(resigning)}? Opponent may accept a draw or claim a win.`,
     );
     if (!confirmed) return;
 
@@ -465,11 +581,18 @@ export function bootstrapPlayShell(): void {
 
     pendingResignPlayer = resigning;
     resignOfferDesc.textContent =
-      `${playerDisplayName(resigning)} offers resignation. Agree to a draw?`;
+      `${sideDisplayName(resigning)} offers resignation. Agree to a draw?`;
     resignOfferModal.style.display = 'flex';
   }
 
+  function applyShellBoardClass(): void {
+    const shell = document.getElementById('play-shell');
+    if (!shell) return;
+    shell.classList.toggle('shell--board-16', currentBoardId === '16');
+  }
+
   function applyCanvasSizeForBoard(): void {
+    applyShellBoardClass();
     const boardName = session.getEngine().getState().board.name;
     const { width, height } = getBoardCanvasSize(boardName);
     canvas.width = width;
@@ -497,8 +620,8 @@ export function bootstrapPlayShell(): void {
       .filter((pulse) => pulse.progress < 1);
   }
 
-  function flashCaptureTick(player: 'p1' | 'p2'): void {
-    const el = document.getElementById(`${player}-cap-tick`) as HTMLElement | null;
+  function flashCaptureTick(side: 'cream' | 'black'): void {
+    const el = document.getElementById(`${side}-cap-tick`) as HTMLElement | null;
     if (!el) return;
     el.textContent = '+1';
     el.classList.remove('show');
@@ -531,26 +654,44 @@ export function bootstrapPlayShell(): void {
     const settings = session.getSettings();
     const redPieces = session.getEngine().countPieces('RED');
     const bluePieces = session.getEngine().countPieces('BLUE');
+    const centerScores = session.getCenterDisplayScores();
 
-    (document.getElementById('p1-pieces') as HTMLElement).textContent = String(redPieces);
-    (document.getElementById('p2-pieces') as HTMLElement).textContent = String(bluePieces);
-    (document.getElementById('p1-caps') as HTMLElement).textContent = String(state.captures.RED);
-    (document.getElementById('p2-caps') as HTMLElement).textContent = String(state.captures.BLUE);
+    (document.getElementById('black-panel-name') as HTMLElement).textContent = blackPlayerLabel();
+    (document.getElementById('cream-panel-name') as HTMLElement).textContent = creamPlayerLabel();
+    (document.getElementById('black-panel-role') as HTMLElement).textContent =
+      settings.mode === 'pve' ? '(AI)' : '(Human)';
+    (document.getElementById('cream-panel-role') as HTMLElement).textContent = '(Human)';
+
+    (document.getElementById('top-p1-capture') as HTMLElement).textContent = String(state.captures.RED);
+    (document.getElementById('top-p2-capture') as HTMLElement).textContent = String(state.captures.BLUE);
+    (document.getElementById('top-p1-centre') as HTMLElement).textContent = formatCenterDisplay(
+      settings.centerRule,
+      centerScores.red,
+    );
+    (document.getElementById('top-p2-centre') as HTMLElement).textContent = formatCenterDisplay(
+      settings.centerRule,
+      centerScores.blue,
+    );
+    (document.getElementById('top-p1-beads') as HTMLElement).textContent = String(redPieces);
+    (document.getElementById('top-p2-beads') as HTMLElement).textContent = String(bluePieces);
+
     if (state.captures.RED > prevCaptures.RED) {
-      flashCaptureTick('p1');
+      flashCaptureTick('cream');
     }
     if (state.captures.BLUE > prevCaptures.BLUE) {
-      flashCaptureTick('p2');
+      flashCaptureTick('black');
     }
     prevCaptures = { RED: state.captures.RED, BLUE: state.captures.BLUE };
     (document.getElementById('turn-count') as HTMLElement).textContent = String(session.getMoveCount());
 
-    const centerScores = session.getCenterDisplayScores();
-    (document.getElementById('p1-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, centerScores.red);
-    (document.getElementById('p2-center') as HTMLElement).textContent = formatCenterDisplay(settings.centerRule, centerScores.blue);
-
-    document.getElementById('pill-p1')?.classList.toggle('active', state.currentPlayer === 'RED' && !session.isGameOver());
-    document.getElementById('pill-p2')?.classList.toggle('active', state.currentPlayer === 'BLUE' && !session.isGameOver());
+    document.getElementById('play-block-p1')?.classList.toggle(
+      'active',
+      state.currentPlayer === 'RED' && !session.isGameOver(),
+    );
+    document.getElementById('play-block-p2')?.classList.toggle(
+      'active',
+      state.currentPlayer === 'BLUE' && !session.isGameOver(),
+    );
 
     const uiState = session.getUiState();
     const showFinish = uiState === 'chain'
@@ -562,36 +703,53 @@ export function bootstrapPlayShell(): void {
     undoBtn.disabled = undoStack.length === 0 || animating || aiThinking;
     resignBtn.disabled = !canOfferResignation();
 
+    syncModeUi();
+
     const matchSecs = parseMatchSeconds(settings.matchTimer);
-    if (matchSecs <= 0) {
-      (document.getElementById('p1-clock') as HTMLElement).textContent = '--:--';
-      (document.getElementById('p2-clock') as HTMLElement).textContent = '--:--';
-      (document.getElementById('match-clock-val') as HTMLElement).textContent = 'OFF';
-    } else if (settings.mode === 'pvp') {
-      (document.getElementById('p1-clock') as HTMLElement).textContent = fmtClock(session.getP1Clock());
-      (document.getElementById('p2-clock') as HTMLElement).textContent = fmtClock(session.getP2Clock());
-      (document.getElementById('match-clock-val') as HTMLElement).textContent = 'CHESS';
-    } else {
-      (document.getElementById('p1-clock') as HTMLElement).textContent = '--:--';
-      (document.getElementById('p2-clock') as HTMLElement).textContent = '--:--';
-      (document.getElementById('match-clock-val') as HTMLElement).textContent = fmtClock(session.getGlobalMatchRemaining());
+    const shotLimit = session.getShotLimit();
+    const matchMmssEl = document.getElementById('top-match-mmss');
+    if (matchMmssEl) {
+      if (matchSecs <= 0) {
+        matchMmssEl.textContent = 'OFF';
+        matchMmssEl.classList.add('off');
+      } else {
+        matchMmssEl.classList.remove('off');
+        if (settings.mode === 'pvp') {
+          const clock = state.currentPlayer === 'RED' ? session.getP1Clock() : session.getP2Clock();
+          matchMmssEl.textContent = fmtClock(clock);
+        } else {
+          matchMmssEl.textContent = fmtClock(session.getGlobalMatchRemaining());
+        }
+      }
     }
 
-    const shotLimit = session.getShotLimit();
-    (document.getElementById('shot-clock-val') as HTMLElement).textContent =
-      shotLimit > 0 ? `${session.getShotRemaining()}s` : 'OFF';
-
-    (document.getElementById('p2-role') as HTMLElement).textContent =
-      settings.mode === 'pve' ? `(AI · ${formatAiLevelLabel(settings.aiLevel)})` : '(Human)';
-    aiLevelSelect.disabled = settings.mode === 'pvp';
-    aiLevelContainer.style.opacity = settings.mode === 'pvp' ? '0.45' : '1';
+    const shotRemaining = session.getShotRemaining();
+    const shotActiveRed =
+      shotLimit > 0 && state.currentPlayer === 'RED' && !session.isGameOver() && !aiThinking;
+    const shotActiveBlue =
+      shotLimit > 0 && state.currentPlayer === 'BLUE' && !session.isGameOver() && !aiThinking;
+    updateShotRing(
+      document.getElementById('shot-ring-p1'),
+      document.getElementById('shot-sec-p1'),
+      shotActiveRed ? shotRemaining : shotLimit,
+      shotLimit,
+      shotActiveRed,
+    );
+    updateShotRing(
+      document.getElementById('shot-ring-p2'),
+      document.getElementById('shot-sec-p2'),
+      shotActiveBlue ? shotRemaining : shotLimit,
+      shotLimit,
+      shotActiveBlue,
+    );
 
     if (session.isGameOver() && pendingResignPlayer === null) {
       resultModal.style.display = 'flex';
       const winner = session.getDisplayedWinner();
-      const settings = session.getSettings();
       const redCaps = state.captures.RED;
       const blueCaps = state.captures.BLUE;
+      const creamName = creamPlayerLabel();
+      const blackName = blackPlayerLabel();
       resultTitle.className = 'result-title';
 
       let scoreLine = '';
@@ -602,22 +760,30 @@ export function bootstrapPlayShell(): void {
       } else if (winner === 'RED') {
         const diff = redCaps - blueCaps;
         if (settings.mode === 'pve') {
-          resultTitle.textContent = "CONGRATULATIONS! YOU WON!";
-          scoreLine = diff > 0 ? `You won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})` : `You won (${redCaps} vs ${blueCaps} beads)`;
+          resultTitle.textContent = 'CONGRATULATIONS! YOU WON!';
+          scoreLine = diff > 0
+            ? `You won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})`
+            : `You won (${redCaps} vs ${blueCaps} beads)`;
         } else {
-          resultTitle.textContent = "CONGRATULATIONS! PLAYER 1 WON!";
-          scoreLine = diff > 0 ? `P1 won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})` : `P1 won (${redCaps} vs ${blueCaps} beads)`;
+          resultTitle.textContent = `CONGRATULATIONS! ${creamName.toUpperCase()} WON!`;
+          scoreLine = diff > 0
+            ? `${creamName} won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})`
+            : `${creamName} won (${redCaps} vs ${blueCaps} beads)`;
         }
         resultTitle.classList.add('victory');
       } else if (winner === 'BLUE') {
         const diff = blueCaps - redCaps;
         if (settings.mode === 'pve') {
-          resultTitle.textContent = "WELL PLAYED! BETTER LUCK NEXT TIME";
-          scoreLine = diff > 0 ? `AI won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})` : `AI won (${blueCaps} vs ${redCaps} beads)`;
+          resultTitle.textContent = 'WELL PLAYED! BETTER LUCK NEXT TIME';
+          scoreLine = diff > 0
+            ? `${blackName} won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})`
+            : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
           resultTitle.classList.add('defeat');
         } else {
-          resultTitle.textContent = "CONGRATULATIONS! PLAYER 2 WON!";
-          scoreLine = diff > 0 ? `P2 won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})` : `P2 won (${blueCaps} vs ${redCaps} beads)`;
+          resultTitle.textContent = `CONGRATULATIONS! ${blackName.toUpperCase()} WON!`;
+          scoreLine = diff > 0
+            ? `${blackName} won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})`
+            : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
           resultTitle.classList.add('victory');
         }
       }
@@ -875,6 +1041,7 @@ export function bootstrapPlayShell(): void {
   }
 
   function handleCanvasClick(ev: MouseEvent): void {
+    if (isAwaitingStart()) return;
     dismissStartBanner();
     if (session.isGameOver() || aiThinking || animating) return;
     if (!session.canHumanAct()) return;
@@ -938,6 +1105,11 @@ export function bootstrapPlayShell(): void {
     const settings = readSettings();
     session = createSession(currentBoardId, settings);
     session.reset();
+    if (isAwaitingStart()) {
+      ensureHumanOpensStartScreen();
+    } else {
+      applyGameStarter();
+    }
     applyCanvasSizeForBoard();
     resultModal.style.display = 'none';
     resultModal.classList.remove('animate');
@@ -945,10 +1117,11 @@ export function bootstrapPlayShell(): void {
     pendingResignPlayer = null;
     session.resetTurnClock();
     updateUI();
-    startTimers();
     undoBtn.disabled = true;
     pulseRaf = requestAnimationFrame(loopPulse);
-    if (!startScreenOverlay || startScreenOverlay.classList.contains('hidden')) {
+    if (!isAwaitingStart()) {
+      startTimers();
+      maybeScheduleAiTurn();
       triggerStartBanner();
       soundEffects.playGameStart();
     }
@@ -956,17 +1129,14 @@ export function bootstrapPlayShell(): void {
 
   if (startGameBtn) {
     startGameBtn.addEventListener('click', () => {
-      if (startScreenOverlay) {
-        startScreenOverlay.classList.add('hidden');
-      }
-      if (bgmSelect.value && bgmAudio.paused) {
-        if (!bgmAudio.src) bgmAudio.src = bgmSelect.value;
-        bgmAudio.play().catch(() => {});
-      }
-      triggerStartBanner();
-      soundEffects.playGameStart();
+      beginPlayAfterStart();
     });
   }
+
+  startModeSelect?.addEventListener('change', () => {
+    if (!isAwaitingStart()) return;
+    applyStartOverlayModeToSession();
+  });
 
   resignBtn.addEventListener('click', beginResignation);
   resignAgreeBtn.addEventListener('click', () => {
@@ -1009,6 +1179,8 @@ export function bootstrapPlayShell(): void {
     syncBoardPlayOptions();
     applyBoardDefaults(boardId);
     session = createSession(boardId, readSettings());
+    session.reset();
+    ensureHumanOpensStartScreen();
     applyCanvasSizeForBoard();
     resultModal.style.display = 'none';
     resultModal.classList.remove('animate');
@@ -1016,19 +1188,15 @@ export function bootstrapPlayShell(): void {
     pendingResignPlayer = null;
     session.resetTurnClock();
     updateUI();
-    startTimers();
     undoBtn.disabled = true;
     pulseRaf = requestAnimationFrame(loopPulse);
-    if (!startScreenOverlay || startScreenOverlay.classList.contains('hidden')) {
-      soundEffects.playGameStart();
-      triggerStartBanner();
-    }
+    showStartScreen();
   }
 
   function updateSfxButton(): void {
     if (!sfxMuteBtn) return;
     const isMuted = soundEffects.isMuted();
-    sfxMuteBtn.textContent = isMuted ? '🔇 Sound: Off' : '🔊 Sound: On';
+    sfxMuteBtn.textContent = isMuted ? '🔇 Off' : '🔊 On';
     if (isMuted) {
       sfxMuteBtn.classList.add('muted');
     } else {
@@ -1082,6 +1250,34 @@ export function bootstrapPlayShell(): void {
     bgmAudio.volume = parseFloat(bgmVol.value) || 0;
   });
 
+  const premiumSelect = document.getElementById('premium-select') as HTMLSelectElement | null;
+  const playShell = document.getElementById('play-shell') as HTMLDivElement | null;
+
+  function applyPremiumShell(isPremium: boolean): void {
+    if (!playShell) return;
+    playShell.classList.toggle('shell--ads-on', !isPremium);
+    playShell.classList.toggle('shell--no-ads', isPremium);
+    try {
+      localStorage.setItem('sb-premium', isPremium ? '1' : '0');
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
+  if (premiumSelect && playShell) {
+    let savedPremium = false;
+    try {
+      savedPremium = localStorage.getItem('sb-premium') === '1';
+    } catch {
+      savedPremium = false;
+    }
+    premiumSelect.value = savedPremium ? 'premium' : 'free';
+    applyPremiumShell(savedPremium);
+    premiumSelect.addEventListener('change', () => {
+      applyPremiumShell(premiumSelect.value === 'premium');
+    });
+  }
+
   syncBoardTitle();
   syncBoardPlayOptions();
   updateSfxButton();
@@ -1119,6 +1315,17 @@ export function bootstrapPlayShell(): void {
         animFrom: anim?.from ?? null,
         animTo: anim?.to ?? null,
       };
+    },
+    /** Browser gates: deterministic cream-first without consuming alternation counter. */
+    forceStarter: (player: Player) => {
+      cancelAiWork();
+      aiThinking = false;
+      session.setStartingPlayer(player);
+      updateUI();
+    },
+    setPremium: (isPremium: boolean) => {
+      if (premiumSelect) premiumSelect.value = isPremium ? 'premium' : 'free';
+      applyPremiumShell(isPremium);
     },
   };
 }

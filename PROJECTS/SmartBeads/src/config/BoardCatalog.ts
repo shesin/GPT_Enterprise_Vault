@@ -135,7 +135,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         matchTimer: 'off',
         shotClock: 'off',
       },
-      centerRuleOptions: ['off', 'cumulative', 'endgame'],
+      centerRuleOptions: ['off', 'endgame'],
       matchTimerOptions: ['off', '3', '5', '10'],
       shotClockOptions: ['off', '30', '60'],
     },

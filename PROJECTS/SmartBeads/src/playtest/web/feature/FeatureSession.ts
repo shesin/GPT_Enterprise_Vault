@@ -84,6 +84,13 @@ export class FeatureSession {
     this.applyTimerSettings();
   }
 
+  /** Who opens the game — pieces stay put; only turn order changes. */
+  setStartingPlayer(player: Player): void {
+    this.engine.getState().currentPlayer = player;
+    this.uiState = 'idle';
+    this.selectedId = null;
+  }
+
   exportSnapshot(): SessionSnapshot {
     return {
       boardVariant: this.boardVariant,

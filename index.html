@@ -7,41 +7,85 @@
   <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-shell.css">
 </head>
 <body>
-  <div class="shell">
+  <div class="shell shell--ads-on" id="play-shell">
     <aside class="card left">
-      <h2>Players</h2>
-      <div class="pill red" id="pill-p1">
-        <div>
-          <div><strong>Ivory (P1)</strong></div>
-          <div class="tiny" id="p1-role">(Human)</div>
+      <div class="play-panel">
+        <div class="play-block play-block-ai" id="play-block-p2">
+          <div class="play-block-head">
+            <strong id="black-panel-name">AI · Standard</strong>
+            <span class="tiny" id="black-panel-role">(AI)</span>
+          </div>
+          <div class="play-block-row">
+            <span class="play-label">Stop timer</span>
+            <div class="shot-ring off" id="shot-ring-p2" aria-label="Black shot clock">
+              <svg viewBox="0 0 40 40"><circle class="shot-ring-track" cx="20" cy="20" r="17"></circle><circle class="shot-ring-progress" cx="20" cy="20" r="17"></circle></svg>
+              <span class="shot-ring-sec" id="shot-sec-p2">—</span>
+            </div>
+          </div>
+          <div class="play-block-row play-stat-amber">
+            <span>Capture</span>
+            <span class="val-wrap"><span class="val" id="top-p2-capture">0</span><span class="capture-tick" id="black-cap-tick" aria-hidden="true"></span></span>
+          </div>
+          <div class="play-block-row play-stat-amber">
+            <span>Centre</span>
+            <span class="val" id="top-p2-centre">Off</span>
+          </div>
+          <div class="play-block-row">
+            <span>Beads left</span>
+            <span class="val" id="top-p2-beads">8</span>
+          </div>
         </div>
-        <div class="timer" id="p1-clock">--:--</div>
-      </div>
-      <div class="pill blue" id="pill-p2">
-        <div>
-          <div><strong>Ebony (P2)</strong></div>
-          <div class="tiny" id="p2-role">(AI)</div>
+        <div class="play-panel-spacer">
+          <div class="match-timer-stack">
+            <div class="play-block-row">
+              <span class="play-label">Match timer</span>
+              <span class="match-timer-mmss off" id="top-match-mmss" aria-live="polite">OFF</span>
+            </div>
+          </div>
         </div>
-        <div class="timer" id="p2-clock">--:--</div>
+        <div class="play-block play-block-human" id="play-block-p1">
+          <div class="play-block-head">
+            <strong id="cream-panel-name">You</strong>
+            <span class="tiny" id="cream-panel-role">(Human)</span>
+          </div>
+          <div class="play-block-row">
+            <span class="play-label">Stop timer</span>
+            <div class="shot-ring off" id="shot-ring-p1" aria-label="Cream shot clock">
+              <svg viewBox="0 0 40 40"><circle class="shot-ring-track" cx="20" cy="20" r="17"></circle><circle class="shot-ring-progress" cx="20" cy="20" r="17"></circle></svg>
+              <span class="shot-ring-sec" id="shot-sec-p1">—</span>
+            </div>
+          </div>
+          <div class="play-block-row play-stat-amber">
+            <span>Capture</span>
+            <span class="val-wrap"><span class="val" id="top-p1-capture">0</span><span class="capture-tick" id="cream-cap-tick" aria-hidden="true"></span></span>
+          </div>
+          <div class="play-block-row play-stat-amber">
+            <span>Centre</span>
+            <span class="val" id="top-p1-centre">Off</span>
+          </div>
+          <div class="play-block-row">
+            <span>Beads left</span>
+            <span class="val" id="top-p1-beads">8</span>
+          </div>
+        </div>
       </div>
-      <div class="stat"><span>P1 pieces</span><span class="val" id="p1-pieces">16</span></div>
-      <div class="stat"><span>P2 pieces</span><span class="val" id="p2-pieces">16</span></div>
-      <div class="stat"><span>P1 captures</span><span class="val-wrap"><span class="val" id="p1-caps">0</span><span class="capture-tick" id="p1-cap-tick" aria-hidden="true"></span></span></div>
-      <div class="stat"><span>P2 captures</span><span class="val-wrap"><span class="val" id="p2-caps">0</span><span class="capture-tick" id="p2-cap-tick" aria-hidden="true"></span></span></div>
-      <div class="stat"><span>Turns</span><span class="val" id="turn-count">0</span></div>
-      <div class="stat"><span>Shot clock</span><span class="val" id="shot-clock-val">OFF</span></div>
-      <div class="stat"><span>Match timer</span><span class="val" id="match-clock-val">OFF</span></div>
-      <div class="stat"><span>P1 center</span><span class="val" id="p1-center">Off</span></div>
-      <div class="stat"><span>P2 center</span><span class="val" id="p2-center">Off</span></div>
     </aside>
 
     <main class="main">
+      <span id="turn-count" hidden aria-hidden="true">0</span>
       <div class="board-frame">
         <canvas id="board" width="500" height="680"></canvas>
         <div id="start-screen-overlay" class="start-screen-overlay">
           <div class="start-screen-card">
             <div class="start-screen-badge">★ SMARTBEADS ★</div>
             <h2 class="start-screen-heading" id="start-screen-heading">16-BEAD TOURNAMENT</h2>
+            <div class="start-screen-mode">
+              <label for="start-mode-select">Game mode</label>
+              <select id="start-mode-select">
+                <option value="pve" selected>Human vs AI</option>
+                <option value="pvp">Human vs Human</option>
+              </select>
+            </div>
             <button type="button" id="start-game-btn" class="start-game-btn">▶ START GAME</button>
             <p class="start-screen-hint">Tap to play with music & sound</p>
           </div>
@@ -57,12 +101,13 @@
           </div>
         </div>
       </div>
+
       <div class="controls">
         <button class="finish" id="finish-btn">Finish chain</button>
         <button id="resign-btn" type="button">Resign</button>
+        <button id="sfx-mute-btn" type="button" title="Toggle sound effects">🔊 Sound</button>
         <button id="undo-btn" type="button">Undo</button>
         <button id="restart-btn">New game</button>
-        <button id="sfx-mute-btn" type="button" title="Toggle sound effects">🔊 Sound</button>
       </div>
     </main>
 
@@ -79,6 +124,12 @@
             <option value="pve" selected>Human vs AI</option>
             <option value="pvp">Human vs Human</option>
           </select>
+        </div>
+        <div class="setting" id="pvp-names-container" style="display: none;">
+          <label>Cream player name</label>
+          <input type="text" id="pvp-cream-name" maxlength="24" placeholder="Player 1">
+          <label style="margin-top: 8px;">Black player name</label>
+          <input type="text" id="pvp-black-name" maxlength="24" placeholder="Player 2">
         </div>
         <div class="setting" id="ai-level-container">
           <label>AI difficulty</label>
@@ -100,6 +151,13 @@
           <label>Center rule</label>
           <select id="center-rule-select"></select>
         </div>
+        <div class="setting">
+          <label>Account</label>
+          <select id="premium-select">
+            <option value="free" selected>Free (with ads)</option>
+            <option value="premium">Premium (no ads)</option>
+          </select>
+        </div>
       </div>
 
       <h2 style="margin-top: 14px;">BGM Music</h2>
@@ -117,6 +175,13 @@
         </div>
       </div>
       <audio id="bgm-audio" loop></audio>
+    </aside>
+
+    <aside class="ad-slot" id="ad-slot" aria-label="Advertisement">
+      <div class="ad-frame">
+        <span class="ad-label">Sponsored</span>
+        <div class="ad-placeholder">Advertisement</div>
+      </div>
     </aside>
   </div>
 

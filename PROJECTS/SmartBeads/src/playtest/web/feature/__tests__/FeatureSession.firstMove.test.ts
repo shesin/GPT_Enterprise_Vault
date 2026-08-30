@@ -71,6 +71,18 @@ describe('first-ply occupancy (app session — no DOM)', () => {
     }
   });
 
+  it('setStartingPlayer switches turn order without moving pieces', () => {
+    const session = new FeatureSession('8x4x6', { mode: 'pvp', ...off });
+    const before = engineOccupancy(session.getEngine());
+    expect(session.getEngine().getState().currentPlayer).toBe('RED');
+
+    session.setStartingPlayer('BLUE');
+    expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
+    expect(engineOccupancy(session.getEngine())).toEqual(before);
+    expect(session.getSelectedId()).toBeNull();
+    expect(session.getUiState()).toBe('idle');
+  });
+
   it.each(productBoards)('$id PvP: first slide changes exactly two nodes and passes the turn', (entry) => {
     const variant = resolveEngineVariant(entry.id);
     const session = new FeatureSession(variant, { mode: 'pvp', ...off });

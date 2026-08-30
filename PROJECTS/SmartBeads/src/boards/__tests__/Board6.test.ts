@@ -22,8 +22,8 @@ describe('Board6 (6-bead · 4×4 full box cross)', () => {
     const blue = Board6.intersections.filter((point) => point.occupant === 'BLUE');
     const empty = Board6.intersections.filter((point) => point.occupant === undefined);
 
-    expect(red.map((point) => point.id).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 7]);
-    expect(blue.map((point) => point.id).sort((a, b) => a - b)).toEqual([8, 11, 12, 13, 14, 15]);
+    expect(red.map((point) => point.id).sort((a, b) => a - b)).toEqual([8, 11, 12, 13, 14, 15]);
+    expect(blue.map((point) => point.id).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 7]);
     expect(empty.map((point) => point.id).sort((a, b) => a - b)).toEqual([5, 6, 9, 10]);
   });
 

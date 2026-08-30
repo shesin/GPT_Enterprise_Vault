@@ -5,7 +5,13 @@ export function fitCanvasToFrame(canvas: HTMLCanvasElement): void {
   if (!frame || canvas.width <= 0 || canvas.height <= 0) return;
 
   const aspect = canvas.width / canvas.height;
+  const root = document.documentElement;
+  root.style.setProperty('--board-aspect', String(aspect));
   frame.style.setProperty('--board-aspect', String(aspect));
+  const shell = frame.closest('.shell') as HTMLElement | null;
+  if (shell) {
+    shell.style.setProperty('--board-aspect', String(aspect));
+  }
   canvas.style.width = '100%';
   canvas.style.height = '100%';
 }

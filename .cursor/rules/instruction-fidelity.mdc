@@ -1,0 +1,19 @@
+---
+description: Instruction fidelity — follow user spec, one scope, test before done
+alwaysApply: true
+---
+
+# Instruction fidelity (always)
+
+1. **Understanding first** — start with *Understanding of the Task* in the user's words.
+2. **Play back a short checklist** before coding — exact UI text, placement, what to remove, what NOT to touch.
+3. **More than one ask?** Stop. Say *multi-part* — implement **ONE part only**; state what is deferred until approval.
+4. **Do not guess.** If ambiguous → one clear question, then wait.
+5. **User screenshot + exact words = success** — not agent interpretation.
+6. **Never say done on UI** from Jest, build, or code review alone.
+7. Before done: report **Expected output** vs **Actual output** (browser, Playwright, or screenshot).
+8. Every outcome claim: **CONFIRMED** (directly observed) or **UNCONFIRMED** (tell user exactly what to check).
+9. User says wrong again → quote their instruction, list the gap, smallest fix only, re-test.
+10. User one-liner **SCOPE / DONE WHEN / DO NOT / TEST** — follow literally; nothing else in that turn.
+
+See also: `VISION/AGENT_RULE_05P.md` (Completion Claims), `VISION/CURSOR_PROMPT_01.md`.

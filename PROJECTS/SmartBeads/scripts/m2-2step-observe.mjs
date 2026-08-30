@@ -45,6 +45,7 @@ async function setup(page, catalogId, mode) {
   await page.selectOption('#shot-clock-select', 'off');
   await page.locator('#restart-btn').click();
   await page.waitForTimeout(400);
+  await page.evaluate(() => window.__SB_TEST__.forceStarter('RED'));
 }
 
 async function twoClicks(page, variant, selectShotPath, fromLabel, toLabel) {

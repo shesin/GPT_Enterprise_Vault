@@ -46,16 +46,16 @@ describe('BoardCatalog human-decided settings', () => {
     }
   });
 
-  it('7/8-bead boards: Cumulative/End-Game/Off centre, default Off; timers default Off', () => {
-    for (const id of ['7x4x5', '8x4x6'] as const) {
-      const play = byId[id].play;
-      expect(play.centerRuleOptions).toEqual(['off', 'cumulative', 'endgame']);
-      expect(play.defaultSettings.centerRule).toBe('off');
-      expect(play.matchTimerOptions).toEqual(['off', '3', '5', '10']);
-      expect(play.defaultSettings.matchTimer).toBe('off');
-      expect(play.shotClockOptions).toEqual(['off', '30', '60']);
-      expect(play.defaultSettings.shotClock).toBe('off');
-    }
+  it('7-bead: Cumulative/End-Game/Off; 8-bead: End-Game/Off only', () => {
+    const seven = byId['7x4x5'].play;
+    expect(seven.centerRuleOptions).toEqual(['off', 'cumulative', 'endgame']);
+    expect(seven.defaultSettings.centerRule).toBe('off');
+
+    const eight = byId['8x4x6'].play;
+    expect(eight.centerRuleOptions).toEqual(['off', 'endgame']);
+    expect(eight.defaultSettings.centerRule).toBe('off');
+    expect(eight.matchTimerOptions).toEqual(['off', '3', '5', '10']);
+    expect(eight.shotClockOptions).toEqual(['off', '30', '60']);
   });
 
   it('lists product boards in bead-count dropdown order', () => {

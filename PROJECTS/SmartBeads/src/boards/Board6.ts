@@ -83,8 +83,9 @@ function buildJumpPaths(adjacency: number[][]): JumpPath[] {
 }
 
 function startingOccupant(id: number): 'RED' | 'BLUE' | undefined {
-  const red = new Set([0, 1, 2, 3, 4, 7]);
-  const blue = new Set([8, 11, 12, 13, 14, 15]);
+  // Cream (RED / human) on bottom ranks; ebony (BLUE) on top — production shell convention.
+  const red = new Set([8, 11, 12, 13, 14, 15]);
+  const blue = new Set([0, 1, 2, 3, 4, 7]);
   if (red.has(id)) {
     return 'RED';
   }

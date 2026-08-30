@@ -36,6 +36,7 @@ async function setup(page, catalogId) {
   await page.selectOption('#shot-clock-select', 'off');
   await page.locator('#restart-btn').click();
   await page.waitForTimeout(300);
+  await page.evaluate(() => window.__SB_TEST__.forceStarter('RED'));
 }
 
 /** Pick a capture route on this board, preferring the requested labels. */
