@@ -177,7 +177,13 @@ Default workflow unless they explicitly say **local only** or **do not push**:
 
 Do not treat a local commit alone as done when the human asked to commit or push.
 
-If unsure what they mean, **ask before starting work**. Do not begin implementation while doubts remain.
+If unsure what they mean, **ask before starting work**.
+
+---
+
+# Response tone (chat)
+
+Brief **understanding** first, brief **summary** last. Plain English; don't repeat the same checklist every message. Use common sense. Canonical: `.cursor/rules/instruction-fidelity.mdc`.
 
 ---
 

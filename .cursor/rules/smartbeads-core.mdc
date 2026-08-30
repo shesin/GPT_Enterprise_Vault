@@ -7,9 +7,9 @@ alwaysApply: true
 
 When work touches `PROJECTS/SmartBeads/`, enforce detail in `GPT_PROJECT_RULES_01P.md` and `VISION/CURSOR_PROMPT_01.md` (SmartBeads Production Gates).
 
-- **Understanding first** — every response begins with 'Understanding of the Task'.
+- **Response shape** — `.cursor/rules/instruction-fidelity.mdc` (understanding first, summary last, human tone).
 - **Big change → list & get approval** before implementing.
-- **Git on request** — human says commit/push → commit **and push to GitHub**; report hash + push output (see AGENT_RULE Git — human instructions)
+- **Commit** (human) = commit **and push to GitHub**; report hash + push output.
 - **Ask if unsure** — no work until scope and "done" are clear
 - **One playtest bug ⇒ full sweep** — failing test + run suite + fix related gaps; human catches 1–2, agent finds the rest
 - **Word-friendly output** — no wide tables

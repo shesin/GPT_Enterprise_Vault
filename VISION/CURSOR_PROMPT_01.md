@@ -110,9 +110,9 @@ Always verify before claiming completion.
 
 # Human workflow (owner language — not git jargon)
 
-**Commit / push / save to git** means changes land on **GitHub** (`git commit` then **`git push`**), unless the human explicitly says local only or do not push. Report commit hash and push result.
+**Commit / push / save to git** = changes on **GitHub** (`git commit` then **`git push`**), unless local only. Report hash + push output. **Response tone** (brief understanding, brief summary, common sense): `.cursor/rules/instruction-fidelity.mdc`.
 
-**If you have any doubt** about what the human wants (scope, product rule, whether to push, what "done" means): **ask first**. Do not start implementation until doubts are cleared.
+**If you have any doubt** about scope, product rule, or "done": **ask first** — don't implement until clear.
 
 **One bug the human found in play** means assume **more of the same class** exist — run tests, search related paths, fix the sweep; do not fix only the single line they mentioned and stop.
 
@@ -262,7 +262,7 @@ When building or modifying a **playable HTML board** (Human vs AI / PvP shell):
 
 # Output Formatting & Word Compatibility Rule
 
-When providing summaries, reports, or lists of tasks, format content with structured bullet points and bold key-value headers (e.g., `• Item Name: Description`) rather than wide markdown tables. This ensures the output copies and pastes cleanly into word processors (such as Microsoft Word or Google Docs) without table disorientation. Always begin responses with an explicit 'Understanding of the Task' summary.
+Word-friendly bullet points — not wide tables (copies cleanly to Word/Docs). **Response shape:** `.cursor/rules/instruction-fidelity.mdc`.
 
 ---
 

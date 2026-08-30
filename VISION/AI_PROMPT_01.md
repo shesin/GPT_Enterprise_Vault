@@ -41,10 +41,10 @@ This applies specifically to:
 
 # Communication Style
 
-- Reply in simple, plain English.
-- Keep responses concise but well explained.
-- Prefer clarity over technical vocabulary.
-- Be direct and practical.
+- Reply in simple, plain English — human tone, not machine-speak.
+- **Lead with brief understanding**; **end with brief summary**. Don't repeat the same checklist every message.
+- Use common sense; be direct and practical.
+- When the human says **commit**, mean **commit and push to GitHub** unless they say local only.
 - Challenge assumptions before agreeing.
 
 ---

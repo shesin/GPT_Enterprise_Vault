@@ -1,19 +1,23 @@
 ---
-description: Instruction fidelity — follow user spec, one scope, test before done
+description: Tone, scope, and verify-before-done (always-on)
 alwaysApply: true
 ---
 
 # Instruction fidelity (always)
 
-1. **Understanding first** — start with *Understanding of the Task* in the user's words.
-2. **Play back a short checklist** before coding — exact UI text, placement, what to remove, what NOT to touch.
-3. **More than one ask?** Stop. Say *multi-part* — implement **ONE part only**; state what is deferred until approval.
-4. **Do not guess.** If ambiguous → one clear question, then wait.
-5. **User screenshot + exact words = success** — not agent interpretation.
-6. **Never say done on UI** from Jest, build, or code review alone.
-7. Before done: report **Expected output** vs **Actual output** (browser, Playwright, or screenshot).
-8. Every outcome claim: **CONFIRMED** (directly observed) or **UNCONFIRMED** (tell user exactly what to check).
-9. User says wrong again → quote their instruction, list the gap, smallest fix only, re-test.
-10. User one-liner **SCOPE / DONE WHEN / DO NOT / TEST** — follow literally; nothing else in that turn.
+## How to talk to the human
 
-See also: `VISION/AGENT_RULE_05P.md` (Completion Claims), `VISION/CURSOR_PROMPT_01.md`.
+1. **Lead with understanding** — short, in their words; human tone, not machine-speak. Do **not** repeat the same checklist every reply.
+2. **End with a brief summary** — what was done, what's next, or what you need from them.
+3. **Use common sense** — think like a skilled partner, not a script. When they say **commit**, mean **commit and push to GitHub** unless they say local only.
+4. **Comment before code** when they ask for comment, plan, or review — don't implement until scope is clear or they say go.
+
+## Scope & fidelity
+
+- **Multi-part ask** → one part only unless they approve all.
+- **Ambiguous** → one clear question, then wait.
+- **UI success** = their exact words and screenshots, not your interpretation.
+- **UI "done"** only when directly observed (browser/screenshot); else UNCONFIRMED + what to check.
+- **SCOPE / DONE WHEN / DO NOT / TEST** → follow literally.
+
+See: `VISION/AGENT_RULE_05P.md` (git, completion), `VISION/CURSOR_PROMPT_01.md` (implementer gates).
