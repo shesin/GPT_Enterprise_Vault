@@ -15,6 +15,7 @@ export interface BoardAnimState {
 export interface LastMoveHighlight {
   from: number;
   to: number;
+  player: Player;
 }
 
 export interface CapturePulse {
@@ -292,8 +293,10 @@ export function drawCanvasBoard(
 
   drawCenterDecorations(ctx, board, w, h);
 
+  // Hide last-move rings on anim endpoints for the whole move, including t=1 frame
+  // (animating is false when t===1, which otherwise flashes lime under cream beads).
   const hideFrom = anim ? anim.from : -1;
-  const hideTo = animating && anim ? anim.to : -1;
+  const hideTo = anim ? anim.to : -1;
   const hideCap = anim && anim.captured != null ? anim.captured : -1;
 
   for (const node of board.intersections) {
@@ -312,7 +315,13 @@ export function drawCanvasBoard(
     }
 
     const isLastMoveNode = lastMove && (node.id === lastMove.from || node.id === lastMove.to);
-    if (isLastMoveNode && node.id !== hideFrom && node.id !== hideTo) {
+    // Lime last-move for black moves only — empty squares and black beads. Cream moves: no green trail.
+    const showLastMoveRing = isLastMoveNode
+      && node.id !== hideFrom
+      && node.id !== hideTo
+      && lastMove!.player === 'BLUE'
+      && node.occupant !== 'RED';
+    if (showLastMoveRing) {
       drawLastMoveNodeRing(ctx, x, y);
     }
 
@@ -339,12 +348,6 @@ export function drawCanvasBoard(
       drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
       if (isSelected) {
         drawAmberOrangeRing(ctx, x, y, r);
-      } else if (isTurnPiece) {
-        ctx.beginPath();
-        ctx.arc(x, y, r + 3, 0, Math.PI * 2);
-        ctx.strokeStyle = node.occupant === 'RED' ? 'rgba(255,230,170,0.55)' : 'rgba(120,180,255,0.5)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
       }
     }
   }

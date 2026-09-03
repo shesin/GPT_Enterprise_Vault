@@ -14,7 +14,8 @@ Target: 01P (~2–3 pages, word-friendly)
 - **Two pages mandatory** before live board (Chess.com-style progressive disclosure).
 - **Page 1 — Play hub:** choose mode only — **Human vs AI**, **Human vs Human (online)**, **Tutorial**. (Optional fourth: quick rematch — defer until hub exists.)
 - **Page 2 — Match setup:** board, time preset, rules, opponent (room code / invite for online), then **Start match**.
-- **Timers:** Chess.com-style **per-player match clock** (time runs only on your turn; play fast → save time) **plus** **shot clock** (must move within 60s or 90s each turn). Reject “whole game ends in 3 minutes total” as the main competitive mode — unfair when move counts differ.
+- **Timers (Human vs Human only):** Chess.com-style **per-player match clock** (time runs only on your turn; play fast → save time) **plus** **shot clock** (must move within 60s or 90s each turn). Reject “whole game ends in 3 minutes total” as the main competitive mode — unfair when move counts differ.
+- **Timers (Human vs AI — frozen):** Do **not** change PvE timer behaviour or UI. Current local session (match/shot off by default, clocks tick during AI think, catalog toggles in settings) is **approved as-is** — no dual-clock rework, no new presets on Page 2 for vs AI.
 - **Tournament:** planned from the start in architecture; **Phase 3** delivery after online rooms work.
 
 ---
@@ -38,13 +39,13 @@ Fields depend on mode:
 
 - Board (7 locked V1)
 - AI level (Easy / Medium / Hard)
-- Time preset (see §4)
 - Center rule (per catalog)
+- **No timer changes** — keep existing in-game settings (match/shot off by default; current `FeatureSession` / `clockPolicy` behaviour unchanged)
 - **Start match** → live game + audio unlock
 
 **Human vs Human (online)**
 
-- Board, time preset, center rule
+- Board, **time preset** (see §3 — HvH only), center rule
 - **Create room** (code + share link) or **Join room** (enter code)
 - Optional display names
 - **Start match** when both connected (or host starts)
@@ -62,9 +63,11 @@ Fields depend on mode:
 
 ---
 
-## 3. Timers — recommendation
+## 3. Timers — Human vs Human only
 
-### Two layers (both optional via presets)
+**Scope:** This section applies to **online Human vs Human** (and tournaments). **Human vs AI is out of scope** — shipped local clocks and settings stay as they are; no preset dropdown, no dual-clock UI rework, no engine/session changes for PvE.
+
+### Two layers (both optional via presets — HvH Page 2)
 
 **Layer A — Match clock (Chess.com model)**
 
@@ -81,7 +84,7 @@ Fields depend on mode:
 
 **Why both:** Match clock rewards overall speed; shot clock stops stalling when someone hoards bank time.
 
-### Presets (Page 2 dropdown)
+### Presets (Page 2 dropdown — **Human vs Human setup only**)
 
 | Preset   | Match clock | Shot clock |
 |----------|-------------|------------|
@@ -94,8 +97,8 @@ Board-specific defaults from catalog (16/12/10: longer banks; 8/7/6: shorter) ca
 
 ### Engine / session note
 
-- PvP chess-clock tick and shot clock during AI think already exist in `FeatureSession` / `clockPolicy.ts`.
-- Work remaining: **dual-clock UI**, authoritative **server-side** clock sync for online, preset wiring on Page 2.
+- **PvE (frozen):** PvP chess-clock tick, shot clock during AI think, and catalog defaults already exist in `FeatureSession` / `clockPolicy.ts` — **leave unchanged**.
+- **HvH (work remaining):** dual-clock UI, authoritative **server-side** clock sync for online, preset wiring on Page 2 for online setup only.
 
 ---
 
@@ -200,8 +203,8 @@ Board-specific defaults from catalog (16/12/10: longer banks; 8/7/6: shorter) ca
 
 ## 7. Implementation order (suggested)
 
-1. **Page 1 hub + Page 2 setup** — AI + tutorial (local); online fields stubbed.
-2. **Dual match clocks + shot UI** — presets on Page 2; local PvE/PvP.
+1. **Page 1 hub + Page 2 setup** — AI + tutorial (local); online fields stubbed; **no PvE timer changes**.
+2. **Dual match clocks + shot UI** — presets on Page 2 for **Human vs Human only**; server sync when online ships.
 3. **`vite build` + staging deploy** — client bundle; add game-server host (not static-only).
 4. **Game server** — room create/join, move relay, server clocks.
 5. **Online HvH beta** — all boards, reconnect, rematch.
@@ -210,11 +213,9 @@ Board-specific defaults from catalog (16/12/10: longer banks; 8/7/6: shorter) ca
 
 ---
 
-## 8. UI polish backlog (from prior status — not started)
+## 8. UI polish backlog (remaining)
 
-- **Last-move highlight & jump trail** — rings on from/to; trail on capture path.
-- **Capture ripple** — subtle golden pulse at captured nodes (no screen shake).
-- **Match timer progress rings** — radial countdown on player panels when timed; low-time pulse (defaults tied to catalog: longer on 16/12/10, shorter on 8/7/6).
+- **Match timer progress rings (Human vs Human only)** — radial countdown on player panels when match clock is on; low-time pulse (defaults tied to catalog: longer on 16/12/10, shorter on 8/7/6). Shot-clock ring already shipped; this is the **match-bank** ring for online HvH — not PvE timer rework.
 - **Session score counter** — track series across rematches (alternating opener already **shipped** — see status).
 - **Left panel / settings dedup** — hide duplicate mode and account chrome on hub; settings only on Page 2 or in-game menu.
 
@@ -260,8 +261,8 @@ AI Coach, match analysis, replay, tactical explanations, pattern recognition, pr
 ## 12. Open decisions (need human yes/no)
 
 1. **Accounts:** guest + room code only for beta, or sign-in from day one?
-2. **Shot breach:** lose on time only (recommended) or softer penalty?
-3. **Default preset** for new players: Casual (no clock) or Quick (3:00 + 60s)?
+2. **Shot breach (HvH):** lose on time only (recommended) or softer penalty?
+3. **Default preset (HvH):** Casual (no clock) or Quick (3:00 + 60s)?
 4. **Rematch path:** Page 2 again or instant rematch with same settings?
 5. **Tournament first board:** 16-bead only, or allow per-event config?
 6. **Host preference:** single VPS vs split (static CDN + Railway API)?
@@ -280,4 +281,4 @@ When work ships, move items from here → status. Do not duplicate pending lists
 
 ---
 
-*Draft maintained: 2026-08-30. Owner: human product decision.*
+*Draft maintained: 2026-08-30 (timer scope: HvH only; PvE frozen). Owner: human product decision.*

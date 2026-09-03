@@ -110,11 +110,42 @@ Always verify before claiming completion.
 
 # Human workflow (owner language — not git jargon)
 
-**Commit / push / save to git** = changes on **GitHub** (`git commit` then **`git push`**), unless local only. Report hash + push output. **Response tone** (brief understanding, brief summary, common sense): `.cursor/rules/instruction-fidelity.mdc`.
+**Commit / push / save to git** = changes on **GitHub** (`git commit` then **`git push`**), unless local only. Report hash + push output.
 
 **If you have any doubt** about scope, product rule, or "done": **ask first** — don't implement until clear.
 
 **One bug the human found in play** means assume **more of the same class** exist — run tests, search related paths, fix the sweep; do not fix only the single line they mentioned and stop.
+
+---
+
+# Human communication (authoritative — `.mdc` hooks only)
+
+Write so a non-engineer can follow on first read.
+
+- **Answer first** — direct reply to what they asked; no audit dumps or nested sub-lists unless they asked for depth.
+- **Once only** — each point said one time; never rephrase the same idea in the next sentence or section. Every line must add something new.
+- **Length** — as long as needed (3 lines or 20); not padded, not repeated.
+- **Tables** — only when a table is the clearest way (many comparable items); otherwise plain sentences or a short list.
+- **Plans** — numbered steps in plain English (what the player sees, then what we build). Use their words; skip internal file names unless needed.
+- **Blocked** — one short question, not a questionnaire.
+- **Wrong plan** — say so briefly; suggest a better way; do not silently follow a bad path.
+- **If they did not understand** — fewer words, one clear pass; do not add structure or repeat what you already said.
+
+End with a brief summary. Skilled partner, not a script.
+
+---
+
+# Scope & fidelity (authoritative)
+
+- **Zero approval = zero edit** — no repository change (not one character: code, CSS, config, tests, docs, rules, typos, formatting) without explicit human approval of **that exact change**. Plan/review/suggest = words only until they say go. See `.cursor/rules/instruction-fidelity.mdc` § Zero approval = zero edit.
+- **User ask only** — implement exactly what the user said. No doc edits, tests, refactors, or “while I’m here” changes unless asked or approved.
+- **Extra work** — if anything beyond the literal ask is needed, **say what and why first** and wait for approval unless they already said go.
+- **Background work** — before a long or silent command (Jest, build, deploy), tell the user in one line what is running and roughly how long.
+- **Multi-part ask** → one part only unless they approve all.
+- **Ambiguous** → one clear question, then wait.
+- **UI success** = their exact words and screenshots, not your interpretation.
+- **UI "done"** only when directly observed (browser/screenshot); else UNCONFIRMED + what to check.
+- **SCOPE / DONE WHEN / DO NOT / TEST** → follow literally.
 
 ---
 
@@ -197,7 +228,18 @@ Engine rules stay independent of animation: session/engine state must be correct
 # SmartBeads Production Gates (strict — always apply on `PROJECTS/SmartBeads/`)
 
 From 4th-cycle failure audit (`GPT_PROJECT_AUDIT_05P.md`). Violation = process failure.  
-`.cursor/rules/smartbeads-core.mdc` carries one-line reminders only; **this section is authoritative detail**.
+`.cursor/rules/smartbeads-core.mdc` is hooks only; **this section is authoritative detail**.
+
+Also apply on SmartBeads work (one-line reminders — detail below):
+
+- **Word-friendly output** — no wide tables
+- **Evidence before conclusion** — repo beats chat/status docs; grep/read before "already does"
+- **Three labels only** — FUNCTIONAL, TESTED / FUNCTIONAL, UNTESTED / NOT FUNCTIONAL
+- **Green Jest ≠ shipped play** — behavioral gates (Easy≠Easy); not `path.length > 0` alone
+- **Human oracle** — exact-click Jest first, then engine; no CSS-first patches
+- **Engine ≠ animation** — session/engine correct without renderer
+- **Clocks run during AI** — never freeze timers on `aiThinking`
+- **HonestAi only** — production Lab uses `HonestAi.ts`, not prototype `.cjs`
 
 ## Behavioral gates
 
@@ -205,7 +247,7 @@ From 4th-cycle failure audit (`GPT_PROJECT_AUDIT_05P.md`). Violation = process f
 - `path.length > 0` / “doesn’t hang” alone is not enough.
 - Production AI Lab must use `HonestAi.ts`, never prototype `.cjs` AI.
 - If Cumulative/Endgame/timers/AI levels ship in the UI, AI and session must honor them with tests — no half-wired evaluate/search.
-- **Anti-fabrication:** see `VISION/AGENT_RULE_05P.md` — Evidence-Based Claims. Never label **FUNCTIONAL, TESTED** without file:line evidence, named test, and (when required) pasted Jest output for that test. Partial tests do not prove full claims.
+- **Anti-fabrication:** see `VISION/AGENT_RULE_05P.md` — Evidence-Based Claims. Never label **FUNCTIONAL, TESTED** without file:line evidence, named test, and (when required) pasted Jest output for that test. Partial tests do not prove full claims. **Live gap list** (improper / untested shipped items) → `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md` § Integrity — update when code ≠ claim; do not hide behind green Jest alone.
 - Hard/Medium must not silently fall back to Easy; emergency = first legal hop only.
 - Shot/match timers must tick on Ebony’s turn; never freeze the interval while `aiThinking`.
 - Every shipped feature must be tested on all relevant boards; if untestable → remove or stop with explicit blocker.
@@ -262,7 +304,7 @@ When building or modifying a **playable HTML board** (Human vs AI / PvP shell):
 
 # Output Formatting & Word Compatibility Rule
 
-Word-friendly bullet points — not wide tables (copies cleanly to Word/Docs). **Response shape:** `.cursor/rules/instruction-fidelity.mdc`.
+Word-friendly bullet points — not wide tables (copies cleanly to Word/Docs). See § Human communication above.
 
 ---
 

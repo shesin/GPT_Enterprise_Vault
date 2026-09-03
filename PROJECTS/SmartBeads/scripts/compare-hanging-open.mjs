@@ -33,7 +33,7 @@ async function main() {
   await page.goto(PROD, { waitUntil: 'networkidle' });
   await page.waitForSelector('#board');
   await page.selectOption('#board-select', '16');
-  await page.selectOption('#game-mode-select', 'pve');
+  await page.selectOption('#start-mode-select', 'pve');
   await page.selectOption('#ai-level-select', '2');
   await page.selectOption('#match-timer-select', 'off');
   await page.selectOption('#shot-clock-select', 'off');

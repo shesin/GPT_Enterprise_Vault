@@ -156,7 +156,7 @@ async function main() {
     const turnAfterAi = await page.locator('#turn-count').textContent();
     record('AI reply is a later ply', parseInt(turnAfterAi || '0', 10) >= 2, `turns=${turnAfterAi}`);
 
-    await page.selectOption('#game-mode-select', 'pvp');
+    await page.selectOption('#start-mode-select', 'pvp');
     await page.waitForTimeout(300);
     await page.locator('#restart-btn').click();
     await page.waitForTimeout(400);

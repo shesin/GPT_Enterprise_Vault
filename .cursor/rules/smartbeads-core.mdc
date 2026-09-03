@@ -1,28 +1,17 @@
 ---
-description: SmartBeads hard gates (minimal always-on)
+description: SmartBeads hooks — detail in CURSOR_PROMPT + GPT_PROJECT_RULES
 alwaysApply: true
 ---
 
-# SmartBeads — always-on gates
+# SmartBeads (always-on)
 
-When work touches `PROJECTS/SmartBeads/`, enforce detail in `GPT_PROJECT_RULES_01P.md` and `VISION/CURSOR_PROMPT_01.md` (SmartBeads Production Gates).
+When work touches `PROJECTS/SmartBeads/`:
 
-- **Response shape** — `.cursor/rules/instruction-fidelity.mdc` (understanding first, summary last, human tone).
-- **Big change → list & get approval** before implementing.
-- **Commit** (human) = commit **and push to GitHub**; report hash + push output.
-- **Ask if unsure** — no work until scope and "done" are clear
-- **One playtest bug ⇒ full sweep** — failing test + run suite + fix related gaps; human catches 1–2, agent finds the rest
-- **Word-friendly output** — no wide tables
-- **Evidence before conclusion** — repo beats chat/status docs; grep/read before "already does"; see AGENT_RULE Evidence-Based Claims
-- **Three labels only** — FUNCTIONAL, TESTED / FUNCTIONAL, UNTESTED / NOT FUNCTIONAL; no hedge labels
+- **Rules** → `VISION/CURSOR_PROMPT_01.md` § SmartBeads Production Gates + `GPT_PROJECT_RULES_01P.md`
+- **Approval & scope** → `.cursor/rules/instruction-fidelity.mdc` (no edit without go)
+- **Gaps (code ≠ claim)** → `GPT_PROJECT_STATUS_01P.md` § Integrity
+- **Done** → test or verify; never claim complete without evidence
+- **Big change** → list and get approval first
+- **One playtest bug** → failing test + suite sweep + related fixes
 - **Prototype ≠ production** — no shared code with `src/`
-- **Green Jest ≠ shipped play** — behavioral gates (Easy≠Easy); not `path.length > 0` alone
-- **No unapproved product rules** — STOP and ask (see CURSOR_PROMPT)
-- **Audit = failing Jest + fix** — not gap lists (see CURSOR_PROMPT)
-- **Human oracle** — exact-click Jest first, then engine; no CSS-first patches
-- **Engine ≠ animation** — session/engine correct without renderer
-- **Clocks run during AI** — never freeze timers on `aiThinking`
-- **HonestAi only** — production Lab uses `HonestAi.ts`, not prototype `.cjs`
 - **Protected docs** — do not edit `VISION_05P.md` or `GPT_PROJECT_RULES_01P.md` to fit code
-
-Canonical rules: `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md` | Audit: `GPT_PROJECT_AUDIT_05P.md`

@@ -10,6 +10,6 @@ Read and enforce — do not duplicate rules in this file:
 
 - `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md` — canonical engineering rules
 - `VISION/CURSOR_PROMPT_01.md` — SmartBeads Production Gates, Human Oracle, completion report
-- `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md` — current status
+- `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md` — current status; **§ Integrity** = code vs claim gaps
 - `PROJECTS/SmartBeads/PROJECT_MAP_05P.md` — structure
 - `PROJECTS/SmartBeads/GPT_PROJECT_AUDIT_05P.md` — 4th-cycle failure record (why gates exist)

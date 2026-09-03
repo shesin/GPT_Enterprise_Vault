@@ -1,10 +1,60 @@
 # SmartBeads — GPT Project Audit (4th cycle)
 
-Date: 2026-08-27  
+Date: 2026-08-27 (test runner audit appended 2026-09-03)  
 Scope: Production `src/` (not prototype)  
 Status: FAILURE RECORD + corrective actions (permanent)
 
 Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`, `smartbeads-rules.mdc`, and `VISION/CURSOR_PROMPT_01.md` — not duplicated here.
+
+---
+
+## Test catalog & how to run (2026-09-03)
+
+**Repo root:** `d:\Business Idea\Gpt_Enterprise_Vault`  
+**Verified:** **506 tests**, **44 Jest suites** — all PASS via batched runner (2026-09-03).
+
+### Commands (use these — do not use bare `jest PROJECTS/SmartBeads`)
+
+| Command | What it runs | Time |
+|---------|----------------|------|
+| `npm run test:jest:fast` | Jest only — **474 tests**, skips slow AI search suites | ~40 s |
+| `npm run test:jest` | **All 506 Jest tests** (6 batches, live output, hard timeouts) | ~7 min |
+| `npm test` | Full Jest + Playwright browser gates (`m2-2step-npm-gate.mjs`) | Jest ~7 min + browser |
+| `node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --batch=<id>` | One batch only | see below |
+
+**Batch ids:** `seven-board` · `engine-parity` · `feature-session` · `web-shell-layout` · `slow-ai-tiers` · `slow-ai-search`
+
+**Runner script:** `PROJECTS/SmartBeads/scripts/run-jest-batched.mjs` — explicit file lists, `maxWorkers: 1`, per-batch timeout (kills if hung). Replaces broken broad `npx jest` invocations that hung 30+ min with no output on Windows.
+
+### Jest — what each group tests
+
+| Batch / area | Key files | What it proves |
+|--------------|-----------|----------------|
+| **7-board core** | `allBoards.smoke.test.ts`, `Board*.test.ts` (×7), `FeatureSession.turnControl.test.ts`, `v1GeometryCaptureAudit.test.ts` | All 7 product boards: legal select, Medium AI reply, reset/New game, capture geometry, turn control |
+| **Engine + parity** | `SmartBeadsEngine*.test.ts`, `BoardCatalog.test.ts`, `*PrototypeParity.test.ts` (×7), `SelfPlayRunner`, `HumanVsAiRunner` | Engine rules, catalog defaults, prototype geometry parity per board |
+| **Feature / settings** | `GameFeatureSettings`, `FeatureSession.*`, `clockPolicy`, `aiTurnPath`, `HonestAi.test`, `spectate` | Timers, center rules, resignation, AI level UI, coach/spectate hooks |
+| **Shell / layout / audio** | `PlayController`, `playerBarShell`, `hubShell`, `viewportFit`, `creamCampRendersLower`, `CanvasBoardRenderer.moveFeedback`, `SoundEffects` | Settings DOM, cream-on-bottom, last-move rings, capture pulse, layout contracts |
+| **Slow AI — tiers** | `HonestAi.difficultyTiers.test.ts` | Easy/Medium/Hard behaviour, Medium soft-miss, 8×4×6 and 16 gates (~7 min alone) |
+| **Slow AI — search** | `HonestAi.searchCompletion.test.ts` | Expert (level 3) depth-2 completion on all 7 boards + 16 midgame |
+
+### Browser gates (Playwright — not Jest)
+
+| Script | What it proves |
+|--------|----------------|
+| `m2-2step-observe.mjs` | 16-bead two-click slide (A41→A42 occupancy) |
+| `m2-capture-geometry-browser.mjs` | Real canvas clicks: captures, junction hops, Finish, inert opponent beads — all 7 boards |
+| `m2-2step-npm-gate.mjs` | Boots Vite if needed; runs both gates above (chained by `npm test`) |
+| `m2-*-browser-verify.mjs` | Per-board visual/gameplay checks |
+| `lab-ai-difficulty-eval.mjs` | HonestAi lab eval (not prototype `.cjs`) |
+
+**Prerequisite:** Vite on **5173** (hub) or pass `SMARTBEADS_PLAY_URL` for play shell. Gates use `/play-board.html`.
+
+### Why prior runs hung (fixed 2026-09-03)
+
+1. `jest PROJECTS/SmartBeads` ran slow AI tests in parallel — CPU thrash, no visible progress.
+2. `HonestAi.difficultyTiers` alone takes **~7 min**; bundling under a 3 min timeout looked like a hang.
+3. PowerShell `Out-File` buffered all output until Jest exited — empty logs for 20+ min.
+4. **Fix:** `jest.config.cjs` (`maxWorkers: 1`, `testTimeout: 120s`) + batched runner with kill-on-timeout.
 
 ---
 
@@ -53,6 +103,8 @@ Prior audits repeatedly:
 - Left shipped UI features half-wired (center On but AI ignore; timers freeze on `aiThinking`; Hard silent-downgrade to Easy)
 
 Green Jest + “audit complete” language while humans rediscovered P0 bugs in ~5 minutes is **pathetic process failure**, not a documentation nit.
+
+**Living gap list (agents must maintain):** `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md` § Integrity — code vs claim. Update when shipped behaviour ≠ docs/UI; never hide incomplete features (depth-2 pattern).
 
 ### Failure class C — Leaving “open issues” for the human
 

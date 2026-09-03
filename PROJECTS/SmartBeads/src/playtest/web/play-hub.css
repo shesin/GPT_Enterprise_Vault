@@ -1,0 +1,255 @@
+/* Page 1 — compact left sidebar (Chess.com-style) + main content. */
+
+.play-hub {
+  width: min(980px, calc(100vw - 24px));
+  max-height: calc(100dvh - 16px);
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.play-hub.is-hidden {
+  display: none;
+}
+
+.shell.is-hidden {
+  display: none;
+}
+
+.hub-sidebar {
+  flex: 0 0 92px;
+  width: 92px;
+  padding: 14px 6px;
+  background: rgba(14, 30, 24, 0.98);
+  border: 1px solid rgba(212, 168, 75, 0.18);
+  border-radius: 12px 0 0 12px;
+}
+
+.hub-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hub-sidebar-link {
+  padding: 10px 4px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #9be564;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+}
+
+.hub-sidebar-link:hover {
+  background: rgba(155, 229, 100, 0.12);
+}
+
+.hub-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(18, 38, 30, 0.92);
+  border: 1px solid rgba(212, 168, 75, 0.22);
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+  padding: 16px 18px 14px;
+  overflow: hidden;
+}
+
+.hub-slogan {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--gold);
+  margin: 0;
+  text-align: center;
+}
+
+.hub-slogan em {
+  font-style: italic;
+}
+
+.hub-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0;
+}
+
+.hub-centre {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.hub-board-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.hub-board-card,
+.hub-tutorial-card {
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 168, 75, 0.35);
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.hub-board-card:hover,
+.hub-tutorial-card:hover {
+  border-color: var(--gold);
+}
+
+.hub-board-card.is-selected {
+  border-color: var(--gold);
+  background: rgba(212, 168, 75, 0.12);
+}
+
+.hub-card-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.hub-card-size {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.hub-tutorial-card {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.hub-tutorial-card .hub-card-name {
+  color: var(--ok);
+}
+
+.hub-mode-picker {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 168, 75, 0.4);
+  background: rgba(26, 49, 40, 0.95);
+}
+
+.hub-mode-picker.is-hidden {
+  display: none;
+}
+
+.hub-mode-picker-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.hub-mode-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hub-mode-btn {
+  padding: 11px 18px;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hub-mode-btn--ai {
+  background: var(--ok);
+  color: #06261b;
+}
+
+.hub-mode-btn--human {
+  background: var(--blue);
+  color: #fff;
+}
+
+.hub-mode-btn--human:disabled {
+  background: var(--panel);
+  color: var(--muted);
+  border: 1px solid rgba(155, 181, 166, 0.4);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.hub-ad-bottom {
+  flex-shrink: 0;
+  background: #f4f4f4;
+  border-radius: 10px;
+  padding: 12px 16px;
+  min-height: 144px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hub-ad-bottom .ad-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888;
+  font-weight: 700;
+}
+
+.hub-ad-bottom .ad-placeholder {
+  flex: 1;
+  min-height: 100px;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+  background: #fff;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .play-hub {
+    flex-direction: column;
+    width: calc(100vw - 16px);
+  }
+  .hub-sidebar {
+    flex: 0 0 auto;
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+    border-left: 1px solid rgba(212, 168, 75, 0.18);
+    border-bottom: none;
+  }
+  .hub-sidebar-nav {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .hub-sidebar-link {
+    font-size: 0.82rem;
+    padding: 8px 12px;
+  }
+  .hub-content {
+    border-left: 1px solid rgba(212, 168, 75, 0.22);
+    border-radius: 0 0 12px 12px;
+  }
+  .hub-board-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -95,7 +95,7 @@ async function main() {
     }
 
     // PvP: P1 moves, then P2 moves on the live session
-    await page.selectOption('#game-mode-select', 'pvp');
+    await page.selectOption('#start-mode-select', 'pvp');
     await page.selectOption('#board-select', '10x5');
     await page.locator('#restart-btn').click();
     await page.waitForTimeout(400);

@@ -39,7 +39,7 @@ async function main() {
 
     record('3-column shell layout', await page.locator('.shell').isVisible(), 'shell visible');
     record('left player panel', await page.locator('#pill-p1').isVisible(), 'Ivory pill');
-    record('right settings panel', await page.locator('#game-mode-select').isVisible(), 'settings select');
+    record('right settings panel', await page.locator('#ai-level-select').isVisible(), 'ai level select');
     record('canvas board (not SVG)', await page.evaluate(() => document.getElementById('board')?.tagName === 'CANVAS'), 'canvas element');
 
     const pieces = await page.locator('#p1-pieces').textContent();
@@ -67,7 +67,7 @@ async function main() {
     record('AI later advances the turn', parseInt(turnsAfterSlide || '0', 10) >= 2, `turns=${turnsAfterSlide}`);
 
     // Settings visible
-    record('PvE/PvP mode select', await page.locator('#game-mode-select option[value="pvp"]').count() === 1, 'pvp option');
+    record('start-screen mode select', await page.locator('#start-mode-select option[value="pvp"]').count() === 1, 'pvp option');
     record('AI level select', await page.locator('#ai-level-select').isVisible(), 'ai levels');
     record('match timer select', await page.locator('#match-timer-select option[value="25"]').count() === 1, '25 min');
     record('shot clock select', await page.locator('#shot-clock-select option[value="90"]').count() === 1, '90 sec');
@@ -114,13 +114,13 @@ async function main() {
     );
 
     // PvP mode disables AI level
-    await page.selectOption('#game-mode-select', 'pvp');
+    await page.selectOption('#start-mode-select', 'pvp');
     await page.waitForTimeout(400);
     record('PvP disables AI level', await page.locator('#ai-level-select').isDisabled(), 'ai disabled');
     record('PvP shows Human for P2', (await page.locator('#p2-role').textContent()) === '(Human)', await page.locator('#p2-role').textContent());
 
     // Active player pill
-    await page.selectOption('#game-mode-select', 'pve');
+    await page.selectOption('#start-mode-select', 'pve');
     await page.locator('#restart-btn').click();
     await page.waitForTimeout(400);
     record('active pill on P1 at start', await page.locator('#pill-p1.active').isVisible(), 'pill-p1 active');

@@ -31,7 +31,11 @@ export interface BoardPlayConfig {
   defaultSettings: GameFeatureSettings;
   centerRuleOptions: CenterRule[];
   matchTimerOptions: MatchTimerMinutes[];
+  /** Recommended match timer — shown as e.g. `20 (best)` in settings dropdown. */
+  matchTimerBest?: MatchTimerMinutes;
   shotClockOptions: ShotClockSeconds[];
+  /** Recommended turn shot clock — shown as e.g. `120 (best)` in settings dropdown. */
+  shotClockBest?: ShotClockSeconds;
 }
 
 export interface BoardCatalogEntry {
@@ -73,8 +77,10 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
-      matchTimerOptions: ['off', '15', '25', '35'],
+      matchTimerOptions: ['off', '15', '20', '30'],
+      matchTimerBest: '20',
       shotClockOptions: ['off', '60', '90', '120'],
+      shotClockBest: '120',
     },
   },
   {
@@ -94,8 +100,10 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
-      matchTimerOptions: ['off', '10', '20', '30'],
-      shotClockOptions: ['off', '60', '90'],
+      matchTimerOptions: ['off', '10', '15', '25'],
+      matchTimerBest: '15',
+      shotClockOptions: ['off', '60', '90', '120'],
+      shotClockBest: '120',
     },
   },
   {
@@ -115,8 +123,10 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
-      matchTimerOptions: ['off', '10', '20', '30'],
-      shotClockOptions: ['off', '60', '90'],
+      matchTimerOptions: ['off', '10', '15', '25'],
+      matchTimerBest: '15',
+      shotClockOptions: ['off', '60', '90', '120'],
+      shotClockBest: '90',
     },
   },
   {
@@ -136,8 +146,10 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
-      matchTimerOptions: ['off', '3', '5', '10'],
-      shotClockOptions: ['off', '30', '60'],
+      matchTimerOptions: ['off', '5', '10', '15'],
+      matchTimerBest: '10',
+      shotClockOptions: ['off', '30', '60', '90'],
+      shotClockBest: '60',
     },
   },
   {
@@ -158,7 +170,9 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
       matchTimerOptions: ['off', '3', '5', '10'],
+      matchTimerBest: '10',
       shotClockOptions: ['off', '30', '60'],
+      shotClockBest: '60',
     },
   },
   {
@@ -179,7 +193,9 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
       matchTimerOptions: ['off', '3', '5', '10'],
+      matchTimerBest: '5',
       shotClockOptions: ['off', '30', '60'],
+      shotClockBest: '60',
     },
   },
   {
@@ -200,7 +216,9 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
       matchTimerOptions: ['off', '3', '5', '10'],
+      matchTimerBest: '5',
       shotClockOptions: ['off', '30', '60'],
+      shotClockBest: '60',
     },
   },
 ];

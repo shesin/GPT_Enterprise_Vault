@@ -3,38 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartBeads</title>
+  <title>SmartBeads — Play (7 boards)</title>
   <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-shell.css">
-  <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-hub.css">
 </head>
-<body>
-  <div id="play-hub" class="play-hub">
-    <aside class="hub-sidebar" aria-label="Hub navigation">
-      <nav class="hub-sidebar-nav">
-        <button type="button" class="hub-sidebar-link" data-hub-nav="Community">Community</button>
-        <button type="button" class="hub-sidebar-link" data-hub-nav="Tournaments">Tournaments</button>
-      </nav>
-    </aside>
-
-    <div class="hub-content">
-      <p class="hub-slogan"><em>Strategic as Chess.<br>Simple as Tic-Tac-Toe.</em></p>
-      <h1 class="hub-title">Smart Beads</h1>
-      <div class="hub-centre" id="hub-centre">
-        <div class="hub-board-grid" id="hub-board-grid"></div>
-        <button type="button" class="hub-tutorial-card" id="hub-tutorial-card">
-          <div class="hub-card-name">Tutorial</div>
-          <div class="hub-card-size">Learn on the 6-bead board</div>
-        </button>
-        <div class="hub-mode-picker is-hidden" id="hub-mode-picker"></div>
-      </div>
-      <footer class="hub-ad-bottom" aria-label="Advertisement">
-        <span class="ad-label">Sponsored</span>
-        <div class="ad-placeholder">Advertisement</div>
-      </footer>
-    </div>
-  </div>
-
-  <div class="shell shell--ads-on is-hidden" id="play-shell">
+<body data-sb-direct-play="1">
+  <div class="shell shell--ads-on" id="play-shell">
     <aside class="card left">
       <div class="play-panel">
         <div class="play-block play-block-ai" id="play-block-p2">
@@ -156,11 +129,9 @@
           <select id="ai-level-select"></select>
         </div>
         <div class="setting" id="coach-ai-container" style="display: none;">
-          <label>Cream AI</label>
-          <label class="coach-ai-level-label" for="coach-red-ai-select">AI level</label>
+          <label>Cream AI (coach watch)</label>
           <select id="coach-red-ai-select"></select>
-          <label style="margin-top: 8px;">Black AI</label>
-          <label class="coach-ai-level-label" for="coach-blue-ai-select">AI level</label>
+          <label style="margin-top: 8px;">Black AI (coach watch)</label>
           <select id="coach-blue-ai-select"></select>
         </div>
         <div class="setting">

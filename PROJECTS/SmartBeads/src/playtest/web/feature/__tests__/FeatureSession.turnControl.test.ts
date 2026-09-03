@@ -1,4 +1,5 @@
 import { FeatureSession } from '../FeatureSession';
+import { buildCoachWatchSettings } from '../GameFeatureSettings';
 import { firstOpeningSlide } from '../firstMoveInvariants';
 
 const off = {
@@ -7,6 +8,24 @@ const off = {
   shotClock: 'off' as const,
   centerRule: 'off' as const,
 };
+
+describe('FeatureSession spectate watch mode', () => {
+  it('8x4x6 coach watch blocks all human input on both sides', () => {
+    const session = new FeatureSession('8x4x6', buildCoachWatchSettings());
+    const engine = session.getEngine();
+    expect(session.canHumanAct()).toBe(false);
+
+    const red = engine.getState().board.intersections.find((n) => n.occupant === 'RED');
+    expect(red).toBeDefined();
+    expect(session.selectNode(red!.id)).toBe(false);
+    expect(session.interpretClick(red!.id).kind).toBe('ignore');
+
+    const slide = firstOpeningSlide(engine);
+    session.applyMove(slide);
+    expect(engine.getState().currentPlayer).toBe('BLUE');
+    expect(session.canHumanAct()).toBe(false);
+  });
+});
 
 describe('FeatureSession natural turn taking (all V1 boards)', () => {
   const variants = ['16', '12x6x5', '10x5', '8x4x6', '7', '6', '6x3x5'] as const;

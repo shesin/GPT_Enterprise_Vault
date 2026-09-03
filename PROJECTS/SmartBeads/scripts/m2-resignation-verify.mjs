@@ -26,7 +26,7 @@ async function cancelConfirm(page) {
 
 async function runPvpResign(page, acceptDraw) {
   await page.goto(URL, { waitUntil: 'networkidle' });
-  await page.selectOption('#game-mode-select', 'pvp');
+  await page.selectOption('#start-mode-select', 'pvp');
   await page.locator('#restart-btn').click();
   await page.waitForTimeout(400);
 
@@ -52,7 +52,7 @@ async function runPveResign(page, aiOverride) {
     sessionStorage.setItem('sb-test-resign-ai', mode);
   }, aiOverride);
 
-  await page.selectOption('#game-mode-select', 'pve');
+  await page.selectOption('#start-mode-select', 'pve');
   await page.locator('#restart-btn').click();
   await page.waitForTimeout(400);
 

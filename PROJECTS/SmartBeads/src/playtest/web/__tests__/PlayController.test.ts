@@ -101,6 +101,19 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     expect(session.canHumanAct()).toBe(true);
   });
 
+  it('planAiTurnPath uses Expert (level 3) when configured in PvE', () => {
+    const session = new FeatureSession('8x4x6', {
+      mode: 'pve',
+      aiLevel: 3,
+      matchTimer: 'off',
+      shotClock: 'off',
+      centerRule: 'off',
+    });
+    session.getEngine().getState().currentPlayer = 'BLUE';
+    const path = planAiTurnPath(session);
+    expect(path?.length).toBeGreaterThan(0);
+  });
+
   it('planAiTurnPath uses configured Medium level (does not silently plan as Easy)', () => {
     const session = hangingSession();
     const path = planAiTurnPath(session);
@@ -115,7 +128,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
   it('planAiTurnPath values center when endgame rule is on (independent of match timer)', () => {
     const session = new FeatureSession('6x3x5', {
       mode: 'pve',
-      aiLevel: 2,
+      aiLevel: 3,
       matchTimer: 'off',
       shotClock: 'off',
       centerRule: 'endgame',

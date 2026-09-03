@@ -183,7 +183,7 @@ If unsure what they mean, **ask before starting work**.
 
 # Response tone (chat)
 
-Brief **understanding** first, brief **summary** last. Plain English; don't repeat the same checklist every message. Use common sense. Canonical: `.cursor/rules/instruction-fidelity.mdc`.
+Brief **understanding** first, brief **summary** last. Plain English; don't repeat the same checklist every message. Full style → `VISION/CURSOR_PROMPT_01.md` § Human communication. Hooks → `.cursor/rules/instruction-fidelity.mdc`.
 
 ---
 

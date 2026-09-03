@@ -257,7 +257,7 @@ export class FeatureSession {
   }
 
   selectNode(nodeId: number): boolean {
-    if (this.isGameOver()) return false;
+    if (this.isGameOver() || !this.canHumanAct()) return false;
     const state = this.engine.getState();
     if (this.engine.getChainPieceId() !== null) return false;
 
@@ -280,6 +280,7 @@ export class FeatureSession {
 
   canHumanAct(): boolean {
     if (this.isGameOver()) return false;
+    if (this.settings.mode === 'spectate') return false;
     if (this.settings.mode === 'pvp') return true;
     return this.engine.getState().currentPlayer === 'RED';
   }

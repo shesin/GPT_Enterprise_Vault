@@ -1,11 +1,14 @@
 {
   "scripts": {
-    "test": "jest && node PROJECTS/SmartBeads/scripts/m2-2step-npm-gate.mjs",
-    "test:smartbeads": "jest PROJECTS/SmartBeads",
+    "test": "node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs && node PROJECTS/SmartBeads/scripts/m2-2step-npm-gate.mjs",
+    "test:jest": "node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs",
+    "test:jest:fast": "node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --skip-slow",
+    "test:smartbeads": "node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs",
     "play:board4": "npx tsx PROJECTS/SmartBeads/src/playtest/HumanVsAiRunner.ts",
     "sim:board4": "npx tsx PROJECTS/SmartBeads/src/simulation/SelfPlayRunner.ts",
     "web:board4": "vite",
-    "web:smartbeads": "vite"
+    "web:smartbeads": "vite",
+    "web:smartbeads:play": "vite --mode play"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

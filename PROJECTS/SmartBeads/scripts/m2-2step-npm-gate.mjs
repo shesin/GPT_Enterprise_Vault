@@ -3,12 +3,14 @@
  *  - m2-2step-observe: 16-bead A41→A42 two-click occupancy.
  *  - m2-capture-geometry-browser: real-click captures, junction, chain, optional stop.
  * Starts Vite only if http://localhost:5173/ is not already up.
+ * Play shell gates use /play-board.html because / is the hub (board hidden until direct play).
  */
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+const HUB_URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+const PLAY_URL = process.env.SMARTBEADS_PLAY_URL || 'http://localhost:5173/play-board.html';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const GATES = [
@@ -22,7 +24,7 @@ function sleep(ms) {
 
 async function isUp() {
   try {
-    const res = await fetch(URL);
+    const res = await fetch(HUB_URL);
     return res.ok;
   } catch {
     return false;
@@ -42,14 +44,14 @@ async function ensureVite() {
     if (await isUp()) return child;
   }
   child.kill();
-  throw new Error('Vite did not start at ' + URL);
+  throw new Error('Vite did not start at ' + HUB_URL);
 }
 
 async function runGate(script) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [script], {
       cwd: path.join(ROOT, 'PROJECTS', 'SmartBeads'),
-      env: { ...process.env, SMARTBEADS_URL: URL },
+      env: { ...process.env, SMARTBEADS_URL: PLAY_URL },
       stdio: 'inherit',
       windowsHide: true,
     });

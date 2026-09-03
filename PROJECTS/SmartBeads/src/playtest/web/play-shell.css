@@ -127,18 +127,20 @@ body {
   padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid var(--gold);
   background: rgba(10, 24, 19, 0.92);
 }
 .play-block.active {
-  border-color: rgba(212, 168, 75, 0.55);
+  border-top-color: rgba(212, 168, 75, 0.55);
+  border-right-color: rgba(212, 168, 75, 0.55);
+  border-bottom-color: rgba(212, 168, 75, 0.55);
+  border-left-color: var(--gold);
   background: rgba(212, 168, 75, 0.08);
 }
 .play-block-ai,
 .play-block-human {
   flex-shrink: 0;
 }
-.play-block-ai { border-left: 4px solid var(--blue); }
-.play-block-human { border-left: 4px solid var(--red); }
 .play-block-head {
   display: flex;
   align-items: baseline;
@@ -274,6 +276,13 @@ body {
   color: var(--muted);
   letter-spacing: 0.04em;
   font-weight: 700;
+}
+.setting label.coach-ai-level-label {
+  margin-top: 2px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.02em;
 }
 select, button, input[type="text"] {
   background: var(--panel-2);
