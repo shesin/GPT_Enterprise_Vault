@@ -16,6 +16,8 @@ export const COACH_DEFAULT_BOARD_ID = '8x4x6' as const;
 export const SPECTATE_BOARD_ID = COACH_DEFAULT_BOARD_ID;
 /** Pause after each animated move completes (ms). */
 export const SPECTATE_INTER_MOVE_DELAY_MS = 10_000;
+/** Coach vs AI: amber select + legal targets before each automated hop (ms). */
+export const COACH_MOVE_PREVIEW_MS = 450;
 
 export interface GameFeatureSettings {
   mode: GameMode;

@@ -7,8 +7,9 @@ alwaysApply: true
 
 When work touches `PROJECTS/SmartBeads/`:
 
+- **STOP gate first** → `.cursor/rules/instruction-fidelity.mdc` § STOP — quote ask, list files, wait for go
 - **Rules** → `VISION/CURSOR_PROMPT_01.md` § SmartBeads Production Gates + `GPT_PROJECT_RULES_01P.md`
-- **Approval & scope** → `.cursor/rules/instruction-fidelity.mdc` (no edit without go)
+- **Literal ask** — option ≠ default ≠ best label ≠ doc update; one-line ask = one-line change unless user lists more
 - **Gaps (code ≠ claim)** → `GPT_PROJECT_STATUS_01P.md` § Integrity
 - **Done** → test or verify; never claim complete without evidence
 - **Big change** → list and get approval first

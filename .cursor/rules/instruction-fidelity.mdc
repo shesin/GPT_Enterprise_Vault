@@ -1,28 +1,49 @@
 ---
-description: Always-on hooks — full detail in VISION/CURSOR_PROMPT_01.md
+description: STOP gate before every repo edit — literal ask, explicit go only
 alwaysApply: true
 ---
 
 # Instruction fidelity (always-on)
 
-- **Talk:** plain English; answer first; say each point **once** — no rephrasing the same idea. Length as needed (3 lines or 20); table only when nothing else is clearer; brief summary last. Detail → `VISION/CURSOR_PROMPT_01.md` § Human communication.
-- **Scope:** user ask only. Extra work (tests, docs, refactors) → say what/why, wait for approval. Rules → same file § Scope & fidelity.
-- **Plan / review / comment / suggest** → words only, no edits, until they say **go**. If the plan looks wrong, say so briefly.
+- **Talk:** plain English; answer first; once per point; brief summary last. Detail → `VISION/CURSOR_PROMPT_01.md` § Human communication.
 - **Commit / push** = commit **and push to GitHub** unless local only; report hash + push output.
 - **Doubt** → one short question, then wait.
 
+# STOP — before any repo edit
+
+Do **not** call Write / StrReplace / Delete / edit Notebook until all four pass:
+
+1. **Quote the ask** — one line from the user (or “no edit requested”).
+2. **Approval** — explicit go for **this exact scope** (`Go — …`, `Fix X only`, `push to git`, `yes items 1 and 3`). Else **NONE**.
+3. **Files in scope** — list every file you will touch.
+4. **Out of scope** — name what you will **not** change (defaults, docs, tests, “best” labels, refactors).
+
+If 2 fails → words only. If 3 would exceed the ask → stop; say what/why; wait.
+
+**Plan / review / comment / suggest** → never edit until go.
+
+# Literal parse (no inference)
+
+Separate words — never collapse:
+
+| User says | Means | Does **not** mean |
+|-----------|--------|-------------------|
+| add / put X | X exists as **option** | X is default |
+| default off | leave default `'off'` | pick a “better” default |
+| remove URL | delete URL handler | remove hub page |
+
+**Recorded failure:** “3 min timer for all boards” → add `'3'` to `matchTimerOptions`; `defaultSettings.matchTimer` stays `'off'`. Do not touch `matchTimerBest` or status docs unless asked.
+
 # No approval = no edit
 
-Do not change the repo — code, CSS, config, tests, docs, rules, typos — unless they **explicitly approved that exact change**.
+No repo change (code, CSS, config, tests, docs, rules) without approval of **that exact change**.
 
-**Not approval:** silence, a question, frustration, past tasks, “go” on A while you also change B.
+**Not approval:** silence, frustration, past tasks, “go” on A while you also change B.
 
-**Is approval:** “Go — [exact scope].” / “Fix X only.” / “Yes, items 1 and 3.”
+**Before edit:** scope block above → wait for go → implement only that → verify → report.
 
-**Before any edit:** say what files and behaviour you will change → **wait for go** → implement only that → verify → report.
-
-If you edited without approval → say so at once; offer revert; do not add more unapproved fixes.
+Edited without approval → say so at once; offer revert; no extra “fixes”.
 
 # Claims vs code
 
-Shipped behaviour must match docs and UI. If not tested or not true → list in `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md` § Integrity (human may remove). Never half-wire a feature while status says it works. Evidence rules → `VISION/AGENT_RULE_05P.md` § Evidence-Based Claims.
+Untested or untrue → `GPT_PROJECT_STATUS_01P.md` § Integrity. Evidence → `VISION/AGENT_RULE_05P.md` § Evidence-Based Claims.

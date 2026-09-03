@@ -25,6 +25,21 @@ describe('FeatureSession spectate watch mode', () => {
     expect(engine.getState().currentPlayer).toBe('BLUE');
     expect(session.canHumanAct()).toBe(false);
   });
+
+  it('8x4x6 coach preview arms selection and legal targets without human act', () => {
+    const session = new FeatureSession('8x4x6', buildCoachWatchSettings());
+    const engine = session.getEngine();
+    const red = engine.getState().board.intersections.find(
+      (n) => n.occupant === 'RED' && engine.getLegalMoves().some((m) => m.from === n.id),
+    );
+    expect(red).toBeDefined();
+    expect(session.canHumanAct()).toBe(false);
+    expect(session.selectNode(red!.id)).toBe(false);
+
+    expect(session.previewAutomatedSelection(red!.id)).toBe(true);
+    expect(session.getSelectedId()).toBe(red!.id);
+    expect(session.getLegalTargetIds().length).toBeGreaterThan(0);
+  });
 });
 
 describe('FeatureSession natural turn taking (all V1 boards)', () => {

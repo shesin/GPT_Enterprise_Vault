@@ -83,6 +83,7 @@
               <label for="start-mode-select">Game mode</label>
               <select id="start-mode-select">
                 <option value="pve" selected>Human vs AI</option>
+                <option value="spectate">Coach vs AI</option>
                 <option value="pvp">Human vs Human</option>
               </select>
             </div>
@@ -124,15 +125,13 @@
           <label style="margin-top: 8px;">Black player name</label>
           <input type="text" id="pvp-black-name" maxlength="24" placeholder="Player 2">
         </div>
-        <div class="setting">
+        <div class="setting" id="ai-level-setting">
           <label>AI level</label>
           <select id="ai-level-select"></select>
         </div>
-        <div class="setting" id="coach-ai-container" style="display: none;">
-          <label>Cream AI (coach watch)</label>
-          <select id="coach-red-ai-select"></select>
-          <label style="margin-top: 8px;">Black AI (coach watch)</label>
-          <select id="coach-blue-ai-select"></select>
+        <div class="setting" id="coach-level-setting" style="display: none;">
+          <label>Coach level</label>
+          <select id="coach-level-select"></select>
         </div>
         <div class="setting">
           <label>Match timer</label>

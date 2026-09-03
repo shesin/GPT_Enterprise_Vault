@@ -12,8 +12,8 @@ import {
   AiLevel,
   aiLevelForActingPlayer,
   BGM_TRACKS,
-  COACH_DEFAULT_BOARD_ID,
   COACH_MAX_AI_LEVEL,
+  COACH_MOVE_PREVIEW_MS,
   buildCoachWatchSettings,
   clampUiAiLevel,
   DEFAULT_BGM_VOLUME,
@@ -333,12 +333,12 @@ export function bootstrapPlayShell(): void {
 
   const boardSelect = document.getElementById('board-select') as HTMLSelectElement;
   const aiLevelSelect = document.getElementById('ai-level-select') as HTMLSelectElement;
+  const aiLevelSetting = document.getElementById('ai-level-setting') as HTMLDivElement | null;
+  const coachLevelSelect = document.getElementById('coach-level-select') as HTMLSelectElement | null;
+  const coachLevelSetting = document.getElementById('coach-level-setting') as HTMLDivElement | null;
   const matchTimerSelect = document.getElementById('match-timer-select') as HTMLSelectElement;
   const shotClockSelect = document.getElementById('shot-clock-select') as HTMLSelectElement;
   const centerRuleSelect = document.getElementById('center-rule-select') as HTMLSelectElement;
-  const coachAiContainer = document.getElementById('coach-ai-container') as HTMLDivElement | null;
-  const coachRedAiSelect = document.getElementById('coach-red-ai-select') as HTMLSelectElement | null;
-  const coachBlueAiSelect = document.getElementById('coach-blue-ai-select') as HTMLSelectElement | null;
 
   const bgmAudio = document.getElementById('bgm-audio') as HTMLAudioElement;
   const bgmSelect = document.getElementById('bgm-select') as HTMLSelectElement;
@@ -359,14 +359,32 @@ export function bootstrapPlayShell(): void {
     populateAiLevelSelect(aiLevelSelect, HUMAN_PVE_MAX_AI_LEVEL, current);
   }
 
-  syncAiLevelOptions();
-  if (coachRedAiSelect && coachBlueAiSelect) {
-    populateAiLevelSelect(coachRedAiSelect, COACH_MAX_AI_LEVEL, 3, true);
-    populateAiLevelSelect(coachBlueAiSelect, COACH_MAX_AI_LEVEL, 2, true);
+  function syncCoachLevelOptions(): void {
+    if (!coachLevelSelect) return;
+    const current = clampUiAiLevel(parseInt(coachLevelSelect.value, 10) || 3);
+    populateAiLevelSelect(coachLevelSelect, COACH_MAX_AI_LEVEL, current);
   }
 
-  /** Coach watch URL — not exposed in the human mode dropdown. */
-  let spectateActive = false;
+  syncAiLevelOptions();
+  syncCoachLevelOptions();
+
+  function isCoachWatchMode(): boolean {
+    return readGameMode() === 'spectate';
+  }
+
+  function readCoachWatchSettings(): GameFeatureSettings {
+    const coachLevel = coachLevelSelect
+      ? clampUiAiLevel(parseInt(coachLevelSelect.value, 10))
+      : 3;
+    const aiLevel = clampUiAiLevel(parseInt(aiLevelSelect.value, 10));
+    return buildCoachWatchSettings({
+      coachRedLevel: coachLevel,
+      coachBlueLevel: aiLevel,
+      matchTimer: matchTimerSelect.value as GameFeatureSettings['matchTimer'],
+      shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
+      centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
+    });
+  }
 
   /** Mode comes from start-screen picker only (not duplicated in Settings). */
   function readGameMode(): GameFeatureSettings['mode'] {
@@ -374,18 +392,8 @@ export function bootstrapPlayShell(): void {
   }
 
   function readSettings(): GameFeatureSettings {
-    if (spectateActive) {
-      return buildCoachWatchSettings({
-        coachRedLevel: coachRedAiSelect
-          ? parseInt(coachRedAiSelect.value, 10) as AiLevel
-          : 3,
-        coachBlueLevel: coachBlueAiSelect
-          ? parseInt(coachBlueAiSelect.value, 10) as AiLevel
-          : 2,
-        matchTimer: matchTimerSelect.value as GameFeatureSettings['matchTimer'],
-        shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
-        centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
-      });
+    if (isCoachWatchMode()) {
+      return readCoachWatchSettings();
     }
     const aiLevel = clampUiAiLevel(parseInt(aiLevelSelect.value, 10));
     return {
@@ -462,6 +470,7 @@ export function bootstrapPlayShell(): void {
     syncMatchTimerOptions();
     syncShotClockOptions();
     syncAiLevelOptions();
+    syncCoachLevelOptions();
   }
 
   function syncBoardTitle(): void {
@@ -544,7 +553,7 @@ export function bootstrapPlayShell(): void {
   function creamPlayerLabel(): string {
     const settings = session.getSettings();
     if (settings.mode === 'spectate') {
-      return formatAiLevelLabel(aiLevelForActingPlayer(settings, 'RED'));
+      return `Coach · ${formatAiLevelLabel(aiLevelForActingPlayer(settings, 'RED'))}`;
     }
     if (settings.mode === 'pve') return 'You';
     const name = creamNameInput?.value.trim();
@@ -569,15 +578,19 @@ export function bootstrapPlayShell(): void {
 
   function syncModeUi(): void {
     const settings = session.getSettings();
-    const spectate = settings.mode === 'spectate';
+    const coachWatch = settings.mode === 'spectate';
     const pve = settings.mode === 'pve';
+    const pvp = settings.mode === 'pvp';
     if (pvpNamesContainer) {
-      pvpNamesContainer.style.display = pve ? 'none' : spectate ? 'none' : 'flex';
+      pvpNamesContainer.style.display = pvp ? 'flex' : 'none';
       pvpNamesContainer.style.flexDirection = 'column';
       pvpNamesContainer.style.gap = '4px';
     }
-    if (coachAiContainer) {
-      coachAiContainer.style.display = spectate ? 'block' : 'none';
+    if (aiLevelSetting) {
+      aiLevelSetting.style.display = pve || coachWatch ? '' : 'none';
+    }
+    if (coachLevelSetting) {
+      coachLevelSetting.style.display = coachWatch ? '' : 'none';
     }
   }
 
@@ -1130,23 +1143,39 @@ export function bootstrapPlayShell(): void {
 
       const move = path![i];
       i += 1;
-      playAnimated(move, actingPlayer, () => {
-        if (runId !== aiRunId) return;
-        const chain = session.getEngine().getChainPieceId();
 
-        if (shouldContinueAiTurn(chain, path!.length - i)) {
-          setTimeout(playNext, 380);
-          return;
-        }
+      const playHop = () => {
+        playAnimated(move, actingPlayer, () => {
+          if (runId !== aiRunId) return;
+          const chain = session.getEngine().getChainPieceId();
 
-        completeAiTurnIfChainOpen(session);
-        cancelAiWork();
-        if (turnCaptures >= 3) {
-          soundEffects.playFlourish();
-        }
-        turnCaptures = 0;
-        afterHumanOrAiTurn();
-      });
+          if (shouldContinueAiTurn(chain, path!.length - i)) {
+            setTimeout(playNext, 380);
+            return;
+          }
+
+          completeAiTurnIfChainOpen(session);
+          cancelAiWork();
+          if (turnCaptures >= 3) {
+            soundEffects.playFlourish();
+          }
+          turnCaptures = 0;
+          afterHumanOrAiTurn();
+        });
+      };
+
+      if (settings.mode === 'spectate') {
+        session.previewAutomatedSelection(move.from);
+        soundEffects.playSelect();
+        updateUI();
+        setTimeout(() => {
+          if (runId !== aiRunId) return;
+          playHop();
+        }, COACH_MOVE_PREVIEW_MS);
+        return;
+      }
+
+      playHop();
     }
     playNext();
   }
@@ -1240,7 +1269,7 @@ export function bootstrapPlayShell(): void {
 
   if (startGameBtn) {
     startGameBtn.addEventListener('click', () => {
-      if (spectateActive) beginCoachWatch();
+      if (readGameMode() === 'spectate') beginCoachWatch();
       else beginPlayAfterStart();
     });
   }
@@ -1341,12 +1370,7 @@ export function bootstrapPlayShell(): void {
   matchTimerSelect.addEventListener('change', resetGame);
   shotClockSelect.addEventListener('change', resetGame);
   aiLevelSelect.addEventListener('change', resetGame);
-  coachRedAiSelect?.addEventListener('change', () => {
-    if (spectateActive && isAwaitingStart()) resetGame();
-  });
-  coachBlueAiSelect?.addEventListener('change', () => {
-    if (spectateActive && isAwaitingStart()) resetGame();
-  });
+  coachLevelSelect?.addEventListener('change', resetGame);
   canvas.addEventListener('click', handleCanvasClick);
 
   bgmAudio.volume = parseFloat(bgmVol.value) || DEFAULT_BGM_VOLUME;
@@ -1388,62 +1412,6 @@ export function bootstrapPlayShell(): void {
       savedPremium = false;
     }
     applyPremiumShell(savedPremium);
-  }
-
-  function prepareCoachWatch(opts?: {
-    boardId?: ProductBoardId;
-    coachRedLevel?: AiLevel;
-    coachBlueLevel?: AiLevel;
-  }): void {
-    spectateActive = true;
-    if (timerId) clearInterval(timerId);
-    timerId = null;
-    cancelAnimationFrame(pulseRaf);
-    cancelAnimationFrame(animRaf);
-    cancelAiWork();
-    undoStack.length = 0;
-    anim = null;
-    animating = false;
-    aiThinking = false;
-    turnCaptures = 0;
-    clearMoveFeedback();
-    prevCaptures = { RED: 0, BLUE: 0 };
-
-    const boardId = opts?.boardId ?? COACH_DEFAULT_BOARD_ID;
-    currentBoardId = boardId;
-    boardSelect.value = boardId;
-    syncBoardTitle();
-    syncBoardPlayOptions();
-    applyBoardDefaults(boardId);
-
-    if (coachRedAiSelect && opts?.coachRedLevel !== undefined) {
-      coachRedAiSelect.value = String(opts.coachRedLevel);
-    }
-    if (coachBlueAiSelect && opts?.coachBlueLevel !== undefined) {
-      coachBlueAiSelect.value = String(opts.coachBlueLevel);
-    }
-
-    session = createSession(boardId, readSettings());
-    session.reset();
-    ensureHumanOpensStartScreen();
-    applyCanvasSizeForBoard();
-    resultModal.style.display = 'none';
-    resultModal.classList.remove('animate');
-    resignOfferModal.style.display = 'none';
-    pendingResignPlayer = null;
-    session.resetTurnClock();
-
-    if (startModeSelect) {
-      const modeWrap = startModeSelect.closest('.start-screen-mode') as HTMLElement | null;
-      if (modeWrap) modeWrap.style.display = 'none';
-    }
-    if (startGameBtn) startGameBtn.textContent = '▶ START WATCH';
-    if (startScreenOverlay) startScreenOverlay.classList.remove('hidden');
-
-    syncModeUi();
-    updateUI();
-    undoBtn.disabled = true;
-    pulseRaf = requestAnimationFrame(loopPulse);
   }
 
   syncBoardTitle();
@@ -1495,9 +1463,6 @@ export function bootstrapPlayShell(): void {
       applyPremiumShell(isPremium);
     },
     switchBoard,
-    prepareCoachWatch,
-    /** @deprecated use prepareCoachWatch */
-    startSpectate: prepareCoachWatch,
   };
 }
 

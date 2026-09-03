@@ -258,14 +258,31 @@ export class FeatureSession {
 
   selectNode(nodeId: number): boolean {
     if (this.isGameOver() || !this.canHumanAct()) return false;
-    const state = this.engine.getState();
-    if (this.engine.getChainPieceId() !== null) return false;
+    return this.armSelection(nodeId);
+  }
 
-    const node = state.board.intersections.find((p) => p.id === nodeId);
+  /**
+   * Coach vs AI: show amber rings on the automated mover and its legal landings.
+   * Does not bypass turn rules — display only before the shell animates the hop.
+   */
+  previewAutomatedSelection(from: number): boolean {
+    if (this.settings.mode !== 'spectate' || this.isGameOver()) return false;
+    return this.armSelection(from);
+  }
+
+  private armSelection(nodeId: number): boolean {
+    const chain = this.engine.getChainPieceId();
+    if (chain !== null) {
+      if (chain !== nodeId) return false;
+      this.selectedId = nodeId;
+      this.uiState = 'chain';
+      return true;
+    }
+
+    const state = this.engine.getState();
+    const node = state.board.intersections[nodeId];
     if (node?.occupant !== state.currentPlayer) return false;
 
-    // Clicking an own bead that cannot move must not leave a different bead armed,
-    // or the next click would move a piece the player did not choose.
     const hasMoves = this.engine.getLegalMoves().some((m) => m.from === nodeId);
     if (!hasMoves) {
       this.selectedId = null;

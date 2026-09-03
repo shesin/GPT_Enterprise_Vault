@@ -67,11 +67,12 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **3-fold repetition:** removed from production. See `GPT_PROJECT_AUDIT_05P.md`.
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
-- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`). Settings panel: Board, **AI level** (1–3, same block style as Match timer), Coach AI (URL spectate only), Match timer, Turn shot clock, Center rule.
+- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`: Human vs AI · **Coach vs AI** · Human vs Human). Settings panel: Board, **AI level**, **Coach level** (Coach vs AI only — cream/white coach vs black AI), Match timer, Turn shot clock, Center rule.
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI) — chosen on start overlay, not duplicated in Settings.
 - **Default Feature Settings:**
   - `centerRule: 'off'` default on all 7 boards (End-Game/Cumulative selectable per board catalog).
   - `matchTimer: 'off'` and `shotClock: 'off'` across all 7 games.
+  - `matchTimerOptions` include **`'3'`** on all 7 boards (user-selectable; default stays **off**).
 - **Center scoring contract:** End-Game/Cumulative tiebreak in `evaluateScoreAndEnd()` and on engine game-over when captures are tied; cumulative accrual each completed turn; Medium/Hard AI eval via `planAiTurnPath`. Independent of match timer on/off.
 - **Clocks during AI:** shot/match timers tick while Ebony thinks (`shellTimerShouldSkip`); shot expiry on BLUE awards Ivory.
 - **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`).
@@ -93,7 +94,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | Item | Verdict |
 |------|---------|
 | **AI levels 4–5** | **Fix/remove (UI done)** — Settings + coach show **1–2–3** only; HonestAi still accepts 4–5 if passed in code |
-| **Coach / spectate UX** | **Partial** — coach levels 1–3; still **`?coach=1` URL**; not main-board mode picker yet |
+| **Coach / spectate UX** | **OK (2026-09)** — hub home + start screen **Coach vs AI**; Settings **Coach level** + **AI level**; amber preview before each coach hop; no `?coach=1` URL |
 | **Settings game mode** | **OK (2026-09)** — removed from right panel; start screen only |
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |

@@ -171,6 +171,28 @@ Human: Easy OK on 6×3×5; Medium≈Hard on 8-bead. Fix: Medium soft-miss ~20%; 
 
 ---
 
+## Failure class D — Scope creep & inference (2026-09-03)
+
+**Pattern:** Human gives a one-line product ask. Agent expands it into defaults, “best” labels, docs, and tests — wasting hours undoing work.
+
+**Example:** “Put 3 minute timer for all boards” → agent set `defaultSettings.matchTimer: '3'` and changed `matchTimerBest`. Correct: add `'3'` to `matchTimerOptions` only; default stays `'off'`.
+
+**Why `.mdc` alone failed:**
+
+1. Rules were **passive bullets** — easy to skim, not a hard stop before edit tools.
+2. **Inference bias** — “timer” read as “default timer,” not “dropdown option.”
+3. **Helpfulness bias** — “while I’m here” doc/test/default edits without approval.
+4. **Duplication** — same rule in long `CURSOR_PROMPT_01.md` and short `.mdc`; neither enforced procedurally.
+
+**Corrective action (2026-09-03):**
+
+- `.cursor/rules/instruction-fidelity.mdc` — **STOP gate** (quote ask, approval, file list, out-of-scope) before any edit; **literal parse** table + timer anti-pattern.
+- `.cursor/rules/smartbeads-core.mdc` — STOP gate first; option ≠ default ≠ best label.
+
+Agents must run the STOP gate in the **user-visible message** before calling edit tools. If the gate fails, do not edit.
+
+---
+
 ## Recommendation
 
 Do not soft-pedal language in future status docs. Prefer failing tests over narrative confidence. When adding a new failure cycle, append a dated section here or create `GPT_PROJECT_AUDIT_06P.md` — do not scatter audits in subfolders.

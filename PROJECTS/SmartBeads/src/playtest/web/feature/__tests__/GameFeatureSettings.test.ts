@@ -41,7 +41,7 @@ describe('GameFeatureSettings coach watch', () => {
     expect(COACH_DEFAULT_BOARD_ID).toBe('8x4x6');
   });
 
-  it('buildCoachWatchSettings uses per-side levels within UI cap', () => {
+  it('buildCoachWatchSettings maps cream coach + black AI levels', () => {
     const settings = buildCoachWatchSettings({
       coachRedLevel: 2,
       coachBlueLevel: 5,
