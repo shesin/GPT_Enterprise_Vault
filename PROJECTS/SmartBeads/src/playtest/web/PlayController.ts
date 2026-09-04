@@ -39,6 +39,7 @@ import {
   shouldAcceptResignationDraw,
   thinkBudgetForLevel,
   AiCenterContext,
+  AiMatchTimerContext,
 } from './feature/HonestAi';
 import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
@@ -106,11 +107,23 @@ function aiCenterFromSession(session: FeatureSession): AiCenterContext {
   };
 }
 
+function aiMatchTimerFromSession(session: FeatureSession): AiMatchTimerContext {
+  const settings = session.getSettings();
+  const matchLimitSec = parseMatchSeconds(settings.matchTimer);
+  return {
+    matchLimitSec,
+    globalRemainingSec: session.getGlobalMatchRemaining(),
+    redRemainingSec: session.getP1Clock(),
+    blueRemainingSec: session.getP2Clock(),
+    mode: settings.mode,
+  };
+}
+
 /**
  * Choose an AI path without throwing.
  * Never silently downgrade Hard/Medium to Easy — that broke the difficulty contract.
  * Only emergency fallback: first legal hop if search returns empty.
- * Center rule is always passed so Endgame/Cumulative affect Medium/Hard eval.
+ * Center + match timer rules are passed so eval matches session scoring.
  */
 export function planAiTurnPath(session: FeatureSession, actingPlayer?: Player): Move[] | null {
   const settings = session.getSettings();
@@ -119,10 +132,12 @@ export function planAiTurnPath(session: FeatureSession, actingPlayer?: Player): 
   const variant = session.getBoardVariant();
   const snap = session.getEngine().exportSnapshot();
   const center = aiCenterFromSession(session);
+  const matchTimer = aiMatchTimerFromSession(session);
   try {
     const planned = selectAiTurnPath(variant, level, snap, aiPlayer, {
       budgetMs: thinkBudgetForLevel(level, variant),
       center,
+      matchTimer,
     });
     if (planned?.length) return planned;
   } catch {
@@ -614,10 +629,13 @@ export function bootstrapPlayShell(): void {
     if (!shouldScheduleAutomatedTurn()) return;
     const runId = aiRunId;
     aiThinking = true;
-    setTimeout(() => {
+    const delay = interMoveDelayMs();
+    const run = (): void => {
       if (runId !== aiRunId) return;
       runAutomatedTurn(runId);
-    }, interMoveDelayMs());
+    };
+    if (delay <= 0) run();
+    else setTimeout(run, delay);
   }
 
   function cancelAiWork(): void {
@@ -680,6 +698,7 @@ export function bootstrapPlayShell(): void {
           session.getEngine().exportSnapshot(),
           session.getAiPlayer(),
           aiCenterFromSession(session),
+          aiMatchTimerFromSession(session),
         );
       }
       finishResignation(resigning, acceptDraw);
@@ -1006,6 +1025,10 @@ export function bootstrapPlayShell(): void {
     } else {
       soundEffects.playSlide();
       turnCaptures = 0;
+    }
+
+    if (session.getSettings().mode === 'spectate') {
+      session.clearArmedSelection();
     }
 
     animating = true;

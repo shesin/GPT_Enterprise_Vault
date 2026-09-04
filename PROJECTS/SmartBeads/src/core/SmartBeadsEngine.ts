@@ -271,6 +271,8 @@ export class SmartBeadsEngine {
   }
 
   private evaluatePlyLimitWinner(): void {
+    // Shipped V1 boards use maxPlies: null — match-timer + center tiebreak lives in FeatureSession.evaluateScoreAndEnd().
+    // This path runs only when a board sets maxPlies (e.g. lab Board4).
     const { captures, board } = this.currentState;
 
     if (captures.RED !== captures.BLUE) {

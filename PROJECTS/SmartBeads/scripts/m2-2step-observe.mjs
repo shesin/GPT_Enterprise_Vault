@@ -74,11 +74,10 @@ async function main() {
   await page.waitForTimeout(400);
   const timing = await timingWindow(page);
   record(
-    'observe window is after slide lands and before AI reply starts',
-    timing.HUMAN_PLY_OBSERVE_MS > timing.HUMAN_SLIDE_ANIM_MS
-      && timing.HUMAN_PLY_OBSERVE_MS < timing.HUMAN_SLIDE_ANIM_MS + timing.AI_REPLY_DELAY_MS
-      && timing.AI_REPLY_DELAY_MS === 40
-      && timing.HUMAN_SLIDE_ANIM_MS === 200,
+    'PvE AI: no artificial pre-search delay; slide anim unchanged',
+    timing.AI_REPLY_DELAY_MS === 0
+      && timing.HUMAN_SLIDE_ANIM_MS === 200
+      && timing.HUMAN_PLY_OBSERVE_MS > 0,
     JSON.stringify(timing),
   );
 

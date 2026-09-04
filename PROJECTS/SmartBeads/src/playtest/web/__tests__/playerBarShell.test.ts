@@ -24,6 +24,10 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).toContain('id="ai-level-select"');
     expect(indexHtml).not.toContain('Super Expert');
     expect(indexHtml).toContain('id="resign-btn"');
+    expect(indexHtml).toContain('resign-action--draw');
+    expect(indexHtml).toContain('resign-action--claim');
+    expect(indexHtml).toContain('aria-label="Agree to draw"');
+    expect(indexHtml).not.toContain('id="resign-agree-btn">Agree to draw</button>');
     expect(indexHtml).toContain('id="sfx-mute-btn"');
     expect(indexHtml).not.toContain('controls-pair');
   });

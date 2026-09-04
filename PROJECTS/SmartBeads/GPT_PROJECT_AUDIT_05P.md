@@ -11,14 +11,14 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 ## Test catalog & how to run (2026-09-03)
 
 **Repo root:** `d:\Business Idea\Gpt_Enterprise_Vault`  
-**Verified:** **506 tests**, **44 Jest suites** — all PASS via batched runner (2026-09-03).
+**Verified:** **508 tests**, **44 Jest suites** — partial PASS via batched runner (2026-09-04); full slow-AI batches UNCONFIRMED this session.
 
 ### Commands (use these — do not use bare `jest PROJECTS/SmartBeads`)
 
 | Command | What it runs | Time |
 |---------|----------------|------|
-| `npm run test:jest:fast` | Jest only — **474 tests**, skips slow AI search suites | ~40 s |
-| `npm run test:jest` | **All 506 Jest tests** (6 batches, live output, hard timeouts) | ~7 min |
+| `npm run test:jest:fast` | Jest only — skips slow AI search suites | ~40 s |
+| `npm run test:jest` | **All 508 Jest tests** (6 batches, live output, hard timeouts) | ~7 min |
 | `npm test` | Full Jest + Playwright browser gates (`m2-2step-npm-gate.mjs`) | Jest ~7 min + browser |
 | `node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --batch=<id>` | One batch only | see below |
 
@@ -190,6 +190,16 @@ Human: Easy OK on 6×3×5; Medium≈Hard on 8-bead. Fix: Medium soft-miss ~20%; 
 - `.cursor/rules/smartbeads-core.mdc` — STOP gate first; option ≠ default ≠ best label.
 
 Agents must run the STOP gate in the **user-visible message** before calling edit tools. If the gate fails, do not edit.
+
+---
+
+## Corrective work (2026-09-04)
+
+- **SFX bundle:** Removed ~529k-char `SoundAssets.ts` base64 embed; runtime loads eight WAV files from `public/audio/` via `SoundManifest.ts`. Production JS chunk **~74 kB** (was **~601 kB**).
+- **HonestAi:** Match timer + center passed into eval (Medium/Hard); Easy center tie-break among equal captures; shot clock intentionally omitted.
+- **Resign modal:** Dashed “Agree” / solid “Decline” + `aria-label` — not red/green-only.
+- **Agent rules:** `.cursor/rules/smartbeads-core.mdc` — no stale residue; static assets in `public/`; do not edit `VISION/CLAUDE_TEST_REPORT_05.md`.
+- **Docs synced:** `GPT_PROJECT_STATUS_01P.md`, `PROJECT_MAP_05P.md`, test count **508 / 44 suites**.
 
 ---
 

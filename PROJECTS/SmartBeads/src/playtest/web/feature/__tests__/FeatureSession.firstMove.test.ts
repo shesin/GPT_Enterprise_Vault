@@ -159,10 +159,9 @@ describe('first-ply occupancy (app session — no DOM)', () => {
 });
 
 describe('PvE timing contract', () => {
-  it('matches the 16-bead prototype: 200ms slide, 40ms AI reply', () => {
+  it('200ms slide; no artificial delay before AI search', () => {
     expect(HUMAN_SLIDE_ANIM_MS).toBe(200);
-    expect(AI_REPLY_DELAY_MS).toBe(40);
-    expect(HUMAN_PLY_OBSERVE_MS).toBeGreaterThan(HUMAN_SLIDE_ANIM_MS);
-    expect(HUMAN_PLY_OBSERVE_MS).toBeLessThan(HUMAN_SLIDE_ANIM_MS + AI_REPLY_DELAY_MS);
+    expect(AI_REPLY_DELAY_MS).toBe(0);
+    expect(HUMAN_PLY_OBSERVE_MS).toBeGreaterThan(0);
   });
 });

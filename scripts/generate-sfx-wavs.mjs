@@ -289,20 +289,9 @@ const victoryWav = generateVictoryWav();
 const defeatWav = generateDefeatWav();
 const drawWav = generateDrawWav();
 
-const assetDir = path.resolve(rootDir, 'PROJECTS/SmartBeads/src/playtest/web/audio/assets');
 const publicDir = path.resolve(rootDir, 'public/audio');
 
-fs.mkdirSync(assetDir, { recursive: true });
 fs.mkdirSync(publicDir, { recursive: true });
-
-fs.writeFileSync(path.join(assetDir, 'sfx_select.wav'), selectWav);
-fs.writeFileSync(path.join(assetDir, 'sfx_slide.wav'), slideWav);
-fs.writeFileSync(path.join(assetDir, 'sfx_capture.wav'), captureWav);
-fs.writeFileSync(path.join(assetDir, 'sfx_flourish.wav'), flourishWav);
-fs.writeFileSync(path.join(assetDir, 'sfx_start.wav'), startWav);
-fs.writeFileSync(path.join(assetDir, 'sfx_victory.wav'), victoryWav);
-fs.writeFileSync(path.join(assetDir, 'sfx_defeat.wav'), defeatWav);
-fs.writeFileSync(path.join(assetDir, 'sfx_draw.wav'), drawWav);
 
 fs.writeFileSync(path.join(publicDir, 'sfx_select.wav'), selectWav);
 fs.writeFileSync(path.join(publicDir, 'sfx_slide.wav'), slideWav);
@@ -313,23 +302,4 @@ fs.writeFileSync(path.join(publicDir, 'sfx_victory.wav'), victoryWav);
 fs.writeFileSync(path.join(publicDir, 'sfx_defeat.wav'), defeatWav);
 fs.writeFileSync(path.join(publicDir, 'sfx_draw.wav'), drawWav);
 
-// Generate SoundAssets.ts
-const tsModule = `/**
- * Pure Sweet Acoustic Sound Assets (Candy Crush Style Reference).
- * Handcrafted acoustic Marimba, Rosewood Bar, Concert Harp, and Kalimba.
- * 100% royalty-free CC0 Public Domain.
- */
-
-export const SFX_SELECT_DATA_URI = 'data:audio/wav;base64,${selectWav.toString('base64')}';
-export const SFX_SLIDE_DATA_URI = 'data:audio/wav;base64,${slideWav.toString('base64')}';
-export const SFX_CAPTURE_DATA_URI = 'data:audio/wav;base64,${captureWav.toString('base64')}';
-export const SFX_FLOURISH_DATA_URI = 'data:audio/wav;base64,${flourishWav.toString('base64')}';
-export const SFX_START_DATA_URI = 'data:audio/wav;base64,${startWav.toString('base64')}';
-export const SFX_VICTORY_DATA_URI = 'data:audio/wav;base64,${victoryWav.toString('base64')}';
-export const SFX_DEFEAT_DATA_URI = 'data:audio/wav;base64,${defeatWav.toString('base64')}';
-export const SFX_DRAW_DATA_URI = 'data:audio/wav;base64,${drawWav.toString('base64')}';
-`;
-
-fs.writeFileSync(path.resolve(rootDir, 'PROJECTS/SmartBeads/src/playtest/web/audio/SoundAssets.ts'), tsModule);
-
-console.log('Successfully generated pure sweet Candy Crush style acoustic WAV audio assets and SoundAssets.ts');
+console.log('Wrote 8 SFX WAV files to public/audio/ — runtime loads via SoundManifest.ts');

@@ -1,9 +1,8 @@
 import { BoardVariant } from '../../../config/BoardConfig';
 import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
 import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
-import { CenterRule } from './GameFeatureSettings';
+import { AiLevel, CenterRule, GameMode } from './GameFeatureSettings';
 import { countCenterOccupancy } from './centerScoring';
-import { AiLevel } from './GameFeatureSettings';
 
 export interface TurnEnd {
   snapshot: { state: GameState; chainPieceId: number | null };
@@ -32,12 +31,31 @@ export interface AiCenterContext {
   cumulativeBlue?: number;
 }
 
+/** Match timer state for AI eval — shot clock intentionally omitted (AI moves too fast). */
+export interface AiMatchTimerContext {
+  matchLimitSec: number;
+  /** PvE / spectate shared countdown; 0 when per-side clocks are used. */
+  globalRemainingSec: number;
+  redRemainingSec: number;
+  blueRemainingSec: number;
+  mode: GameMode;
+}
+
+export const MATCH_TIMER_OFF: AiMatchTimerContext = {
+  matchLimitSec: 0,
+  globalRemainingSec: 0,
+  redRemainingSec: 0,
+  blueRemainingSec: 0,
+  mode: 'pve',
+};
+
 export interface SelectAiOptions {
   budgetMs?: number;
   rng?: () => number;
   easySoftMissRate?: number;
   mediumSoftMissRate?: number;
   center?: AiCenterContext;
+  matchTimer?: AiMatchTimerContext;
 }
 
 export interface SearchCompletionReport {
@@ -101,8 +119,77 @@ function centerScoreForPlayer(
   return cum + occ;
 }
 
+export function matchTimerActive(matchTimer: AiMatchTimerContext | undefined): boolean {
+  return !!matchTimer && matchTimer.matchLimitSec > 0;
+}
+
+/** 0 = plenty of time, 1 = critical (match about to force score/end). */
+function timerUrgency(matchTimer: AiMatchTimerContext | undefined, aiPlayer: Player): number {
+  if (!matchTimerActive(matchTimer)) return 0;
+  const t = matchTimer!;
+
+  if (t.mode === 'pvp') {
+    const aiSec = aiPlayer === 'RED' ? t.redRemainingSec : t.blueRemainingSec;
+    const limit = t.matchLimitSec;
+    if (aiSec <= 0) return 1;
+    const frac = aiSec / limit;
+    if (frac >= 0.2) return 0;
+    return 1 - frac / 0.2;
+  }
+
+  const frac = t.globalRemainingSec / t.matchLimitSec;
+  if (frac >= 0.12) return 0;
+  return 1 - frac / 0.12;
+}
+
+function centerEvalWeight(
+  state: GameState,
+  aiPlayer: Player,
+  center: AiCenterContext | undefined,
+  matchTimer: AiMatchTimerContext | undefined,
+): number {
+  if (!center || center.centerRule === 'off') return 0;
+
+  let weight = CENTER_EVAL_WEIGHT;
+  const urgency = timerUrgency(matchTimer, aiPlayer);
+  if (urgency > 0) {
+    const capDiff = Math.abs(state.captures.RED - state.captures.BLUE);
+    if (capDiff <= 1) weight += Math.round(urgency * 42);
+    else if (capDiff <= 2) weight += Math.round(urgency * 18);
+  }
+  return weight;
+}
+
+function matchTimerEvalAdjust(
+  state: GameState,
+  aiPlayer: Player,
+  matchTimer: AiMatchTimerContext | undefined,
+): number {
+  if (!matchTimerActive(matchTimer)) return 0;
+  const human = opponentOf(aiPlayer);
+  const urgency = timerUrgency(matchTimer, aiPlayer);
+  let adj = 0;
+
+  if (matchTimer!.mode === 'pvp') {
+    const aiSec = aiPlayer === 'RED' ? matchTimer!.redRemainingSec : matchTimer!.blueRemainingSec;
+    const oppSec = aiPlayer === 'RED' ? matchTimer!.blueRemainingSec : matchTimer!.redRemainingSec;
+    const lead = aiSec - oppSec;
+    if (lead > 45) adj += 10;
+    else if (lead < -45) adj -= 12;
+    else if (lead < -20) adj -= 6;
+    return adj;
+  }
+
+  if (urgency > 0) {
+    const capLead = state.captures[aiPlayer] - state.captures[human];
+    if (capLead < 0) adj -= Math.round(urgency * 24);
+    else if (capLead > 0) adj += Math.round(urgency * 12);
+  }
+  return adj;
+}
+
 /**
- * Material + mobility + center (when rule is on).
+ * Material + mobility + center (when rule is on) + match-timer pressure.
  * Center must be valued whenever Cumulative/Endgame is enabled — feature cannot be half-wired.
  */
 export function evaluate(
@@ -110,6 +197,7 @@ export function evaluate(
   variant: BoardVariant,
   aiPlayer: Player = 'BLUE',
   center?: AiCenterContext,
+  matchTimer?: AiMatchTimerContext,
 ): number {
   const human = opponentOf(aiPlayer);
   const aiCount = countPieces(state, aiPlayer);
@@ -124,8 +212,10 @@ export function evaluate(
   if (center && center.centerRule !== 'off') {
     const aiC = centerScoreForPlayer(state, aiPlayer, center);
     const humanC = centerScoreForPlayer(state, human, center);
-    score += (aiC - humanC) * CENTER_EVAL_WEIGHT;
+    score += (aiC - humanC) * centerEvalWeight(state, aiPlayer, center, matchTimer);
   }
+
+  score += matchTimerEvalAdjust(state, aiPlayer, matchTimer);
   return score;
 }
 
@@ -219,12 +309,13 @@ function minimaxTurns(
   aiPlayer: Player,
   deadlineMs: number,
   center: AiCenterContext | undefined,
+  matchTimer: AiMatchTimerContext | undefined,
 ): MinimaxResult {
   if (Date.now() > deadlineMs) {
-    return { score: evaluate(snapshot.state, variant, aiPlayer, center), complete: false };
+    return { score: evaluate(snapshot.state, variant, aiPlayer, center, matchTimer), complete: false };
   }
   if (depth === 0) {
-    return { score: evaluate(snapshot.state, variant, aiPlayer, center), complete: true };
+    return { score: evaluate(snapshot.state, variant, aiPlayer, center, matchTimer), complete: true };
   }
 
   const player = maximizing ? aiPlayer : opponentOf(aiPlayer);
@@ -242,7 +333,7 @@ function minimaxTurns(
         break;
       }
       const child = minimaxTurns(
-        variant, end.snapshot, depth - 1, false, alpha, beta, branchCap, aiPlayer, deadlineMs, center,
+        variant, end.snapshot, depth - 1, false, alpha, beta, branchCap, aiPlayer, deadlineMs, center, matchTimer,
       );
       if (!child.complete) complete = false;
       if (child.score > best) best = child.score;
@@ -260,7 +351,7 @@ function minimaxTurns(
       break;
     }
     const child = minimaxTurns(
-      variant, end.snapshot, depth - 1, true, alpha, beta, branchCap, aiPlayer, deadlineMs, center,
+      variant, end.snapshot, depth - 1, true, alpha, beta, branchCap, aiPlayer, deadlineMs, center, matchTimer,
     );
     if (!child.complete) complete = false;
     if (child.score < best) best = child.score;
@@ -279,10 +370,11 @@ function scoreRootEnd(
   aiPlayer: Player,
   deadlineMs: number,
   center: AiCenterContext | undefined,
+  matchTimer: AiMatchTimerContext | undefined,
 ): MinimaxResult {
   if (replyDepth <= 0) {
     return {
-      score: evaluate(end.snapshot.state, variant, aiPlayer, center),
+      score: evaluate(end.snapshot.state, variant, aiPlayer, center, matchTimer),
       complete: true,
     };
   }
@@ -297,6 +389,7 @@ function scoreRootEnd(
     aiPlayer,
     deadlineMs,
     center,
+    matchTimer,
   );
 }
 
@@ -312,6 +405,7 @@ function normalizeOptions(budgetMsOrOptions: number | SelectAiOptions): Required
       easySoftMissRate: EASY_SOFT_MISS_RATE,
       mediumSoftMissRate: MEDIUM_SOFT_MISS_RATE,
       center: { centerRule: 'off' },
+      matchTimer: MATCH_TIMER_OFF,
     };
   }
   return {
@@ -320,7 +414,42 @@ function normalizeOptions(budgetMsOrOptions: number | SelectAiOptions): Required
     easySoftMissRate: budgetMsOrOptions.easySoftMissRate ?? EASY_SOFT_MISS_RATE,
     mediumSoftMissRate: budgetMsOrOptions.mediumSoftMissRate ?? MEDIUM_SOFT_MISS_RATE,
     center: budgetMsOrOptions.center ?? { centerRule: 'off' },
+    matchTimer: budgetMsOrOptions.matchTimer ?? MATCH_TIMER_OFF,
   };
+}
+
+/** Max-capture pool; tie-break by center when rule is on (Easy contract). */
+function bestCapturePool(
+  ends: TurnEnd[],
+  snapshotState: GameState,
+  aiPlayer: Player,
+  center: AiCenterContext | undefined,
+): TurnEnd[] {
+  let bestCaps = -1;
+  let pool: TurnEnd[] = [];
+  for (const end of ends) {
+    const captures = pathCaptureCount(snapshotState, end.path);
+    if (captures > bestCaps) {
+      bestCaps = captures;
+      pool = [end];
+    } else if (captures === bestCaps) {
+      pool.push(end);
+    }
+  }
+  if (pool.length <= 1 || !center || center.centerRule === 'off') return pool;
+
+  let bestCenter = -Infinity;
+  let bestPool: TurnEnd[] = [];
+  for (const end of pool) {
+    const c = centerScoreForPlayer(end.snapshot.state, aiPlayer, center);
+    if (c > bestCenter) {
+      bestCenter = c;
+      bestPool = [end];
+    } else if (c === bestCenter) {
+      bestPool.push(end);
+    }
+  }
+  return bestPool.length ? bestPool : pool;
 }
 
 /** Capture-aware soft miss used by Easy (always) and Medium (probabilistic). */
@@ -351,13 +480,14 @@ function searchLayerAtExactDepth(
   aiPlayer: Player,
   deadlineMs: number,
   center: AiCenterContext | undefined,
+  matchTimer: AiMatchTimerContext | undefined,
 ): { best: TurnEnd[]; completeCount: number } {
   if (reply <= 0) {
     let best: TurnEnd[] = [];
     let bestScore = -Infinity;
     for (const end of ends) {
       const score = endScore(end, snapshot.state, {
-        score: evaluate(end.snapshot.state, variant, aiPlayer, center),
+        score: evaluate(end.snapshot.state, variant, aiPlayer, center, matchTimer),
         complete: true,
       });
       if (score > bestScore) {
@@ -376,7 +506,7 @@ function searchLayerAtExactDepth(
 
   for (const end of ends) {
     const result = scoreRootEnd(
-      variant, snapshot.state, end, reply, replyBranch, aiPlayer, deadlineMs, center,
+      variant, snapshot.state, end, reply, replyBranch, aiPlayer, deadlineMs, center, matchTimer,
     );
     if (!result.complete) continue;
     completeCount += 1;
@@ -402,6 +532,7 @@ function searchBestAtExactDepth(
   startBudgetMs: number,
   level: AiLevel,
   center: AiCenterContext | undefined,
+  matchTimer: AiMatchTimerContext | undefined,
 ): { best: TurnEnd[]; achievedReplyPlies: number; completeAtAchievedDepth: number } {
   const maxBudget = Math.max(startBudgetMs, maxSearchBudgetMs(level));
   let budgetMs = startBudgetMs;
@@ -409,7 +540,7 @@ function searchBestAtExactDepth(
   while (budgetMs <= maxBudget) {
     const deadlineMs = Date.now() + budgetMs;
     const layer = searchLayerAtExactDepth(
-      variant, snapshot, ends, reply, replyBranch, aiPlayer, deadlineMs, center,
+      variant, snapshot, ends, reply, replyBranch, aiPlayer, deadlineMs, center, matchTimer,
     );
     if (layer.completeCount === ends.length && layer.best.length) {
       return {
@@ -422,7 +553,7 @@ function searchBestAtExactDepth(
   }
 
   const layer = searchLayerAtExactDepth(
-    variant, snapshot, ends, reply, replyBranch, aiPlayer, Infinity, center,
+    variant, snapshot, ends, reply, replyBranch, aiPlayer, Infinity, center, matchTimer,
   );
   return {
     best: layer.best.length ? layer.best : [ends[0]],
@@ -462,17 +593,7 @@ export function selectAiTurnPath(
       return softMissPath(ends, snapshot.state, opts.rng);
     }
 
-    let bestCaps = -1;
-    let pool: TurnEnd[] = [];
-    for (const end of ends) {
-      const captures = pathCaptureCount(snapshot.state, end.path);
-      if (captures > bestCaps) {
-        bestCaps = captures;
-        pool = [end];
-      } else if (captures === bestCaps) {
-        pool.push(end);
-      }
-    }
+    const pool = bestCapturePool(ends, snapshot.state, aiPlayer, opts.center);
     return pickRandomEnd(pool, opts.rng);
   }
 
@@ -483,7 +604,7 @@ export function selectAiTurnPath(
   const reply = aiOpponentReplyPlies(level);
   const replyBranch = replyBranchForLevel(level);
   const { best } = searchBestAtExactDepth(
-    variant, snapshot, ends, reply, replyBranch, aiPlayer, opts.budgetMs, level, opts.center,
+    variant, snapshot, ends, reply, replyBranch, aiPlayer, opts.budgetMs, level, opts.center, opts.matchTimer,
   );
 
   return best[Math.floor(opts.rng() * best.length)].path;
@@ -504,7 +625,7 @@ export function probeSearchCompletion(
   const reply = aiOpponentReplyPlies(level);
   const replyBranch = replyBranchForLevel(level);
   const { achievedReplyPlies, completeAtAchievedDepth } = searchBestAtExactDepth(
-    variant, snapshot, ends, reply, replyBranch, aiPlayer, opts.budgetMs, level, opts.center,
+    variant, snapshot, ends, reply, replyBranch, aiPlayer, opts.budgetMs, level, opts.center, opts.matchTimer,
   );
   return {
     targetReplyPlies: reply,
@@ -520,8 +641,9 @@ export function shouldAcceptResignationDraw(
   snapshot: { state: GameState; chainPieceId: number | null },
   aiPlayer: Player = 'BLUE',
   center?: AiCenterContext,
+  matchTimer?: AiMatchTimerContext,
 ): boolean {
-  const score = evaluate(snapshot.state, variant, aiPlayer, center);
+  const score = evaluate(snapshot.state, variant, aiPlayer, center, matchTimer);
   return score <= 0;
 }
 

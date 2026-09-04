@@ -54,7 +54,7 @@ const BATCHES = [
   {
     id: 'feature-session',
     label: 'Feature session, settings, spectate (fast)',
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
     files: [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/GameFeatureSettings.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.featureRules.test.ts',

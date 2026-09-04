@@ -217,28 +217,89 @@ describe('HonestAi difficulty contract', () => {
     expect(onCenter || movedToCenter).toBe(true);
   });
 
-  it('Easy ignores center eval even when endgame rule is on (capture-only contract)', () => {
+  it('evaluate boosts center value when PvE match timer is almost expired', () => {
+    const engine = new SmartBeadsEngine('6x3x5');
+    clearBoard(engine);
+    setOcc(engine, 'A21', 'BLUE');
+    setOcc(engine, 'A00', 'BLUE');
+    setOcc(engine, 'A40', 'RED');
+    setOcc(engine, 'A41', 'RED');
+    const state = engine.getState();
+    state.captures.RED = 2;
+    state.captures.BLUE = 2;
+    const center = { centerRule: 'endgame' as const };
+    const timerHigh = {
+      matchLimitSec: 180,
+      globalRemainingSec: 150,
+      redRemainingSec: 0,
+      blueRemainingSec: 0,
+      mode: 'pve' as const,
+    };
+    const timerLow = {
+      matchLimitSec: 180,
+      globalRemainingSec: 8,
+      redRemainingSec: 0,
+      blueRemainingSec: 0,
+      mode: 'pve' as const,
+    };
+    const scoreHigh = evaluate(state, '6x3x5', 'BLUE', center, timerHigh);
+    const scoreLow = evaluate(state, '6x3x5', 'BLUE', center, timerLow);
+    expect(scoreLow).toBeGreaterThan(scoreHigh);
+  });
+
+  it('Medium prefers center when match timer almost expired and captures tied', () => {
     const engine = new SmartBeadsEngine('6x3x5');
     clearBoard(engine);
     setOcc(engine, 'A11', 'BLUE');
-    setOcc(engine, 'A21', 'RED');
     setOcc(engine, 'A00', 'RED');
+    setOcc(engine, 'A02', 'RED');
+    setOcc(engine, 'A40', 'BLUE');
+    engine.getState().currentPlayer = 'BLUE';
+    engine.getState().captures.RED = 2;
+    engine.getState().captures.BLUE = 2;
+    const snap = engine.exportSnapshot();
+    const centerId = engine.getState().board.intersections.find((p) => p.label === 'A21')!.id;
+
+    const path = selectAiTurnPath('6x3x5', 2, snap, 'BLUE', {
+      budgetMs: 1500,
+      rng: () => 0,
+      mediumSoftMissRate: 0,
+      center: { centerRule: 'endgame' },
+      matchTimer: {
+        matchLimitSec: 180,
+        globalRemainingSec: 5,
+        redRemainingSec: 0,
+        blueRemainingSec: 0,
+        mode: 'pve',
+      },
+    });
+    expect(path).not.toBeNull();
+    const eng2 = new SmartBeadsEngine('6x3x5');
+    eng2.loadSnapshot(snap);
+    applyPath(eng2, path!);
+    const onCenter = eng2.getState().board.intersections[centerId]?.occupant === 'BLUE';
+    const movedToCenter = path!.some((m) => m.to === centerId);
+    expect(onCenter || movedToCenter).toBe(true);
+  });
+
+  it('Easy tie-breaks equal-capture moves toward center when endgame rule is on', () => {
+    const engine = new SmartBeadsEngine('6x3x5');
+    clearBoard(engine);
+    setOcc(engine, 'A11', 'BLUE');
+    setOcc(engine, 'A00', 'RED');
+    setOcc(engine, 'A02', 'RED');
     setOcc(engine, 'A40', 'BLUE');
     engine.getState().currentPlayer = 'BLUE';
     const snap = engine.exportSnapshot();
-    const withCenter = selectAiTurnPath('6x3x5', 1, snap, 'BLUE', {
+    const centerId = engine.getState().board.intersections.find((p) => p.label === 'A21')!.id;
+
+    const path = selectAiTurnPath('6x3x5', 1, snap, 'BLUE', {
       budgetMs: 400,
       rng: () => 0,
       easySoftMissRate: 0,
       center: { centerRule: 'endgame' },
     });
-    const withoutCenter = selectAiTurnPath('6x3x5', 1, snap, 'BLUE', {
-      budgetMs: 400,
-      rng: () => 0,
-      easySoftMissRate: 0,
-      center: { centerRule: 'off' },
-    });
-    expect(withCenter).toEqual(withoutCenter);
+    expect(path!.some((m) => m.to === centerId)).toBe(true);
   });
 });
 

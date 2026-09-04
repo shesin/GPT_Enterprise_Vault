@@ -44,9 +44,9 @@ SmartBeads/
 │   │   │   │   └── __tests__/         # firstMove, turnControl, resignation, difficulty,
 │   │   │   │                          #   featureRules, clockPolicy, allBoards.smoke
 │   │   │   ├── audio/
-│   │   │   │   ├── SoundEffects.ts    # Procedural sweet-acoustic SFX + BGM
-│   │   │   │   ├── SoundAssets.ts
-│   │   │   │   └── assets/            # Optional sample/voice assets
+│   │   │   │   ├── SoundEffects.ts    # Web Audio — fetches WAV from public/audio/
+│   │   │   │   ├── SoundManifest.ts   # Runtime SFX URL map
+│   │   │   │   └── __tests__/SoundEffects.test.ts
 │   │   │   ├── layout/
 │   │   │   │   ├── boardProjection.ts
 │   │   │   │   ├── boardVisualProfile.ts
@@ -111,9 +111,9 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`main.ts`** — calls `bootstrapPlayShell()`.
 - **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`.
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. No 3-fold repetition in production.
-- **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center valued when rule is on.
+- **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy + center tie-break), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center + match timer in eval when rules on.
 - **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.
-- **`audio/SoundEffects.ts`** — procedural SFX, start overlay unlock, end celebration audio.
+- **`audio/SoundEffects.ts`** — fetches named WAV files from `public/audio/` via `SoundManifest.ts`; start overlay unlock; end celebration audio.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
 - **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas. Board lines are stroked straight from `board.connections`, so a drawn line is always a legal slide; `v1GeometryCaptureAudit.test.ts` pins that with a recording 2D context.

@@ -1,6 +1,6 @@
 import { SoundEffects, SoundEvent } from '../SoundEffects';
 
-describe('SoundEffects real CC0 studio recorded acoustic sound manager', () => {
+describe('SoundEffects event dispatch and mute/volume', () => {
   let sfx: SoundEffects;
   let receivedEvents: SoundEvent[];
   let unsubscribe: () => void;

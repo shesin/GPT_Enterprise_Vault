@@ -330,8 +330,14 @@ export function drawCanvasBoard(
     ctx.fillStyle = 'rgba(212,168,75,0.4)';
     ctx.fill();
 
-    if (legalTargets.includes(node.id) && !animating) {
-      drawAmberOrangeRing(ctx, x, y, 16);
+    const selectedOccupant =
+      selectedId !== null ? board.intersections[selectedId]?.occupant : undefined;
+    if (legalTargets.includes(node.id) && !anim) {
+      if (selectedOccupant === 'BLUE') {
+        drawLastMoveNodeRing(ctx, x, y);
+      } else {
+        drawAmberOrangeRing(ctx, x, y, 16);
+      }
     }
 
     if (node.occupant && node.id !== hideFrom && node.id !== hideTo) {
@@ -347,7 +353,11 @@ export function drawCanvasBoard(
       const r = (isSelected ? 18 : 16) * pulse;
       drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
       if (isSelected) {
-        drawAmberOrangeRing(ctx, x, y, r);
+        if (node.occupant === 'BLUE') {
+          drawLastMoveNodeRing(ctx, x, y);
+        } else {
+          drawAmberOrangeRing(ctx, x, y, r);
+        }
       }
     }
   }
@@ -375,14 +385,12 @@ export function drawCanvasBoard(
       const fromPt = project(fromNode);
       const toPt = project(toNode);
       const ease = anim.t < 0.5 ? 2 * anim.t * anim.t : 1 - ((-2 * anim.t + 2) ** 2) / 2;
-      drawPieceAt(
-        ctx,
-        fromPt.x + (toPt.x - fromPt.x) * ease,
-        fromPt.y + (toPt.y - fromPt.y) * ease,
-        anim.player,
-        17,
-        1,
-      );
+      const mx = fromPt.x + (toPt.x - fromPt.x) * ease;
+      const my = fromPt.y + (toPt.y - fromPt.y) * ease;
+      drawPieceAt(ctx, mx, my, anim.player, 17, 1);
+      if (anim.player === 'BLUE') {
+        drawLastMoveNodeRing(ctx, mx, my);
+      }
     }
   }
 }

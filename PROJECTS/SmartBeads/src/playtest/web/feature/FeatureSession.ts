@@ -270,6 +270,13 @@ export class FeatureSession {
     return this.armSelection(from);
   }
 
+  /** Drop coach/AI preview selection before the hop animates (chain stays armed). */
+  clearArmedSelection(): void {
+    if (this.engine.getChainPieceId() !== null) return;
+    this.selectedId = null;
+    this.uiState = 'idle';
+  }
+
   private armSelection(nodeId: number): boolean {
     const chain = this.engine.getChainPieceId();
     if (chain !== null) {

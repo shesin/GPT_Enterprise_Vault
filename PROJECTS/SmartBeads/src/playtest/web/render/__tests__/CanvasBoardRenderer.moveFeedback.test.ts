@@ -54,7 +54,7 @@ describe('CanvasBoardRenderer move feedback', () => {
     })).not.toThrow();
   });
 
-  it('uses amber for cream selection/legal targets; lime last-move on black beads and empty squares', () => {
+  it('uses lime ring on selected black bead, not amber', () => {
     const strokeStyles: string[] = [];
     const gradient = { addColorStop: () => {} };
     const ctx = {
@@ -77,31 +77,33 @@ describe('CanvasBoardRenderer move feedback', () => {
       set strokeStyle(v: string) { strokeStyles.push(v); },
     } as unknown as CanvasRenderingContext2D;
 
-    const engine = new SmartBeadsEngine('6x3x5');
+    const engine = new SmartBeadsEngine('8x4x6');
     const board = engine.getState().board;
+    const blue = board.intersections.find((n) => n.occupant === 'BLUE');
     const emptyTarget = board.intersections.findIndex((n) => !n.occupant);
+    expect(blue).toBeDefined();
     const canvas = {
-      width: 420,
+      width: 560,
       height: 560,
       getContext: () => ctx,
-      getBoundingClientRect: () => ({ left: 0, top: 0, width: 420, height: 560 }),
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
     } as unknown as HTMLCanvasElement;
 
     drawCanvasBoard(canvas, {
       board,
-      currentPlayer: 'RED',
+      currentPlayer: 'BLUE',
       gameOver: false,
-      selectedId: board.intersections.findIndex((n) => n.occupant === 'RED'),
+      selectedId: blue!.id,
       legalTargets: emptyTarget >= 0 ? [emptyTarget] : [],
       chainPieceId: null,
       anim: null,
       turnPulse: 0,
-      lastMove: { from: 9, to: 6, player: 'BLUE' },
+      lastMove: null,
       capturePulses: [],
     });
 
-    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(true);
-    expect(strokeStyles.some((s) => s.includes('60,184,154'))).toBe(false);
+    expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(false);
   });
 
   it('draws lime last-move ring on black bead, not on cream bead', () => {

@@ -19,7 +19,7 @@ The production codebase is fully implemented in clean TypeScript (`src/`), with 
 
 ## 7 Locked V1 Boards Status
 
-All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**506 tests**, 44 suites — Jest verified 2026-09-03 via `npm run test:jest`; browser gates UNCONFIRMED this session):
+All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**508 tests**, 44 suites — Jest verified 2026-09-04 via targeted runs + `test:jest:fast` partial; full `test:jest` UNCONFIRMED this session; browser gates UNCONFIRMED):
 
 | # | Board Variant | Geometry & Architecture | Status |
 |---|---|---|---|
@@ -47,7 +47,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Inert Opponent Beads:** Only active player beads glow and are clickable. Opponent beads are 100% inert in all states (idle, selected, mid-chain).
 - **Prominent Selection Ring:** Selected active bead is highlighted with an unmistakable glowing red/orange double-ring.
 - **Target Highlighting:** Legal landing squares and selected cream bead use **amber/orange** rings. Lime last-move rings: **black beads and empty squares only** (not cream). **TESTED** (`CanvasBoardRenderer.moveFeedback.test.ts`).
-- **Audio & Sound Effects (`SoundEffects.ts`):** Pure sweet acoustic instrument audio suite (Concert harp & celesta glissando kickoff, soft wooden piece settle, luscious rosewood marimba strike C5, rising major triad pitch scaling on multi-jumps, ascending 4-note marimba & celesta flourish C5-E5-G5-C6 on 3+ hops, triumphant marimba victory celebration, gentle comforting kalimba defeat resolution, and peaceful twin chime draw). Zero harshness, zero white noise. Default BGM set to "Cool Puzzle Groovin' 2".
+- **Audio & Sound Effects (`SoundEffects.ts`):** Eight named WAV files in `public/audio/` (loaded at runtime via `SoundManifest.ts` — not embedded in JS bundle). Soft wooden slide, marimba capture with rising pitch on chains, flourish on 3+ hops, start/victory/defeat/draw stingers. **TESTED** (`SoundEffects.test.ts` — event dispatch; decode UNCONFIRMED in Jest).
 - **Start Screen Overlay & First-Tap Unlock (Option B):** Gold-accented start card over board (mode select + **▶ START GAME**) unlocks browser AudioContext and BGM. **Start** always opens with human (cream / RED); AI must not move first. **New game / Play again** alternates opener (game 2 → AI in PvE). **Board switch** returns to start overlay with human first (does not consume alternation counter). Match then runs with animated kickoff banner and fanfare.
 - **Production play shell layout (2026-08):** Four-column shell — left play panel (AI top, match `mm:ss` centre, human bottom, shot rings, capture/centre/beads), board-only centre column, settings right, optional ad column. Bottom controls: single nowrap row (Resign · Sound · Undo · New game). Viewport height-first sizing on `.shell`; 16-bead bump (`shell--board-16`, max frame height 860px); verified at 1366×768 and 1280×720 @ 100% zoom.
 - **Cream-camp orientation:** Jest gate `creamCampRendersLower.test.ts` — on every V1 board, cream (RED) beads average lower on canvas than ebony (BLUE). Board6 starting camps aligned to bottom convention.
@@ -63,7 +63,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Levels 1–3 (player-facing target):** Casual (0 reply) · Standard (1 reply) · Expert (depth-2). **TESTED** (`HonestAi.searchCompletion.test.ts` — all 7 boards, opening + 16 midgame).
 - **Depth-2 (Expert):** Full search required; extends think time up to ~45s on large boards rather than falling back to depth-1. Board-aware budgets (`thinkBudgetForLevel(level, variant)`).
 - **Still in code but improper UI:** levels **4–5** (Super Expert / +) — same depth as 3, extra time only. **Pending removal** per human direction (UI → 1–2–3 only).
-- **Easy / Medium:** unchanged contract; center eval on 2–3 when rule on. **TESTED** (`HonestAi.difficultyTiers.test.ts`).
+- **Easy / Medium / Hard:** unchanged contract; center + **match timer** in eval on levels 2–3 when rules on; Easy center tie-break among equal captures. **TESTED** (`HonestAi.difficultyTiers.test.ts`).
 - **3-fold repetition:** removed from production. See `GPT_PROJECT_AUDIT_05P.md`.
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
@@ -73,13 +73,13 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
   - `centerRule: 'off'` default on all 7 boards (End-Game/Cumulative selectable per board catalog).
   - `matchTimer: 'off'` and `shotClock: 'off'` across all 7 games.
   - `matchTimerOptions` include **`'3'`** on all 7 boards (user-selectable; default stays **off**).
-- **Center scoring contract:** End-Game/Cumulative tiebreak in `evaluateScoreAndEnd()` and on engine game-over when captures are tied; cumulative accrual each completed turn; Medium/Hard AI eval via `planAiTurnPath`. Independent of match timer on/off.
+- **Center scoring contract:** End-Game/Cumulative tiebreak in `evaluateScoreAndEnd()` on match-timer expiry; cumulative accrual each completed turn; Medium/Hard AI eval + match-timer urgency via `planAiTurnPath`. Independent of match timer on/off for center rule storage.
 - **Clocks during AI:** shot/match timers tick while Ebony thinks (`shellTimerShouldSkip`); shot expiry on BLUE awards Ivory.
-- **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`).
+- **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`). Modal buttons use **dashed vs solid** styling (not red/green) for colorblind safety.
 - **Alternating opener (local):** Start overlay → human (cream) first; **New game / Play again** alternates opener in PvE. **FUNCTIONAL** (Jest + browser policy checks).
 
 ### 5. Test & Quality Gates
-- **Jest (506 tests, 44 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog. Batched runner: `scripts/run-jest-batched.mjs`.
+- **Jest (508 tests, 44 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog. Batched runner: `scripts/run-jest-batched.mjs`.
 - **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback` — last-move rings + capture pulse), Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs`).
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
@@ -98,7 +98,9 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **Settings game mode** | **OK (2026-09)** — removed from right panel; start screen only |
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |
-| **Center** (Off / End-game / Cumulative) | **OK** — Jest + AI eval on levels 2–3 |
+| **Center** (Off / End-game / Cumulative) | **OK** — Jest + AI eval + match-timer urgency on levels 2–3 |
+| **SFX bundle** | **OK (2026-09-04)** — WAV in `public/audio/`; main JS ~74 kB (was ~601 kB with embed) |
+| **Resign modal a11y** | **OK (2026-09-04)** — dashed/solid + labels; not red/green-only |
 | **Shot clock** | **OK** — ticks during AI; expiry tested |
 | **Match timer** | **OK** — ticks + center tiebreak tested; **mm:ss text only** (no radial ring — incomplete UI) |
 | **Engine** (moves, captures, chains) | **OK** — Jest + browser gates |
@@ -116,8 +118,8 @@ Run from: `d:\Business Idea\Gpt_Enterprise_Vault`
 
 **Tests**
 ```powershell
-npm run test:jest:fast   # 474 Jest tests, ~40s
-npm run test:jest        # all 506 Jest tests, ~7 min
+npm run test:jest:fast   # skips slow AI suites, ~40s
+npm run test:jest        # all 508 Jest tests, ~7 min
 npm test                 # Jest + browser gates
 ```
 Details: **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog.

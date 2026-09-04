@@ -16,3 +16,5 @@ When work touches `PROJECTS/SmartBeads/`:
 - **One playtest bug** → failing test + suite sweep + related fixes
 - **Prototype ≠ production** — no shared code with `src/`
 - **Protected docs** — do not edit `VISION_05P.md` or `GPT_PROJECT_RULES_01P.md` to fit code
+- **No stale residue** — after a fix pass: remove dead/wrong code, false claims, and inline asset embeds that belong in `public/`; sync `GPT_PROJECT_STATUS_01P.md` + `PROJECT_MAP_05P.md` + `GPT_PROJECT_AUDIT_05P.md` when counts or behaviour change; **never** edit `VISION/CLAUDE_TEST_REPORT_05.md` (not agent scope)
+- **Static assets** — SFX/images load from `public/` at runtime; do not re-inline large base64 blobs into TS bundles
