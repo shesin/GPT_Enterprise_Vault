@@ -9,7 +9,15 @@ alwaysApply: true
 - **Doubt** → ask until clear (one short question at a time, then wait). Do not guess or implement on ambiguity.
 - **Better idea** → say it plainly, then wait for approval. Do not silently pick a “better” path.
 - **After doc/code updates** → show the user what changed (which files, one-line what each says now).
-- **Commit / push** = commit **and push to GitHub** never local only; report hash + push output.
+- **Commit / push** = commit **and push to GitHub** never local only; report push output.
+
+# Verify before output (targeted)
+
+Before telling the user something works, is fixed, or is done:
+
+1. **Comment first** — one line: what you changed and what you will run to check it. Then run it. Then report.
+2. **Test only what you ship** — relevant test file(s), one browser smoke for UI/playtest, build only if bundle/config changed. **Do not** run the full suite unless the ask covers it or SmartBeads one-playtest-bug rule applies.
+3. **Evidence in the reply** — name the command(s) and pass/fail. If you could not run the check, say **UNCONFIRMED**; never claim fixed or complete without evidence.
 
 # STOP — before any repo edit
 
@@ -33,8 +41,6 @@ Separate words — never collapse:
 | add / put X | X exists as **option** | X is default |
 | default off | leave default `'off'` | pick a “better” default |
 | remove URL | delete URL handler | remove hub page |
-
-**Recorded failure:** “3 min timer for all boards” → add `'3'` to `matchTimerOptions`; `defaultSettings.matchTimer` stays `'off'`. Do not touch `matchTimerBest` or status docs unless asked.
 
 # No approval = no edit
 

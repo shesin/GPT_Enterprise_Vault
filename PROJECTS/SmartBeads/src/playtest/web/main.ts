@@ -39,7 +39,11 @@ function boot(): void {
 
   if (isDirectPlayBoard()) {
     showDirectPlayBoard();
-    bootstrapPlayShell();
+    bootstrapPlayShell(() => {
+      if (coachParam === 'start') {
+        testApi()?.launchCoachLesson?.();
+      }
+    });
     return;
   }
 

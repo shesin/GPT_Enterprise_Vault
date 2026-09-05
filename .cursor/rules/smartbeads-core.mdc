@@ -11,7 +11,7 @@ When work touches `PROJECTS/SmartBeads/`:
 - **Rules** → `VISION/CURSOR_PROMPT_01.md` § SmartBeads Production Gates + `GPT_PROJECT_RULES_01P.md`
 - **Literal ask** — option ≠ default ≠ best label ≠ doc update; one-line ask = one-line change unless user lists more
 - **Gaps (code ≠ claim)** → `GPT_PROJECT_STATUS_01P.md` § Integrity
-- **Done** → test or verify; never claim complete without evidence
+- **Done** → targeted verify per `instruction-fidelity.mdc` § Verify before output; never claim complete without evidence
 - **Big change** → list and get approval first
 - **One playtest bug** → failing test + suite sweep + related fixes
 - **Prototype ≠ production** — no shared code with `src/`

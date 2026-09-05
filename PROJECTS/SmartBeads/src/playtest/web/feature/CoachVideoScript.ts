@@ -1,17 +1,17 @@
 /**
- * Video 1 — Basics on 7-bead · 4×5 (~3 min).
+ * Video 1 — Basics on 7-bead · 4×5 (~2 min).
  * Three slides, three single captures, double chain, triple chain.
- * Amber/lime highlights before each scripted move.
+ * Ends when the triple capture completes. Amber/lime highlights before each scripted move.
  */
 
 import type { ProductBoardId } from '../../../config/BoardCatalog';
 import type { Player } from '../../../models/GameState';
 import type { CenterRule, GameFeatureSettings, MatchTimerMinutes, ShotClockSeconds } from './GameFeatureSettings';
 
-export const COACH_VIDEO_BOARD_ID = '7' as const satisfies ProductBoardId;
+export const COACH_VIDEO_BOARD_ID = '7x4x5' as const satisfies ProductBoardId;
 
-/** ~3 minutes with 5s settle, highlights, and pauses between demos. */
-export const COACH_VIDEO_DURATION_MS = 180_000;
+/** ~2:00 — ends when the triple capture completes. */
+export const COACH_VIDEO_DURATION_MS = 120_000;
 
 /** @deprecated use COACH_VIDEO_BOARD_ID */
 export const COACH_LESSON_BOARD_ID = COACH_VIDEO_BOARD_ID;
@@ -91,12 +91,12 @@ export const COACH_VIDEO: CoachVideoScript = {
   boardId: COACH_VIDEO_BOARD_ID,
   durationMs: COACH_VIDEO_DURATION_MS,
   title: 'How to play',
-  intro: '7-bead board. Watch three moves, three captures, then double and triple chain.',
+  intro: '7-bead board. Watch three moves, three captures, then double and triple chain. Likewise you can capture four, five, or more beads in one turn while the chain stays open.',
   points: [
     'Move — slide one step to an empty node.',
     'Single capture — jump over one neighbour bead.',
     'Double capture — same bead jumps twice.',
-    'Triple capture — same bead jumps three times.',
+    'Triple capture — same bead jumps three times; likewise four, five, or more while the chain stays open.',
   ],
   keyframes: [
     kf(0, [[12, 'RED'], [16, 'RED'], [17, 'RED'], ...ANCHOR]),
@@ -123,7 +123,10 @@ export const COACH_VIDEO: CoachVideoScript = {
     { atMs: 5_000, text: 'Move. Slide one step along a line to an empty node.' },
     { atMs: 41_000, text: 'Single capture. Jump over one neighbour onto the empty node beyond.' },
     { atMs: 77_000, text: 'Double capture. The same bead can jump again for a second capture.' },
-    { atMs: 99_000, text: 'Triple capture. The same bead can keep jumping while captures stay open.' },
+    {
+      atMs: 99_000,
+      text: 'Triple capture. The same bead can keep jumping while captures stay open. Likewise you can capture four, five, or more beads in one turn.',
+    },
   ],
   highlights: [
     { atMs: 8_000, keyframeAtMs: 0, selectedId: 12 },

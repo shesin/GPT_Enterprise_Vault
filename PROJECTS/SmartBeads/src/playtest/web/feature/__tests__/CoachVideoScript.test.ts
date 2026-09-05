@@ -1,3 +1,4 @@
+import { resolveEngineVariant } from '../../../../config/BoardCatalog';
 import {
   buildCoachLessonSettings,
   COACH_VIDEO,
@@ -13,10 +14,11 @@ import { renderCoachPanelHtml } from '../coachPanelRender';
 import { FeatureSession } from '../FeatureSession';
 
 describe('CoachVideoScript Video 1 basics (7-bead)', () => {
-  it('uses the 7-bead board with a ~3 minute timeline', () => {
-    expect(COACH_VIDEO_BOARD_ID).toBe('7');
+  it('uses the 7-bead board with a ~2 minute timeline', () => {
+    expect(COACH_VIDEO_BOARD_ID).toBe('7x4x5');
+    expect(resolveEngineVariant(COACH_VIDEO_BOARD_ID)).toBe('7');
     expect(COACH_VIDEO.durationMs).toBe(COACH_VIDEO_DURATION_MS);
-    expect(COACH_VIDEO_DURATION_MS).toBe(180_000);
+    expect(COACH_VIDEO_DURATION_MS).toBe(120_000);
     expect(COACH_VIDEO.moves).toHaveLength(11);
     expect(COACH_VIDEO.speeches).toHaveLength(4);
     expect(COACH_VIDEO.highlights).toHaveLength(11);
@@ -28,6 +30,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
       points: COACH_VIDEO.points,
     });
     expect(html).toContain('Triple capture');
+    expect(html).toMatch(/four, five, or more/i);
     expect(COACH_VIDEO.points).toHaveLength(4);
   });
 
@@ -41,7 +44,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
   it('scripted moves are legal from their setup keyframes', () => {
     for (const move of COACH_VIDEO.moves) {
       const keyframe = findCoachSetupKeyframeForMove(move, COACH_VIDEO.keyframes, COACH_VIDEO.moves);
-      const session = new FeatureSession(COACH_VIDEO_BOARD_ID, buildCoachLessonSettings());
+      const session = new FeatureSession(resolveEngineVariant(COACH_VIDEO_BOARD_ID), buildCoachLessonSettings());
       applyCoachVideoKeyframe(session, keyframe);
       const legal = session.getEngine().getLegalMoves().some((m) => m.from === move.from && m.to === move.to);
       expect(legal).toBe(true);
@@ -50,7 +53,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
   it('highlights expose amber targets for each scripted move', () => {
     for (const highlight of COACH_VIDEO.highlights) {
-      const session = new FeatureSession(COACH_VIDEO_BOARD_ID, buildCoachLessonSettings());
+      const session = new FeatureSession(resolveEngineVariant(COACH_VIDEO_BOARD_ID), buildCoachLessonSettings());
       applyCoachVideoHighlight(session, COACH_VIDEO.keyframes, highlight);
       expect(session.getSelectedId()).toBe(highlight.selectedId);
       expect(session.getLegalTargetIds().length).toBeGreaterThan(0);
@@ -58,13 +61,13 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
   });
 
   it('double and triple chains complete on engine', () => {
-    const session = new FeatureSession(COACH_VIDEO_BOARD_ID, buildCoachLessonSettings());
+    const session = new FeatureSession(resolveEngineVariant(COACH_VIDEO_BOARD_ID), buildCoachLessonSettings());
     applyCoachVideoKeyframe(session, COACH_VIDEO.keyframes.find((k) => k.atMs === 72_000)!);
     session.getEngine().applyMove({ from: 12, to: 4 });
     session.getEngine().applyMove({ from: 4, to: 6 });
     expect(session.getEngine().getState().captures.RED).toBe(2);
 
-    const tri = new FeatureSession(COACH_VIDEO_BOARD_ID, buildCoachLessonSettings());
+    const tri = new FeatureSession(resolveEngineVariant(COACH_VIDEO_BOARD_ID), buildCoachLessonSettings());
     applyCoachVideoKeyframe(tri, COACH_VIDEO.keyframes.find((k) => k.atMs === 94_000)!);
     tri.getEngine().applyMove({ from: 12, to: 4 });
     tri.getEngine().applyMove({ from: 4, to: 6 });
@@ -77,10 +80,11 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
     expect(coachSpeechForTime(40_000)).toMatch(/Single capture/i);
     expect(coachSpeechForTime(80_000)).toMatch(/Double capture/i);
     expect(coachSpeechForTime(100_000)).toMatch(/Triple capture/i);
+    expect(coachSpeechForTime(100_000)).toMatch(/four, five, or more/i);
   });
 
   it('formats mm:ss labels', () => {
     expect(formatCoachTime(0)).toBe('0:00');
-    expect(formatCoachTime(180_000)).toBe('3:00');
+    expect(formatCoachTime(120_000)).toBe('2:00');
   });
 });
