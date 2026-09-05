@@ -32,10 +32,10 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).not.toContain('controls-pair');
   });
 
-  it('start screen offers Coach vs AI and settings has Coach level below AI level', () => {
-    expect(indexHtml).toContain('value="spectate">Coach vs AI');
+  it('start screen offers Watch AI and settings has Watch AI level below AI level', () => {
+    expect(indexHtml).toContain('value="spectate">Watch AI');
     expect(indexHtml).toContain('id="coach-level-select"');
-    expect(indexHtml).toContain('>Coach level</label>');
+    expect(indexHtml).toContain('>Watch AI level</label>');
     expect(indexHtml).toContain('id="coach-level-setting"');
     expect(indexHtml).not.toContain('coach-red-ai-select');
     expect(indexHtml).not.toContain('coach-blue-ai-select');

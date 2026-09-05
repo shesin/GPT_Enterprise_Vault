@@ -25,6 +25,7 @@ import {
   formatAiLevelLabel,
   GameFeatureSettings,
   HUMAN_PVE_MAX_AI_LEVEL,
+  isHumanVsAiMode,
   MatchTimerMinutes,
   parseMatchSeconds,
   populateAiLevelSelect,
@@ -32,6 +33,18 @@ import {
   ShotClockSeconds,
 } from './feature/GameFeatureSettings';
 import { applyAiHops, AiHopRecord } from './feature/aiTurnPath';
+import {
+  buildCoachLessonSettings,
+  COACH_VIDEO,
+  COACH_VIDEO_BOARD_ID,
+  COACH_VIDEO_DURATION_MS,
+  coachSpeechForTime,
+  formatCoachTime,
+} from './feature/CoachLesson';
+import { applyCoachVideoKeyframe } from './feature/coachVideoBoard';
+import { CoachVideoPlayer } from './feature/CoachVideoPlayer';
+import { renderCoachPanelHtml } from './feature/coachPanelRender';
+import { CoachVoice } from './feature/CoachVoice';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
 import { shellTimerShouldSkip } from './feature/clockPolicy';
 import {
@@ -155,7 +168,7 @@ export function planAiTurnPath(session: FeatureSession, actingPlayer?: Player): 
 export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopRecord[] {
   const settings = session.getSettings();
   const aiPlayer = session.getAiPlayer();
-  if (session.isGameOver() || settings.mode !== 'pve' || session.getEngine().getState().currentPlayer !== aiPlayer) {
+  if (session.isGameOver() || !isHumanVsAiMode(settings.mode) || session.getEngine().getState().currentPlayer !== aiPlayer) {
     throw new Error('stale hop: AI turn is not live');
   }
 
@@ -216,6 +229,8 @@ export function bootstrapPlayShell(): void {
   let prevCaptures = { RED: 0, BLUE: 0 };
   /** Alternates who opens each new match (New game / Play again). RED = cream/human in PvE. */
   let nextGameStarter: Player = 'RED';
+  let coachVideoPlayer: CoachVideoPlayer | null = null;
+  let coachScrubbing = false;
 
   /** Start overlay + board switch: human (RED) always opens. New game alternates via applyGameStarter(). */
   function ensureHumanOpensStartScreen(): void {
@@ -354,6 +369,109 @@ export function bootstrapPlayShell(): void {
   const matchTimerSelect = document.getElementById('match-timer-select') as HTMLSelectElement;
   const shotClockSelect = document.getElementById('shot-clock-select') as HTMLSelectElement;
   const centerRuleSelect = document.getElementById('center-rule-select') as HTMLSelectElement;
+  const coachPanel = document.getElementById('coach-panel') as HTMLDivElement | null;
+  const coachLessonTitle = document.getElementById('coach-lesson-title') as HTMLElement | null;
+  const coachLessonBody = document.getElementById('coach-lesson-body') as HTMLElement | null;
+  const coachTimeLabel = document.getElementById('coach-time-label') as HTMLElement | null;
+  const coachPlayBtn = document.getElementById('coach-play-btn') as HTMLButtonElement | null;
+  const coachPauseBtn = document.getElementById('coach-pause-btn') as HTMLButtonElement | null;
+  const coachScrub = document.getElementById('coach-scrub') as HTMLInputElement | null;
+  const coachVoiceReplayBtn = document.getElementById('coach-voice-replay') as HTMLButtonElement | null;
+  const coachVoiceMuteBtn = document.getElementById('coach-voice-mute') as HTMLButtonElement | null;
+  const coachSpeakingLabel = document.getElementById('coach-speaking-label') as HTMLElement | null;
+  const coachVoice = new CoachVoice();
+
+  coachVoice.setOnSpeakingChange((speaking) => {
+    coachSpeakingLabel?.classList.toggle('is-hidden', !speaking);
+  });
+
+  function updateCoachVoiceMuteButton(): void {
+    if (!coachVoiceMuteBtn) return;
+    coachVoiceMuteBtn.textContent = coachVoice.isMuted() ? 'Unmute voice' : 'Mute voice';
+  }
+
+  function speakCoachText(text: string): void {
+    coachVoice.speak(text);
+    updateCoachVoiceMuteButton();
+  }
+
+  function stopCoachVideo(): void {
+    coachVideoPlayer?.destroy();
+    coachVideoPlayer = null;
+    stopCoachVoice();
+  }
+
+  function syncCoachVideoControls(timeMs: number, playing: boolean): void {
+    if (coachTimeLabel) {
+      coachTimeLabel.textContent = `${formatCoachTime(timeMs)} / ${formatCoachTime(COACH_VIDEO_DURATION_MS)}`;
+    }
+    if (coachScrub && !coachScrubbing) {
+      coachScrub.max = String(COACH_VIDEO_DURATION_MS);
+      coachScrub.value = String(Math.round(timeMs));
+    }
+    coachPlayBtn?.classList.toggle('is-hidden', playing);
+    coachPauseBtn?.classList.toggle('is-hidden', !playing);
+  }
+
+  function updateCoachVideoPanel(): void {
+    coachPanel?.classList.remove('is-hidden');
+    if (coachLessonTitle) coachLessonTitle.textContent = COACH_VIDEO.title;
+    if (coachLessonBody) {
+      coachLessonBody.innerHTML = renderCoachPanelHtml({
+        intro: COACH_VIDEO.intro,
+        points: COACH_VIDEO.points,
+      });
+    }
+  }
+
+  function initCoachVideoPlayer(autoPlay = false): void {
+    stopCoachVideo();
+    undoStack.length = 0;
+    undoBtn.disabled = true;
+    turnCaptures = 0;
+    clearMoveFeedback();
+    prevCaptures = { RED: 0, BLUE: 0 };
+    anim = null;
+    animating = false;
+    cancelAiWork();
+
+    coachVideoPlayer = new CoachVideoPlayer(COACH_VIDEO, {
+      onTimeChange: (ms) => {
+        syncCoachVideoControls(ms, coachVideoPlayer?.isPlaying() ?? false);
+      },
+      onApplyKeyframe: (keyframe) => {
+        applyCoachVideoKeyframe(session, keyframe);
+        updateUI();
+      },
+      onPlayMove: (move, onDone) => {
+        playAnimated({ from: move.from, to: move.to }, move.player, () => {
+          turnCaptures = 0;
+          onDone();
+          updateUI();
+        });
+      },
+      onSpeak: (speech) => {
+        speakCoachText(speech.text);
+      },
+      onPlayingChange: (playing) => {
+        syncCoachVideoControls(coachVideoPlayer?.getTimeMs() ?? 0, playing);
+        if (!playing) stopCoachVoice();
+      },
+      onEnded: () => {
+        syncCoachVideoControls(COACH_VIDEO_DURATION_MS, false);
+      },
+    });
+
+    updateCoachVideoPanel();
+    coachVideoPlayer.seek(0);
+    syncCoachVideoControls(0, false);
+    if (autoPlay) coachVideoPlayer.play();
+  }
+
+  function stopCoachVoice(): void {
+    coachVoice.stop();
+    coachSpeakingLabel?.classList.add('is-hidden');
+  }
 
   const bgmAudio = document.getElementById('bgm-audio') as HTMLAudioElement;
   const bgmSelect = document.getElementById('bgm-select') as HTMLSelectElement;
@@ -382,6 +500,66 @@ export function bootstrapPlayShell(): void {
 
   syncAiLevelOptions();
   syncCoachLevelOptions();
+
+  function isCoachMode(): boolean {
+    return session.getSettings().mode === 'coach';
+  }
+
+  function syncCoachShellUi(): void {
+    const coach = isCoachMode();
+    if (!coach) {
+      coachPanel?.classList.add('is-hidden');
+      stopCoachVideo();
+    }
+    boardSelect.disabled = coach;
+    centerRuleSelect.disabled = coach;
+    matchTimerSelect.disabled = coach;
+    shotClockSelect.disabled = coach;
+    aiLevelSelect.disabled = coach;
+    if (coachLevelSelect) coachLevelSelect.disabled = coach;
+    if (startModeSelect) startModeSelect.disabled = coach;
+    restartBtn.textContent = coach ? 'Restart video' : 'New game';
+  }
+
+  function launchCoachLesson(): void {
+    if (timerId) clearInterval(timerId);
+    cancelAnimationFrame(pulseRaf);
+    cancelAnimationFrame(animRaf);
+    cancelAiWork();
+    aiThinking = false;
+
+    currentBoardId = COACH_VIDEO_BOARD_ID;
+    boardSelect.value = COACH_VIDEO_BOARD_ID;
+    syncBoardTitle();
+    syncBoardPlayOptions();
+    applyBoardDefaults(COACH_VIDEO_BOARD_ID);
+
+    session = createSession(COACH_VIDEO_BOARD_ID, buildCoachLessonSettings());
+    session.reset();
+    session.resetTurnClock();
+
+    applyCanvasSizeForBoard();
+    resultModal.style.display = 'none';
+    resultModal.classList.remove('animate');
+    resignOfferModal.style.display = 'none';
+    pendingResignPlayer = null;
+
+    if (startScreenOverlay) startScreenOverlay.classList.add('hidden');
+    if (startModeSelect) startModeSelect.value = 'pve';
+
+    syncCoachShellUi();
+    syncModeUi();
+    initCoachVideoPlayer(true);
+    undoBtn.disabled = true;
+    pulseRaf = requestAnimationFrame(loopPulse);
+
+    if (bgmSelect.value && bgmAudio.paused) {
+      if (!bgmAudio.src) bgmAudio.src = bgmSelect.value;
+      bgmAudio.play().catch(() => {});
+    }
+    triggerStartBanner('★ COACH VIDEO ★', '6-bead · 3×5');
+    soundEffects.playGameStart();
+  }
 
   function isCoachWatchMode(): boolean {
     return readGameMode() === 'spectate';
@@ -568,9 +746,9 @@ export function bootstrapPlayShell(): void {
   function creamPlayerLabel(): string {
     const settings = session.getSettings();
     if (settings.mode === 'spectate') {
-      return `Coach · ${formatAiLevelLabel(aiLevelForActingPlayer(settings, 'RED'))}`;
+      return `Watch AI · ${formatAiLevelLabel(aiLevelForActingPlayer(settings, 'RED'))}`;
     }
-    if (settings.mode === 'pve') return 'You';
+    if (settings.mode === 'coach' || settings.mode === 'pve') return 'You';
     const name = creamNameInput?.value.trim();
     return name || 'Player 1';
   }
@@ -578,9 +756,9 @@ export function bootstrapPlayShell(): void {
   function blackPlayerLabel(): string {
     const settings = session.getSettings();
     if (settings.mode === 'spectate') {
-      return formatAiLevelLabel(aiLevelForActingPlayer(settings, 'BLUE'));
+      return `AI · ${formatAiLevelLabel(aiLevelForActingPlayer(settings, 'BLUE'))}`;
     }
-    if (settings.mode === 'pve') {
+    if (settings.mode === 'coach' || settings.mode === 'pve') {
       return `AI · ${formatAiLevelLabel(settings.aiLevel)}`;
     }
     const name = blackNameInput?.value.trim();
@@ -594,6 +772,7 @@ export function bootstrapPlayShell(): void {
   function syncModeUi(): void {
     const settings = session.getSettings();
     const coachWatch = settings.mode === 'spectate';
+    const coachLesson = settings.mode === 'coach';
     const pve = settings.mode === 'pve';
     const pvp = settings.mode === 'pvp';
     if (pvpNamesContainer) {
@@ -602,11 +781,12 @@ export function bootstrapPlayShell(): void {
       pvpNamesContainer.style.gap = '4px';
     }
     if (aiLevelSetting) {
-      aiLevelSetting.style.display = pve || coachWatch ? '' : 'none';
+      aiLevelSetting.style.display = (pve || coachWatch) && !coachLesson ? '' : 'none';
     }
     if (coachLevelSetting) {
       coachLevelSetting.style.display = coachWatch ? '' : 'none';
     }
+    syncCoachShellUi();
   }
 
   function interMoveDelayMs(): number {
@@ -617,9 +797,10 @@ export function bootstrapPlayShell(): void {
 
   function shouldScheduleAutomatedTurn(): boolean {
     if (session.isGameOver()) return false;
+    if (session.getSettings().mode === 'coach') return false;
     const settings = session.getSettings();
     if (settings.mode === 'spectate') return true;
-    if (settings.mode === 'pve') {
+    if (isHumanVsAiMode(settings.mode)) {
       return session.getEngine().getState().currentPlayer === 'BLUE';
     }
     return false;
@@ -650,7 +831,7 @@ export function bootstrapPlayShell(): void {
   }
 
   function canOfferResignation(): boolean {
-    if (session.getSettings().mode === 'spectate') return false;
+    if (session.getSettings().mode === 'spectate' || session.getSettings().mode === 'coach') return false;
     if (session.isGameOver() || animating || aiThinking) return false;
     if (pendingResignPlayer !== null) return false;
     // Only the side to move may resign (PvE: human only on cream's turn).
@@ -785,9 +966,9 @@ export function bootstrapPlayShell(): void {
     (document.getElementById('black-panel-name') as HTMLElement).textContent = blackPlayerLabel();
     (document.getElementById('cream-panel-name') as HTMLElement).textContent = creamPlayerLabel();
     (document.getElementById('black-panel-role') as HTMLElement).textContent =
-      settings.mode === 'spectate' ? '(AI)' : settings.mode === 'pve' ? '(AI)' : '(Human)';
+      settings.mode === 'spectate' ? '(AI)' : settings.mode === 'pve' || settings.mode === 'coach' ? '(AI)' : '(Human)';
     (document.getElementById('cream-panel-role') as HTMLElement).textContent =
-      settings.mode === 'spectate' ? '(AI)' : '(Human)';
+      settings.mode === 'spectate' ? '(AI)' : settings.mode === 'coach' ? '(Lesson)' : '(Human)';
 
     (document.getElementById('top-p1-capture') as HTMLElement).textContent = String(state.captures.RED);
     (document.getElementById('top-p2-capture') as HTMLElement).textContent = String(state.captures.BLUE);
@@ -825,7 +1006,7 @@ export function bootstrapPlayShell(): void {
       && !animating
       && !aiThinking
       && settings.mode !== 'spectate'
-      && (settings.mode === 'pvp' || state.currentPlayer === 'RED');
+      && (settings.mode === 'pvp' || (isHumanVsAiMode(settings.mode) && state.currentPlayer === 'RED'));
     finishBtn.style.display = showFinish ? 'inline-block' : 'none';
 
     undoBtn.disabled = undoStack.length === 0 || animating || aiThinking || settings.mode === 'spectate';
@@ -871,7 +1052,7 @@ export function bootstrapPlayShell(): void {
       shotActiveBlue,
     );
 
-    if (session.isGameOver() && pendingResignPlayer === null) {
+    if (session.isGameOver() && pendingResignPlayer === null && !isCoachMode()) {
       resultModal.style.display = 'flex';
       const winner = session.getDisplayedWinner();
       const redCaps = state.captures.RED;
@@ -887,7 +1068,7 @@ export function bootstrapPlayShell(): void {
         scoreLine = `Tied in captures (${redCaps} vs ${blueCaps} beads)`;
       } else if (winner === 'RED') {
         const diff = redCaps - blueCaps;
-        if (settings.mode === 'pve') {
+        if (isHumanVsAiMode(settings.mode)) {
           resultTitle.textContent = 'CONGRATULATIONS! YOU WON!';
           scoreLine = diff > 0
             ? `You won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})`
@@ -901,7 +1082,7 @@ export function bootstrapPlayShell(): void {
         resultTitle.classList.add('victory');
       } else if (winner === 'BLUE') {
         const diff = blueCaps - redCaps;
-        if (settings.mode === 'pve') {
+        if (isHumanVsAiMode(settings.mode)) {
           resultTitle.textContent = 'WELL PLAYED! BETTER LUCK NEXT TIME';
           scoreLine = diff > 0
             ? `${blackName} won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})`
@@ -931,7 +1112,7 @@ export function bootstrapPlayShell(): void {
         } else if (winner === 'RED') {
           soundEffects.playVictory();
         } else if (winner === 'BLUE') {
-          if (settings.mode === 'pve') {
+          if (isHumanVsAiMode(settings.mode)) {
             soundEffects.playDefeat();
           } else {
             soundEffects.playVictory();
@@ -1108,11 +1289,11 @@ export function bootstrapPlayShell(): void {
       cancelAiWork();
       return;
     }
-    if (settings.mode === 'pve' && actingPlayer !== 'BLUE') {
+    if (isHumanVsAiMode(settings.mode) && actingPlayer !== 'BLUE') {
       cancelAiWork();
       return;
     }
-    if (settings.mode !== 'pve' && settings.mode !== 'spectate') {
+    if (!isHumanVsAiMode(settings.mode) && settings.mode !== 'spectate') {
       cancelAiWork();
       return;
     }
@@ -1134,7 +1315,7 @@ export function bootstrapPlayShell(): void {
       path = session.getEngine().getLegalMoves().slice(0, 1);
     }
     if (!path?.length) {
-      if (settings.mode === 'pve') {
+      if (isHumanVsAiMode(settings.mode)) {
         session.endGameByFeature('RED', 'AI has no legal moves.');
       } else {
         endAutomatedTurnForNoMoves(actingPlayer);
@@ -1237,7 +1418,7 @@ export function bootstrapPlayShell(): void {
     const settings = session.getSettings();
     const uiState = session.getUiState();
 
-    if (settings.mode === 'pve' && undoStack.length >= 2 && session.getEngine().getState().currentPlayer === 'RED' && uiState !== 'chain') {
+    if (isHumanVsAiMode(settings.mode) && undoStack.length >= 2 && session.getEngine().getState().currentPlayer === 'RED' && uiState !== 'chain') {
       undoStack.pop();
       session.loadSnapshot(undoStack.pop()!);
     } else {
@@ -1265,10 +1446,19 @@ export function bootstrapPlayShell(): void {
     clearMoveFeedback();
     prevCaptures = { RED: 0, BLUE: 0 };
 
-    const settings = readSettings();
-    session = createSession(currentBoardId, settings);
-    session.reset();
+    const wasCoach = session.getSettings().mode === 'coach';
+    if (wasCoach) {
+      session = createSession(COACH_VIDEO_BOARD_ID, buildCoachLessonSettings());
+      session.reset();
+      initCoachVideoPlayer(false);
+    } else {
+      const settings = readSettings();
+      session = createSession(currentBoardId, settings);
+      session.reset();
+    }
     if (isAwaitingStart()) {
+      ensureHumanOpensStartScreen();
+    } else if (wasCoach) {
       ensureHumanOpensStartScreen();
     } else {
       applyGameStarter();
@@ -1284,7 +1474,9 @@ export function bootstrapPlayShell(): void {
     pulseRaf = requestAnimationFrame(loopPulse);
     if (!isAwaitingStart()) {
       startTimers();
-      maybeScheduleAutomatedTurn();
+      if (!wasCoach) {
+        maybeScheduleAutomatedTurn();
+      }
       triggerStartBanner();
       soundEffects.playGameStart();
     }
@@ -1344,6 +1536,7 @@ export function bootstrapPlayShell(): void {
     applyBoardDefaults(boardId);
     session = createSession(boardId, readSettings());
     session.reset();
+    stopCoachVideo();
     ensureHumanOpensStartScreen();
     applyCanvasSizeForBoard();
     resultModal.style.display = 'none';
@@ -1373,6 +1566,43 @@ export function bootstrapPlayShell(): void {
     updateSfxButton();
     if (!soundEffects.isMuted()) {
       soundEffects.playButtonTap();
+    }
+  });
+
+  coachPlayBtn?.addEventListener('click', () => {
+    soundEffects.playButtonTap();
+    if (isCoachMode()) coachVideoPlayer?.play();
+  });
+
+  coachPauseBtn?.addEventListener('click', () => {
+    soundEffects.playButtonTap();
+    if (isCoachMode()) coachVideoPlayer?.pause();
+  });
+
+  coachScrub?.addEventListener('pointerdown', () => {
+    coachScrubbing = true;
+    coachVideoPlayer?.pause();
+  });
+
+  coachScrub?.addEventListener('input', () => {
+    if (!isCoachMode() || !coachScrub) return;
+    coachVideoPlayer?.seek(parseInt(coachScrub.value, 10) || 0);
+  });
+
+  coachScrub?.addEventListener('pointerup', () => {
+    coachScrubbing = false;
+  });
+
+  coachVoiceReplayBtn?.addEventListener('click', () => {
+    if (!isCoachMode() || !coachVideoPlayer) return;
+    speakCoachText(coachSpeechForTime(coachVideoPlayer.getTimeMs()));
+  });
+
+  coachVoiceMuteBtn?.addEventListener('click', () => {
+    coachVoice.toggleMuted();
+    updateCoachVoiceMuteButton();
+    if (!coachVoice.isMuted() && isCoachMode() && coachVideoPlayer) {
+      speakCoachText(coachSpeechForTime(coachVideoPlayer.getTimeMs()));
     }
   });
 
@@ -1486,6 +1716,7 @@ export function bootstrapPlayShell(): void {
       applyPremiumShell(isPremium);
     },
     switchBoard,
+    launchCoachLesson,
   };
 }
 

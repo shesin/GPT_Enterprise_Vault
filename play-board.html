@@ -9,6 +9,23 @@
 <body data-sb-direct-play="1">
   <div class="shell shell--ads-on" id="play-shell">
     <aside class="card left">
+      <div id="coach-panel" class="coach-panel is-hidden" aria-live="polite">
+        <div class="coach-panel-head">
+          <strong id="coach-lesson-title">Coach</strong>
+          <span class="coach-time-label" id="coach-time-label">0:00 / 0:48</span>
+        </div>
+        <div class="coach-lesson-body" id="coach-lesson-body"></div>
+        <div class="coach-video-controls">
+          <button type="button" id="coach-play-btn" class="coach-video-btn">Play</button>
+          <button type="button" id="coach-pause-btn" class="coach-video-btn is-hidden">Pause</button>
+          <input type="range" id="coach-scrub" class="coach-scrub" min="0" max="48000" value="0" step="100" aria-label="Coach video timeline" />
+        </div>
+        <div class="coach-voice-row">
+          <span class="coach-speaking-label is-hidden" id="coach-speaking-label">Speaking…</span>
+          <button type="button" id="coach-voice-replay" class="coach-voice-btn">Replay voice</button>
+          <button type="button" id="coach-voice-mute" class="coach-voice-btn">Mute voice</button>
+        </div>
+      </div>
       <div class="play-panel">
         <div class="play-block play-block-ai" id="play-block-p2">
           <div class="play-block-head">
@@ -83,7 +100,7 @@
               <label for="start-mode-select">Game mode</label>
               <select id="start-mode-select">
                 <option value="pve" selected>Human vs AI</option>
-                <option value="spectate">Coach vs AI</option>
+                <option value="spectate">Watch AI</option>
                 <option value="pvp">Human vs Human</option>
               </select>
             </div>
@@ -130,7 +147,7 @@
           <select id="ai-level-select"></select>
         </div>
         <div class="setting" id="coach-level-setting" style="display: none;">
-          <label>Coach level</label>
+          <label>Watch AI level</label>
           <select id="coach-level-select"></select>
         </div>
         <div class="setting">

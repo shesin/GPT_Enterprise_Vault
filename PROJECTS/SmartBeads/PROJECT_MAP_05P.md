@@ -41,8 +41,16 @@ SmartBeads/
 │   │   │   │   ├── firstMoveInvariants.ts  # Isolated human-ply occupancy
 │   │   │   │   ├── pveTiming.ts       # Slide/jump anim, AI reply delay, think budget
 │   │   │   │   ├── centerScoring.ts
+│   │   │   │   ├── CoachVideoScript.ts   # Coach teaching video — 3v3 setups, timeline, voice cues
+│   │   │   │   ├── CoachVideoPlayer.ts   # play / pause / scrub playback
+│   │   │   │   ├── coachVideoBoard.ts    # snap session to scripted keyframes
+│   │   │   │   ├── CoachLesson.ts        # re-exports coach video + buildCoachLessonSettings
+│   │   │   │   ├── CoachVoice.ts         # Web Speech TTS for coach
+│   │   │   │   ├── coachPanelRender.ts   # short panel HTML
+│   │   │   │   ├── PlayHub.ts            # hub sidebar + Coach card; ?coach=1 / ?coach=start
 │   │   │   │   └── __tests__/         # firstMove, turnControl, resignation, difficulty,
-│   │   │   │                          #   featureRules, clockPolicy, allBoards.smoke
+│   │   │   │                          #   featureRules, clockPolicy, allBoards.smoke,
+│   │   │   │                          #   CoachVideoScript, CoachVideoPlayer, FeatureSession.coach
 │   │   │   ├── audio/
 │   │   │   │   ├── SoundEffects.ts    # Web Audio — fetches WAV from public/audio/
 │   │   │   │   ├── SoundManifest.ts   # Runtime SFX URL map
@@ -109,7 +117,11 @@ Repo-root `index.html` is the Vite entry for the production play shell (`npm run
 Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`npm run web:smartbeads`). Board selection reads `BoardCatalog.ts`; only catalog entries with `playable: true` appear in the UI. Authoritative entry is the repository root `index.html`, not anything under `prototype/`.
 
 - **`main.ts`** — calls `bootstrapPlayShell()`.
-- **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`.
+- **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`. **Coach mode:** watch-only ~48s video (play/pause/scrub); no board input.
+- **`PlayHub.ts`** — hub navigation; **Coach** sidebar + top card launches teaching video on 6×3×5 (`?coach=1` picker, `?coach=start` auto-launch).
+- **`feature/CoachVideoScript.ts`** — one timeline: 3 vs 3 beads, 5s settle, labelled segments (Move / Single capture / Double capture), scripted moves on 6×3×5 only.
+- **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.
+- **`feature/CoachVoice.ts`** — browser TTS; mute and replay per segment.
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. No 3-fold repetition in production.
 - **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy + center tie-break), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center + match timer in eval when rules on.
 - **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.

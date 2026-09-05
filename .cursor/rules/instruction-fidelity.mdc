@@ -5,9 +5,11 @@ alwaysApply: true
 
 # Instruction fidelity (always-on)
 
-- **Talk:** plain English; answer first; once per point; brief summary last. Detail → `VISION/CURSOR_PROMPT_01.md` § Human communication.
+- **Talk:** plain English; answer first; once per point; brief summary last. No jargon, no long messy dumps. Detail → `VISION/CURSOR_PROMPT_01.md` § Human communication.
+- **Doubt** → ask until clear (one short question at a time, then wait). Do not guess or implement on ambiguity.
+- **Better idea** → say it plainly, then wait for approval. Do not silently pick a “better” path.
+- **After doc/code updates** → show the user what changed (which files, one-line what each says now).
 - **Commit / push** = commit **and push to GitHub** unless local only; report hash + push output.
-- **Doubt** → one short question, then wait.
 
 # STOP — before any repo edit
 

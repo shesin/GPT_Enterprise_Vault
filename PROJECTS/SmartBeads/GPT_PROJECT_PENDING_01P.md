@@ -252,13 +252,24 @@ Capacitor wrap **confirmed** (not native WebView bridge).
 
 ---
 
-## 11. Future learning (vision — not scheduled)
+## 11. Coach teaching video — optional polish (approved backlog, not scheduled)
+
+Shipped v1 is **OK** in code (see `GPT_PROJECT_STATUS_01P.md`). Human said **good** on pacing and 3v3 layout. Optional next steps — **need explicit go** before code:
+
+1. **Highlight active panel bullet** during playback (Move / Single capture / Double capture).
+2. **~2s hold after each demo move** before the next segment snap.
+
+Not the same as **Watch AI** (spectate). Not the long-term **AI Coach** vision below.
+
+---
+
+## 12. Future learning (vision — not scheduled)
 
 AI Coach, match analysis, replay, tactical explanations, pattern recognition, progress tracking — after tutorial + online core. Teach understanding, not memorization (`VISION_05P.md` Learning Philosophy).
 
 ---
 
-## 12. Open decisions (need human yes/no)
+## 13. Open decisions (need human yes/no)
 
 1. **Accounts:** guest + room code only for beta, or sign-in from day one?
 2. **Shot breach (HvH):** lose on time only (recommended) or softer penalty?
@@ -269,7 +280,7 @@ AI Coach, match analysis, replay, tactical explanations, pattern recognition, pr
 
 ---
 
-## 13. Doc ownership
+## 14. Doc ownership
 
 | File | Holds |
 |------|--------|

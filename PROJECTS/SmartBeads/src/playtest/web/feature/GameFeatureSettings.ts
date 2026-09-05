@@ -2,7 +2,12 @@
 
 import type { Player } from '../../../models/GameState';
 
-export type GameMode = 'pve' | 'pvp' | 'spectate';
+export type GameMode = 'pve' | 'pvp' | 'spectate' | 'coach';
+
+/** Human (cream) vs AI — includes interactive Coach lessons. */
+export function isHumanVsAiMode(mode: GameMode): boolean {
+  return mode === 'pve' || mode === 'coach';
+}
 export type CenterRule = 'off' | 'endgame' | 'cumulative';
 /** Minutes per side (PvP) or shared match budget (PvE). Values are string digits or off. */
 export type MatchTimerMinutes = 'off' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';

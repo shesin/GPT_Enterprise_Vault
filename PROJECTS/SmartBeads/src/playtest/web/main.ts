@@ -12,20 +12,40 @@ function showDirectPlayBoard(): void {
   document.getElementById('play-shell')?.classList.remove('is-hidden');
 }
 
+function testApi(): {
+  switchBoard?: (id: ProductBoardId) => void;
+  launchCoachLesson?: () => void;
+} | undefined {
+  return (window as unknown as {
+    __SB_TEST__?: {
+      switchBoard?: (id: ProductBoardId) => void;
+      launchCoachLesson?: () => void;
+    };
+  }).__SB_TEST__;
+}
+
 function launchHubPve(boardId: ProductBoardId): void {
   showDirectPlayBoard();
-  const testApi = (window as unknown as { __SB_TEST__?: { switchBoard?: (id: ProductBoardId) => void } })
-    .__SB_TEST__;
-  testApi?.switchBoard?.(boardId);
+  testApi()?.switchBoard?.(boardId);
+}
+
+function launchHubCoach(): void {
+  showDirectPlayBoard();
+  testApi()?.launchCoachLesson?.();
 }
 
 function boot(): void {
   if (isDirectPlayBoard()) {
     showDirectPlayBoard();
   } else {
-    bootstrapPlayHub(launchHubPve);
+    bootstrapPlayHub(launchHubPve, launchHubCoach);
   }
   bootstrapPlayShell();
+
+  const coachParam = new URLSearchParams(window.location.search).get('coach');
+  if (!isDirectPlayBoard() && coachParam === 'start') {
+    window.setTimeout(() => launchHubCoach(), 0);
+  }
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {

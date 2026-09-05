@@ -306,7 +306,11 @@ export class FeatureSession {
     if (this.isGameOver()) return false;
     if (this.settings.mode === 'spectate') return false;
     if (this.settings.mode === 'pvp') return true;
-    return this.engine.getState().currentPlayer === 'RED';
+    if (this.settings.mode === 'coach') return false;
+    if (this.settings.mode === 'pve') {
+      return this.engine.getState().currentPlayer === 'RED';
+    }
+    return false;
   }
 
   applyMove(move: Move): void {

@@ -32,7 +32,7 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 |--------------|-----------|----------------|
 | **7-board core** | `allBoards.smoke.test.ts`, `Board*.test.ts` (×7), `FeatureSession.turnControl.test.ts`, `v1GeometryCaptureAudit.test.ts` | All 7 product boards: legal select, Medium AI reply, reset/New game, capture geometry, turn control |
 | **Engine + parity** | `SmartBeadsEngine*.test.ts`, `BoardCatalog.test.ts`, `*PrototypeParity.test.ts` (×7), `SelfPlayRunner`, `HumanVsAiRunner` | Engine rules, catalog defaults, prototype geometry parity per board |
-| **Feature / settings** | `GameFeatureSettings`, `FeatureSession.*`, `clockPolicy`, `aiTurnPath`, `HonestAi.test`, `spectate` | Timers, center rules, resignation, AI level UI, coach/spectate hooks |
+| **Feature / settings** | `GameFeatureSettings`, `FeatureSession.*`, `clockPolicy`, `aiTurnPath`, `HonestAi.test`, `spectate`, `CoachVideoScript.test`, `CoachVideoPlayer.test`, `FeatureSession.coach.test` | Timers, center rules, resignation, AI level UI, **Watch AI** (spectate), **Coach** teaching video (watch-only, 6×3×5) |
 | **Shell / layout / audio** | `PlayController`, `playerBarShell`, `hubShell`, `viewportFit`, `creamCampRendersLower`, `CanvasBoardRenderer.moveFeedback`, `SoundEffects` | Settings DOM, cream-on-bottom, last-move rings, capture pulse, layout contracts |
 | **Slow AI — tiers** | `HonestAi.difficultyTiers.test.ts` | Easy/Medium/Hard behaviour, Medium soft-miss, 8×4×6 and 16 gates (~7 min alone) |
 | **Slow AI — search** | `HonestAi.searchCompletion.test.ts` | Expert (level 3) depth-2 completion on all 7 boards + 16 midgame |

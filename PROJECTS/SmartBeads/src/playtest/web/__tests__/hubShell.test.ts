@@ -7,16 +7,12 @@ const indexHtml = fs.readFileSync(
 );
 
 describe('play hub shell (index.html)', () => {
-  it('shows compact left sidebar with community and tournaments', () => {
+  it('shows sidebar Coach link and prominent coach card above boards', () => {
     expect(indexHtml).toContain('id="play-hub"');
-    expect(indexHtml).toContain('class="hub-sidebar"');
-    expect(indexHtml).toContain('<em>Strategic as Chess.');
-    expect(indexHtml).toContain('data-hub-nav="Community"');
-    expect(indexHtml).toContain('data-hub-nav="Tournaments"');
+    expect(indexHtml).toContain('data-hub-nav="coach"');
+    expect(indexHtml).toContain('id="hub-coach-card"');
     expect(indexHtml).toContain('id="hub-board-grid"');
-    expect(indexHtml).toContain('id="hub-tutorial-card"');
-    expect(indexHtml).toContain('class="hub-ad-bottom"');
+    expect(indexHtml).toContain('id="coach-panel"');
     expect(indexHtml).toContain('id="play-shell"');
-    expect(indexHtml).toContain('is-hidden');
   });
 });

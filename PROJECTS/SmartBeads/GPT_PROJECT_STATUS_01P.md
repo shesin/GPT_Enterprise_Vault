@@ -67,7 +67,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **3-fold repetition:** removed from production. See `GPT_PROJECT_AUDIT_05P.md`.
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
-- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`: Human vs AI · **Coach vs AI** · Human vs Human). Settings panel: Board, **AI level**, **Coach level** (Coach vs AI only — cream/white coach vs black AI), Match timer, Turn shot clock, Center rule.
+- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`: Human vs AI · **Watch AI** · Human vs Human). Settings panel: Board, **AI level**, **Watch AI level** (Watch AI mode — cream-side AI vs black-side AI), Match timer, Turn shot clock, Center rule.
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI) — chosen on start overlay, not duplicated in Settings.
 - **Default Feature Settings:**
   - `centerRule: 'off'` default on all 7 boards (End-Game/Cumulative selectable per board catalog).
@@ -94,7 +94,8 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | Item | Verdict |
 |------|---------|
 | **AI levels 4–5** | **Fix/remove (UI done)** — Settings + coach show **1–2–3** only; HonestAi still accepts 4–5 if passed in code |
-| **Coach / spectate UX** | **OK (2026-09)** — hub home + start screen **Coach vs AI**; Settings **Coach level** + **AI level**; amber preview before each coach hop; no `?coach=1` URL |
+| **Watch AI / spectate UX** | **OK (2026-09-04)** — start screen **Watch AI**; Settings **Watch AI level** + **AI level**; cream **Watch AI · level** / black **AI · level**; amber preview before each hop |
+| **Coach (teaching mode)** | **OK (2026-09-05)** — hub **Coach** → **Start Coach**; URLs `?coach=1` / `?coach=start`; **~48s watch-only video** on **6×3×5** with **3 vs 3 beads**, **5s settle** then labelled voice (**Move / Single capture / Double capture**) then demo; play/pause/scrub; watch-only (no board clicks); separate from Watch AI. **Browser sign-off:** UNCONFIRMED |
 | **Settings game mode** | **OK (2026-09)** — removed from right panel; start screen only |
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |

@@ -11,6 +11,7 @@
   <div id="play-hub" class="play-hub">
     <aside class="hub-sidebar" aria-label="Hub navigation">
       <nav class="hub-sidebar-nav">
+        <button type="button" class="hub-sidebar-link hub-sidebar-link--coach" data-hub-nav="coach">Coach</button>
         <button type="button" class="hub-sidebar-link" data-hub-nav="Community">Community</button>
         <button type="button" class="hub-sidebar-link" data-hub-nav="Tournaments">Tournaments</button>
       </nav>
@@ -20,11 +21,11 @@
       <p class="hub-slogan"><em>Strategic as Chess.<br>Simple as Tic-Tac-Toe.</em></p>
       <h1 class="hub-title">Smart Beads</h1>
       <div class="hub-centre" id="hub-centre">
-        <div class="hub-board-grid" id="hub-board-grid"></div>
-        <button type="button" class="hub-tutorial-card" id="hub-tutorial-card">
-          <div class="hub-card-name">Tutorial</div>
-          <div class="hub-card-size">Learn on the 6-bead board</div>
+        <button type="button" class="hub-coach-card" id="hub-coach-card">
+          <div class="hub-card-name">Coach</div>
+          <div class="hub-card-size">6-bead · 3×5 — rules, centre, match timer &amp; shot clock</div>
         </button>
+        <div class="hub-board-grid" id="hub-board-grid"></div>
         <div class="hub-mode-picker is-hidden" id="hub-mode-picker"></div>
       </div>
       <footer class="hub-ad-bottom" aria-label="Advertisement">
@@ -36,6 +37,23 @@
 
   <div class="shell shell--ads-on is-hidden" id="play-shell">
     <aside class="card left">
+      <div id="coach-panel" class="coach-panel is-hidden" aria-live="polite">
+        <div class="coach-panel-head">
+          <strong id="coach-lesson-title">Coach</strong>
+          <span class="coach-time-label" id="coach-time-label">0:00 / 0:48</span>
+        </div>
+        <div class="coach-lesson-body" id="coach-lesson-body"></div>
+        <div class="coach-video-controls">
+          <button type="button" id="coach-play-btn" class="coach-video-btn">Play</button>
+          <button type="button" id="coach-pause-btn" class="coach-video-btn is-hidden">Pause</button>
+          <input type="range" id="coach-scrub" class="coach-scrub" min="0" max="48000" value="0" step="100" aria-label="Coach video timeline" />
+        </div>
+        <div class="coach-voice-row">
+          <span class="coach-speaking-label is-hidden" id="coach-speaking-label">Speaking…</span>
+          <button type="button" id="coach-voice-replay" class="coach-voice-btn">Replay voice</button>
+          <button type="button" id="coach-voice-mute" class="coach-voice-btn">Mute voice</button>
+        </div>
+      </div>
       <div class="play-panel">
         <div class="play-block play-block-ai" id="play-block-p2">
           <div class="play-block-head">
@@ -110,7 +128,7 @@
               <label for="start-mode-select">Game mode</label>
               <select id="start-mode-select">
                 <option value="pve" selected>Human vs AI</option>
-                <option value="spectate">Coach vs AI</option>
+                <option value="spectate">Watch AI</option>
                 <option value="pvp">Human vs Human</option>
               </select>
             </div>
@@ -157,7 +175,7 @@
           <select id="ai-level-select"></select>
         </div>
         <div class="setting" id="coach-level-setting" style="display: none;">
-          <label>Coach level</label>
+          <label>Watch AI level</label>
           <select id="coach-level-select"></select>
         </div>
         <div class="setting">

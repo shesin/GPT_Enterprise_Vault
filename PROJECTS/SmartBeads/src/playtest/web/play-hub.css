@@ -98,7 +98,7 @@
 }
 
 .hub-board-card,
-.hub-tutorial-card {
+.hub-coach-card {
   text-align: left;
   padding: 14px 16px;
   border-radius: 10px;
@@ -110,8 +110,42 @@
 }
 
 .hub-board-card:hover,
-.hub-tutorial-card:hover {
+.hub-coach-card:hover {
   border-color: var(--gold);
+}
+
+.hub-coach-card {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  border-color: rgba(42, 157, 143, 0.65);
+  background: rgba(42, 157, 143, 0.12);
+}
+
+.hub-coach-card .hub-card-name {
+  color: #6ee7c8;
+}
+
+.hub-sidebar-link--coach {
+  color: #6ee7c8;
+  font-weight: 800;
+}
+
+.hub-sidebar-link--coach:hover {
+  background: rgba(42, 157, 143, 0.18);
+}
+
+.hub-coach-blurb {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.hub-mode-btn--coach {
+  background: #2a9d8f;
+  color: #06261b;
+}
 }
 
 .hub-board-card.is-selected {
@@ -129,15 +163,6 @@
 .hub-card-size {
   font-size: 0.82rem;
   color: var(--muted);
-}
-
-.hub-tutorial-card {
-  margin-top: 12px;
-  width: 100%;
-}
-
-.hub-tutorial-card .hub-card-name {
-  color: var(--ok);
 }
 
 .hub-mode-picker {

@@ -27,18 +27,47 @@ function renderModePicker(boardId: ProductBoardId): string {
   `;
 }
 
-export function bootstrapPlayHub(launchPve: (boardId: ProductBoardId) => void): void {
+function renderCoachPicker(): string {
+  return `
+    <div class="hub-mode-picker-title">Coach · 6-bead · 3×5</div>
+    <p class="hub-coach-blurb">Step-by-step lesson: slides, captures, centre rule, match timer, shot clock.</p>
+    <div class="hub-mode-actions">
+      <button type="button" class="hub-mode-btn hub-mode-btn--coach" data-hub-action="coach">
+        Start Coach
+      </button>
+    </div>
+  `;
+}
+
+export function bootstrapPlayHub(
+  launchPve: (boardId: ProductBoardId) => void,
+  launchCoach?: () => void,
+): void {
   const gridEl = document.getElementById('hub-board-grid');
   const pickerEl = document.getElementById('hub-mode-picker');
-  const tutorialEl = document.getElementById('hub-tutorial-card');
+  const coachCardEl = document.getElementById('hub-coach-card');
   if (!gridEl || !pickerEl) return;
 
+  function clearBoardSelection(): void {
+    for (const card of gridEl.querySelectorAll('.hub-board-card')) {
+      card.classList.remove('is-selected');
+    }
+  }
+
   function showModePicker(boardId: ProductBoardId): void {
+    clearBoardSelection();
     for (const card of gridEl.querySelectorAll<HTMLButtonElement>('.hub-board-card')) {
       card.classList.toggle('is-selected', card.dataset.boardId === boardId);
     }
     pickerEl.innerHTML = renderModePicker(boardId);
     pickerEl.classList.remove('is-hidden');
+  }
+
+  function showCoachPicker(): void {
+    clearBoardSelection();
+    pickerEl.innerHTML = renderCoachPicker();
+    pickerEl.classList.remove('is-hidden');
+    pickerEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   gridEl.innerHTML = '';
@@ -55,30 +84,38 @@ export function bootstrapPlayHub(launchPve: (boardId: ProductBoardId) => void): 
     gridEl.appendChild(btn);
   }
 
-  tutorialEl?.addEventListener('click', () => {
-    for (const card of gridEl.querySelectorAll('.hub-board-card')) {
-      card.classList.remove('is-selected');
-    }
-    pickerEl.innerHTML = `
-      <div class="hub-mode-picker-title">Tutorial · 6-bead board</div>
-      <p class="hub-card-size" style="margin-top:8px;color:var(--text);">Slide, capture, chains, centre, and timers — interactive lesson coming in the next phase.</p>
-    `;
-    pickerEl.classList.remove('is-hidden');
-  });
+  coachCardEl?.addEventListener('click', () => showCoachPicker());
 
   for (const link of document.querySelectorAll<HTMLButtonElement>('.hub-sidebar-link')) {
     link.addEventListener('click', () => {
-      const label = link.dataset.hubNav ?? link.textContent ?? 'Section';
-      pickerEl.innerHTML = `<div class="hub-mode-picker-title">${label}</div><p class="hub-card-size" style="margin-top:8px;color:var(--text);">Coming soon.</p>`;
+      const nav = link.dataset.hubNav ?? link.textContent ?? 'Section';
+      if (nav === 'coach') {
+        showCoachPicker();
+        return;
+      }
+      clearBoardSelection();
+      pickerEl.innerHTML = `<div class="hub-mode-picker-title">${nav}</div><p class="hub-coach-blurb">Coming soon.</p>`;
       pickerEl.classList.remove('is-hidden');
     });
   }
 
   pickerEl.addEventListener('click', (event) => {
-    const target = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-hub-action="pve"]');
-    if (!target?.dataset.boardId) return;
-    launchPve(target.dataset.boardId as ProductBoardId);
+    const target = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-hub-action]');
+    if (!target) return;
+    const action = target.dataset.hubAction;
+    if (action === 'coach') {
+      launchCoach?.();
+      return;
+    }
+    if (action === 'pve' && target.dataset.boardId) {
+      launchPve(target.dataset.boardId as ProductBoardId);
+    }
   });
 
   pickerEl.classList.add('is-hidden');
+
+  const coachParam = new URLSearchParams(window.location.search).get('coach');
+  if (coachParam === '1' || coachParam === 'start') {
+    showCoachPicker();
+  }
 }
