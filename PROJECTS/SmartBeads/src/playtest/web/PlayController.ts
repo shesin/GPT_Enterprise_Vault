@@ -35,11 +35,17 @@ import {
 import { applyAiHops, AiHopRecord } from './feature/aiTurnPath';
 import {
   buildCoachLessonSettings,
+  COACH_POST_DEMO_PAUSE_MS,
   COACH_VIDEO,
   COACH_VIDEO_BOARD_ID,
   COACH_VIDEO_DURATION_MS,
+  COACH_VIDEO_TRIPLE_SPEECH_TEXT,
+  coachSegmentBannerUntilMs,
   coachSpeechForTime,
+  findCoachSegmentBannerAtTime,
   formatCoachTime,
+  type CoachVideoCue,
+  type CoachVideoSegmentBanner,
 } from './feature/CoachLesson';
 import { applyCoachVideoHighlight, applyCoachVideoKeyframe } from './feature/coachVideoBoard';
 import { CoachVideoPlayer } from './feature/CoachVideoPlayer';
@@ -231,6 +237,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   let nextGameStarter: Player = 'RED';
   let coachVideoPlayer: CoachVideoPlayer | null = null;
   let coachScrubbing = false;
+  let coachWasPlayingBeforeScrub = false;
+  let coachWinReleaseTimer: number | null = null;
 
   /** Start overlay + board switch: human (RED) always opens. New game alternates via applyGameStarter(). */
   function ensureHumanOpensStartScreen(): void {
@@ -348,8 +356,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   function dismissStartBanner(): void {
-    if (celebrationFx) celebrationFx.classList.remove('animate');
-    if (startBanner) startBanner.classList.remove('animate');
+    if (celebrationFx) celebrationFx.classList.remove('animate', 'coach-segment-top');
+    if (startBanner) startBanner.classList.remove('animate', 'coach-segment-banner', 'coach-segment-banner-move');
+    if (startBannerSubtitle) startBannerSubtitle.style.display = '';
     if (celebrationParticles) celebrationParticles.innerHTML = '';
     if (bannerTimer !== null) {
       clearTimeout(bannerTimer);
@@ -359,6 +368,54 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       clearTimeout(bannerPhase2Timer);
       bannerPhase2Timer = null;
     }
+  }
+
+  function triggerCoachSegmentBanner(banner: CoachVideoSegmentBanner | null, atTimeMs?: number): void {
+    if (!isCoachMode()) return;
+    if (!banner) {
+      dismissStartBanner();
+      return;
+    }
+    if (!startBanner || !startBannerTitle || !startBannerSubtitle || !celebrationFx) return;
+
+    startBannerTitle.textContent = banner.title;
+    if (banner.subtitle) {
+      startBannerSubtitle.textContent = banner.subtitle;
+      startBannerSubtitle.style.display = '';
+    } else {
+      startBannerSubtitle.style.display = 'none';
+    }
+
+    if (bannerTimer !== null) {
+      clearTimeout(bannerTimer);
+      bannerTimer = null;
+    }
+    if (bannerPhase2Timer !== null) {
+      clearTimeout(bannerPhase2Timer);
+      bannerPhase2Timer = null;
+    }
+
+    const nowMs = atTimeMs ?? coachVideoPlayer?.getTimeMs() ?? banner.atMs;
+    const untilMs = coachSegmentBannerUntilMs(banner);
+    const remainingMs = Math.max(400, untilMs - nowMs);
+    const isMoveBanner = banner.atMs === 0 && banner.title === 'MOVE';
+    const isCaptureBanner = banner.title.includes('CAPTURE');
+
+    celebrationFx.classList.add('coach-segment-top');
+    celebrationFx.classList.remove('animate');
+    startBanner.classList.remove('animate', 'coach-segment-banner', 'coach-segment-banner-move');
+    void startBanner.offsetWidth;
+
+    const animSec = `${(remainingMs / 1000).toFixed(2)}s`;
+    startBanner.style.setProperty('--coach-banner-dur', animSec);
+    celebrationFx.classList.add('animate');
+    startBanner.classList.add('animate', 'coach-segment-banner');
+    if (isMoveBanner) startBanner.classList.add('coach-segment-banner-move');
+    if (!isCaptureBanner) emitCelebrationSparkles();
+
+    bannerTimer = window.setTimeout(() => {
+      dismissStartBanner();
+    }, remainingMs);
   }
 
   const boardSelect = document.getElementById('board-select') as HTMLSelectElement;
@@ -390,15 +447,97 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     coachVoiceMuteBtn.textContent = coachVoice.isMuted() ? 'Unmute voice' : 'Mute voice';
   }
 
-  function speakCoachText(text: string): void {
-    coachVoice.speak(text);
+  function clearCoachWinReleaseTimer(): void {
+    if (coachWinReleaseTimer !== null) {
+      clearTimeout(coachWinReleaseTimer);
+      coachWinReleaseTimer = null;
+    }
+  }
+
+  function speakCoachText(text: string, onEnd?: () => void): void {
+    coachVoice.speak(text, () => {
+      updateCoachVoiceMuteButton();
+      onEnd?.();
+    });
     updateCoachVoiceMuteButton();
+  }
+
+  function scheduleWinSegmentAfterTripleVoice(): void {
+    clearCoachWinReleaseTimer();
+    coachWinReleaseTimer = window.setTimeout(() => {
+      coachVideoPlayer?.releaseWinSegment();
+      coachWinReleaseTimer = null;
+    }, COACH_POST_DEMO_PAUSE_MS);
   }
 
   function stopCoachVideo(): void {
     coachVideoPlayer?.destroy();
     coachVideoPlayer = null;
+    clearCoachWinReleaseTimer();
     stopCoachVoice();
+    syncCoachVideoCue(null);
+  }
+
+  function setCoachModalSnapshot(on: boolean): void {
+    resultModal.classList.toggle('coach-snapshot', on);
+    resignOfferModal.classList.toggle('coach-snapshot', on);
+    playAgainBtn.disabled = on;
+    playAgainBtn.toggleAttribute('aria-disabled', on);
+    resignAgreeBtn.disabled = on;
+    resignAgreeBtn.toggleAttribute('aria-disabled', on);
+    resignDeclineBtn.disabled = on;
+    resignDeclineBtn.toggleAttribute('aria-disabled', on);
+  }
+
+  function syncCoachVideoCue(cue: CoachVideoCue | null): void {
+    if (!isCoachMode()) return;
+    if (!cue || cue.kind === 'hideModals') {
+      resultModal.style.display = 'none';
+      resultModal.classList.remove('animate');
+      resignOfferModal.style.display = 'none';
+      setCoachModalSnapshot(false);
+      return;
+    }
+    if (cue.kind === 'resignOffer') {
+      resultModal.style.display = 'none';
+      resignOfferDesc.textContent = `${sideDisplayName(cue.resigning)} offers resignation. Agree to a draw?`;
+      resignOfferModal.style.display = 'flex';
+      setCoachModalSnapshot(cue.snapshot === true);
+      return;
+    }
+
+    const creamName = creamPlayerLabel();
+    const blackName = blackPlayerLabel();
+    const redCaps = cue.captures?.RED ?? session.getEngine().getState().captures.RED;
+    const blueCaps = cue.captures?.BLUE ?? session.getEngine().getState().captures.BLUE;
+    resignOfferModal.style.display = 'none';
+    resultModal.style.display = 'flex';
+    resultTitle.className = 'result-title';
+    setCoachModalSnapshot(cue.snapshot === true);
+
+    const winner = cue.winner;
+    let scoreLine = '';
+    if (winner === 'DRAW') {
+      resultTitle.textContent = "WELL PLAYED! IT'S A DRAW";
+      resultTitle.classList.add('draw');
+      scoreLine = `Tied in captures (${redCaps} vs ${blueCaps} beads)`;
+    } else if (winner === 'RED') {
+      resultTitle.textContent = `CONGRATULATIONS! ${creamName.toUpperCase()} WON!`;
+      const diff = redCaps - blueCaps;
+      scoreLine = diff > 0
+        ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${redCaps} vs ${blueCaps})`
+        : `${creamName} won (${redCaps} vs ${blueCaps} beads)`;
+      resultTitle.classList.add('victory');
+    } else {
+      resultTitle.textContent = `CONGRATULATIONS! ${blackName.toUpperCase()} WON!`;
+      const diff = blueCaps - redCaps;
+      scoreLine = diff > 0
+        ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${blueCaps} vs ${redCaps})`
+        : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
+      resultTitle.classList.add('victory');
+    }
+
+    resultDesc.textContent = cue.reason ? `${scoreLine} • ${cue.reason}` : scoreLine;
   }
 
   function syncCoachVideoControls(timeMs: number, playing: boolean): void {
@@ -447,6 +586,12 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         applyCoachVideoHighlight(session, COACH_VIDEO.keyframes, highlight);
         updateUI();
       },
+      onApplyCue: (cue) => {
+        syncCoachVideoCue(cue);
+      },
+      onApplySegmentBanner: (banner) => {
+        triggerCoachSegmentBanner(banner);
+      },
       onPlayMove: (move, onDone) => {
         playAnimated({ from: move.from, to: move.to }, move.player, () => {
           turnCaptures = 0;
@@ -455,11 +600,20 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         });
       },
       onSpeak: (speech) => {
-        speakCoachText(speech.text);
+        const isTripleSpeech = speech.text === COACH_VIDEO_TRIPLE_SPEECH_TEXT;
+        speakCoachText(speech.text, () => {
+          if (isTripleSpeech) scheduleWinSegmentAfterTripleVoice();
+        });
       },
       onPlayingChange: (playing) => {
         syncCoachVideoControls(coachVideoPlayer?.getTimeMs() ?? 0, playing);
-        if (!playing) stopCoachVoice();
+        if (playing && coachVideoPlayer) {
+          triggerCoachSegmentBanner(
+            findCoachSegmentBannerAtTime(coachVideoPlayer.getTimeMs(), COACH_VIDEO.segmentBanners ?? []),
+          );
+        } else if (!playing) {
+          stopCoachVoice();
+        }
       },
       onEnded: () => {
         syncCoachVideoControls(COACH_VIDEO_DURATION_MS, false);
@@ -561,7 +715,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       if (!bgmAudio.src) bgmAudio.src = bgmSelect.value;
       bgmAudio.play().catch(() => {});
     }
-    triggerStartBanner('★ COACH VIDEO ★', '7-bead · 4×5');
     soundEffects.playGameStart();
   }
 
@@ -1583,8 +1736,17 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (isCoachMode()) coachVideoPlayer?.pause();
   });
 
+  function finishCoachScrub(): void {
+    coachScrubbing = false;
+    if (coachWasPlayingBeforeScrub) {
+      coachVideoPlayer?.play();
+    }
+    coachWasPlayingBeforeScrub = false;
+  }
+
   coachScrub?.addEventListener('pointerdown', () => {
     coachScrubbing = true;
+    coachWasPlayingBeforeScrub = coachVideoPlayer?.isPlaying() ?? false;
     coachVideoPlayer?.pause();
   });
 
@@ -1593,9 +1755,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     coachVideoPlayer?.seek(parseInt(coachScrub.value, 10) || 0);
   });
 
-  coachScrub?.addEventListener('pointerup', () => {
-    coachScrubbing = false;
-  });
+  coachScrub?.addEventListener('pointerup', finishCoachScrub);
+  coachScrub?.addEventListener('pointercancel', finishCoachScrub);
 
   coachVoiceReplayBtn?.addEventListener('click', () => {
     if (!isCoachMode() || !coachVideoPlayer) return;

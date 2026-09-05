@@ -41,9 +41,15 @@ export class CoachVoice {
     this.setSpeaking(false);
   }
 
-  speak(text: string): void {
-    if (this.muted || !text.trim()) return;
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  speak(text: string, onEnd?: () => void): void {
+    if (this.muted || !text.trim()) {
+      onEnd?.();
+      return;
+    }
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      onEnd?.();
+      return;
+    }
 
     this.stop();
 
@@ -55,8 +61,14 @@ export class CoachVoice {
     if (en) utterance.voice = en;
 
     utterance.onstart = () => this.setSpeaking(true);
-    utterance.onend = () => this.setSpeaking(false);
-    utterance.onerror = () => this.setSpeaking(false);
+    utterance.onend = () => {
+      this.setSpeaking(false);
+      onEnd?.();
+    };
+    utterance.onerror = () => {
+      this.setSpeaking(false);
+      onEnd?.();
+    };
 
     window.speechSynthesis.speak(utterance);
   }

@@ -1,7 +1,6 @@
 /**
- * Video 1 — Basics on 7-bead · 4×5 (~2 min).
- * Three slides, three single captures, double chain, triple chain.
- * Ends when the triple capture completes. Amber/lime highlights before each scripted move.
+ * Video 1 — Basics on 7-bead · 4×5 (~1:32 total).
+ * Voice fires when each demo move starts; ending modals are watch-only snapshots.
  */
 
 import type { ProductBoardId } from '../../../config/BoardCatalog';
@@ -10,8 +9,61 @@ import type { CenterRule, GameFeatureSettings, MatchTimerMinutes, ShotClockSecon
 
 export const COACH_VIDEO_BOARD_ID = '7x4x5' as const satisfies ProductBoardId;
 
-/** ~2:00 — ends when the triple capture completes. */
-export const COACH_VIDEO_DURATION_MS = 120_000;
+/** Basics (moves + captures) end before win/draw/resign appendix. */
+export const COACH_VIDEO_BASICS_END_MS = 56_220;
+
+/** Pause after each slide demo before the next highlight or segment banner. */
+export const COACH_POST_DEMO_PAUSE_MS = 3_000;
+
+/** Win waits until triple voice finishes + post pause (see CoachVideoPlayer win gate). */
+export const COACH_VIDEO_TRIPLE_DEMO_MS = 54_100;
+
+export const COACH_VIDEO_TRIPLE_SPEECH_TEXT =
+  'Triple capture. The same bead can keep jumping while captures stay open. Likewise you can capture four, five, or more beads in one turn while the chain stays open.';
+
+export function estimateCoachSpeechMs(text: string, rate = 0.92): number {
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  return Math.ceil((words / (2.4 * rate)) * 1000);
+}
+
+export const COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH_VIDEO_TRIPLE_SPEECH_TEXT);
+
+/** Earliest win segment — playback may hold here until triple voice ends + 3 s. */
+export const COACH_VIDEO_WIN_SEGMENT_START_MS =
+  COACH_VIDEO_TRIPLE_DEMO_MS + COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS + COACH_POST_DEMO_PAUSE_MS;
+
+const COACH_DRAW_SEGMENT_START_MS = COACH_VIDEO_WIN_SEGMENT_START_MS + 11_000;
+const COACH_RESIGN_SEGMENT_START_MS = COACH_DRAW_SEGMENT_START_MS + 11_000;
+
+/** Total timeline length (ending appendix included). */
+export const COACH_VIDEO_DURATION_MS = COACH_RESIGN_SEGMENT_START_MS + 10_100;
+
+/** Amber highlight appears this long before the scripted move plays. */
+export const COACH_HIGHLIGHT_LEAD_MS = 1_500;
+
+/** MOVE banner minimum on-screen time (capped before next segment). */
+export const COACH_MOVE_BANNER_MIN_MS = 8_000;
+
+/** Capture segment banner minimum on-screen time. */
+export const COACH_CAPTURE_BANNER_MIN_MS = 5_000;
+
+/** Keep banner visible this long after the demo move starts. */
+export const COACH_SEGMENT_BANNER_TAIL_MS = 2_000;
+
+/** Default top banner visible time (non-MOVE segments). */
+export const COACH_SEGMENT_BANNER_HOLD_MS = 3_000;
+
+/** @deprecated use COACH_MOVE_BANNER_MIN_MS */
+export const COACH_MOVE_BANNER_HOLD_MS = COACH_MOVE_BANNER_MIN_MS;
+
+/** @deprecated voice is tied to scripted move start times */
+export const COACH_MOVE_SPEECH_DELAY_MS = 0;
+
+/** @deprecated voice is tied to scripted move start times */
+export const COACH_CAPTURE_SPEECH_DELAY_MS = 0;
+
+/** @deprecated use move-linked speech */
+export const COACH_SEGMENT_SPEECH_DELAY_MS = 0;
 
 /** @deprecated use COACH_VIDEO_BOARD_ID */
 export const COACH_LESSON_BOARD_ID = COACH_VIDEO_BOARD_ID;
@@ -31,6 +83,8 @@ export interface CoachVideoMove {
   player: Player;
   /** Board snapshot immediately before this move (explicit setup keyframe time). */
   setupAtMs: number;
+  /** Spoken when this move animation starts (basics segments). */
+  speech?: string;
 }
 
 export interface CoachVideoSpeech {
@@ -45,6 +99,26 @@ export interface CoachVideoHighlight {
   selectedId: number;
 }
 
+/** Scripted UI overlay during ending segments (watch-only). */
+export type CoachVideoCue =
+  | { atMs: number; kind: 'hideModals' }
+  | { atMs: number; kind: 'resignOffer'; resigning: Player; snapshot?: boolean }
+  | {
+      atMs: number;
+      kind: 'result';
+      winner: Player | 'DRAW';
+      reason?: string;
+      captures?: { RED: number; BLUE: number };
+      snapshot?: boolean;
+    };
+
+/** Big title card at the top when each segment starts. */
+export interface CoachVideoSegmentBanner {
+  atMs: number;
+  title: string;
+  subtitle?: string;
+}
+
 export interface CoachVideoScript {
   boardId: typeof COACH_VIDEO_BOARD_ID;
   durationMs: number;
@@ -55,6 +129,8 @@ export interface CoachVideoScript {
   moves: CoachVideoMove[];
   speeches: CoachVideoSpeech[];
   highlights: CoachVideoHighlight[];
+  cues: CoachVideoCue[];
+  segmentBanners: CoachVideoSegmentBanner[];
 }
 
 function occ20(): (Player | undefined)[] {
@@ -82,8 +158,27 @@ function kf(
   };
 }
 
-/** Segment starts for replay-voice lookup. */
-export const COACH_VIDEO_SEGMENT_STARTS_MS = [0, 36_000, 72_000, 94_000] as const;
+/** Segment starts for replay-voice lookup (basics then endings). */
+export const COACH_VIDEO_BASICS_SEGMENT_STARTS_MS = [0, 19_100, 37_940, 48_100] as const;
+export const COACH_VIDEO_ENDING_SEGMENT_STARTS_MS = [
+  COACH_VIDEO_WIN_SEGMENT_START_MS,
+  COACH_DRAW_SEGMENT_START_MS,
+  COACH_RESIGN_SEGMENT_START_MS,
+] as const;
+export const COACH_VIDEO_SEGMENT_STARTS_MS = [
+  ...COACH_VIDEO_BASICS_SEGMENT_STARTS_MS,
+  ...COACH_VIDEO_ENDING_SEGMENT_STARTS_MS,
+] as const;
+
+export const COACH_VIDEO_SEGMENT_BANNERS: CoachVideoSegmentBanner[] = [
+  { atMs: 0, title: 'MOVE', subtitle: '★ SMARTBEADS COACH ★' },
+  { atMs: 19_100, title: 'SINGLE CAPTURE' },
+  { atMs: 37_940, title: 'DOUBLE CAPTURE' },
+  { atMs: 48_100, title: 'TRIPLE CAPTURE' },
+  { atMs: COACH_VIDEO_WIN_SEGMENT_START_MS, title: 'WIN' },
+  { atMs: COACH_DRAW_SEGMENT_START_MS, title: 'DRAW' },
+  { atMs: COACH_RESIGN_SEGMENT_START_MS, title: 'RESIGN' },
+];
 
 const ANCHOR: readonly [number, Player][] = [[15, 'BLUE'], [19, 'BLUE']];
 
@@ -97,63 +192,105 @@ export const COACH_VIDEO: CoachVideoScript = {
     'Single capture — jump over one neighbour bead.',
     'Double capture — same bead jumps twice.',
     'Triple capture — same bead jumps three times; likewise four, five, or more while the chain stays open.',
+    'Win — most captured beads wins. Capture all opponent beads for an instant win.',
+    'Draw — equal captured beads when the game ends.',
+    'Resign — offer resignation; opponent agrees to a draw or declines and takes the win.',
   ],
   keyframes: [
     kf(0, [[12, 'RED'], [16, 'RED'], [17, 'RED'], ...ANCHOR]),
-    kf(14_500, [[8, 'RED'], [16, 'RED'], [17, 'RED'], ...ANCHOR]),
-    kf(15_000, [[16, 'RED'], [17, 'RED'], [18, 'RED'], ...ANCHOR]),
-    kf(24_500, [[12, 'RED'], [17, 'RED'], [18, 'RED'], ...ANCHOR]),
-    kf(25_000, [[17, 'RED'], [16, 'RED'], [12, 'RED'], ...ANCHOR]),
-    kf(34_500, [[13, 'RED'], [16, 'RED'], [12, 'RED'], ...ANCHOR]),
-    kf(36_000, [[12, 'RED'], [8, 'BLUE'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']]),
-    kf(50_500, [[4, 'RED'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
-    kf(51_000, [[8, 'RED'], [5, 'BLUE'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']]),
-    kf(65_500, [[2, 'RED'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
-    kf(63_000, [[17, 'RED'], [13, 'BLUE'], [16, 'RED'], [12, 'RED'], [19, 'BLUE']]),
-    kf(80_500, [[9, 'RED'], [16, 'RED'], [12, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
-    kf(72_000, [[12, 'RED'], [8, 'BLUE'], [5, 'BLUE'], [16, 'RED'], [19, 'BLUE']]),
-    kf(84_500, [[4, 'RED'], [5, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }, 4),
-    kf(92_500, [[6, 'RED'], [16, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }),
-    kf(94_000, [[12, 'RED'], [8, 'BLUE'], [5, 'BLUE'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']]),
-    kf(106_500, [[4, 'RED'], [5, 'BLUE'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }, 4),
-    kf(110_500, [[6, 'RED'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }, 6),
-    kf(117_000, [[14, 'RED'], [16, 'RED'], [19, 'BLUE']], { RED: 3, BLUE: 0 }),
+    kf(6_700, [[8, 'RED'], [16, 'RED'], [17, 'RED'], ...ANCHOR]),
+    kf(10_000, [[16, 'RED'], [17, 'RED'], [18, 'RED'], ...ANCHOR]),
+    kf(11_400, [[12, 'RED'], [17, 'RED'], [18, 'RED'], ...ANCHOR]),
+    kf(14_900, [[17, 'RED'], [16, 'RED'], [12, 'RED'], ...ANCHOR]),
+    kf(16_100, [[13, 'RED'], [16, 'RED'], [12, 'RED'], ...ANCHOR]),
+    kf(19_100, [[12, 'RED'], [8, 'BLUE'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']]),
+    kf(25_380, [[4, 'RED'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
+    kf(28_000, [[8, 'RED'], [5, 'BLUE'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']]),
+    kf(32_680, [[2, 'RED'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
+    kf(32_940, [[17, 'RED'], [13, 'BLUE'], [16, 'RED'], [12, 'RED'], [19, 'BLUE']]),
+    kf(34_940, [[9, 'RED'], [16, 'RED'], [12, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
+    kf(37_940, [[12, 'RED'], [8, 'BLUE'], [5, 'BLUE'], [16, 'RED'], [19, 'BLUE']]),
+    kf(44_220, [[4, 'RED'], [5, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }, 4),
+    kf(45_100, [[6, 'RED'], [16, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }),
+    kf(48_100, [[12, 'RED'], [8, 'BLUE'], [5, 'BLUE'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']]),
+    kf(54_480, [[4, 'RED'], [5, 'BLUE'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }, 4),
+    kf(54_880, [[6, 'RED'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }, 6),
+    kf(56_220, [[14, 'RED'], [16, 'RED'], [19, 'BLUE']], { RED: 3, BLUE: 0 }),
+    kf(COACH_VIDEO_WIN_SEGMENT_START_MS, [[0, 'RED'], [4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE'], [17, 'RED'], [18, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }),
+    kf(COACH_DRAW_SEGMENT_START_MS, [[0, 'RED'], [4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE'], [17, 'BLUE'], [18, 'RED'], [19, 'BLUE']], { RED: 3, BLUE: 3 }),
+    kf(COACH_RESIGN_SEGMENT_START_MS, [[0, 'RED'], [4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE'], [17, 'RED'], [18, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 2 }),
   ],
   speeches: [
-    { atMs: 5_000, text: 'Move. Slide one step along a line to an empty node.' },
-    { atMs: 41_000, text: 'Single capture. Jump over one neighbour onto the empty node beyond.' },
-    { atMs: 77_000, text: 'Double capture. The same bead can jump again for a second capture.' },
     {
-      atMs: 99_000,
-      text: 'Triple capture. The same bead can keep jumping while captures stay open. Likewise you can capture four, five, or more beads in one turn.',
+      atMs: COACH_VIDEO_WIN_SEGMENT_START_MS,
+      text: 'Win. When the game ends, the side with more captured beads wins. You can also win instantly by capturing every opponent bead.',
+    },
+    {
+      atMs: COACH_DRAW_SEGMENT_START_MS,
+      text: 'Draw. If captured beads are equal when the game ends, it is a draw.',
+    },
+    {
+      atMs: COACH_RESIGN_SEGMENT_START_MS,
+      text: 'Resign. The player to move can offer resignation. The opponent may agree to a draw, or decline and claim the win.',
     },
   ],
   highlights: [
-    { atMs: 8_000, keyframeAtMs: 0, selectedId: 12 },
-    { atMs: 18_000, keyframeAtMs: 15_000, selectedId: 16 },
-    { atMs: 28_000, keyframeAtMs: 25_000, selectedId: 17 },
-    { atMs: 44_000, keyframeAtMs: 36_000, selectedId: 12 },
-    { atMs: 54_000, keyframeAtMs: 51_000, selectedId: 8 },
-    { atMs: 64_000, keyframeAtMs: 63_000, selectedId: 17 },
-    { atMs: 80_000, keyframeAtMs: 72_000, selectedId: 12 },
-    { atMs: 86_000, keyframeAtMs: 84_500, selectedId: 4 },
-    { atMs: 102_000, keyframeAtMs: 94_000, selectedId: 12 },
-    { atMs: 108_000, keyframeAtMs: 106_500, selectedId: 4 },
-    { atMs: 112_000, keyframeAtMs: 110_500, selectedId: 6 },
+    { atMs: 5_000, keyframeAtMs: 0, selectedId: 12 },
+    { atMs: 9_700, keyframeAtMs: 10_000, selectedId: 16 },
+    { atMs: 14_400, keyframeAtMs: 14_900, selectedId: 17 },
+    { atMs: 23_600, keyframeAtMs: 19_100, selectedId: 12 },
+    { atMs: 28_380, keyframeAtMs: 28_000, selectedId: 8 },
+    { atMs: 33_160, keyframeAtMs: 32_940, selectedId: 17 },
+    { atMs: 42_440, keyframeAtMs: 37_940, selectedId: 12 },
+    { atMs: 44_320, keyframeAtMs: 44_220, selectedId: 4 },
+    { atMs: 52_600, keyframeAtMs: 48_100, selectedId: 12 },
+    { atMs: 54_080, keyframeAtMs: 54_480, selectedId: 4 },
+    { atMs: 54_780, keyframeAtMs: 54_880, selectedId: 6 },
   ],
   moves: [
-    { atMs: 11_000, setupAtMs: 0, from: 12, to: 8, player: 'RED' },
-    { atMs: 21_000, setupAtMs: 15_000, from: 16, to: 12, player: 'RED' },
-    { atMs: 31_000, setupAtMs: 25_000, from: 17, to: 13, player: 'RED' },
-    { atMs: 47_000, setupAtMs: 36_000, from: 12, to: 4, player: 'RED' },
-    { atMs: 57_000, setupAtMs: 51_000, from: 8, to: 2, player: 'RED' },
-    { atMs: 67_000, setupAtMs: 63_000, from: 17, to: 9, player: 'RED' },
-    { atMs: 83_000, setupAtMs: 72_000, from: 12, to: 4, player: 'RED' },
-    { atMs: 89_000, setupAtMs: 84_500, from: 4, to: 6, player: 'RED' },
-    { atMs: 105_000, setupAtMs: 94_000, from: 12, to: 4, player: 'RED' },
-    { atMs: 109_000, setupAtMs: 106_500, from: 4, to: 6, player: 'RED' },
-    { atMs: 113_000, setupAtMs: 110_500, from: 6, to: 14, player: 'RED' },
+    { atMs: 6_500, setupAtMs: 0, from: 12, to: 8, player: 'RED', speech: 'Move. Slide one step along a line to an empty node.' },
+    { atMs: 11_200, setupAtMs: 10_000, from: 16, to: 12, player: 'RED' },
+    { atMs: 15_900, setupAtMs: 14_900, from: 17, to: 13, player: 'RED' },
+    {
+      atMs: 25_100,
+      setupAtMs: 19_100,
+      from: 12,
+      to: 4,
+      player: 'RED',
+      speech: 'Single capture. Jump over one neighbour onto the empty node beyond.',
+    },
+    { atMs: 29_880, setupAtMs: 28_000, from: 8, to: 2, player: 'RED' },
+    { atMs: 34_660, setupAtMs: 32_940, from: 17, to: 9, player: 'RED' },
+    {
+      atMs: 43_940,
+      setupAtMs: 37_940,
+      from: 12,
+      to: 4,
+      player: 'RED',
+      speech: 'Double capture. The same bead can jump again for a second capture.',
+    },
+    { atMs: 44_820, setupAtMs: 44_220, from: 4, to: 6, player: 'RED' },
+    {
+      atMs: COACH_VIDEO_TRIPLE_DEMO_MS,
+      setupAtMs: 48_100,
+      from: 12,
+      to: 4,
+      player: 'RED',
+      speech: COACH_VIDEO_TRIPLE_SPEECH_TEXT,
+    },
+    { atMs: 54_980, setupAtMs: 54_480, from: 4, to: 6, player: 'RED' },
+    { atMs: 55_860, setupAtMs: 54_880, from: 6, to: 14, player: 'RED' },
   ],
+  cues: [
+    { atMs: COACH_VIDEO_WIN_SEGMENT_START_MS + 4_000, kind: 'result', winner: 'RED', captures: { RED: 2, BLUE: 0 }, snapshot: true },
+    { atMs: COACH_VIDEO_WIN_SEGMENT_START_MS + 6_000, kind: 'hideModals' },
+    { atMs: COACH_DRAW_SEGMENT_START_MS + 4_000, kind: 'result', winner: 'DRAW', captures: { RED: 3, BLUE: 3 }, snapshot: true },
+    { atMs: COACH_DRAW_SEGMENT_START_MS + 6_000, kind: 'hideModals' },
+    { atMs: COACH_RESIGN_SEGMENT_START_MS + 4_000, kind: 'resignOffer', resigning: 'RED', snapshot: true },
+    { atMs: COACH_RESIGN_SEGMENT_START_MS + 6_000, kind: 'result', winner: 'DRAW', reason: 'Resignation agreed — draw.', captures: { RED: 2, BLUE: 2 }, snapshot: true },
+    { atMs: COACH_RESIGN_SEGMENT_START_MS + 8_000, kind: 'hideModals' },
+  ],
+  segmentBanners: COACH_VIDEO_SEGMENT_BANNERS,
 };
 
 export function findCoachKeyframeAt(
@@ -193,11 +330,64 @@ export function findCoachSetupKeyframeForMove(
   return findCoachKeyframeByTime(move.setupAtMs, keyframes);
 }
 
+export function coachSegmentBannerUntilMs(
+  banner: CoachVideoSegmentBanner,
+  banners: readonly CoachVideoSegmentBanner[] = COACH_VIDEO.segmentBanners,
+  moves: readonly CoachVideoMove[] = COACH_VIDEO.moves,
+  speeches: readonly CoachVideoSpeech[] = COACH_VIDEO.speeches,
+): number {
+  const idx = banners.findIndex((b) => b.atMs === banner.atMs && b.title === banner.title);
+  const nextBanner = idx >= 0 ? banners[idx + 1] : banners.find((b) => b.atMs > banner.atMs);
+  const nextCap = nextBanner?.atMs ?? Number.POSITIVE_INFINITY;
+
+  const demoMove = moves.find((m) => m.atMs >= banner.atMs && m.speech);
+  if (demoMove) {
+    const afterMove = demoMove.atMs + COACH_SEGMENT_BANNER_TAIL_MS;
+    const minHold = banner.title === 'MOVE'
+      ? banner.atMs + COACH_MOVE_BANNER_MIN_MS
+      : banner.title.includes('CAPTURE')
+        ? banner.atMs + COACH_CAPTURE_BANNER_MIN_MS
+        : banner.atMs + COACH_SEGMENT_BANNER_HOLD_MS;
+    return Math.min(nextCap, Math.max(afterMove, minHold));
+  }
+  const endingSpeech = speeches.find((s) => s.atMs >= banner.atMs);
+  if (endingSpeech) return Math.min(endingSpeech.atMs, nextCap);
+  return Math.min(banner.atMs + COACH_SEGMENT_BANNER_HOLD_MS, nextCap);
+}
+
+export function coachBannerHoldMs(banner: CoachVideoSegmentBanner): number {
+  return coachSegmentBannerUntilMs(banner) - banner.atMs;
+}
+
+export function findCoachSegmentBannerAtTime(
+  ms: number,
+  banners: readonly CoachVideoSegmentBanner[] = COACH_VIDEO.segmentBanners,
+): CoachVideoSegmentBanner | null {
+  let active: CoachVideoSegmentBanner | null = null;
+  for (const banner of banners) {
+    const untilMs = coachSegmentBannerUntilMs(banner, banners);
+    if (banner.atMs <= ms && ms < untilMs) active = banner;
+  }
+  return active;
+}
+
+export function findCoachCueAtTime(ms: number, cues: readonly CoachVideoCue[] = COACH_VIDEO.cues): CoachVideoCue | null {
+  let latest: CoachVideoCue | null = null;
+  for (const cue of cues) {
+    if (cue.atMs <= ms) latest = cue;
+  }
+  return latest;
+}
+
 export function coachSpeechForTime(ms: number, script: CoachVideoScript = COACH_VIDEO): string {
-  if (ms < COACH_VIDEO_SEGMENT_STARTS_MS[1]) return script.speeches[0].text;
-  if (ms < COACH_VIDEO_SEGMENT_STARTS_MS[2]) return script.speeches[1].text;
-  if (ms < COACH_VIDEO_SEGMENT_STARTS_MS[3]) return script.speeches[2].text;
-  return script.speeches[3].text;
+  for (let i = script.speeches.length - 1; i >= 0; i--) {
+    if (script.speeches[i].atMs <= ms) return script.speeches[i].text;
+  }
+  let lastMoveSpeech = '';
+  for (const move of script.moves) {
+    if (move.speech && move.atMs <= ms) lastMoveSpeech = move.speech;
+  }
+  return lastMoveSpeech;
 }
 
 export function formatCoachTime(ms: number): string {

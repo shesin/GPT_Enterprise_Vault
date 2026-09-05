@@ -9,7 +9,17 @@ alwaysApply: true
 - **Doubt** → ask until clear (one short question at a time, then wait). Do not guess or implement on ambiguity.
 - **Better idea** → say it plainly, then wait for approval. Do not silently pick a “better” path.
 - **After doc/code updates** → show the user what changed (which files, one-line what each says now).
-- **Commit / push** = commit **and push to GitHub** never local only; report push output.
+
+# Git checkpoints
+
+Only commit or push when the user asks. **`ok` / `good`** = known-good checkpoint (say so in the commit message).
+
+| User says | Agent must do |
+|-----------|----------------|
+| `commit local` / `commit local ok` / `commit local good` | Local `git commit` only — **no push** |
+| `push to git` / `push to git ok` / `push to git good` | Commit if needed + **push to GitHub** |
+
+When pushing, report push output.
 
 # Verify before output (targeted)
 

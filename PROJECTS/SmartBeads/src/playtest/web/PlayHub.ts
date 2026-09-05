@@ -30,7 +30,7 @@ function renderModePicker(boardId: ProductBoardId): string {
 function renderCoachPicker(): string {
   return `
     <div class="hub-mode-picker-title">Coach · Video 1 · 7-bead</div>
-    <p class="hub-coach-blurb">~2 min watch-only lesson: 3 moves, 3 captures, double chain, triple chain. Chains can run four, five, or more beads. Amber highlights show legal moves.</p>
+    <p class="hub-coach-blurb">~1:30 SmartBeads coach video: moves, captures, then win, draw, and resign (by captured beads).</p>
     <div class="hub-mode-actions">
       <button type="button" class="hub-mode-btn hub-mode-btn--coach" data-hub-action="coach">
         Start Coach
