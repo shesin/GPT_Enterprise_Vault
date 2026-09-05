@@ -1,5 +1,6 @@
 import type { FeatureSession } from './FeatureSession';
-import type { CoachVideoKeyframe } from './CoachVideoScript';
+import type { CoachVideoHighlight, CoachVideoKeyframe } from './CoachVideoScript';
+import { findCoachKeyframeByTime } from './CoachVideoScript';
 
 /** Snap the live session to a scripted coach-video board state. */
 export function applyCoachVideoKeyframe(session: FeatureSession, keyframe: CoachVideoKeyframe): void {
@@ -18,4 +19,15 @@ export function applyCoachVideoKeyframe(session: FeatureSession, keyframe: Coach
   snap.chainPieceId = keyframe.chainPieceId;
   engine.loadSnapshot(snap);
   session.clearArmedSelection();
+}
+
+/** Amber/lime move hints during coach playback (watch-only). */
+export function applyCoachVideoHighlight(
+  session: FeatureSession,
+  keyframes: readonly CoachVideoKeyframe[],
+  highlight: CoachVideoHighlight,
+): void {
+  const keyframe = findCoachKeyframeByTime(highlight.keyframeAtMs, keyframes);
+  applyCoachVideoKeyframe(session, keyframe);
+  session.setCoachDemoSelection(highlight.selectedId);
 }

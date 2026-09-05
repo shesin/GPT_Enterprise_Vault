@@ -41,7 +41,7 @@ import {
   coachSpeechForTime,
   formatCoachTime,
 } from './feature/CoachLesson';
-import { applyCoachVideoKeyframe } from './feature/coachVideoBoard';
+import { applyCoachVideoHighlight, applyCoachVideoKeyframe } from './feature/coachVideoBoard';
 import { CoachVideoPlayer } from './feature/CoachVideoPlayer';
 import { renderCoachPanelHtml } from './feature/coachPanelRender';
 import { CoachVoice } from './feature/CoachVoice';
@@ -199,7 +199,7 @@ export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopR
   return records;
 }
 
-export function bootstrapPlayShell(): void {
+export function bootstrapPlayShell(onReady?: () => void): void {
   let currentBoardId: ProductBoardId = DEFAULT_PRODUCT_BOARD;
 
   function createSession(boardId: ProductBoardId, settings?: GameFeatureSettings): FeatureSession {
@@ -443,6 +443,10 @@ export function bootstrapPlayShell(): void {
         applyCoachVideoKeyframe(session, keyframe);
         updateUI();
       },
+      onApplyHighlight: (highlight) => {
+        applyCoachVideoHighlight(session, COACH_VIDEO.keyframes, highlight);
+        updateUI();
+      },
       onPlayMove: (move, onDone) => {
         playAnimated({ from: move.from, to: move.to }, move.player, () => {
           turnCaptures = 0;
@@ -557,7 +561,7 @@ export function bootstrapPlayShell(): void {
       if (!bgmAudio.src) bgmAudio.src = bgmSelect.value;
       bgmAudio.play().catch(() => {});
     }
-    triggerStartBanner('★ COACH VIDEO ★', '6-bead · 3×5');
+    triggerStartBanner('★ COACH VIDEO ★', '7-bead · 4×5');
     soundEffects.playGameStart();
   }
 
@@ -1718,6 +1722,8 @@ export function bootstrapPlayShell(): void {
     switchBoard,
     launchCoachLesson,
   };
+
+  onReady?.();
 }
 
 function populateBoardSelect(select: HTMLSelectElement): void {

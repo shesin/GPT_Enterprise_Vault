@@ -9,7 +9,7 @@ alwaysApply: true
 - **Doubt** → ask until clear (one short question at a time, then wait). Do not guess or implement on ambiguity.
 - **Better idea** → say it plainly, then wait for approval. Do not silently pick a “better” path.
 - **After doc/code updates** → show the user what changed (which files, one-line what each says now).
-- **Commit / push** = commit **and push to GitHub** unless local only; report hash + push output.
+- **Commit / push** = commit **and push to GitHub** never local only; report hash + push output.
 
 # STOP — before any repo edit
 

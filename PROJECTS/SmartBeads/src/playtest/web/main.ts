@@ -35,17 +35,20 @@ function launchHubCoach(): void {
 }
 
 function boot(): void {
+  const coachParam = new URLSearchParams(window.location.search).get('coach');
+
   if (isDirectPlayBoard()) {
     showDirectPlayBoard();
-  } else {
-    bootstrapPlayHub(launchHubPve, launchHubCoach);
+    bootstrapPlayShell();
+    return;
   }
-  bootstrapPlayShell();
 
-  const coachParam = new URLSearchParams(window.location.search).get('coach');
-  if (!isDirectPlayBoard() && coachParam === 'start') {
-    window.setTimeout(() => launchHubCoach(), 0);
-  }
+  bootstrapPlayHub(launchHubPve, launchHubCoach);
+  bootstrapPlayShell(() => {
+    if (coachParam === 'start') {
+      launchHubCoach();
+    }
+  });
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {

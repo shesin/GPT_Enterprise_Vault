@@ -29,8 +29,8 @@ function renderModePicker(boardId: ProductBoardId): string {
 
 function renderCoachPicker(): string {
   return `
-    <div class="hub-mode-picker-title">Coach · 6-bead · 3×5</div>
-    <p class="hub-coach-blurb">Step-by-step lesson: slides, captures, centre rule, match timer, shot clock.</p>
+    <div class="hub-mode-picker-title">Coach · Video 1 · 7-bead</div>
+    <p class="hub-coach-blurb">~3 min watch-only lesson: 3 moves, 3 captures, double chain, triple chain. Amber highlights show legal moves.</p>
     <div class="hub-mode-actions">
       <button type="button" class="hub-mode-btn hub-mode-btn--coach" data-hub-action="coach">
         Start Coach

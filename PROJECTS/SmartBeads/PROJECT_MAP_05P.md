@@ -119,7 +119,7 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`main.ts`** — calls `bootstrapPlayShell()`.
 - **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`. **Coach mode:** watch-only ~48s video (play/pause/scrub); no board input.
 - **`PlayHub.ts`** — hub navigation; **Coach** sidebar + top card launches teaching video on 6×3×5 (`?coach=1` picker, `?coach=start` auto-launch).
-- **`feature/CoachVideoScript.ts`** — one timeline: 3 vs 3 beads, 5s settle, labelled segments (Move / Single capture / Double capture), scripted moves on 6×3×5 only.
+- **`feature/CoachVideoScript.ts`** — Video 1 basics on **7-bead** (~3 min): 3 slides, 3 single captures, double + triple chain; amber/lime highlight cues.
 - **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.
 - **`feature/CoachVoice.ts`** — browser TTS; mute and replay per segment.
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. No 3-fold repetition in production.

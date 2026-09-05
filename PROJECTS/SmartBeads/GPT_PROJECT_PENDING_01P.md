@@ -254,10 +254,12 @@ Capacitor wrap **confirmed** (not native WebView bridge).
 
 ## 11. Coach teaching video — optional polish (approved backlog, not scheduled)
 
-Shipped v1 is **OK** in code (see `GPT_PROJECT_STATUS_01P.md`). Human said **good** on pacing and 3v3 layout. Optional next steps — **need explicit go** before code:
+Video 1 basics (**7-bead**, ~3 min) shipped in code — see `GPT_PROJECT_STATUS_01P.md`. Optional next steps — **need explicit go**:
 
-1. **Highlight active panel bullet** during playback (Move / Single capture / Double capture).
-2. **~2s hold after each demo move** before the next segment snap.
+1. **Highlight active panel bullet** during playback.
+2. **~2s hold after each demo move** before the next snap.
+
+**Video 2 (timers, shot clock, centre rules)** — planned separate ~2–3 min video; not started.
 
 Not the same as **Watch AI** (spectate). Not the long-term **AI Coach** vision below.
 

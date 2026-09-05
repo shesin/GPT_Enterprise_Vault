@@ -277,6 +277,18 @@ export class FeatureSession {
     this.uiState = 'idle';
   }
 
+  /** Coach video: amber/lime rings for scripted demos (no human clicks). */
+  setCoachDemoSelection(nodeId: number): void {
+    const chain = this.engine.getChainPieceId();
+    if (chain !== null && chain === nodeId) {
+      this.selectedId = nodeId;
+      this.uiState = 'chain';
+      return;
+    }
+    this.selectedId = nodeId;
+    this.uiState = 'selected';
+  }
+
   private armSelection(nodeId: number): boolean {
     const chain = this.engine.getChainPieceId();
     if (chain !== null) {
