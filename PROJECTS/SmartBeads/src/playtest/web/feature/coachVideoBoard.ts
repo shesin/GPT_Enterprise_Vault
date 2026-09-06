@@ -8,8 +8,14 @@ export function applyCoachVideoKeyframe(session: FeatureSession, keyframe: Coach
   const snap = engine.exportSnapshot();
   const nodes = snap.state.board.intersections;
 
+  for (const node of nodes) {
+    node.occupant = undefined;
+  }
   for (let i = 0; i < keyframe.occupants.length; i++) {
-    nodes[i].occupant = keyframe.occupants[i];
+    const occupant = keyframe.occupants[i];
+    if (occupant !== undefined) {
+      nodes[i].occupant = occupant;
+    }
   }
 
   snap.state.currentPlayer = keyframe.currentPlayer;
@@ -19,6 +25,7 @@ export function applyCoachVideoKeyframe(session: FeatureSession, keyframe: Coach
   snap.chainPieceId = keyframe.chainPieceId;
   engine.loadSnapshot(snap);
   session.clearArmedSelection();
+  session.setCoachWinGlow(keyframe.glowNodeIds ?? []);
 }
 
 /** Amber/lime move hints during coach playback (watch-only). */

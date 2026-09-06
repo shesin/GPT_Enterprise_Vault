@@ -35,6 +35,7 @@ export interface CanvasBoardView {
   turnPulse: number;
   lastMove?: LastMoveHighlight | null;
   capturePulses?: CapturePulse[];
+  coachGlowNodeIds?: readonly number[];
 }
 
 function resolveCenterHighlight(board: BoardDefinition): Set<number> {
@@ -259,6 +260,8 @@ export function drawCanvasBoard(
   const { board, currentPlayer, gameOver, selectedId, legalTargets, chainPieceId, anim, turnPulse } = view;
   const lastMove = view.lastMove ?? null;
   const capturePulses = view.capturePulses ?? [];
+  const coachGlowNodeIds = view.coachGlowNodeIds ?? [];
+  const coachGlowSet = new Set(coachGlowNodeIds);
   const visualProfile = getBoardVisualProfile(board.name);
   const centerHighlight = resolveCenterHighlight(board);
   const project = (node: { x?: number; y?: number; id: number }) =>
@@ -348,9 +351,10 @@ export function drawCanvasBoard(
         && !animating
         && (chainPieceId === null || isChainPiece);
       const isSelected = selectedId === node.id;
-      const pulse = isTurnPiece ? 1 + 0.08 * Math.sin(turnPulse) : 1;
+      const isCoachGlow = coachGlowSet.has(node.id);
+      const pulse = isTurnPiece || isCoachGlow ? 1 + 0.08 * Math.sin(turnPulse) : 1;
       const dimOpp = !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
-      const r = (isSelected ? 18 : 16) * pulse;
+      const r = (isSelected || isCoachGlow ? 18 : 16) * pulse;
       drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
       if (isSelected) {
         if (node.occupant === 'BLUE') {
@@ -358,6 +362,8 @@ export function drawCanvasBoard(
         } else {
           drawAmberOrangeRing(ctx, x, y, r);
         }
+      } else if (isCoachGlow && node.occupant === 'RED') {
+        drawAmberOrangeRing(ctx, x, y, r);
       }
     }
   }

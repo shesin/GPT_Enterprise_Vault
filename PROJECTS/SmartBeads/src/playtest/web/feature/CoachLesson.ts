@@ -24,6 +24,7 @@ export {
   findCoachSegmentBannerAtTime,
   formatCoachTime,
   findCoachKeyframeAt,
+  findCoachKeyframeAfterMove,
   findCoachKeyframeByTime,
   type CoachLessonStepSettings,
   type CoachVideoCue,

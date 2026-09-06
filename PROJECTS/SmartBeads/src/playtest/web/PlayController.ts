@@ -42,6 +42,7 @@ import {
   COACH_VIDEO_TRIPLE_SPEECH_TEXT,
   coachSegmentBannerUntilMs,
   coachSpeechForTime,
+  findCoachKeyframeAt,
   findCoachSegmentBannerAtTime,
   formatCoachTime,
   type CoachVideoCue,
@@ -370,7 +371,11 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
   }
 
-  function triggerCoachSegmentBanner(banner: CoachVideoSegmentBanner | null, atTimeMs?: number): void {
+  function triggerCoachSegmentBanner(
+    banner: CoachVideoSegmentBanner | null,
+    atTimeMs?: number,
+    holdMsOverride?: number,
+  ): void {
     if (!isCoachMode()) return;
     if (!banner) {
       dismissStartBanner();
@@ -396,7 +401,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
 
     const nowMs = atTimeMs ?? coachVideoPlayer?.getTimeMs() ?? banner.atMs;
-    const untilMs = coachSegmentBannerUntilMs(banner);
+    const untilMs = holdMsOverride != null
+      ? nowMs + holdMsOverride
+      : coachSegmentBannerUntilMs(banner);
     const remainingMs = Math.max(400, untilMs - nowMs);
     const isMoveBanner = banner.atMs === 0 && banner.title === 'MOVE';
     const isCaptureBanner = banner.title.includes('CAPTURE');
@@ -411,7 +418,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     celebrationFx.classList.add('animate');
     startBanner.classList.add('animate', 'coach-segment-banner');
     if (isMoveBanner) startBanner.classList.add('coach-segment-banner-move');
-    if (!isCaptureBanner) emitCelebrationSparkles();
+    // Coach watch-only: no celebration sparkles on segment banners.
 
     bannerTimer = window.setTimeout(() => {
       dismissStartBanner();
@@ -495,45 +502,97 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       resultModal.style.display = 'none';
       resultModal.classList.remove('animate');
       resignOfferModal.style.display = 'none';
+      resignOfferModal.classList.remove('coach-resign-offer-glow');
+      resignBtn.classList.remove('coach-resign-btn-glow');
+      session.clearCoachBoardFocus();
       setCoachModalSnapshot(false);
+      updateUI();
+      return;
+    }
+    if (cue.kind === 'boardFocus') {
+      resultModal.style.display = 'none';
+      resignOfferModal.style.display = 'none';
+      resignOfferModal.classList.remove('coach-resign-offer-glow');
+      setCoachModalSnapshot(false);
+      session.setCoachBoardFocus(cue.selectedId, cue.targetIds);
+      updateUI();
+      return;
+    }
+    if (cue.kind === 'closeResignOffer') {
+      resignOfferModal.style.display = 'none';
+      resignOfferModal.classList.remove('coach-resign-offer-glow');
+      resignBtn.classList.remove('coach-resign-btn-glow');
       return;
     }
     if (cue.kind === 'resignOffer') {
       resultModal.style.display = 'none';
-      resignOfferDesc.textContent = `${sideDisplayName(cue.resigning)} offers resignation. Agree to a draw?`;
-      resignOfferModal.style.display = 'flex';
-      setCoachModalSnapshot(cue.snapshot === true);
+      resignOfferModal.style.display = 'none';
+      resignOfferModal.classList.remove('coach-resign-offer-glow');
+      resignBtn.classList.add('coach-resign-btn-glow');
+      setCoachModalSnapshot(false);
+      return;
+    }
+    if (cue.kind === 'showBanner') {
+      triggerCoachSegmentBanner(
+        { atMs: coachVideoPlayer?.getTimeMs() ?? 0, title: cue.title },
+        coachVideoPlayer?.getTimeMs(),
+        cue.durationMs,
+      );
       return;
     }
 
     const creamName = creamPlayerLabel();
     const blackName = blackPlayerLabel();
+    session.clearCoachBoardFocus();
     const redCaps = cue.captures?.RED ?? session.getEngine().getState().captures.RED;
     const blueCaps = cue.captures?.BLUE ?? session.getEngine().getState().captures.BLUE;
     resignOfferModal.style.display = 'none';
+    resignOfferModal.classList.remove('coach-resign-offer-glow');
+    resignBtn.classList.remove('coach-resign-btn-glow');
     resultModal.style.display = 'flex';
     resultTitle.className = 'result-title';
     setCoachModalSnapshot(cue.snapshot === true);
 
     const winner = cue.winner;
+    const phase = cue.phase;
     let scoreLine = '';
     if (winner === 'DRAW') {
-      resultTitle.textContent = "WELL PLAYED! IT'S A DRAW";
+      if (phase === 'resignAgreedStatement') {
+        resultTitle.textContent = 'RESIGNATION AGREED — DRAW';
+        scoreLine = `${creamName} bead resigned; ${blackName} bead agreed. The game is a draw.`;
+      } else if (phase === 'resignAgreedCongrats') {
+        resultTitle.textContent = "WELL PLAYED! IT'S A DRAW";
+        scoreLine = 'Draw — resignation agreed by both players.';
+      } else {
+        resultTitle.textContent = "WELL PLAYED! IT'S A DRAW";
+        scoreLine = `Tied in captures (${redCaps} vs ${blueCaps} beads)`;
+      }
       resultTitle.classList.add('draw');
-      scoreLine = `Tied in captures (${redCaps} vs ${blueCaps} beads)`;
     } else if (winner === 'RED') {
-      resultTitle.textContent = `CONGRATULATIONS! ${creamName.toUpperCase()} WON!`;
-      const diff = redCaps - blueCaps;
-      scoreLine = diff > 0
-        ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${redCaps} vs ${blueCaps})`
-        : `${creamName} won (${redCaps} vs ${blueCaps} beads)`;
-      resultTitle.classList.add('victory');
+      if (phase === 'congrats') {
+        resultTitle.textContent = 'CONGRATULATIONS! WHITE BEAD WON!';
+        scoreLine = 'White bead won by a capture of 2 beads more.';
+        resultTitle.classList.add('victory');
+      } else {
+        resultTitle.textContent = `CONGRATULATIONS! ${creamName.toUpperCase()} WON!`;
+        const diff = redCaps - blueCaps;
+        scoreLine = diff > 0
+          ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${redCaps} vs ${blueCaps})`
+          : `${creamName} won (${redCaps} vs ${blueCaps} beads)`;
+        resultTitle.classList.add('victory');
+      }
     } else {
-      resultTitle.textContent = `CONGRATULATIONS! ${blackName.toUpperCase()} WON!`;
-      const diff = blueCaps - redCaps;
-      scoreLine = diff > 0
-        ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${blueCaps} vs ${redCaps})`
-        : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
+      if (phase === 'resignDeclinedCongrats') {
+        resultTitle.textContent = 'CONGRATULATIONS! BLACK BEAD WON!';
+        scoreLine = 'Black bead won as white bead resign got declined.';
+        resultTitle.classList.add('victory');
+      } else {
+        resultTitle.textContent = `CONGRATULATIONS! ${blackName.toUpperCase()} WON!`;
+        const diff = blueCaps - redCaps;
+        scoreLine = diff > 0
+          ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${blueCaps} vs ${redCaps})`
+          : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
+      }
       resultTitle.classList.add('victory');
     }
 
@@ -590,6 +649,15 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         syncCoachVideoCue(cue);
       },
       onApplySegmentBanner: (banner) => {
+        if (banner && (banner.title === 'WIN' || banner.title === 'RESIGN')) {
+          const ms = coachVideoPlayer?.getTimeMs() ?? banner.atMs;
+          clearMoveFeedback();
+          applyCoachVideoKeyframe(
+            session,
+            findCoachKeyframeAt(ms, COACH_VIDEO.keyframes, COACH_VIDEO.moves),
+          );
+          updateUI();
+        }
         triggerCoachSegmentBanner(banner);
       },
       onPlayMove: (move, onDone) => {
@@ -1110,6 +1178,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       turnPulse,
       lastMove,
       capturePulses: activeCapturePulses(),
+      coachGlowNodeIds: session.getCoachGlowNodeIds(),
     });
   }
 
@@ -1151,11 +1220,11 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
     document.getElementById('play-block-p1')?.classList.toggle(
       'active',
-      state.currentPlayer === 'RED' && !session.isGameOver(),
+      !isCoachMode() && state.currentPlayer === 'RED' && !session.isGameOver(),
     );
     document.getElementById('play-block-p2')?.classList.toggle(
       'active',
-      state.currentPlayer === 'BLUE' && !session.isGameOver(),
+      !isCoachMode() && state.currentPlayer === 'BLUE' && !session.isGameOver(),
     );
 
     const uiState = session.getUiState();

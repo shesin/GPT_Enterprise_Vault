@@ -25,12 +25,21 @@ import {
   COACH_VIDEO_TRIPLE_SPEECH_TEXT,
 
   COACH_VIDEO_WIN_SEGMENT_START_MS,
+  COACH_VIDEO_RESIGN_SEGMENT_START_MS,
+  COACH_RESIGN_DECLINE_CONGRATS_MS,
+  COACH_WIN_CONGRATS_CUE_MS,
+  COACH_WIN_CONGRATS_PHASE_MS,
+  COACH_WIN_BOARD_PHASE_MS,
 
   coachSegmentBannerUntilMs,
 
   coachSpeechForTime,
 
   findCoachCueAtTime,
+
+  findCoachKeyframeAfterMove,
+
+  findCoachKeyframeAt,
 
   findCoachSegmentBannerAtTime,
 
@@ -72,9 +81,9 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(COACH_VIDEO.highlights).toHaveLength(11);
 
-    expect(COACH_VIDEO.points).toHaveLength(7);
+    expect(COACH_VIDEO.points).toHaveLength(6);
 
-    expect(COACH_VIDEO.segmentBanners).toHaveLength(7);
+    expect(COACH_VIDEO.segmentBanners).toHaveLength(6);
 
   });
 
@@ -160,9 +169,9 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(html).toMatch(/Win —/);
 
-    expect(html).toMatch(/Draw —/);
-
     expect(html).toMatch(/Resign —/);
+
+    expect(html).not.toMatch(/Draw —/);
 
   });
 
@@ -246,46 +255,108 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(coachSpeechForTime(55_000)).toMatch(/Triple capture/i);
 
-    expect(coachSpeechForTime(COACH_VIDEO_WIN_SEGMENT_START_MS)).toMatch(/Win/i);
+    expect(coachSpeechForTime(COACH_VIDEO_WIN_SEGMENT_START_MS)).toMatch(/Capture all opponent beads/i);
 
-    expect(coachSpeechForTime(COACH_VIDEO_ENDING_SEGMENT_STARTS_MS[1])).toMatch(/Draw/i);
+    expect(coachSpeechForTime(COACH_VIDEO_RESIGN_SEGMENT_START_MS)).toMatch(/^Resign\./i);
 
-    expect(coachSpeechForTime(COACH_VIDEO_ENDING_SEGMENT_STARTS_MS[2])).toMatch(/Resign/i);
+    expect(coachSpeechForTime(COACH_RESIGN_DECLINE_CONGRATS_MS)).toMatch(/Black bead won/i);
 
   });
 
 
 
-  it('win ending shows beads on board with cream 2 and black 0 captures', () => {
+  it('win ending shows two glowing cream beads and capture score 2 vs 0', () => {
 
     const win = COACH_VIDEO.keyframes.find((k) => k.atMs === COACH_VIDEO_WIN_SEGMENT_START_MS)!;
 
     expect(win.captures).toEqual({ RED: 2, BLUE: 0 });
 
-    expect(win.occupants.filter(Boolean).length).toBeGreaterThan(0);
+    expect(win.occupants.filter(Boolean)).toHaveLength(2);
 
+    expect(win.occupants.filter((o) => o === 'RED')).toHaveLength(2);
+
+    expect(win.occupants.filter((o) => o === 'BLUE')).toHaveLength(0);
+
+    expect(win.glowNodeIds).toEqual([4, 8]);
+
+  });
+
+
+
+  it('keeps WIN banner up for the 10 s board phase', () => {
+    const winBanner = COACH_VIDEO_SEGMENT_BANNERS.find((b) => b.title === 'WIN')!;
+    expect(coachSegmentBannerUntilMs(winBanner)).toBe(COACH_VIDEO_WIN_SEGMENT_START_MS + COACH_WIN_BOARD_PHASE_MS);
   });
 
 
 
   it('resolves scripted cues for watch-only ending overlays', () => {
 
-    const winCue = findCoachCueAtTime(COACH_VIDEO_WIN_SEGMENT_START_MS + 5_000);
+    expect(findCoachCueAtTime(COACH_WIN_CONGRATS_CUE_MS - 100)).toBeNull();
 
-    expect(winCue?.kind).toBe('result');
+    const congratsCue = findCoachCueAtTime(COACH_WIN_CONGRATS_CUE_MS + 100);
 
-    if (winCue?.kind === 'result') {
+    expect(congratsCue?.kind).toBe('result');
 
-      expect(winCue.snapshot).toBe(true);
+    if (congratsCue?.kind === 'result') {
 
-      expect(winCue.captures).toEqual({ RED: 2, BLUE: 0 });
+      expect(congratsCue.snapshot).toBe(true);
+
+      expect(congratsCue.phase).toBe('congrats');
+
+      expect(congratsCue.captures).toEqual({ RED: 2, BLUE: 0 });
 
     }
 
-    expect(findCoachCueAtTime(COACH_VIDEO_WIN_SEGMENT_START_MS + 7_000)?.kind).toBe('hideModals');
+    expect(findCoachCueAtTime(COACH_WIN_CONGRATS_CUE_MS + COACH_WIN_CONGRATS_PHASE_MS + 100)?.kind).toBe('hideModals');
 
     expect(COACH_VIDEO_ENDING_SEGMENT_STARTS_MS[0]).toBe(COACH_VIDEO_WIN_SEGMENT_START_MS);
 
+  });
+
+
+
+  it('win board phase uses ending keyframe with zero black beads', () => {
+    const kf = findCoachKeyframeAt(
+      COACH_WIN_CONGRATS_CUE_MS,
+      COACH_VIDEO.keyframes,
+      COACH_VIDEO.moves,
+    );
+    expect(kf.atMs).toBe(COACH_VIDEO_WIN_SEGMENT_START_MS);
+    expect(kf.occupants.filter((o) => o === 'BLUE')).toHaveLength(0);
+    expect(kf.occupants.filter((o) => o === 'RED')).toHaveLength(2);
+  });
+
+
+
+  it('resign segment reuses a balanced 2 vs 2 board for both demos', () => {
+    const resign = COACH_VIDEO.keyframes.find((k) => k.atMs === COACH_VIDEO_ENDING_SEGMENT_STARTS_MS[1])!;
+    expect(resign.captures).toEqual({ RED: 2, BLUE: 2 });
+    expect(resign.occupants.filter((o) => o === 'RED')).toHaveLength(2);
+    expect(resign.occupants.filter((o) => o === 'BLUE')).toHaveLength(2);
+  });
+
+
+
+  it('triple chain steps use time-based keyframes without jumping to the finale', () => {
+    const midChain = findCoachKeyframeAt(55_000, COACH_VIDEO.keyframes, COACH_VIDEO.moves);
+    expect(midChain.atMs).toBe(54_880);
+    expect(midChain.atMs).not.toBe(56_220);
+
+    const finale = findCoachKeyframeAt(56_500, COACH_VIDEO.keyframes, COACH_VIDEO.moves);
+    expect(finale.atMs).toBe(56_220);
+  });
+
+
+
+  it('resolves post-hop board from setup keyframe for triple chain hops', () => {
+    const hop1 = COACH_VIDEO.moves.find((m) => m.atMs === 54_980)!;
+    const hop2 = COACH_VIDEO.moves.find((m) => m.atMs === 55_860)!;
+    expect(findCoachKeyframeAfterMove(hop1, COACH_VIDEO.keyframes).atMs).toBe(54_880);
+    expect(findCoachKeyframeAfterMove(hop2, COACH_VIDEO.keyframes).atMs).toBe(56_220);
+
+    const tripleDemo = COACH_VIDEO.moves.find((m) => m.atMs === COACH_VIDEO_TRIPLE_DEMO_MS)!;
+    expect(findCoachKeyframeAfterMove(tripleDemo, COACH_VIDEO.keyframes).atMs).toBe(54_480);
   });
 
 
@@ -294,7 +365,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(formatCoachTime(0)).toBe('0:00');
 
-    expect(formatCoachTime(COACH_VIDEO_DURATION_MS)).toBe(formatCoachTime(102_335));
+    expect(formatCoachTime(COACH_VIDEO_DURATION_MS)).toBe('1:43');
 
   });
 

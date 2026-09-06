@@ -925,6 +925,61 @@ canvas {
   font-weight: 600;
 }
 #resign-btn { background: #5a4030; color: var(--text); }
+
+#resign-btn.coach-resign-btn-glow {
+  background: linear-gradient(180deg, #6b4a32 0%, #5a4030 100%);
+  color: var(--gold);
+  border: 2px solid var(--gold);
+  box-shadow:
+    0 0 14px rgba(212, 168, 75, 0.85),
+    0 0 28px rgba(212, 168, 75, 0.45),
+    inset 0 0 12px rgba(212, 168, 75, 0.25);
+  animation: coach-resign-btn-glow 1.4s ease-in-out infinite;
+}
+
+@keyframes coach-resign-btn-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 12px rgba(212, 168, 75, 0.65),
+      0 0 24px rgba(212, 168, 75, 0.3),
+      inset 0 0 8px rgba(212, 168, 75, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(212, 168, 75, 0.95),
+      0 0 40px rgba(212, 168, 75, 0.5),
+      inset 0 0 16px rgba(212, 168, 75, 0.32);
+  }
+}
+
+.modal.coach-resign-offer-glow .modal-card {
+  border: 2px solid var(--gold);
+  box-shadow:
+    0 0 18px rgba(212, 168, 75, 0.55),
+    0 0 36px rgba(212, 168, 75, 0.25);
+  animation: coach-resign-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes coach-resign-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 14px rgba(212, 168, 75, 0.45),
+      0 0 28px rgba(212, 168, 75, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 22px rgba(212, 168, 75, 0.72),
+      0 0 44px rgba(212, 168, 75, 0.32);
+  }
+}
+
+.modal.coach-resign-offer-glow #resign-agree-btn.resign-action--draw {
+  border-color: rgba(212, 168, 75, 0.85);
+}
+
+.modal.coach-resign-offer-glow #resign-decline-btn.resign-action--claim {
+  background: linear-gradient(180deg, #e8c878 0%, var(--gold) 100%);
+}
 #sfx-mute-btn { background: #244b3c; color: var(--text); border-color: rgba(212,168,75,0.4); }
 #sfx-mute-btn.muted { opacity: 0.55; background: #1c2e27; }
 .bgm-section {

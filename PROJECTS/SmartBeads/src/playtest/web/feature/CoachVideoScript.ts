@@ -1,5 +1,5 @@
 /**
- * Video 1 — Basics on 7-bead · 4×5 (~1:32 total).
+ * Video 1 — Basics on 7-bead · 4×5 (~1:57 total).
  * Voice fires when each demo move starts; ending modals are watch-only snapshots.
  */
 
@@ -32,11 +32,64 @@ export const COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH
 export const COACH_VIDEO_WIN_SEGMENT_START_MS =
   COACH_VIDEO_TRIPLE_DEMO_MS + COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS + COACH_POST_DEMO_PAUSE_MS;
 
-const COACH_DRAW_SEGMENT_START_MS = COACH_VIDEO_WIN_SEGMENT_START_MS + 11_000;
-const COACH_RESIGN_SEGMENT_START_MS = COACH_DRAW_SEGMENT_START_MS + 11_000;
+export const COACH_WIN_SPEECH_TEXT =
+  'Win. Capture all opponent beads to win. If your opponent captures all of yours, they win.';
+
+export const COACH_WIN_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH_WIN_SPEECH_TEXT);
+
+/** Win demo: glowing board (10 s max) then congratulations modal (6 s). */
+export const COACH_WIN_BOARD_PHASE_MS = 10_000;
+export const COACH_WIN_CONGRATS_PHASE_MS = 6_000;
+
+export const COACH_WIN_SEGMENT_DURATION_MS =
+  COACH_WIN_BOARD_PHASE_MS + COACH_WIN_CONGRATS_PHASE_MS + 1_000;
+
+export const COACH_WIN_CONGRATS_CUE_MS = COACH_VIDEO_WIN_SEGMENT_START_MS + COACH_WIN_BOARD_PHASE_MS;
+
+export const COACH_VIDEO_RESIGN_SEGMENT_START_MS =
+  COACH_VIDEO_WIN_SEGMENT_START_MS + COACH_WIN_SEGMENT_DURATION_MS;
+
+export const COACH_RESIGN_SPEECH_TEXT =
+  'Resign. If a player resigns and the opponent declines, the resigning player loses. If the opponent agrees, it is a draw.';
+
+export const COACH_RESIGN_DECLINED_CONGRATS_SPEECH =
+  'Black bead won as white bead resign got declined.';
+
+export const COACH_RESIGN_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH_RESIGN_SPEECH_TEXT);
+
+export const COACH_RESIGN_MODAL_PHASE_MS = 3_000;
+
+export const COACH_RESIGN_CONGRATS_PHASE_MS = Math.max(
+  COACH_RESIGN_MODAL_PHASE_MS,
+  estimateCoachSpeechMs(COACH_RESIGN_DECLINED_CONGRATS_SPEECH),
+);
+
+/** Glow below-board when intro says "Resign." */
+export const COACH_RESIGN_UI_START_MS = COACH_VIDEO_RESIGN_SEGMENT_START_MS + 300;
+
+export const COACH_RESIGN_CLOSE_UI_MS =
+  COACH_RESIGN_UI_START_MS + COACH_RESIGN_MODAL_PHASE_MS;
+
+/** Beat after intro voice before congrats modal. */
+export const COACH_RESIGN_POST_INTRO_MS = 500;
+
+export const COACH_RESIGN_DECLINE_CONGRATS_MS =
+  COACH_VIDEO_RESIGN_SEGMENT_START_MS
+  + COACH_RESIGN_SPEECH_ESTIMATE_MS
+  + COACH_RESIGN_POST_INTRO_MS;
+
+export const COACH_RESIGN_SEGMENT_DURATION_MS =
+  COACH_RESIGN_SPEECH_ESTIMATE_MS
+  + COACH_RESIGN_POST_INTRO_MS
+  + COACH_RESIGN_CONGRATS_PHASE_MS
+  + 1_000;
 
 /** Total timeline length (ending appendix included). */
-export const COACH_VIDEO_DURATION_MS = COACH_RESIGN_SEGMENT_START_MS + 10_100;
+export const COACH_VIDEO_DURATION_MS =
+  COACH_VIDEO_RESIGN_SEGMENT_START_MS + COACH_RESIGN_SEGMENT_DURATION_MS + 1_000;
+
+/** @deprecated use COACH_VIDEO_RESIGN_SEGMENT_START_MS */
+const COACH_RESIGN_SEGMENT_START_MS = COACH_VIDEO_RESIGN_SEGMENT_START_MS;
 
 /** Amber highlight appears this long before the scripted move plays. */
 export const COACH_HIGHLIGHT_LEAD_MS = 1_500;
@@ -74,6 +127,8 @@ export interface CoachVideoKeyframe {
   captures: { RED: number; BLUE: number };
   currentPlayer: Player;
   chainPieceId: number | null;
+  /** Coach win demo — pulse + amber ring on these cream beads. */
+  glowNodeIds?: readonly number[];
 }
 
 export interface CoachVideoMove {
@@ -110,7 +165,16 @@ export type CoachVideoCue =
       reason?: string;
       captures?: { RED: number; BLUE: number };
       snapshot?: boolean;
-    };
+      phase?:
+        | 'congrats'
+        | 'resignDeclinedStatement'
+        | 'resignDeclinedCongrats'
+        | 'resignAgreedStatement'
+        | 'resignAgreedCongrats';
+    }
+  | { atMs: number; kind: 'closeResignOffer' }
+  | { atMs: number; kind: 'showBanner'; title: string; durationMs?: number }
+  | { atMs: number; kind: 'boardFocus'; selectedId: number; targetIds: readonly number[] };
 
 /** Big title card at the top when each segment starts. */
 export interface CoachVideoSegmentBanner {
@@ -148,6 +212,7 @@ function kf(
   pairs: readonly [number, Player][],
   captures: { RED: number; BLUE: number } = { RED: 0, BLUE: 0 },
   chainPieceId: number | null = null,
+  glowNodeIds?: readonly number[],
 ): CoachVideoKeyframe {
   return {
     atMs,
@@ -155,6 +220,7 @@ function kf(
     captures,
     currentPlayer: 'RED',
     chainPieceId,
+    glowNodeIds,
   };
 }
 
@@ -162,8 +228,7 @@ function kf(
 export const COACH_VIDEO_BASICS_SEGMENT_STARTS_MS = [0, 19_100, 37_940, 48_100] as const;
 export const COACH_VIDEO_ENDING_SEGMENT_STARTS_MS = [
   COACH_VIDEO_WIN_SEGMENT_START_MS,
-  COACH_DRAW_SEGMENT_START_MS,
-  COACH_RESIGN_SEGMENT_START_MS,
+  COACH_VIDEO_RESIGN_SEGMENT_START_MS,
 ] as const;
 export const COACH_VIDEO_SEGMENT_STARTS_MS = [
   ...COACH_VIDEO_BASICS_SEGMENT_STARTS_MS,
@@ -176,8 +241,7 @@ export const COACH_VIDEO_SEGMENT_BANNERS: CoachVideoSegmentBanner[] = [
   { atMs: 37_940, title: 'DOUBLE CAPTURE' },
   { atMs: 48_100, title: 'TRIPLE CAPTURE' },
   { atMs: COACH_VIDEO_WIN_SEGMENT_START_MS, title: 'WIN' },
-  { atMs: COACH_DRAW_SEGMENT_START_MS, title: 'DRAW' },
-  { atMs: COACH_RESIGN_SEGMENT_START_MS, title: 'RESIGN' },
+  { atMs: COACH_VIDEO_RESIGN_SEGMENT_START_MS, title: 'RESIGN' },
 ];
 
 const ANCHOR: readonly [number, Player][] = [[15, 'BLUE'], [19, 'BLUE']];
@@ -192,9 +256,8 @@ export const COACH_VIDEO: CoachVideoScript = {
     'Single capture — jump over one neighbour bead.',
     'Double capture — same bead jumps twice.',
     'Triple capture — same bead jumps three times; likewise four, five, or more while the chain stays open.',
-    'Win — most captured beads wins. Capture all opponent beads for an instant win.',
-    'Draw — equal captured beads when the game ends.',
-    'Resign — offer resignation; opponent agrees to a draw or declines and takes the win.',
+    'Win — capture all opponent beads to win.',
+    'Resign — if a player resigns and the opponent declines, the resigning player loses; if the opponent agrees, it is a draw.',
   ],
   keyframes: [
     kf(0, [[12, 'RED'], [16, 'RED'], [17, 'RED'], ...ANCHOR]),
@@ -216,22 +279,31 @@ export const COACH_VIDEO: CoachVideoScript = {
     kf(54_480, [[4, 'RED'], [5, 'BLUE'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }, 4),
     kf(54_880, [[6, 'RED'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }, 6),
     kf(56_220, [[14, 'RED'], [16, 'RED'], [19, 'BLUE']], { RED: 3, BLUE: 0 }),
-    kf(COACH_VIDEO_WIN_SEGMENT_START_MS, [[0, 'RED'], [4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE'], [17, 'RED'], [18, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }),
-    kf(COACH_DRAW_SEGMENT_START_MS, [[0, 'RED'], [4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE'], [17, 'BLUE'], [18, 'RED'], [19, 'BLUE']], { RED: 3, BLUE: 3 }),
-    kf(COACH_RESIGN_SEGMENT_START_MS, [[0, 'RED'], [4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE'], [17, 'RED'], [18, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 2 }),
+    kf(
+      COACH_VIDEO_WIN_SEGMENT_START_MS,
+      [[4, 'RED'], [8, 'RED']],
+      { RED: 2, BLUE: 0 },
+      null,
+      [4, 8],
+    ),
+    kf(
+      COACH_VIDEO_RESIGN_SEGMENT_START_MS,
+      [[4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE']],
+      { RED: 2, BLUE: 2 },
+    ),
   ],
   speeches: [
     {
       atMs: COACH_VIDEO_WIN_SEGMENT_START_MS,
-      text: 'Win. When the game ends, the side with more captured beads wins. You can also win instantly by capturing every opponent bead.',
+      text: COACH_WIN_SPEECH_TEXT,
     },
     {
-      atMs: COACH_DRAW_SEGMENT_START_MS,
-      text: 'Draw. If captured beads are equal when the game ends, it is a draw.',
+      atMs: COACH_VIDEO_RESIGN_SEGMENT_START_MS,
+      text: COACH_RESIGN_SPEECH_TEXT,
     },
     {
-      atMs: COACH_RESIGN_SEGMENT_START_MS,
-      text: 'Resign. The player to move can offer resignation. The opponent may agree to a draw, or decline and claim the win.',
+      atMs: COACH_RESIGN_DECLINE_CONGRATS_MS,
+      text: COACH_RESIGN_DECLINED_CONGRATS_SPEECH,
     },
   ],
   highlights: [
@@ -282,13 +354,38 @@ export const COACH_VIDEO: CoachVideoScript = {
     { atMs: 55_860, setupAtMs: 54_880, from: 6, to: 14, player: 'RED' },
   ],
   cues: [
-    { atMs: COACH_VIDEO_WIN_SEGMENT_START_MS + 4_000, kind: 'result', winner: 'RED', captures: { RED: 2, BLUE: 0 }, snapshot: true },
-    { atMs: COACH_VIDEO_WIN_SEGMENT_START_MS + 6_000, kind: 'hideModals' },
-    { atMs: COACH_DRAW_SEGMENT_START_MS + 4_000, kind: 'result', winner: 'DRAW', captures: { RED: 3, BLUE: 3 }, snapshot: true },
-    { atMs: COACH_DRAW_SEGMENT_START_MS + 6_000, kind: 'hideModals' },
-    { atMs: COACH_RESIGN_SEGMENT_START_MS + 4_000, kind: 'resignOffer', resigning: 'RED', snapshot: true },
-    { atMs: COACH_RESIGN_SEGMENT_START_MS + 6_000, kind: 'result', winner: 'DRAW', reason: 'Resignation agreed — draw.', captures: { RED: 2, BLUE: 2 }, snapshot: true },
-    { atMs: COACH_RESIGN_SEGMENT_START_MS + 8_000, kind: 'hideModals' },
+    {
+      atMs: COACH_WIN_CONGRATS_CUE_MS,
+      kind: 'result',
+      winner: 'RED',
+      captures: { RED: 2, BLUE: 0 },
+      snapshot: true,
+      phase: 'congrats',
+    },
+    {
+      atMs: COACH_WIN_CONGRATS_CUE_MS + COACH_WIN_CONGRATS_PHASE_MS,
+      kind: 'hideModals',
+    },
+    {
+      atMs: COACH_RESIGN_UI_START_MS,
+      kind: 'boardFocus',
+      selectedId: 4,
+      targetIds: [12, 16],
+    },
+    { atMs: COACH_RESIGN_UI_START_MS, kind: 'resignOffer', resigning: 'RED', snapshot: true },
+    { atMs: COACH_RESIGN_CLOSE_UI_MS, kind: 'closeResignOffer' },
+    {
+      atMs: COACH_RESIGN_DECLINE_CONGRATS_MS,
+      kind: 'result',
+      winner: 'BLUE',
+      captures: { RED: 2, BLUE: 2 },
+      snapshot: true,
+      phase: 'resignDeclinedCongrats',
+    },
+    {
+      atMs: COACH_RESIGN_DECLINE_CONGRATS_MS + COACH_RESIGN_CONGRATS_PHASE_MS,
+      kind: 'hideModals',
+    },
   ],
   segmentBanners: COACH_VIDEO_SEGMENT_BANNERS,
 };
@@ -296,19 +393,37 @@ export const COACH_VIDEO: CoachVideoScript = {
 export function findCoachKeyframeAt(
   ms: number,
   keyframes: readonly CoachVideoKeyframe[],
-  moves: readonly CoachVideoMove[] = [],
+  _moves: readonly CoachVideoMove[] = [],
 ): CoachVideoKeyframe {
-  const candidates: CoachVideoKeyframe[] = [keyframes[0]];
-  for (const kfEntry of keyframes) {
-    if (kfEntry.atMs <= ms) candidates.push(kfEntry);
-  }
-  for (const move of moves) {
-    if (move.atMs <= ms) {
-      const post = keyframes.find((entry) => entry.atMs > move.atMs);
-      if (post) candidates.push(post);
+  if (ms >= COACH_VIDEO_RESIGN_SEGMENT_START_MS) {
+    let best = keyframes[0];
+    for (const entry of keyframes) {
+      if (
+        entry.atMs <= ms
+        && entry.atMs >= COACH_VIDEO_RESIGN_SEGMENT_START_MS
+        && entry.atMs >= best.atMs
+      ) {
+        best = entry;
+      }
     }
+    if (best.atMs >= COACH_VIDEO_RESIGN_SEGMENT_START_MS) return best;
   }
-  return candidates.reduce((best, entry) => (entry.atMs >= best.atMs ? entry : best));
+
+  if (ms >= COACH_VIDEO_WIN_SEGMENT_START_MS) {
+    let best = keyframes[0];
+    for (const entry of keyframes) {
+      if (
+        entry.atMs <= ms
+        && entry.atMs >= COACH_VIDEO_WIN_SEGMENT_START_MS
+        && entry.atMs >= best.atMs
+      ) {
+        best = entry;
+      }
+    }
+    if (best.atMs >= COACH_VIDEO_WIN_SEGMENT_START_MS) return best;
+  }
+
+  return findCoachKeyframeByTime(ms, keyframes);
 }
 
 export function findCoachKeyframeByTime(
@@ -325,9 +440,23 @@ export function findCoachKeyframeByTime(
 export function findCoachSetupKeyframeForMove(
   move: CoachVideoMove,
   keyframes: readonly CoachVideoKeyframe[],
-  moves: readonly CoachVideoMove[],
+  _moves: readonly CoachVideoMove[],
 ): CoachVideoKeyframe {
   return findCoachKeyframeByTime(move.setupAtMs, keyframes);
+}
+
+/** Board state immediately after a scripted hop (next keyframe after setup). */
+export function findCoachKeyframeAfterMove(
+  move: CoachVideoMove,
+  keyframes: readonly CoachVideoKeyframe[],
+): CoachVideoKeyframe {
+  let best: CoachVideoKeyframe | null = null;
+  for (const entry of keyframes) {
+    if (entry.atMs > move.setupAtMs) {
+      if (!best || entry.atMs < best.atMs) best = entry;
+    }
+  }
+  return best ?? findCoachKeyframeByTime(move.setupAtMs, keyframes);
 }
 
 export function coachSegmentBannerUntilMs(
@@ -349,6 +478,15 @@ export function coachSegmentBannerUntilMs(
         ? banner.atMs + COACH_CAPTURE_BANNER_MIN_MS
         : banner.atMs + COACH_SEGMENT_BANNER_HOLD_MS;
     return Math.min(nextCap, Math.max(afterMove, minHold));
+  }
+  if (banner.title === 'WIN') {
+    return Math.min(banner.atMs + COACH_WIN_BOARD_PHASE_MS, nextCap);
+  }
+  if (banner.title === 'RESIGN') {
+    return Math.min(
+      COACH_VIDEO_RESIGN_SEGMENT_START_MS + COACH_RESIGN_SPEECH_ESTIMATE_MS,
+      nextCap,
+    );
   }
   const endingSpeech = speeches.find((s) => s.atMs >= banner.atMs);
   if (endingSpeech) return Math.min(endingSpeech.atMs, nextCap);

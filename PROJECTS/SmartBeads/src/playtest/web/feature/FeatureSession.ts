@@ -45,6 +45,8 @@ export class FeatureSession {
   private settings: GameFeatureSettings;
   private uiState: UiInteractionState = 'idle';
   private selectedId: number | null = null;
+  private coachGlowNodeIds: number[] = [];
+  private coachHighlightTargets: number[] = [];
   private p1Clock = 0;
   private p2Clock = 0;
   private globalMatchRemaining = 0;
@@ -211,8 +213,15 @@ export class FeatureSession {
    * No highlights when idle — board shows last-move trail, not every legal square.
    */
   getLegalTargetIds(): number[] {
+    if (this.coachHighlightTargets.length > 0) {
+      return [...this.coachHighlightTargets];
+    }
     const moves = this.getLegalMovesForSelection();
     return [...new Set(moves.map((m) => m.to))];
+  }
+
+  getCoachHighlightTargets(): readonly number[] {
+    return this.coachHighlightTargets;
   }
 
   /**
@@ -275,6 +284,36 @@ export class FeatureSession {
     if (this.engine.getChainPieceId() !== null) return;
     this.selectedId = null;
     this.uiState = 'idle';
+    this.coachGlowNodeIds = [];
+    this.coachHighlightTargets = [];
+  }
+
+  getCoachGlowNodeIds(): readonly number[] {
+    return this.coachGlowNodeIds;
+  }
+
+  /** Coach win ending — pulse + amber ring on surviving cream beads only. */
+  setCoachWinGlow(nodeIds: readonly number[]): void {
+    this.coachGlowNodeIds = [...nodeIds];
+    this.coachHighlightTargets = [];
+    this.selectedId = null;
+    this.uiState = 'idle';
+  }
+
+  /** Coach resign ending — amber on resigning bead, lime on opponent beads. */
+  setCoachBoardFocus(selectedId: number, targetIds: readonly number[]): void {
+    this.coachGlowNodeIds = [];
+    this.coachHighlightTargets = [...targetIds];
+    this.selectedId = selectedId;
+    this.uiState = 'selected';
+  }
+
+  clearCoachBoardFocus(): void {
+    this.coachHighlightTargets = [];
+    if (this.coachGlowNodeIds.length === 0) {
+      this.selectedId = null;
+      this.uiState = 'idle';
+    }
   }
 
   /** Coach video: amber/lime rings for scripted demos (no human clicks). */
