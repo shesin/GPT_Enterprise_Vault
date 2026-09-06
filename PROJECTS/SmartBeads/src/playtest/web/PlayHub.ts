@@ -30,7 +30,7 @@ function renderModePicker(boardId: ProductBoardId): string {
 function renderCoachPicker(): string {
   return `
     <div class="hub-mode-picker-title">Coach · Video 1 · 7-bead</div>
-    <p class="hub-coach-blurb">~1:30 SmartBeads coach video: moves, captures, then win, draw, and resign (by captured beads).</p>
+    <p class="hub-coach-blurb">~1:53 SmartBeads coach video: moves, captures, then win, resign, and draw.</p>
     <div class="hub-mode-actions">
       <button type="button" class="hub-mode-btn hub-mode-btn--coach" data-hub-action="coach">
         Start Coach

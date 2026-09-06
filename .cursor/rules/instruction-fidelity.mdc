@@ -7,6 +7,7 @@ alwaysApply: true
 
 - **Talk:** plain English; answer first; once per point; brief summary last. No jargon, no long messy dumps. Detail → `VISION/CURSOR_PROMPT_01.md` § Human communication.
 - **Doubt** → ask until clear (one short question at a time, then wait). Do not guess or implement on ambiguity.
+- **Minimal on doubt** → if still blocked after asking, propose the **smallest** change (one behavior, named files) and wait for **Go**. Do not batch-fix “while I’m here.”
 - **Better idea** → say it plainly, then wait for approval. Do not silently pick a “better” path.
 - **After doc/code updates** → show the user what changed (which files, one-line what each says now).
 
@@ -42,6 +43,8 @@ If 2 fails → words only. If 3 would exceed the ask → stop; say what/why; wai
 
 **Plan / review / comment / suggest** → never edit until go.
 
+**Handoff ≠ approval** → summarized chat, prior task context, or uncommitted work does **not** count as approval. Re-quote ask, list files, wait for **Go** before any edit.
+
 # Literal parse (no inference)
 
 Separate words — never collapse:
@@ -54,9 +57,9 @@ Separate words — never collapse:
 
 # No approval = no edit
 
-No repo change (code, CSS, config, tests, docs, rules) without approval of **that exact change**.
+Zero approval = zero edit — not even one character. No repo change (code, CSS, config, tests, docs, rules) without approval of **that exact change**.
 
-**Not approval:** silence, frustration, past tasks, “go” on A while you also change B.
+**Not approval:** silence, frustration, past tasks, summarized handoff, uncommitted work, “go” on A while you also change B.
 
 **Before edit:** scope block above → wait for go → implement only that → verify → report.
 

@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 
 const BASE = process.env.SMARTBEADS_URL || 'http://127.0.0.1:5173';
 
-const COACH_VIDEO_DURATION_MS = 103_323;
+const COACH_VIDEO_DURATION_MS = 113_088;
 
 async function check(url, label) {
   const browser = await chromium.launch({ headless: true });
@@ -25,7 +25,7 @@ async function check(url, label) {
 
   const scrubMax = await page.locator('#coach-scrub').getAttribute('max').catch(() => null);
   const introText = await page.locator('#coach-lesson-body').textContent().catch(() => '');
-  const endingCopy = /Win —|Resign —/.test(introText ?? '');
+  const endingCopy = /Win —|Resign —|Draw —/.test(introText ?? '');
   const segmentBanner = await page.locator('#start-banner-title').textContent().catch(() => '');
 
   console.log(label);
@@ -45,8 +45,9 @@ async function check(url, label) {
       && errors.length === 0
       && board === '7x4x5'
       && Boolean(canvas?.width)
-      && time?.includes('1:43')
+      && time?.includes('1:53')
       && scrubMax === String(COACH_VIDEO_DURATION_MS)
+      && /Smart Beads board/i.test(introText ?? '')
       && /four, five, or more/i.test(introText ?? '')
       && endingCopy
       && /MOVE/i.test(segmentBanner ?? ''),

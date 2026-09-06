@@ -117,9 +117,9 @@ Repo-root `index.html` is the Vite entry for the production play shell (`npm run
 Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`npm run web:smartbeads`). Board selection reads `BoardCatalog.ts`; only catalog entries with `playable: true` appear in the UI. Authoritative entry is the repository root `index.html`, not anything under `prototype/`.
 
 - **`main.ts`** — calls `bootstrapPlayShell()`.
-- **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`. **Coach mode:** watch-only ~48s video (play/pause/scrub); no board input.
-- **`PlayHub.ts`** — hub navigation; **Coach** sidebar + top card launches teaching video on 6×3×5 (`?coach=1` picker, `?coach=start` auto-launch).
-- **`feature/CoachVideoScript.ts`** — Video 1 basics on **7-bead** (~3 min): 3 slides, 3 single captures, double + triple chain; amber/lime highlight cues.
+- **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`. **Coach mode:** watch-only ~**1:53** video (play/pause/scrub); ending cues WIN / RESIGN / DRAW; no board input.
+- **`PlayHub.ts`** — hub navigation; **Coach** sidebar + top card launches teaching video on **7-bead · 4×5** (`?coach=1` picker, `?coach=start` auto-launch).
+- **`feature/CoachVideoScript.ts`** — Video 1 on **7-bead** (~**1:53**): basics + **WIN** / **RESIGN** / **DRAW** appendix; amber/lime highlights; scripted cues and TTS speeches.
 - **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.
 - **`feature/CoachVoice.ts`** — browser TTS; mute and replay per segment.
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. No 3-fold repetition in production.
@@ -222,6 +222,7 @@ Other files may exist under `VISION/` for personal use; they are not part of rep
 |------|------|
 | `AGENT_RULE_05P.md` | Canonical workflow, safety, Knowledge Classification, Engineering Principles |
 | `CURSOR_PROMPT_01.md` | Cursor implementer — code execution in this repository |
+| `SHEKHAR_PROMPT_01.md` | Human-side scope phrasing (narrow asks; avoid global words like “fix all mess”) |
 | `AGENT_ARCHITECT_01P.md` | In-repo architect agent (plan/review; no direct edits) |
 
 Single-owner rule — canonical text lives in `AGENT_RULE_05P.md` only:

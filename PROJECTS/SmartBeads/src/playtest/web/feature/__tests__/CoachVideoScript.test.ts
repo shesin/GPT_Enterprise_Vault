@@ -26,7 +26,9 @@ import {
 
   COACH_VIDEO_WIN_SEGMENT_START_MS,
   COACH_VIDEO_RESIGN_SEGMENT_START_MS,
+  COACH_VIDEO_DRAW_SEGMENT_START_MS,
   COACH_RESIGN_DECLINE_CONGRATS_MS,
+  COACH_DRAW_RESULT_CUE_MS,
   COACH_WIN_CONGRATS_CUE_MS,
   COACH_WIN_CONGRATS_PHASE_MS,
   COACH_WIN_BOARD_PHASE_MS,
@@ -77,13 +79,13 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(COACH_VIDEO.moves).toHaveLength(11);
 
-    expect(COACH_VIDEO.speeches).toHaveLength(3);
+    expect(COACH_VIDEO.speeches).toHaveLength(4);
 
     expect(COACH_VIDEO.highlights).toHaveLength(11);
 
-    expect(COACH_VIDEO.points).toHaveLength(6);
+    expect(COACH_VIDEO.points).toHaveLength(7);
 
-    expect(COACH_VIDEO.segmentBanners).toHaveLength(6);
+    expect(COACH_VIDEO.segmentBanners).toHaveLength(7);
 
   });
 
@@ -163,6 +165,10 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     });
 
+    expect(html).toContain('Smart Beads board');
+
+    expect(html).toMatch(/Watch move, capture, win, resign, and draw/i);
+
     expect(html).toContain('Triple capture');
 
     expect(html).toMatch(/four, five, or more/i);
@@ -171,7 +177,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(html).toMatch(/Resign —/);
 
-    expect(html).not.toMatch(/Draw —/);
+    expect(html).toMatch(/Draw —/);
 
   });
 
@@ -261,6 +267,8 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(coachSpeechForTime(COACH_RESIGN_DECLINE_CONGRATS_MS)).toMatch(/Black bead won/i);
 
+    expect(coachSpeechForTime(COACH_VIDEO_DRAW_SEGMENT_START_MS)).toMatch(/^Draw\./i);
+
   });
 
 
@@ -329,6 +337,28 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
 
 
+  it('draw segment reuses the balanced 2 vs 2 resign board', () => {
+    const draw = COACH_VIDEO.keyframes.find((k) => k.atMs === COACH_VIDEO_DRAW_SEGMENT_START_MS)!;
+    expect(draw.captures).toEqual({ RED: 2, BLUE: 2 });
+    expect(draw.occupants.filter((o) => o === 'RED')).toHaveLength(2);
+    expect(draw.occupants.filter((o) => o === 'BLUE')).toHaveLength(2);
+  });
+
+
+
+  it('resolves draw agreed cue after intro speech', () => {
+    const before = findCoachCueAtTime(COACH_DRAW_RESULT_CUE_MS - 100);
+    expect(before?.kind === 'result' && before?.phase === 'resignAcceptedDraw').toBe(false);
+    const drawCue = findCoachCueAtTime(COACH_DRAW_RESULT_CUE_MS + 100);
+    expect(drawCue?.kind).toBe('result');
+    if (drawCue?.kind === 'result') {
+      expect(drawCue.winner).toBe('DRAW');
+      expect(drawCue.phase).toBe('resignAcceptedDraw');
+    }
+  });
+
+
+
   it('resign segment reuses a balanced 2 vs 2 board for both demos', () => {
     const resign = COACH_VIDEO.keyframes.find((k) => k.atMs === COACH_VIDEO_ENDING_SEGMENT_STARTS_MS[1])!;
     expect(resign.captures).toEqual({ RED: 2, BLUE: 2 });
@@ -365,7 +395,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(formatCoachTime(0)).toBe('0:00');
 
-    expect(formatCoachTime(COACH_VIDEO_DURATION_MS)).toBe('1:43');
+    expect(formatCoachTime(COACH_VIDEO_DURATION_MS)).toBe('1:53');
 
   });
 

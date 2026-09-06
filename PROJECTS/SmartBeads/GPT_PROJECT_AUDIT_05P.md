@@ -32,7 +32,7 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 |--------------|-----------|----------------|
 | **7-board core** | `allBoards.smoke.test.ts`, `Board*.test.ts` (×7), `FeatureSession.turnControl.test.ts`, `v1GeometryCaptureAudit.test.ts` | All 7 product boards: legal select, Medium AI reply, reset/New game, capture geometry, turn control |
 | **Engine + parity** | `SmartBeadsEngine*.test.ts`, `BoardCatalog.test.ts`, `*PrototypeParity.test.ts` (×7), `SelfPlayRunner`, `HumanVsAiRunner` | Engine rules, catalog defaults, prototype geometry parity per board |
-| **Feature / settings** | `GameFeatureSettings`, `FeatureSession.*`, `clockPolicy`, `aiTurnPath`, `HonestAi.test`, `spectate`, `CoachVideoScript.test`, `CoachVideoPlayer.test`, `FeatureSession.coach.test` | Timers, center rules, resignation, AI level UI, **Watch AI** (spectate), **Coach** teaching video (watch-only, 6×3×5) |
+| **Feature / settings** | `GameFeatureSettings`, `FeatureSession.*`, `clockPolicy`, `aiTurnPath`, `HonestAi.test`, `spectate`, `CoachVideoScript.test`, `CoachVideoPlayer.test`, `CoachVoice.test`, `FeatureSession.coach.test` | Timers, center rules, resignation, AI level UI, **Watch AI** (spectate), **Coach** Video 1 (watch-only, **7-bead · 4×5**, ~1:53) |
 | **Shell / layout / audio** | `PlayController`, `playerBarShell`, `hubShell`, `viewportFit`, `creamCampRendersLower`, `CanvasBoardRenderer.moveFeedback`, `SoundEffects` | Settings DOM, cream-on-bottom, last-move rings, capture pulse, layout contracts |
 | **Slow AI — tiers** | `HonestAi.difficultyTiers.test.ts` | Easy/Medium/Hard behaviour, Medium soft-miss, 8×4×6 and 16 gates (~7 min alone) |
 | **Slow AI — search** | `HonestAi.searchCompletion.test.ts` | Expert (level 3) depth-2 completion on all 7 boards + 16 midgame |
@@ -44,6 +44,7 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 | `m2-2step-observe.mjs` | 16-bead two-click slide (A41→A42 occupancy) |
 | `m2-capture-geometry-browser.mjs` | Real canvas clicks: captures, junction hops, Finish, inert opponent beads — all 7 boards |
 | `m2-2step-npm-gate.mjs` | Boots Vite if needed; runs both gates above (chained by `npm test`) |
+| `verify-coach-browser.mjs` | Coach panel + scrub max + intro copy at `?coach=start` (hub + play-board) |
 | `m2-*-browser-verify.mjs` | Per-board visual/gameplay checks |
 | `lab-ai-difficulty-eval.mjs` | HonestAi lab eval (not prototype `.cjs`) |
 

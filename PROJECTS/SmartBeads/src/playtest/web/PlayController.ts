@@ -560,6 +560,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       if (phase === 'resignAgreedStatement') {
         resultTitle.textContent = 'RESIGNATION AGREED — DRAW';
         scoreLine = `${creamName} bead resigned; ${blackName} bead agreed. The game is a draw.`;
+      } else if (phase === 'resignAcceptedDraw') {
+        resultTitle.textContent = 'DRAW';
+        scoreLine = 'Black bead accepted resign.';
       } else if (phase === 'resignAgreedCongrats') {
         resultTitle.textContent = "WELL PLAYED! IT'S A DRAW";
         scoreLine = 'Draw — resignation agreed by both players.';
@@ -649,7 +652,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         syncCoachVideoCue(cue);
       },
       onApplySegmentBanner: (banner) => {
-        if (banner && (banner.title === 'WIN' || banner.title === 'RESIGN')) {
+        if (banner && (banner.title === 'WIN' || banner.title === 'RESIGN' || banner.title === 'DRAW')) {
           const ms = coachVideoPlayer?.getTimeMs() ?? banner.atMs;
           clearMoveFeedback();
           applyCoachVideoKeyframe(

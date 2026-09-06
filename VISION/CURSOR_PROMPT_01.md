@@ -120,6 +120,8 @@ Always verify before claiming completion.
 
 # Human communication (authoritative — `.mdc` hooks only)
 
+Human-side phrasing and scope habits: `VISION/SHEKHAR_PROMPT_01.md` (avoid global words like “fix all mess”; agent reads **all** literally).
+
 Write so a non-engineer can follow on first read.
 
 - **Answer first** — direct reply to what they asked; no audit dumps or nested sub-lists unless they asked for depth.

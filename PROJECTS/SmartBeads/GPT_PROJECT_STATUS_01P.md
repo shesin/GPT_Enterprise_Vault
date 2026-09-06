@@ -95,7 +95,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 |------|---------|
 | **AI levels 4–5** | **Fix/remove (UI done)** — Settings + coach show **1–2–3** only; HonestAi still accepts 4–5 if passed in code |
 | **Watch AI / spectate UX** | **OK (2026-09-04)** — start screen **Watch AI**; Settings **Watch AI level** + **AI level**; cream **Watch AI · level** / black **AI · level**; amber preview before each hop |
-| **Coach (teaching mode)** | **OK (2026-09-05)** — Video 1 basics on **7-bead** (~3 min): **3 slides**, **3 single captures**, **double + triple chain**; amber/lime highlights; play/pause/scrub; watch-only; hub `?coach=start`. Video 2 (timers/centre) **pending**. **Browser sign-off:** UNCONFIRMED |
+| **Coach (teaching mode)** | **OK (2026-09-06)** — Video 1 on **7-bead · 4×5** (~**1:53**): move + single/double/triple capture; ending appendix **WIN** (decline glow) · **RESIGN** (below-board glow, decline congrats) · **DRAW** (resign agreed modal); left panel intro + bullets; play/pause/scrub; watch-only; `?coach=start`. Video 2 (timers/centre) **pending**. **Coach browser smoke:** CONFIRMED (`verify-coach-browser.mjs` 2026-09-06). **Human full watch-through:** UNCONFIRMED |
 | **Settings game mode** | **OK (2026-09)** — removed from right panel; start screen only |
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |

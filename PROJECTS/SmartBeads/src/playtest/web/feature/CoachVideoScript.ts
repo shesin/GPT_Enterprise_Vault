@@ -50,7 +50,7 @@ export const COACH_VIDEO_RESIGN_SEGMENT_START_MS =
   COACH_VIDEO_WIN_SEGMENT_START_MS + COACH_WIN_SEGMENT_DURATION_MS;
 
 export const COACH_RESIGN_SPEECH_TEXT =
-  'Resign. If a player resigns and the opponent declines, the resigning player loses. If the opponent agrees, it is a draw.';
+  'Resign. If a player resigns and the opponent declines, the resigning player loses.';
 
 export const COACH_RESIGN_DECLINED_CONGRATS_SPEECH =
   'Black bead won as white bead resign got declined.';
@@ -84,9 +84,32 @@ export const COACH_RESIGN_SEGMENT_DURATION_MS =
   + COACH_RESIGN_CONGRATS_PHASE_MS
   + 1_000;
 
+export const COACH_VIDEO_DRAW_SEGMENT_START_MS =
+  COACH_VIDEO_RESIGN_SEGMENT_START_MS + COACH_RESIGN_SEGMENT_DURATION_MS;
+
+export const COACH_DRAW_SPEECH_TEXT =
+  'Draw. If the opponent agrees to a resignation, the game is a draw.';
+
+export const COACH_DRAW_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH_DRAW_SPEECH_TEXT);
+
+export const COACH_DRAW_POST_INTRO_MS = 500;
+
+export const COACH_DRAW_MODAL_PHASE_MS = 6_000;
+
+export const COACH_DRAW_RESULT_CUE_MS =
+  COACH_VIDEO_DRAW_SEGMENT_START_MS
+  + COACH_DRAW_SPEECH_ESTIMATE_MS
+  + COACH_DRAW_POST_INTRO_MS;
+
+export const COACH_DRAW_SEGMENT_DURATION_MS =
+  COACH_DRAW_SPEECH_ESTIMATE_MS
+  + COACH_DRAW_POST_INTRO_MS
+  + COACH_DRAW_MODAL_PHASE_MS
+  + 1_000;
+
 /** Total timeline length (ending appendix included). */
 export const COACH_VIDEO_DURATION_MS =
-  COACH_VIDEO_RESIGN_SEGMENT_START_MS + COACH_RESIGN_SEGMENT_DURATION_MS + 1_000;
+  COACH_VIDEO_DRAW_SEGMENT_START_MS + COACH_DRAW_SEGMENT_DURATION_MS + 1_000;
 
 /** @deprecated use COACH_VIDEO_RESIGN_SEGMENT_START_MS */
 const COACH_RESIGN_SEGMENT_START_MS = COACH_VIDEO_RESIGN_SEGMENT_START_MS;
@@ -170,7 +193,8 @@ export type CoachVideoCue =
         | 'resignDeclinedStatement'
         | 'resignDeclinedCongrats'
         | 'resignAgreedStatement'
-        | 'resignAgreedCongrats';
+        | 'resignAgreedCongrats'
+        | 'resignAcceptedDraw';
     }
   | { atMs: number; kind: 'closeResignOffer' }
   | { atMs: number; kind: 'showBanner'; title: string; durationMs?: number }
@@ -229,6 +253,7 @@ export const COACH_VIDEO_BASICS_SEGMENT_STARTS_MS = [0, 19_100, 37_940, 48_100] 
 export const COACH_VIDEO_ENDING_SEGMENT_STARTS_MS = [
   COACH_VIDEO_WIN_SEGMENT_START_MS,
   COACH_VIDEO_RESIGN_SEGMENT_START_MS,
+  COACH_VIDEO_DRAW_SEGMENT_START_MS,
 ] as const;
 export const COACH_VIDEO_SEGMENT_STARTS_MS = [
   ...COACH_VIDEO_BASICS_SEGMENT_STARTS_MS,
@@ -242,6 +267,7 @@ export const COACH_VIDEO_SEGMENT_BANNERS: CoachVideoSegmentBanner[] = [
   { atMs: 48_100, title: 'TRIPLE CAPTURE' },
   { atMs: COACH_VIDEO_WIN_SEGMENT_START_MS, title: 'WIN' },
   { atMs: COACH_VIDEO_RESIGN_SEGMENT_START_MS, title: 'RESIGN' },
+  { atMs: COACH_VIDEO_DRAW_SEGMENT_START_MS, title: 'DRAW' },
 ];
 
 const ANCHOR: readonly [number, Player][] = [[15, 'BLUE'], [19, 'BLUE']];
@@ -250,14 +276,15 @@ export const COACH_VIDEO: CoachVideoScript = {
   boardId: COACH_VIDEO_BOARD_ID,
   durationMs: COACH_VIDEO_DURATION_MS,
   title: 'How to play',
-  intro: '7-bead board. Watch three moves, three captures, then double and triple chain. Likewise you can capture four, five, or more beads in one turn while the chain stays open.',
+  intro: 'Smart Beads board. Watch move, capture, win, resign, and draw.',
   points: [
     'Move — slide one step to an empty node.',
     'Single capture — jump over one neighbour bead.',
     'Double capture — same bead jumps twice.',
     'Triple capture — same bead jumps three times; likewise four, five, or more while the chain stays open.',
     'Win — capture all opponent beads to win.',
-    'Resign — if a player resigns and the opponent declines, the resigning player loses; if the opponent agrees, it is a draw.',
+    'Resign — if a player resigns and the opponent declines, the resigning player loses.',
+    'Draw — if the opponent agrees to a resignation, the game is a draw.',
   ],
   keyframes: [
     kf(0, [[12, 'RED'], [16, 'RED'], [17, 'RED'], ...ANCHOR]),
@@ -291,6 +318,11 @@ export const COACH_VIDEO: CoachVideoScript = {
       [[4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE']],
       { RED: 2, BLUE: 2 },
     ),
+    kf(
+      COACH_VIDEO_DRAW_SEGMENT_START_MS,
+      [[4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE']],
+      { RED: 2, BLUE: 2 },
+    ),
   ],
   speeches: [
     {
@@ -304,6 +336,10 @@ export const COACH_VIDEO: CoachVideoScript = {
     {
       atMs: COACH_RESIGN_DECLINE_CONGRATS_MS,
       text: COACH_RESIGN_DECLINED_CONGRATS_SPEECH,
+    },
+    {
+      atMs: COACH_VIDEO_DRAW_SEGMENT_START_MS,
+      text: COACH_DRAW_SPEECH_TEXT,
     },
   ],
   highlights: [
@@ -386,6 +422,18 @@ export const COACH_VIDEO: CoachVideoScript = {
       atMs: COACH_RESIGN_DECLINE_CONGRATS_MS + COACH_RESIGN_CONGRATS_PHASE_MS,
       kind: 'hideModals',
     },
+    {
+      atMs: COACH_DRAW_RESULT_CUE_MS,
+      kind: 'result',
+      winner: 'DRAW',
+      captures: { RED: 2, BLUE: 2 },
+      snapshot: true,
+      phase: 'resignAcceptedDraw',
+    },
+    {
+      atMs: COACH_DRAW_RESULT_CUE_MS + COACH_DRAW_MODAL_PHASE_MS,
+      kind: 'hideModals',
+    },
   ],
   segmentBanners: COACH_VIDEO_SEGMENT_BANNERS,
 };
@@ -395,6 +443,20 @@ export function findCoachKeyframeAt(
   keyframes: readonly CoachVideoKeyframe[],
   _moves: readonly CoachVideoMove[] = [],
 ): CoachVideoKeyframe {
+  if (ms >= COACH_VIDEO_DRAW_SEGMENT_START_MS) {
+    let best = keyframes[0];
+    for (const entry of keyframes) {
+      if (
+        entry.atMs <= ms
+        && entry.atMs >= COACH_VIDEO_DRAW_SEGMENT_START_MS
+        && entry.atMs >= best.atMs
+      ) {
+        best = entry;
+      }
+    }
+    if (best.atMs >= COACH_VIDEO_DRAW_SEGMENT_START_MS) return best;
+  }
+
   if (ms >= COACH_VIDEO_RESIGN_SEGMENT_START_MS) {
     let best = keyframes[0];
     for (const entry of keyframes) {
@@ -485,6 +547,12 @@ export function coachSegmentBannerUntilMs(
   if (banner.title === 'RESIGN') {
     return Math.min(
       COACH_VIDEO_RESIGN_SEGMENT_START_MS + COACH_RESIGN_SPEECH_ESTIMATE_MS,
+      nextCap,
+    );
+  }
+  if (banner.title === 'DRAW') {
+    return Math.min(
+      COACH_VIDEO_DRAW_SEGMENT_START_MS + COACH_DRAW_SPEECH_ESTIMATE_MS,
       nextCap,
     );
   }
