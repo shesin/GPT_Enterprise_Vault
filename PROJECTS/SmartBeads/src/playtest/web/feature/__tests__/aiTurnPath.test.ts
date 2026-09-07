@@ -7,7 +7,8 @@ import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
 
 const off = {
   aiLevel: 2 as const,
-  matchTimer: 'off' as const,
+  timer: 'off' as const,
+  tournamentTimer: 'off',
   shotClock: 'off' as const,
   centerRule: 'off' as const,
 };

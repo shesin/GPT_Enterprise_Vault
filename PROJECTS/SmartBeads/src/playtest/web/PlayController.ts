@@ -20,14 +20,17 @@ import {
   getDefaultBgmTrack,
   CenterRule,
   formatCenterRuleLabel,
-  formatMatchTimerOptionLabel,
+  formatTimerOptionLabel,
   formatShotClockOptionLabel,
   formatAiLevelLabel,
   GameFeatureSettings,
   HUMAN_PVE_MAX_AI_LEVEL,
   isHumanVsAiMode,
-  MatchTimerMinutes,
-  parseMatchSeconds,
+  isTournamentTimerActive,
+  normalizeTimerSettings,
+  TimerMinutes,
+  parseTimerSeconds,
+  effectiveCenterRule,
   populateAiLevelSelect,
   SPECTATE_INTER_MOVE_DELAY_MS,
   ShotClockSeconds,
@@ -59,7 +62,7 @@ import {
   shouldAcceptResignationDraw,
   thinkBudgetForLevel,
   AiCenterContext,
-  AiMatchTimerContext,
+  AiTimerContext,
 } from './feature/HonestAi';
 import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
@@ -78,6 +81,21 @@ function fmtClock(sec: number): string {
   const m = Math.floor(clamped / 60).toString().padStart(2, '0');
   const s = (clamped % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
+}
+
+function updatePlayerTimerMmss(
+  el: HTMLElement | null,
+  displaySec: number,
+  limitSec: number,
+): void {
+  if (!el) return;
+  if (limitSec <= 0) {
+    el.textContent = 'OFF';
+    el.classList.add('off');
+    return;
+  }
+  el.classList.remove('off');
+  el.textContent = fmtClock(displaySec);
 }
 
 function updateShotRing(
@@ -121,21 +139,22 @@ function aiCenterFromSession(session: FeatureSession): AiCenterContext {
   const settings = session.getSettings();
   const scores = session.getCenterDisplayScores();
   return {
-    centerRule: settings.centerRule,
+    centerRule: effectiveCenterRule(settings),
     cumulativeRed: scores.red,
     cumulativeBlue: scores.blue,
   };
 }
 
-function aiMatchTimerFromSession(session: FeatureSession): AiMatchTimerContext {
+function aiTimerFromSession(session: FeatureSession): AiTimerContext {
   const settings = session.getSettings();
-  const matchLimitSec = parseMatchSeconds(settings.matchTimer);
+  const tournament = isTournamentTimerActive(settings);
+  const timerLimitSec = parseTimerSeconds(tournament ? settings.tournamentTimer : settings.timer);
   return {
-    matchLimitSec,
+    timerLimitSec,
     globalRemainingSec: session.getGlobalMatchRemaining(),
     redRemainingSec: session.getP1Clock(),
     blueRemainingSec: session.getP2Clock(),
-    mode: settings.mode,
+    usePerSideClocks: tournament,
   };
 }
 
@@ -152,12 +171,12 @@ export function planAiTurnPath(session: FeatureSession, actingPlayer?: Player): 
   const variant = session.getBoardVariant();
   const snap = session.getEngine().exportSnapshot();
   const center = aiCenterFromSession(session);
-  const matchTimer = aiMatchTimerFromSession(session);
+  const timer = aiTimerFromSession(session);
   try {
     const planned = selectAiTurnPath(variant, level, snap, aiPlayer, {
       budgetMs: thinkBudgetForLevel(level, variant),
       center,
-      matchTimer,
+      timer,
     });
     if (planned?.length) return planned;
   } catch {
@@ -430,7 +449,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const aiLevelSetting = document.getElementById('ai-level-setting') as HTMLDivElement | null;
   const coachLevelSelect = document.getElementById('coach-level-select') as HTMLSelectElement | null;
   const coachLevelSetting = document.getElementById('coach-level-setting') as HTMLDivElement | null;
-  const matchTimerSelect = document.getElementById('match-timer-select') as HTMLSelectElement;
+  const timerSelect = document.getElementById('timer-select') as HTMLSelectElement;
+  const tournamentTimerSelect = document.getElementById('tournament-timer-select') as HTMLSelectElement;
+  const tournamentTimerSetting = document.getElementById('tournament-timer-setting') as HTMLDivElement | null;
   const shotClockSelect = document.getElementById('shot-clock-select') as HTMLSelectElement;
   const centerRuleSelect = document.getElementById('center-rule-select') as HTMLSelectElement;
   const coachPanel = document.getElementById('coach-panel') as HTMLDivElement | null;
@@ -742,7 +763,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
     boardSelect.disabled = coach;
     centerRuleSelect.disabled = coach;
-    matchTimerSelect.disabled = coach;
+    timerSelect.disabled = coach;
+    if (tournamentTimerSelect) tournamentTimerSelect.disabled = coach;
     shotClockSelect.disabled = coach;
     aiLevelSelect.disabled = coach;
     if (coachLevelSelect) coachLevelSelect.disabled = coach;
@@ -793,18 +815,46 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     return readGameMode() === 'spectate';
   }
 
+  function readRawSettings(): GameFeatureSettings {
+    const aiLevel = clampUiAiLevel(parseInt(aiLevelSelect.value, 10));
+    return {
+      mode: readGameMode(),
+      aiLevel,
+      timer: timerSelect.value as GameFeatureSettings['timer'],
+      tournamentTimer: tournamentTimerSelect.value as GameFeatureSettings['tournamentTimer'],
+      shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
+      centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
+    };
+  }
+
+  function syncTimerSettingLocks(): void {
+    const mode = readGameMode();
+    const tournamentOn = tournamentTimerSelect.value !== 'off';
+    const timerOn = timerSelect.value !== 'off';
+    if (tournamentTimerSetting) {
+      tournamentTimerSetting.style.display = mode === 'pvp' ? '' : 'none';
+    }
+    if (mode !== 'pvp' && tournamentTimerSelect.value !== 'off') {
+      tournamentTimerSelect.value = 'off';
+    }
+    if (isCoachMode()) return;
+    tournamentTimerSelect.disabled = timerOn;
+    timerSelect.disabled = tournamentOn;
+    centerRuleSelect.disabled = tournamentOn;
+  }
+
   function readCoachWatchSettings(): GameFeatureSettings {
     const coachLevel = coachLevelSelect
       ? clampUiAiLevel(parseInt(coachLevelSelect.value, 10))
       : 3;
     const aiLevel = clampUiAiLevel(parseInt(aiLevelSelect.value, 10));
-    return buildCoachWatchSettings({
+    return normalizeTimerSettings(buildCoachWatchSettings({
       coachRedLevel: coachLevel,
       coachBlueLevel: aiLevel,
-      matchTimer: matchTimerSelect.value as GameFeatureSettings['matchTimer'],
+      timer: timerSelect.value as GameFeatureSettings['timer'],
       shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
       centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
-    });
+    }));
   }
 
   /** Mode comes from start-screen picker only (not duplicated in Settings). */
@@ -816,21 +866,16 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (isCoachWatchMode()) {
       return readCoachWatchSettings();
     }
-    const aiLevel = clampUiAiLevel(parseInt(aiLevelSelect.value, 10));
-    return {
-      mode: readGameMode(),
-      aiLevel,
-      matchTimer: matchTimerSelect.value as GameFeatureSettings['matchTimer'],
-      shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
-      centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
-    };
+    return normalizeTimerSettings(readRawSettings());
   }
 
   function applyBoardDefaults(boardId: ProductBoardId): void {
     const defaults = getPlayConfig(boardId).defaultSettings;
     centerRuleSelect.value = defaults.centerRule;
-    matchTimerSelect.value = defaults.matchTimer;
+    timerSelect.value = defaults.timer;
+    tournamentTimerSelect.value = defaults.tournamentTimer;
     shotClockSelect.value = defaults.shotClock;
+    syncTimerSettingLocks();
   }
 
   function syncCenterRuleOptions(): void {
@@ -850,21 +895,39 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
   }
 
-  function syncMatchTimerOptions(): void {
+  function syncTimerOptions(): void {
     const play = getPlayConfig(currentBoardId);
-    const options = play.matchTimerOptions;
-    const current = matchTimerSelect.value as MatchTimerMinutes;
-    matchTimerSelect.innerHTML = '';
+    const options = play.timerOptions;
+    const current = timerSelect.value as TimerMinutes;
+    timerSelect.innerHTML = '';
     for (const value of options) {
       const opt = document.createElement('option');
       opt.value = value;
-      opt.textContent = formatMatchTimerOptionLabel(value, play.matchTimerBest);
-      matchTimerSelect.appendChild(opt);
+      opt.textContent = formatTimerOptionLabel(value, play.timerBest);
+      timerSelect.appendChild(opt);
     }
     if (options.includes(current)) {
-      matchTimerSelect.value = current;
+      timerSelect.value = current;
     } else {
-      matchTimerSelect.value = getPlayConfig(currentBoardId).defaultSettings.matchTimer;
+      timerSelect.value = getPlayConfig(currentBoardId).defaultSettings.timer;
+    }
+  }
+
+  function syncTournamentTimerOptions(): void {
+    const play = getPlayConfig(currentBoardId);
+    const options = play.tournamentTimerOptions ?? play.timerOptions;
+    const current = tournamentTimerSelect.value as TimerMinutes;
+    tournamentTimerSelect.innerHTML = '';
+    for (const value of options) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = formatTimerOptionLabel(value, play.timerBest);
+      tournamentTimerSelect.appendChild(opt);
+    }
+    if (options.includes(current)) {
+      tournamentTimerSelect.value = current;
+    } else {
+      tournamentTimerSelect.value = getPlayConfig(currentBoardId).defaultSettings.tournamentTimer;
     }
   }
 
@@ -888,10 +951,12 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
   function syncBoardPlayOptions(): void {
     syncCenterRuleOptions();
-    syncMatchTimerOptions();
+    syncTimerOptions();
+    syncTournamentTimerOptions();
     syncShotClockOptions();
     syncAiLevelOptions();
     syncCoachLevelOptions();
+    syncTimerSettingLocks();
   }
 
   function syncBoardTitle(): void {
@@ -1015,6 +1080,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       coachLevelSetting.style.display = coachWatch ? '' : 'none';
     }
     syncCoachShellUi();
+    syncTimerSettingLocks();
   }
 
   function interMoveDelayMs(): number {
@@ -1107,7 +1173,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
           session.getEngine().exportSnapshot(),
           session.getAiPlayer(),
           aiCenterFromSession(session),
-          aiMatchTimerFromSession(session),
+          aiTimerFromSession(session),
         );
       }
       finishResignation(resigning, acceptDraw);
@@ -1243,22 +1309,23 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
     syncModeUi();
 
-    const matchSecs = parseMatchSeconds(settings.matchTimer);
+    const tournamentActive = isTournamentTimerActive(settings);
+    const timerLimitSec = parseTimerSeconds(
+      tournamentActive ? settings.tournamentTimer : settings.timer,
+    );
     const shotLimit = session.getShotLimit();
-    const matchMmssEl = document.getElementById('top-match-mmss');
-    if (matchMmssEl) {
-      if (matchSecs <= 0) {
-        matchMmssEl.textContent = 'OFF';
-        matchMmssEl.classList.add('off');
-      } else {
-        matchMmssEl.classList.remove('off');
-        if (settings.mode === 'pvp') {
-          const clock = state.currentPlayer === 'RED' ? session.getP1Clock() : session.getP2Clock();
-          matchMmssEl.textContent = fmtClock(clock);
-        } else {
-          matchMmssEl.textContent = fmtClock(session.getGlobalMatchRemaining());
-        }
-      }
+    const timerP1El = document.getElementById('timer-mmss-p1');
+    const timerP2El = document.getElementById('timer-mmss-p2');
+    if (tournamentActive) {
+      updatePlayerTimerMmss(timerP1El, session.getP1Clock(), timerLimitSec);
+      updatePlayerTimerMmss(timerP2El, session.getP2Clock(), timerLimitSec);
+    } else if (timerLimitSec > 0) {
+      const sharedRem = session.getGlobalMatchRemaining();
+      updatePlayerTimerMmss(timerP1El, sharedRem, timerLimitSec);
+      updatePlayerTimerMmss(timerP2El, sharedRem, timerLimitSec);
+    } else {
+      updatePlayerTimerMmss(timerP1El, 0, 0);
+      updatePlayerTimerMmss(timerP2El, 0, 0);
     }
 
     const shotRemaining = session.getShotRemaining();
@@ -1369,10 +1436,22 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       // Freezing on aiThinking made Ebony immune to shot clock in PvE.
       session.timerTick();
       const shotRem = session.getShotRemaining();
-      const matchRem = session.getGlobalMatchRemaining();
+      const timerRem = session.getGlobalMatchRemaining();
       const shotLimit = session.getShotLimit();
-      const matchLimit = parseMatchSeconds(session.getSettings().matchTimer);
-      if ((shotLimit > 0 && shotRem <= 3 && shotRem > 0) || (matchLimit > 0 && matchRem <= 5 && matchRem > 0)) {
+      const settingsNow = session.getSettings();
+      const timerLimit = parseTimerSeconds(
+        isTournamentTimerActive(settingsNow)
+          ? settingsNow.tournamentTimer
+          : settingsNow.timer,
+      );
+      const tournamentActive = isTournamentTimerActive(settingsNow);
+      const currentPlayer = session.getEngine().getState().currentPlayer;
+      const lowTimerRem = tournamentActive
+        ? (currentPlayer === 'RED' ? session.getP1Clock() : session.getP2Clock())
+        : timerRem;
+      if ((shotLimit > 0 && shotRem <= 3 && shotRem > 0)
+        || (timerLimit > 0 && !tournamentActive && timerRem <= 5 && timerRem > 0)
+        || (timerLimit > 0 && tournamentActive && lowTimerRem <= 5 && lowTimerRem > 0)) {
         soundEffects.playTimerWarning();
       }
       updateUI();
@@ -1857,7 +1936,21 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     switchBoard(boardSelect.value as ProductBoardId);
   });
   centerRuleSelect.addEventListener('change', resetGame);
-  matchTimerSelect.addEventListener('change', resetGame);
+  timerSelect.addEventListener('change', () => {
+    if (timerSelect.value !== 'off') {
+      tournamentTimerSelect.value = 'off';
+    }
+    syncTimerSettingLocks();
+    resetGame();
+  });
+  tournamentTimerSelect.addEventListener('change', () => {
+    if (tournamentTimerSelect.value !== 'off') {
+      timerSelect.value = 'off';
+      centerRuleSelect.value = 'off';
+    }
+    syncTimerSettingLocks();
+    resetGame();
+  });
   shotClockSelect.addEventListener('change', resetGame);
   aiLevelSelect.addEventListener('change', resetGame);
   coachLevelSelect?.addEventListener('change', resetGame);

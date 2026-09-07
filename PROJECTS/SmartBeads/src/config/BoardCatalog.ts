@@ -2,7 +2,7 @@ import { BoardVariant } from './BoardConfig';
 import {
   CenterRule,
   GameFeatureSettings,
-  MatchTimerMinutes,
+  TimerMinutes,
   ShotClockSeconds,
 } from '../playtest/web/feature/GameFeatureSettings';
 
@@ -30,9 +30,11 @@ export const PRODUCT_BOARD_ORDER: ProductBoardId[] = [
 export interface BoardPlayConfig {
   defaultSettings: GameFeatureSettings;
   centerRuleOptions: CenterRule[];
-  matchTimerOptions: MatchTimerMinutes[];
-  /** Recommended match timer — shown as e.g. `20 (best)` in settings dropdown. */
-  matchTimerBest?: MatchTimerMinutes;
+  timerOptions: TimerMinutes[];
+  /** Recommended timer — shown as e.g. `20 (best)` in settings dropdown. */
+  timerBest?: TimerMinutes;
+  /** Human vs Human tournament clocks — same minute steps as timer when omitted. */
+  tournamentTimerOptions?: TimerMinutes[];
   shotClockOptions: ShotClockSeconds[];
   /** Recommended turn shot clock — shown as e.g. `120 (best)` in settings dropdown. */
   shotClockBest?: ShotClockSeconds;
@@ -53,7 +55,8 @@ export interface BoardCatalogEntry {
 const BASE_SETTINGS: GameFeatureSettings = {
   mode: 'pve',
   aiLevel: 2,
-  matchTimer: 'off',
+  timer: 'off',
+  tournamentTimer: 'off',
   shotClock: 'off',
   centerRule: 'off',
 };
@@ -73,12 +76,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       defaultSettings: {
         ...BASE_SETTINGS,
         centerRule: 'off',
-        matchTimer: 'off',
+        timer: 'off',
+  tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
-      matchTimerOptions: ['off', '3', '15', '20', '30'],
-      matchTimerBest: '20',
+      timerOptions: ['off', '3', '15', '20', '30'],
+      timerBest: '20',
       shotClockOptions: ['off', '60', '90', '120'],
       shotClockBest: '120',
     },
@@ -96,12 +100,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       defaultSettings: {
         ...BASE_SETTINGS,
         centerRule: 'off',
-        matchTimer: 'off',
+        timer: 'off',
+  tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
-      matchTimerOptions: ['off', '3', '10', '15', '25'],
-      matchTimerBest: '15',
+      timerOptions: ['off', '3', '10', '15', '25'],
+      timerBest: '15',
       shotClockOptions: ['off', '60', '90', '120'],
       shotClockBest: '120',
     },
@@ -119,12 +124,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       defaultSettings: {
         ...BASE_SETTINGS,
         centerRule: 'off',
-        matchTimer: 'off',
+        timer: 'off',
+  tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
-      matchTimerOptions: ['off', '3', '10', '15', '25'],
-      matchTimerBest: '15',
+      timerOptions: ['off', '3', '10', '15', '25'],
+      timerBest: '15',
       shotClockOptions: ['off', '60', '90', '120'],
       shotClockBest: '90',
     },
@@ -142,12 +148,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       defaultSettings: {
         ...BASE_SETTINGS,
         centerRule: 'off',
-        matchTimer: 'off',
+        timer: 'off',
+  tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
-      matchTimerOptions: ['off', '3', '5', '10', '15'],
-      matchTimerBest: '10',
+      timerOptions: ['off', '3', '5', '10', '15'],
+      timerBest: '10',
       shotClockOptions: ['off', '30', '60', '90'],
       shotClockBest: '60',
     },
@@ -165,12 +172,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       defaultSettings: {
         ...BASE_SETTINGS,
         centerRule: 'off',
-        matchTimer: 'off',
+        timer: 'off',
+  tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
-      matchTimerOptions: ['off', '3', '5', '10'],
-      matchTimerBest: '10',
+      timerOptions: ['off', '3', '5', '10'],
+      timerBest: '10',
       shotClockOptions: ['off', '30', '60'],
       shotClockBest: '60',
     },
@@ -188,12 +196,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       defaultSettings: {
         ...BASE_SETTINGS,
         centerRule: 'off',
-        matchTimer: 'off',
+        timer: 'off',
+  tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
-      matchTimerOptions: ['off', '3', '5', '10'],
-      matchTimerBest: '5',
+      timerOptions: ['off', '3', '5', '10'],
+      timerBest: '5',
       shotClockOptions: ['off', '30', '60'],
       shotClockBest: '60',
     },
@@ -211,12 +220,13 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
       defaultSettings: {
         ...BASE_SETTINGS,
         centerRule: 'off',
-        matchTimer: 'off',
+        timer: 'off',
+  tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
-      matchTimerOptions: ['off', '3', '5', '10'],
-      matchTimerBest: '5',
+      timerOptions: ['off', '3', '5', '10'],
+      timerBest: '5',
       shotClockOptions: ['off', '30', '60'],
       shotClockBest: '60',
     },

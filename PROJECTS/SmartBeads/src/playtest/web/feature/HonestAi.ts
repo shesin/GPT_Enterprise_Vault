@@ -1,7 +1,7 @@
 import { BoardVariant } from '../../../config/BoardConfig';
 import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
 import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
-import { AiLevel, CenterRule, GameMode } from './GameFeatureSettings';
+import { AiLevel, CenterRule } from './GameFeatureSettings';
 import { countCenterOccupancy } from './centerScoring';
 
 export interface TurnEnd {
@@ -31,23 +31,30 @@ export interface AiCenterContext {
   cumulativeBlue?: number;
 }
 
-/** Match timer state for AI eval — shot clock intentionally omitted (AI moves too fast). */
-export interface AiMatchTimerContext {
-  matchLimitSec: number;
-  /** PvE / spectate shared countdown; 0 when per-side clocks are used. */
+/** Timer state for AI eval — shot clock intentionally omitted (AI moves too fast). */
+export interface AiTimerContext {
+  timerLimitSec: number;
+  /** Shared countdown (PvE, spectate, HvH with Timer on); 0 when per-side clocks are used. */
   globalRemainingSec: number;
   redRemainingSec: number;
   blueRemainingSec: number;
-  mode: GameMode;
+  /** Tournament timer — chess clocks in HvH only. */
+  usePerSideClocks: boolean;
 }
 
-export const MATCH_TIMER_OFF: AiMatchTimerContext = {
-  matchLimitSec: 0,
+/** @deprecated use AiTimerContext */
+export type AiMatchTimerContext = AiTimerContext;
+
+export const TIMER_OFF: AiTimerContext = {
+  timerLimitSec: 0,
   globalRemainingSec: 0,
   redRemainingSec: 0,
   blueRemainingSec: 0,
-  mode: 'pve',
+  usePerSideClocks: false,
 };
+
+/** @deprecated use TIMER_OFF */
+export const MATCH_TIMER_OFF = TIMER_OFF;
 
 export interface SelectAiOptions {
   budgetMs?: number;
@@ -55,7 +62,7 @@ export interface SelectAiOptions {
   easySoftMissRate?: number;
   mediumSoftMissRate?: number;
   center?: AiCenterContext;
-  matchTimer?: AiMatchTimerContext;
+  timer?: AiTimerContext;
 }
 
 export interface SearchCompletionReport {
@@ -119,25 +126,28 @@ function centerScoreForPlayer(
   return cum + occ;
 }
 
-export function matchTimerActive(matchTimer: AiMatchTimerContext | undefined): boolean {
-  return !!matchTimer && matchTimer.matchLimitSec > 0;
+export function timerActive(timer: AiTimerContext | undefined): boolean {
+  return !!timer && timer.timerLimitSec > 0;
 }
 
-/** 0 = plenty of time, 1 = critical (match about to force score/end). */
-function timerUrgency(matchTimer: AiMatchTimerContext | undefined, aiPlayer: Player): number {
-  if (!matchTimerActive(matchTimer)) return 0;
-  const t = matchTimer!;
+/** @deprecated use timerActive */
+export const matchTimerActive = timerActive;
 
-  if (t.mode === 'pvp') {
+/** 0 = plenty of time, 1 = critical (timer about to force score/end). */
+function timerUrgency(timer: AiTimerContext | undefined, aiPlayer: Player): number {
+  if (!timerActive(timer)) return 0;
+  const t = timer!;
+
+  if (t.usePerSideClocks) {
     const aiSec = aiPlayer === 'RED' ? t.redRemainingSec : t.blueRemainingSec;
-    const limit = t.matchLimitSec;
+    const limit = t.timerLimitSec;
     if (aiSec <= 0) return 1;
     const frac = aiSec / limit;
     if (frac >= 0.2) return 0;
     return 1 - frac / 0.2;
   }
 
-  const frac = t.globalRemainingSec / t.matchLimitSec;
+  const frac = t.globalRemainingSec / t.timerLimitSec;
   if (frac >= 0.12) return 0;
   return 1 - frac / 0.12;
 }
@@ -146,12 +156,12 @@ function centerEvalWeight(
   state: GameState,
   aiPlayer: Player,
   center: AiCenterContext | undefined,
-  matchTimer: AiMatchTimerContext | undefined,
+  timer: AiTimerContext | undefined,
 ): number {
   if (!center || center.centerRule === 'off') return 0;
 
   let weight = CENTER_EVAL_WEIGHT;
-  const urgency = timerUrgency(matchTimer, aiPlayer);
+  const urgency = timerUrgency(timer, aiPlayer);
   if (urgency > 0) {
     const capDiff = Math.abs(state.captures.RED - state.captures.BLUE);
     if (capDiff <= 1) weight += Math.round(urgency * 42);
@@ -160,19 +170,19 @@ function centerEvalWeight(
   return weight;
 }
 
-function matchTimerEvalAdjust(
+function timerEvalAdjust(
   state: GameState,
   aiPlayer: Player,
-  matchTimer: AiMatchTimerContext | undefined,
+  timer: AiTimerContext | undefined,
 ): number {
-  if (!matchTimerActive(matchTimer)) return 0;
+  if (!timerActive(timer)) return 0;
   const human = opponentOf(aiPlayer);
-  const urgency = timerUrgency(matchTimer, aiPlayer);
+  const urgency = timerUrgency(timer, aiPlayer);
   let adj = 0;
 
-  if (matchTimer!.mode === 'pvp') {
-    const aiSec = aiPlayer === 'RED' ? matchTimer!.redRemainingSec : matchTimer!.blueRemainingSec;
-    const oppSec = aiPlayer === 'RED' ? matchTimer!.blueRemainingSec : matchTimer!.redRemainingSec;
+  if (timer!.usePerSideClocks) {
+    const aiSec = aiPlayer === 'RED' ? timer!.redRemainingSec : timer!.blueRemainingSec;
+    const oppSec = aiPlayer === 'RED' ? timer!.blueRemainingSec : timer!.redRemainingSec;
     const lead = aiSec - oppSec;
     if (lead > 45) adj += 10;
     else if (lead < -45) adj -= 12;
@@ -197,7 +207,7 @@ export function evaluate(
   variant: BoardVariant,
   aiPlayer: Player = 'BLUE',
   center?: AiCenterContext,
-  matchTimer?: AiMatchTimerContext,
+  timer?: AiTimerContext,
 ): number {
   const human = opponentOf(aiPlayer);
   const aiCount = countPieces(state, aiPlayer);
@@ -212,10 +222,10 @@ export function evaluate(
   if (center && center.centerRule !== 'off') {
     const aiC = centerScoreForPlayer(state, aiPlayer, center);
     const humanC = centerScoreForPlayer(state, human, center);
-    score += (aiC - humanC) * centerEvalWeight(state, aiPlayer, center, matchTimer);
+    score += (aiC - humanC) * centerEvalWeight(state, aiPlayer, center, timer);
   }
 
-  score += matchTimerEvalAdjust(state, aiPlayer, matchTimer);
+  score += timerEvalAdjust(state, aiPlayer, timer);
   return score;
 }
 
@@ -309,13 +319,13 @@ function minimaxTurns(
   aiPlayer: Player,
   deadlineMs: number,
   center: AiCenterContext | undefined,
-  matchTimer: AiMatchTimerContext | undefined,
+  timer: AiTimerContext | undefined,
 ): MinimaxResult {
   if (Date.now() > deadlineMs) {
-    return { score: evaluate(snapshot.state, variant, aiPlayer, center, matchTimer), complete: false };
+    return { score: evaluate(snapshot.state, variant, aiPlayer, center, timer), complete: false };
   }
   if (depth === 0) {
-    return { score: evaluate(snapshot.state, variant, aiPlayer, center, matchTimer), complete: true };
+    return { score: evaluate(snapshot.state, variant, aiPlayer, center, timer), complete: true };
   }
 
   const player = maximizing ? aiPlayer : opponentOf(aiPlayer);
@@ -333,7 +343,7 @@ function minimaxTurns(
         break;
       }
       const child = minimaxTurns(
-        variant, end.snapshot, depth - 1, false, alpha, beta, branchCap, aiPlayer, deadlineMs, center, matchTimer,
+        variant, end.snapshot, depth - 1, false, alpha, beta, branchCap, aiPlayer, deadlineMs, center, timer,
       );
       if (!child.complete) complete = false;
       if (child.score > best) best = child.score;
@@ -351,7 +361,7 @@ function minimaxTurns(
       break;
     }
     const child = minimaxTurns(
-      variant, end.snapshot, depth - 1, true, alpha, beta, branchCap, aiPlayer, deadlineMs, center, matchTimer,
+      variant, end.snapshot, depth - 1, true, alpha, beta, branchCap, aiPlayer, deadlineMs, center, timer,
     );
     if (!child.complete) complete = false;
     if (child.score < best) best = child.score;
@@ -370,11 +380,11 @@ function scoreRootEnd(
   aiPlayer: Player,
   deadlineMs: number,
   center: AiCenterContext | undefined,
-  matchTimer: AiMatchTimerContext | undefined,
+  timer: AiTimerContext | undefined,
 ): MinimaxResult {
   if (replyDepth <= 0) {
     return {
-      score: evaluate(end.snapshot.state, variant, aiPlayer, center, matchTimer),
+      score: evaluate(end.snapshot.state, variant, aiPlayer, center, timer),
       complete: true,
     };
   }
@@ -389,7 +399,7 @@ function scoreRootEnd(
     aiPlayer,
     deadlineMs,
     center,
-    matchTimer,
+    timer,
   );
 }
 
@@ -405,7 +415,7 @@ function normalizeOptions(budgetMsOrOptions: number | SelectAiOptions): Required
       easySoftMissRate: EASY_SOFT_MISS_RATE,
       mediumSoftMissRate: MEDIUM_SOFT_MISS_RATE,
       center: { centerRule: 'off' },
-      matchTimer: MATCH_TIMER_OFF,
+      timer: TIMER_OFF,
     };
   }
   return {
@@ -414,7 +424,7 @@ function normalizeOptions(budgetMsOrOptions: number | SelectAiOptions): Required
     easySoftMissRate: budgetMsOrOptions.easySoftMissRate ?? EASY_SOFT_MISS_RATE,
     mediumSoftMissRate: budgetMsOrOptions.mediumSoftMissRate ?? MEDIUM_SOFT_MISS_RATE,
     center: budgetMsOrOptions.center ?? { centerRule: 'off' },
-    matchTimer: budgetMsOrOptions.matchTimer ?? MATCH_TIMER_OFF,
+    timer: budgetMsOrOptions.timer ?? TIMER_OFF,
   };
 }
 
@@ -480,14 +490,14 @@ function searchLayerAtExactDepth(
   aiPlayer: Player,
   deadlineMs: number,
   center: AiCenterContext | undefined,
-  matchTimer: AiMatchTimerContext | undefined,
+  timer: AiTimerContext | undefined,
 ): { best: TurnEnd[]; completeCount: number } {
   if (reply <= 0) {
     let best: TurnEnd[] = [];
     let bestScore = -Infinity;
     for (const end of ends) {
       const score = endScore(end, snapshot.state, {
-        score: evaluate(end.snapshot.state, variant, aiPlayer, center, matchTimer),
+        score: evaluate(end.snapshot.state, variant, aiPlayer, center, timer),
         complete: true,
       });
       if (score > bestScore) {
@@ -506,7 +516,7 @@ function searchLayerAtExactDepth(
 
   for (const end of ends) {
     const result = scoreRootEnd(
-      variant, snapshot.state, end, reply, replyBranch, aiPlayer, deadlineMs, center, matchTimer,
+      variant, snapshot.state, end, reply, replyBranch, aiPlayer, deadlineMs, center, timer,
     );
     if (!result.complete) continue;
     completeCount += 1;
@@ -532,7 +542,7 @@ function searchBestAtExactDepth(
   startBudgetMs: number,
   level: AiLevel,
   center: AiCenterContext | undefined,
-  matchTimer: AiMatchTimerContext | undefined,
+  timer: AiTimerContext | undefined,
 ): { best: TurnEnd[]; achievedReplyPlies: number; completeAtAchievedDepth: number } {
   const maxBudget = Math.max(startBudgetMs, maxSearchBudgetMs(level));
   let budgetMs = startBudgetMs;
@@ -540,7 +550,7 @@ function searchBestAtExactDepth(
   while (budgetMs <= maxBudget) {
     const deadlineMs = Date.now() + budgetMs;
     const layer = searchLayerAtExactDepth(
-      variant, snapshot, ends, reply, replyBranch, aiPlayer, deadlineMs, center, matchTimer,
+      variant, snapshot, ends, reply, replyBranch, aiPlayer, deadlineMs, center, timer,
     );
     if (layer.completeCount === ends.length && layer.best.length) {
       return {
@@ -553,7 +563,7 @@ function searchBestAtExactDepth(
   }
 
   const layer = searchLayerAtExactDepth(
-    variant, snapshot, ends, reply, replyBranch, aiPlayer, Infinity, center, matchTimer,
+    variant, snapshot, ends, reply, replyBranch, aiPlayer, Infinity, center, timer,
   );
   return {
     best: layer.best.length ? layer.best : [ends[0]],
@@ -604,7 +614,7 @@ export function selectAiTurnPath(
   const reply = aiOpponentReplyPlies(level);
   const replyBranch = replyBranchForLevel(level);
   const { best } = searchBestAtExactDepth(
-    variant, snapshot, ends, reply, replyBranch, aiPlayer, opts.budgetMs, level, opts.center, opts.matchTimer,
+    variant, snapshot, ends, reply, replyBranch, aiPlayer, opts.budgetMs, level, opts.center, opts.timer,
   );
 
   return best[Math.floor(opts.rng() * best.length)].path;
@@ -625,7 +635,7 @@ export function probeSearchCompletion(
   const reply = aiOpponentReplyPlies(level);
   const replyBranch = replyBranchForLevel(level);
   const { achievedReplyPlies, completeAtAchievedDepth } = searchBestAtExactDepth(
-    variant, snapshot, ends, reply, replyBranch, aiPlayer, opts.budgetMs, level, opts.center, opts.matchTimer,
+    variant, snapshot, ends, reply, replyBranch, aiPlayer, opts.budgetMs, level, opts.center, opts.timer,
   );
   return {
     targetReplyPlies: reply,
@@ -641,9 +651,9 @@ export function shouldAcceptResignationDraw(
   snapshot: { state: GameState; chainPieceId: number | null },
   aiPlayer: Player = 'BLUE',
   center?: AiCenterContext,
-  matchTimer?: AiMatchTimerContext,
+  timer?: AiTimerContext,
 ): boolean {
-  const score = evaluate(snapshot.state, variant, aiPlayer, center, matchTimer);
+  const score = evaluate(snapshot.state, variant, aiPlayer, center, timer);
   return score <= 0;
 }
 

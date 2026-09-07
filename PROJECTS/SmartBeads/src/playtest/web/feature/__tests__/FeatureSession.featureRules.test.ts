@@ -5,7 +5,8 @@ import { GameFeatureSettings } from '../GameFeatureSettings';
 const base: GameFeatureSettings = {
   mode: 'pve',
   aiLevel: 1,
-  matchTimer: 'off',
+  timer: 'off',
+  tournamentTimer: 'off',
   shotClock: 'off',
   centerRule: 'off',
 };
@@ -27,7 +28,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,
       centerRule: 'endgame',
-      matchTimer: 'off',
+      timer: 'off',
     });
     expect(session.getSettings().centerRule).toBe('endgame');
   });
@@ -141,7 +142,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
   it('PvE match timer expiry uses endgame center tiebreak when captures tied (full timerTick path)', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,
-      matchTimer: '3',
+      timer: '3',
       centerRule: 'endgame',
     });
     clearOccupants(session);
@@ -160,7 +161,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
   it('PvE match timer expiry uses capture score hierarchy', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,
-      matchTimer: '3',
+      timer: '3',
       centerRule: 'endgame',
     });
     session.getEngine().getState().captures.RED = 3;

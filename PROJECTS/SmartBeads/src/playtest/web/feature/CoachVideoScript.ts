@@ -5,7 +5,7 @@
 
 import type { ProductBoardId } from '../../../config/BoardCatalog';
 import type { Player } from '../../../models/GameState';
-import type { CenterRule, GameFeatureSettings, MatchTimerMinutes, ShotClockSeconds } from './GameFeatureSettings';
+import type { CenterRule, GameFeatureSettings, TimerMinutes, ShotClockSeconds } from './GameFeatureSettings';
 
 export const COACH_VIDEO_BOARD_ID = '7x4x5' as const satisfies ProductBoardId;
 
@@ -605,7 +605,7 @@ export function formatCoachTime(ms: number): string {
 
 export interface CoachLessonStepSettings {
   centerRule?: CenterRule;
-  matchTimer?: MatchTimerMinutes;
+  timer?: TimerMinutes;
   shotClock?: ShotClockSeconds;
 }
 
@@ -616,7 +616,8 @@ export function buildCoachLessonSettings(
     mode: 'coach',
     aiLevel: 1,
     centerRule: stepSettings.centerRule ?? 'off',
-    matchTimer: stepSettings.matchTimer ?? 'off',
+    timer: stepSettings.timer ?? 'off',
+    tournamentTimer: 'off',
     shotClock: stepSettings.shotClock ?? 'off',
   };
 }

@@ -84,7 +84,7 @@ async function verifyBoard(page, boardId, expected) {
   await page.waitForTimeout(500);
 
   const centerOpts = await readSelectOptions(page, 'center-rule-select');
-  const timerOpts = await readSelectOptions(page, 'match-timer-select');
+  const timerOpts = await readSelectOptions(page, 'timer-select');
   const shotOpts = await readSelectOptions(page, 'shot-clock-select');
 
   record(
@@ -104,8 +104,8 @@ async function verifyBoard(page, boardId, expected) {
   );
   record(
     `${boardId} timer default`,
-    (await page.locator('#match-timer-select').inputValue()) === expected.timerDefault,
-    await page.locator('#match-timer-select').inputValue(),
+    (await page.locator('#timer-select').inputValue()) === expected.timerDefault,
+    await page.locator('#timer-select').inputValue(),
   );
   record(
     `${boardId} shot options`,

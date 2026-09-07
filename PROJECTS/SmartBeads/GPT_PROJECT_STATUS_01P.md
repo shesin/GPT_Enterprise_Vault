@@ -19,7 +19,7 @@ The production codebase is fully implemented in clean TypeScript (`src/`), with 
 
 ## 7 Locked V1 Boards Status
 
-All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**508 tests**, 44 suites — Jest verified 2026-09-04 via targeted runs + `test:jest:fast` partial; full `test:jest` UNCONFIRMED this session; browser gates UNCONFIRMED):
+All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**511 tests**, 44 suites — Jest verified 2026-09-07 via targeted runs + `test:jest:fast` partial; full `test:jest` UNCONFIRMED this session; browser gates UNCONFIRMED):
 
 | # | Board Variant | Geometry & Architecture | Status |
 |---|---|---|---|
@@ -41,46 +41,45 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Collinear Jump Captures:** Short jump capture routes governed by strict collinearity algorithms (`sameDir`).
 - **Multi-Jump Chains:** Consecutive capture chaining with live state tracking (`chainPieceId`).
 - **Capture Optionality:** Players (and AI) can voluntarily stop multi-jump sequences at any hop via "Finish".
-- **Game Termination & Victory:** Elimination wins, stalemate wins, and capture-count victories on all V1 boards (`maxPlies: null` — no ply-cap endings in shipped boards). Center tiebreak at match-timer expiry lives in `FeatureSession.evaluateScoreAndEnd` (not core engine elimination path).
+- **Game Termination & Victory:** Elimination wins, stalemate wins, and capture-count victories on all V1 boards (`maxPlies: null` — no ply-cap endings in shipped boards). Center tiebreak at **timer** expiry lives in `FeatureSession.evaluateScoreAndEnd` (not core engine elimination path).
 
 ### 2. Turn Interaction & UI Protocol (`FeatureSession.ts` & `CanvasBoardRenderer.ts`)
-- **Inert Opponent Beads:** Only active player beads glow and are clickable. Opponent beads are 100% inert in all states (idle, selected, mid-chain).
-- **Prominent Selection Ring:** Selected active bead is highlighted with an unmistakable glowing red/orange double-ring.
-- **Target Highlighting:** Legal landing squares and selected cream bead use **amber/orange** rings. Lime last-move rings: **black beads and empty squares only** (not cream). **TESTED** (`CanvasBoardRenderer.moveFeedback.test.ts`).
+- **Inert Opponent Beads:** Opponent beads are 100% inert (not clickable). Current-player beads show turn colour at idle; only the selected bead + legal landings highlight after a pick.
+- **Turn bead highlighting (all modes):** Shared `drawCanvasBoard` — PvP, PvE, Watch AI, Coach idle. **Start of turn** (nothing selected): **lime** on all black beads or **orange** on all cream beads. **On select:** only that bead + landing squares (same colour). **Last-move** from/to uses the same colour per side. **TESTED** (`CanvasBoardRenderer.moveFeedback.test.ts` — 10 cases).
 - **Audio & Sound Effects (`SoundEffects.ts`):** Eight named WAV files in `public/audio/` (loaded at runtime via `SoundManifest.ts` — not embedded in JS bundle). Soft wooden slide, marimba capture with rising pitch on chains, flourish on 3+ hops, start/victory/defeat/draw stingers. **TESTED** (`SoundEffects.test.ts` — event dispatch; decode UNCONFIRMED in Jest).
 - **Start Screen Overlay & First-Tap Unlock (Option B):** Gold-accented start card over board (mode select + **▶ START GAME**) unlocks browser AudioContext and BGM. **Start** always opens with human (cream / RED); AI must not move first. **New game / Play again** alternates opener (game 2 → AI in PvE). **Board switch** returns to start overlay with human first (does not consume alternation counter). Match then runs with animated kickoff banner and fanfare.
 - **Production play shell layout (2026-08):** Four-column shell — left play panel (AI top, match `mm:ss` centre, human bottom, shot rings, capture/centre/beads), board-only centre column, settings right, optional ad column. Bottom controls: single nowrap row (Resign · Sound · Undo · New game). Viewport height-first sizing on `.shell`; 16-bead bump (`shell--board-16`, max frame height 860px); verified at 1366×768 and 1280×720 @ 100% zoom.
 - **Cream-camp orientation:** Jest gate `creamCampRendersLower.test.ts` — on every V1 board, cream (RED) beads average lower on canvas than ebony (BLUE). Board6 starting camps aligned to bottom convention.
 - **End-of-Game Celebration & Clear Outcome Statements:** Balanced celebratory sparkles (`★`, `✦`, `✧`) across all outcomes (Victory, Defeat, and Draw), clear result statements (*"CONGRATULATIONS! YOU WON!"*, *"WELL PLAYED! BETTER LUCK NEXT TIME"*, *"WELL PLAYED! IT'S A DRAW"*), clear bead capture differential display (e.g., *"You won by 3 beads (8 vs 5)"*), and a clean *"↻ PLAY AGAIN"* action button.
-- **Selection Safety & Highlight:** Clicking an immobile own bead safely deselects; prominent glowing red/orange double-ring locks onto the selected piece.
+- **Selection safety:** Clicking an immobile own bead safely deselects; no stale selection lock.
 - **16-Bead Visual Layout:** Central 5×5 grid is rendered as a prominent 472px square matching 10-bead width with compact 59px-high wing caps (560×796 canvas, 0.70 aspect ratio).
 - **Unified Center Plates:** Consistent glowing amber square plates render under center nodes for all 7 boards.
-- **Last-move highlight:** See Target Highlighting above. **TESTED** (same suite).
 - **Capture ripple:** Brief golden expanding pulse at captured node on jump (`drawGoldenCapturePulse`). **TESTED / FUNCTIONAL** (same test suite; no screen shake).
-- **Shot-clock ring (UI):** Per-player SVG countdown ring on left panel when shot clock is on (`play-shell.css` `.shot-ring`). Match timer remains centre **mm:ss** text — radial **match** rings are pending (HvH only; see pending doc).
+- **Shot-clock ring (UI):** Per-player SVG countdown ring on left panel when shot clock is on (`play-shell.css` `.shot-ring`). **Timer** remains centre **mm:ss** text — radial timer rings are pending (HvH tournament only; see pending doc).
 
 ### 3. PvE & AI Opponent (`HonestAi.ts`, `PlayController.ts`)
 - **Levels 1–3 (player-facing target):** Casual (0 reply) · Standard (1 reply) · Expert (depth-2). **TESTED** (`HonestAi.searchCompletion.test.ts` — all 7 boards, opening + 16 midgame).
 - **Depth-2 (Expert):** Full search required; extends think time up to ~45s on large boards rather than falling back to depth-1. Board-aware budgets (`thinkBudgetForLevel(level, variant)`).
 - **Still in code but improper UI:** levels **4–5** (Super Expert / +) — same depth as 3, extra time only. **Pending removal** per human direction (UI → 1–2–3 only).
-- **Easy / Medium / Hard:** unchanged contract; center + **match timer** in eval on levels 2–3 when rules on; Easy center tie-break among equal captures. **TESTED** (`HonestAi.difficultyTiers.test.ts`).
+- **Easy / Medium / Hard:** unchanged contract; center + **timer** in eval on levels 2–3 when rules on; Easy center tie-break among equal captures. **TESTED** (`HonestAi.difficultyTiers.test.ts`).
 - **3-fold repetition:** removed from production. See `GPT_PROJECT_AUDIT_05P.md`.
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
-- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`: Human vs AI · **Watch AI** · Human vs Human). Settings panel: Board, **AI level**, **Watch AI level** (Watch AI mode — cream-side AI vs black-side AI), Match timer, Turn shot clock, Center rule.
+- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`: Human vs AI · **Watch AI** · Human vs Human). Settings panel: Board, **AI level**, **Watch AI level** (Watch AI mode — cream-side AI vs black-side AI), **Timer**, **Tournament timer** (HvH only), Turn shot clock, Center rule.
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI) — chosen on start overlay, not duplicated in Settings.
 - **Default Feature Settings:**
   - `centerRule: 'off'` default on all 7 boards (End-Game/Cumulative selectable per board catalog).
-  - `matchTimer: 'off'` and `shotClock: 'off'` across all 7 games.
-  - `matchTimerOptions` include **`'3'`** on all 7 boards (user-selectable; default stays **off**).
-- **Center scoring contract:** End-Game/Cumulative tiebreak in `evaluateScoreAndEnd()` on match-timer expiry; cumulative accrual each completed turn; Medium/Hard AI eval + match-timer urgency via `planAiTurnPath`. Independent of match timer on/off for center rule storage.
-- **Clocks during AI:** shot/match timers tick while Ebony thinks (`shellTimerShouldSkip`); shot expiry on BLUE awards Ivory.
+  - `timer: 'off'`, `tournamentTimer: 'off'`, and `shotClock: 'off'` across all 7 games.
+  - `timerOptions` include **`'3'`** on all 7 boards (user-selectable; default stays **off**).
+- **Timer vs tournament timer:** **Timer** = shared clock (all modes); expiry → captures → centre → beads → draw. **Tournament timer** = HvH only per-player chess clocks; expiry → flag fall (instant loss); centre forced off. Mutually exclusive in UI.
+- **Center scoring contract:** End-Game/Cumulative tiebreak in `evaluateScoreAndEnd()` on **timer** expiry; cumulative accrual each completed turn; Medium/Hard AI eval + timer urgency via `planAiTurnPath`. Independent of timer on/off for center rule storage (except tournament timer forces centre off).
+- **Clocks during AI:** shot/timer tick while Ebony thinks (`shellTimerShouldSkip`); shot expiry on BLUE awards Ivory.
 - **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`). Modal buttons use **dashed vs solid** styling (not red/green) for colorblind safety.
 - **Alternating opener (local):** Start overlay → human (cream) first; **New game / Play again** alternates opener in PvE. **FUNCTIONAL** (Jest + browser policy checks).
 
 ### 5. Test & Quality Gates
-- **Jest (508 tests, 44 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog. Batched runner: `scripts/run-jest-batched.mjs`.
-- **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback` — last-move rings + capture pulse), Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
+- **Jest (511 tests, 44 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog. Batched runner: `scripts/run-jest-batched.mjs`.
+- **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback` — turn idle rings, selection + landing rings, last-move rings, capture pulse), Finish on 16+6×3×5, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs`).
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
 - **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; gates in `VISION/CURSOR_PROMPT_01.md`; hooks in `.cursor/rules/smartbeads-core.mdc` + `instruction-fidelity.mdc`.
@@ -99,13 +98,15 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **Settings game mode** | **OK (2026-09)** — removed from right panel; start screen only |
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |
-| **Center** (Off / End-game / Cumulative) | **OK** — Jest + AI eval + match-timer urgency on levels 2–3 |
+| **Center** (Off / End-game / Cumulative) | **OK** — Jest + AI eval + timer urgency on levels 2–3 |
 | **SFX bundle** | **OK (2026-09-04)** — WAV in `public/audio/`; main JS ~74 kB (was ~601 kB with embed) |
 | **Resign modal a11y** | **OK (2026-09-04)** — dashed/solid + labels; not red/green-only |
 | **Shot clock** | **OK** — ticks during AI; expiry tested |
-| **Match timer** | **OK** — ticks + center tiebreak tested; **mm:ss text only** (no radial ring — incomplete UI) |
+| **Timer** | **OK** — shared clock; expiry → capture/centre/beads; **mm:ss text only** |
+| **Tournament timer** | **OK (Jest)** — HvH chess clocks; flag fall = loss; centre off; **UNCONFIRMED** human browser |
 | **Engine** (moves, captures, chains) | **OK** — Jest + browser gates |
-| **Recent colour / panel edits** | **UNCONFIRMED** — not human browser-verified after 2026-09 session |
+| **Turn bead highlighting** | **OK (2026-09-07)** — idle lime/orange on all current-player beads; select → one bead + landings; all modes via `drawCanvasBoard`; **TESTED** (10 Jest); **UNCONFIRMED** human browser |
+| **Recent colour / panel edits** | **UNCONFIRMED** — human browser sign-off pending for non-highlight panel tweaks |
 
 Update this table when code ≠ claim. Do not mark **VERIFIED CLEAN** for rows marked Fix/remove or UNCONFIRMED.
 
@@ -120,7 +121,7 @@ Run from: `d:\Business Idea\Gpt_Enterprise_Vault`
 **Tests**
 ```powershell
 npm run test:jest:fast   # skips slow AI suites, ~40s
-npm run test:jest        # all 508 Jest tests, ~7 min
+npm run test:jest        # all 511 Jest tests, ~7 min
 npm test                 # Jest + browser gates
 ```
 Details: **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog.

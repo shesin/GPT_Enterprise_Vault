@@ -8,6 +8,7 @@ import {
   formatAiLevelSelectOption,
   HUMAN_PVE_MAX_AI_LEVEL,
   MAX_UI_AI_LEVEL,
+  normalizeTimerSettings,
 } from '../GameFeatureSettings';
 
 describe('GameFeatureSettings AI labels', () => {
@@ -45,15 +46,50 @@ describe('GameFeatureSettings coach watch', () => {
     const settings = buildCoachWatchSettings({
       coachRedLevel: 2,
       coachBlueLevel: 5,
-      matchTimer: '10',
+      timer: '10',
+  tournamentTimer: 'off',
       shotClock: '60',
       centerRule: 'endgame',
     });
     expect(settings.mode).toBe('spectate');
     expect(aiLevelForActingPlayer(settings, 'RED')).toBe(2);
     expect(aiLevelForActingPlayer(settings, 'BLUE')).toBe(3);
-    expect(settings.matchTimer).toBe('10');
+    expect(settings.timer).toBe('10');
     expect(settings.shotClock).toBe('60');
     expect(settings.centerRule).toBe('endgame');
+  });
+
+  it('normalizeTimerSettings clears tournament timer outside HvH and enforces mutual exclusion', () => {
+    const pveTournament = normalizeTimerSettings({
+      mode: 'pve',
+      aiLevel: 2,
+      timer: 'off',
+      tournamentTimer: '10',
+      shotClock: 'off',
+      centerRule: 'endgame',
+    });
+    expect(pveTournament.tournamentTimer).toBe('off');
+
+    const tournamentOn = normalizeTimerSettings({
+      mode: 'pvp',
+      aiLevel: 2,
+      timer: '15',
+      tournamentTimer: '10',
+      shotClock: 'off',
+      centerRule: 'endgame',
+    });
+    expect(tournamentOn.timer).toBe('off');
+    expect(tournamentOn.centerRule).toBe('off');
+
+    const timerOn = normalizeTimerSettings({
+      mode: 'pvp',
+      aiLevel: 2,
+      timer: '15',
+      tournamentTimer: 'off',
+      shotClock: 'off',
+      centerRule: 'endgame',
+    });
+    expect(timerOn.tournamentTimer).toBe('off');
+    expect(timerOn.centerRule).toBe('endgame');
   });
 });

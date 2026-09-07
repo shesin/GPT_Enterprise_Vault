@@ -11,14 +11,14 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 ## Test catalog & how to run (2026-09-03)
 
 **Repo root:** `d:\Business Idea\Gpt_Enterprise_Vault`  
-**Verified:** **508 tests**, **44 Jest suites** — partial PASS via batched runner (2026-09-04); full slow-AI batches UNCONFIRMED this session.
+**Verified:** **511 tests**, **44 Jest suites** — partial PASS via batched runner (2026-09-07 turn-highlight sync); full slow-AI batches UNCONFIRMED this session.
 
 ### Commands (use these — do not use bare `jest PROJECTS/SmartBeads`)
 
 | Command | What it runs | Time |
 |---------|----------------|------|
 | `npm run test:jest:fast` | Jest only — skips slow AI search suites | ~40 s |
-| `npm run test:jest` | **All 508 Jest tests** (6 batches, live output, hard timeouts) | ~7 min |
+| `npm run test:jest` | **All 511 Jest tests** (6 batches, live output, hard timeouts) | ~7 min |
 | `npm test` | Full Jest + Playwright browser gates (`m2-2step-npm-gate.mjs`) | Jest ~7 min + browser |
 | `node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --batch=<id>` | One batch only | see below |
 
@@ -33,7 +33,7 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 | **7-board core** | `allBoards.smoke.test.ts`, `Board*.test.ts` (×7), `FeatureSession.turnControl.test.ts`, `v1GeometryCaptureAudit.test.ts` | All 7 product boards: legal select, Medium AI reply, reset/New game, capture geometry, turn control |
 | **Engine + parity** | `SmartBeadsEngine*.test.ts`, `BoardCatalog.test.ts`, `*PrototypeParity.test.ts` (×7), `SelfPlayRunner`, `HumanVsAiRunner` | Engine rules, catalog defaults, prototype geometry parity per board |
 | **Feature / settings** | `GameFeatureSettings`, `FeatureSession.*`, `clockPolicy`, `aiTurnPath`, `HonestAi.test`, `spectate`, `CoachVideoScript.test`, `CoachVideoPlayer.test`, `CoachVoice.test`, `FeatureSession.coach.test` | Timers, center rules, resignation, AI level UI, **Watch AI** (spectate), **Coach** Video 1 (watch-only, **7-bead · 4×5**, ~1:53) |
-| **Shell / layout / audio** | `PlayController`, `playerBarShell`, `hubShell`, `viewportFit`, `creamCampRendersLower`, `CanvasBoardRenderer.moveFeedback`, `SoundEffects` | Settings DOM, cream-on-bottom, last-move rings, capture pulse, layout contracts |
+| **Shell / layout / audio** | `PlayController`, `playerBarShell`, `hubShell`, `viewportFit`, `creamCampRendersLower`, `CanvasBoardRenderer.moveFeedback`, `SoundEffects` | Settings DOM, cream-on-bottom, turn idle rings (lime/orange), selection + landing rings, last-move rings, capture pulse, layout contracts |
 | **Slow AI — tiers** | `HonestAi.difficultyTiers.test.ts` | Easy/Medium/Hard behaviour, Medium soft-miss, 8×4×6 and 16 gates (~7 min alone) |
 | **Slow AI — search** | `HonestAi.searchCompletion.test.ts` | Expert (level 3) depth-2 completion on all 7 boards + 16 midgame |
 
@@ -176,7 +176,7 @@ Human: Easy OK on 6×3×5; Medium≈Hard on 8-bead. Fix: Medium soft-miss ~20%; 
 
 **Pattern:** Human gives a one-line product ask. Agent expands it into defaults, “best” labels, docs, and tests — wasting hours undoing work.
 
-**Example:** “Put 3 minute timer for all boards” → agent set `defaultSettings.matchTimer: '3'` and changed `matchTimerBest`. Correct: add `'3'` to `matchTimerOptions` only; default stays `'off'`.
+**Example:** “Put 3 minute timer for all boards” → agent set `defaultSettings.timer: '3'` and changed `timerBest`. Correct: add `'3'` to `timerOptions` only; default stays `'off'`.
 
 **Why `.mdc` alone failed:**
 
@@ -197,10 +197,17 @@ Agents must run the STOP gate in the **user-visible message** before calling edi
 ## Corrective work (2026-09-04)
 
 - **SFX bundle:** Removed ~529k-char `SoundAssets.ts` base64 embed; runtime loads eight WAV files from `public/audio/` via `SoundManifest.ts`. Production JS chunk **~74 kB** (was **~601 kB**).
-- **HonestAi:** Match timer + center passed into eval (Medium/Hard); Easy center tie-break among equal captures; shot clock intentionally omitted.
+- **HonestAi:** Timer + center passed into eval (Medium/Hard); Easy center tie-break among equal captures; shot clock intentionally omitted.
 - **Resign modal:** Dashed “Agree” / solid “Decline” + `aria-label` — not red/green-only.
 - **Agent rules:** `.cursor/rules/smartbeads-core.mdc` — no stale residue; static assets in `public/`; do not edit `VISION/CLAUDE_TEST_REPORT_05.md`.
 - **Docs synced:** `GPT_PROJECT_STATUS_01P.md`, `PROJECT_MAP_05P.md`, test count **508 / 44 suites**.
+
+---
+
+## Corrective work (2026-09-07)
+
+- **Turn bead highlighting:** Idle turn — **lime** on all black beads or **orange** on all cream beads; on select only that bead + legal landings; last-move same colours. Shared `drawCanvasBoard` (PvP, PvE, Watch AI). **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts` (10 cases; was 7).
+- **Docs synced:** `GPT_PROJECT_STATUS_01P.md`, `PROJECT_MAP_05P.md`, `VISION/CURSOR_PROMPT_01.md`; test count **511 / 44 suites**.
 
 ---
 

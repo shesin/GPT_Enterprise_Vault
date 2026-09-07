@@ -40,7 +40,7 @@ async function setup(page, catalogId, mode) {
   await page.waitForFunction(() => document.querySelectorAll('#board-select option').length > 0);
   await page.selectOption('#board-select', catalogId);
   await page.selectOption('#start-mode-select', mode);
-  await page.selectOption('#match-timer-select', 'off');
+  await page.selectOption('#timer-select', 'off');
   await page.selectOption('#shot-clock-select', 'off');
   await page.locator('#restart-btn').click();
   await page.waitForTimeout(400);

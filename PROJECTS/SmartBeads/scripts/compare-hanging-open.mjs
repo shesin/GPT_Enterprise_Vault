@@ -35,7 +35,7 @@ async function main() {
   await page.selectOption('#board-select', '16');
   await page.selectOption('#start-mode-select', 'pve');
   await page.selectOption('#ai-level-select', '2');
-  await page.selectOption('#match-timer-select', 'off');
+  await page.selectOption('#timer-select', 'off');
   await page.selectOption('#shot-clock-select', 'off');
   await page.locator('#restart-btn').click();
   await page.waitForTimeout(400);
@@ -63,7 +63,7 @@ async function main() {
     window.__SHOLO_GUTI_FEATURE__.setOptions({
       mode: 'pve',
       aiLevel: 2,
-      matchTimer: 'off',
+      timer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -118,7 +118,7 @@ async function main() {
   await page.waitForTimeout(500);
   const proto = await page.evaluate(() => {
     const api = window.__SHOLO_GUTI_FEATURE__;
-    api.setOptions({ mode: 'pve', aiLevel: 2, matchTimer: 'off', shotClock: 'off', centerRule: 'off' });
+    api.setOptions({ mode: 'pve', aiLevel: 2, timer: 'off', shotClock: 'off', centerRule: 'off' });
     const i41 = api.NODE_INDEX.A41;
     const i42 = api.NODE_INDEX.A42;
     const i43 = api.NODE_INDEX.A43;

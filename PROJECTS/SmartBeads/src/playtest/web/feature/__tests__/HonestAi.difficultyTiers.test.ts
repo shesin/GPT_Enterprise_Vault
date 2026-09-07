@@ -229,14 +229,14 @@ describe('HonestAi difficulty contract', () => {
     state.captures.BLUE = 2;
     const center = { centerRule: 'endgame' as const };
     const timerHigh = {
-      matchLimitSec: 180,
+      timerLimitSec: 180,
       globalRemainingSec: 150,
       redRemainingSec: 0,
       blueRemainingSec: 0,
       mode: 'pve' as const,
     };
     const timerLow = {
-      matchLimitSec: 180,
+      timerLimitSec: 180,
       globalRemainingSec: 8,
       redRemainingSec: 0,
       blueRemainingSec: 0,
@@ -265,12 +265,12 @@ describe('HonestAi difficulty contract', () => {
       rng: () => 0,
       mediumSoftMissRate: 0,
       center: { centerRule: 'endgame' },
-      matchTimer: {
-        matchLimitSec: 180,
+      timer: {
+        timerLimitSec: 180,
         globalRemainingSec: 5,
         redRemainingSec: 0,
         blueRemainingSec: 0,
-        mode: 'pve',
+        usePerSideClocks: false,
       },
     });
     expect(path).not.toBeNull();

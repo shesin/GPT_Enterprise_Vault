@@ -123,12 +123,12 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.
 - **`feature/CoachVoice.ts`** — browser TTS; mute and replay per segment.
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. No 3-fold repetition in production.
-- **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy + center tie-break), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center + match timer in eval when rules on.
+- **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy + center tie-break), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center + timer in eval when rules on.
 - **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.
 - **`audio/SoundEffects.ts`** — fetches named WAV files from `public/audio/` via `SoundManifest.ts`; start overlay unlock; end celebration audio.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
-- **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas. Board lines are stroked straight from `board.connections`, so a drawn line is always a legal slide; `v1GeometryCaptureAudit.test.ts` pins that with a recording 2D context.
+- **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas. Turn idle rings (`listTurnHighlightNodeIds`): **lime** on all black or **orange** on all cream at start of turn; on select only that bead + legal landings; last-move from/to same colour. Shared by all play modes via `PlayController.drawBoard`. Board lines stroked from `board.connections`; `v1GeometryCaptureAudit.test.ts` pins geometry with a recording 2D context. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts` (10 cases).
 
 ### prototype/board4/
 
@@ -171,7 +171,7 @@ BoardDefinition variants. Each file owns geometry, starting layout, center nodes
 ### src/config/
 
 - **`BoardConfig.ts`** — maps `BoardVariant` (`4` / `5` / `6` / `6x3x5` / `10x5` / `12x6x5` / `8x4x6` / `7` / `16`) → `BoardDefinition`.
-- **`BoardCatalog.ts`** — locked V1 seven product entries, per-board play defaults (centre rule, match timer, shot clock) and option lists; `playable` / `productVisible` flags.
+- **`BoardCatalog.ts`** — locked V1 seven product entries, per-board play defaults (centre rule, timer, tournament timer, shot clock) and option lists; `playable` / `productVisible` flags.
 
 ### src/core/SmartBeadsEngine.ts
 

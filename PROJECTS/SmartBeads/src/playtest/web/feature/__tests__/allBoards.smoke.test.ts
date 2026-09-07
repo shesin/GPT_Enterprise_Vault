@@ -6,7 +6,8 @@ import { runAiTurn } from '../../PlayController';
 const base: GameFeatureSettings = {
   mode: 'pve',
   aiLevel: 2,
-  matchTimer: 'off',
+  timer: 'off',
+  tournamentTimer: 'off',
   shotClock: 'off',
   centerRule: 'off',
 };

@@ -4,7 +4,11 @@ import { GameState, Move, Player } from '../../../models/GameState';
 import { countCenterOccupancy } from './centerScoring';
 import {
   GameFeatureSettings,
-  parseMatchSeconds,
+  effectiveCenterRule,
+  isSharedTimerActive,
+  isTournamentTimerActive,
+  normalizeTimerSettings,
+  parseTimerSeconds,
   parseShotLimit,
 } from './GameFeatureSettings';
 
@@ -58,7 +62,7 @@ export class FeatureSession {
 
   constructor(boardVariant: BoardVariant, settings: GameFeatureSettings) {
     this.boardVariant = boardVariant;
-    this.settings = { ...settings };
+    this.settings = normalizeTimerSettings({ ...settings });
     this.engine = new SmartBeadsEngine(boardVariant);
     this.applyTimerSettings();
   }
@@ -72,7 +76,7 @@ export class FeatureSession {
   }
 
   updateSettings(settings: GameFeatureSettings): void {
-    this.settings = { ...settings };
+    this.settings = normalizeTimerSettings({ ...settings });
     this.applyTimerSettings();
   }
 
@@ -184,12 +188,17 @@ export class FeatureSession {
     return this.shotLimit;
   }
 
+  private activeCenterRule(): ReturnType<typeof effectiveCenterRule> {
+    return effectiveCenterRule(this.settings);
+  }
+
   getCenterDisplayScores(): { red: number; blue: number } {
     const state = this.engine.getState();
-    if (this.settings.centerRule === 'cumulative') {
+    const centerRule = this.activeCenterRule();
+    if (centerRule === 'cumulative') {
       return { red: this.p1CenterScore, blue: this.p2CenterScore };
     }
-    if (this.settings.centerRule === 'endgame') {
+    if (centerRule === 'endgame') {
       return {
         red: countCenterOccupancy(state.board, 'RED'),
         blue: countCenterOccupancy(state.board, 'BLUE'),
@@ -393,7 +402,7 @@ export class FeatureSession {
     this.uiState = 'idle';
 
     // FIX: Accumulate center occupancy per completed turn
-    if (this.settings.centerRule === 'cumulative') {
+    if (this.activeCenterRule() === 'cumulative') {
       const board = this.engine.getState().board;
       this.p1CenterScore += countCenterOccupancy(board, 'RED');
       this.p2CenterScore += countCenterOccupancy(board, 'BLUE');
@@ -416,12 +425,12 @@ export class FeatureSession {
   private maybeApplyCenterTiebreakAfterEngineEnd(): void {
     if (this.featureOver) return;
     const state = this.engine.getState();
-    if (!state.gameOver || this.settings.centerRule === 'off') return;
+    if (!state.gameOver || this.activeCenterRule() === 'off') return;
     if (state.captures.RED !== state.captures.BLUE) return;
 
     let c1 = 0;
     let c2 = 0;
-    if (this.settings.centerRule === 'cumulative') {
+    if (this.activeCenterRule() === 'cumulative') {
       c1 = this.p1CenterScore;
       c2 = this.p2CenterScore;
     } else {
@@ -472,10 +481,11 @@ export class FeatureSession {
       return;
     }
 
-    if (this.settings.centerRule !== 'off') {
+    const centerRule = this.activeCenterRule();
+    if (centerRule !== 'off') {
       let c1 = 0;
       let c2 = 0;
-      if (this.settings.centerRule === 'cumulative') {
+      if (centerRule === 'cumulative') {
         c1 = this.p1CenterScore;
         c2 = this.p2CenterScore;
       } else {
@@ -515,18 +525,18 @@ export class FeatureSession {
       }
     }
 
-    const matchSecs = parseMatchSeconds(this.settings.matchTimer);
-    if (matchSecs <= 0) return;
-
-    if (this.settings.mode === 'pvp') {
+    if (isTournamentTimerActive(this.settings)) {
       if (this.engine.getState().currentPlayer === 'RED') this.p1Clock -= 1;
       else this.p2Clock -= 1;
-      if (this.p1Clock <= 0) this.endGameByFeature('BLUE', 'P1 ran out of match time.');
-      else if (this.p2Clock <= 0) this.endGameByFeature('RED', 'P2 ran out of match time.');
-    } else {
+      if (this.p1Clock <= 0) this.endGameByFeature('BLUE', 'P1 ran out of time.');
+      else if (this.p2Clock <= 0) this.endGameByFeature('RED', 'P2 ran out of time.');
+      return;
+    }
+
+    if (isSharedTimerActive(this.settings)) {
       this.globalMatchRemaining -= 1;
       if (this.globalMatchRemaining <= 0) {
-        this.evaluateScoreAndEnd('Match timer expired.');
+        this.evaluateScoreAndEnd('Timer expired.');
       }
     }
   }
@@ -538,23 +548,25 @@ export class FeatureSession {
   private applyTimerSettings(): void {
     this.shotLimit = parseShotLimit(this.settings.shotClock);
     this.shotRemaining = this.shotLimit;
-    const matchSecs = parseMatchSeconds(this.settings.matchTimer);
+    const tournamentSecs = parseTimerSeconds(this.settings.tournamentTimer);
+    const sharedSecs = parseTimerSeconds(this.settings.timer);
 
-    if (matchSecs <= 0) {
+    if (isTournamentTimerActive(this.settings)) {
+      this.p1Clock = tournamentSecs;
+      this.p2Clock = tournamentSecs;
       this.globalMatchRemaining = 0;
+      return;
+    }
+
+    if (sharedSecs > 0) {
+      this.globalMatchRemaining = sharedSecs;
       this.p1Clock = 0;
       this.p2Clock = 0;
       return;
     }
 
-    if (this.settings.mode === 'pvp') {
-      this.p1Clock = matchSecs;
-      this.p2Clock = matchSecs;
-      this.globalMatchRemaining = 0;
-    } else {
-      this.globalMatchRemaining = matchSecs;
-      this.p1Clock = 0;
-      this.p2Clock = 0;
-    }
+    this.globalMatchRemaining = 0;
+    this.p1Clock = 0;
+    this.p2Clock = 0;
   }
 }

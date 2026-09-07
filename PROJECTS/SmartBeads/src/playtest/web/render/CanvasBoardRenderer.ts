@@ -276,6 +276,14 @@ export function drawCanvasBoard(
 
   const animating = anim !== null && anim.t < 1;
   const washPlayer = animating && anim ? anim.player : currentPlayer;
+  const turnIdleHighlight =
+    !gameOver
+    && !animating
+    && selectedId === null
+    && legalTargets.length === 0;
+  const turnHighlightSet = turnIdleHighlight
+    ? new Set(listTurnHighlightNodeIds(board, currentPlayer, chainPieceId))
+    : new Set<number>();
   if (!gameOver) {
     drawTurnWash(ctx, w, h, washPlayer, visualProfile.turnWashAxis ?? 'horizontal');
   }
@@ -296,8 +304,7 @@ export function drawCanvasBoard(
 
   drawCenterDecorations(ctx, board, w, h);
 
-  // Hide last-move rings on anim endpoints for the whole move, including t=1 frame
-  // (animating is false when t===1, which otherwise flashes lime under cream beads).
+  // Hide last-move rings on anim endpoints for the whole move, including t=1 frame.
   const hideFrom = anim ? anim.from : -1;
   const hideTo = anim ? anim.to : -1;
   const hideCap = anim && anim.captured != null ? anim.captured : -1;
@@ -317,15 +324,19 @@ export function drawCanvasBoard(
       }
     }
 
-    const isLastMoveNode = lastMove && (node.id === lastMove.from || node.id === lastMove.to);
-    // Lime last-move for black moves only — empty squares and black beads. Cream moves: no green trail.
-    const showLastMoveRing = isLastMoveNode
-      && node.id !== hideFrom
-      && node.id !== hideTo
-      && lastMove!.player === 'BLUE'
-      && node.occupant !== 'RED';
-    if (showLastMoveRing) {
-      drawLastMoveNodeRing(ctx, x, y);
+    const isLastMoveFrom = lastMove && node.id === lastMove.from;
+    const isLastMoveTo = lastMove && node.id === lastMove.to;
+    const isLastMoveNode = isLastMoveFrom || isLastMoveTo;
+    if (isLastMoveNode && node.id !== hideFrom && node.id !== hideTo && lastMove) {
+      const opponent: Player = lastMove.player === 'RED' ? 'BLUE' : 'RED';
+      if (node.occupant !== opponent) {
+        if (lastMove.player === 'RED') {
+          // Cream last-move — same orange ring as legal landing squares.
+          drawAmberOrangeRing(ctx, x, y, node.occupant === 'RED' ? 16 : 16);
+        } else {
+          drawLastMoveNodeRing(ctx, x, y);
+        }
+      }
     }
 
     ctx.beginPath();
@@ -357,6 +368,12 @@ export function drawCanvasBoard(
       const r = (isSelected || isCoachGlow ? 18 : 16) * pulse;
       drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
       if (isSelected) {
+        if (node.occupant === 'BLUE') {
+          drawLastMoveNodeRing(ctx, x, y);
+        } else {
+          drawAmberOrangeRing(ctx, x, y, r);
+        }
+      } else if (turnHighlightSet.has(node.id)) {
         if (node.occupant === 'BLUE') {
           drawLastMoveNodeRing(ctx, x, y);
         } else {
@@ -394,7 +411,9 @@ export function drawCanvasBoard(
       const mx = fromPt.x + (toPt.x - fromPt.x) * ease;
       const my = fromPt.y + (toPt.y - fromPt.y) * ease;
       drawPieceAt(ctx, mx, my, anim.player, 17, 1);
-      if (anim.player === 'BLUE') {
+      if (anim.player === 'RED') {
+        drawAmberOrangeRing(ctx, mx, my, 17);
+      } else {
         drawLastMoveNodeRing(ctx, mx, my);
       }
     }

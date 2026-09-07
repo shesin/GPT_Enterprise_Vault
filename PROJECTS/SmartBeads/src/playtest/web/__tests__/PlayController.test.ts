@@ -6,7 +6,8 @@ import { planAiTurnPath, runAiTurn } from '../PlayController';
 
 const off = {
   aiLevel: 2 as const,
-  matchTimer: 'off' as const,
+  timer: 'off' as const,
+  tournamentTimer: 'off',
   shotClock: 'off' as const,
   centerRule: 'off' as const,
 };
@@ -105,7 +106,8 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     const session = new FeatureSession('8x4x6', {
       mode: 'pve',
       aiLevel: 3,
-      matchTimer: 'off',
+      timer: 'off',
+  tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -129,7 +131,8 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     const session = new FeatureSession('6x3x5', {
       mode: 'pve',
       aiLevel: 3,
-      matchTimer: 'off',
+      timer: 'off',
+  tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'endgame',
     });

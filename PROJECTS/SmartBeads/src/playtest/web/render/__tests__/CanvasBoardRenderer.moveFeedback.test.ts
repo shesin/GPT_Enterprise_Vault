@@ -156,7 +156,159 @@ describe('CanvasBoardRenderer move feedback', () => {
     expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(true);
   });
 
-  it('does not draw amber ring on to-move piece until user selects it', () => {
+  it('draws lime turn rings on all black beads at start of turn (nothing selected)', () => {
+    const strokeStyles: string[] = [];
+    const gradient = { addColorStop: () => {} };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      arc: () => {},
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
+      set strokeStyle(v: string) { strokeStyles.push(v); },
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('8x4x6');
+    const board = engine.getState().board;
+    const canvas = {
+      width: 560,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'BLUE',
+      gameOver: false,
+      selectedId: null,
+      legalTargets: [],
+      chainPieceId: null,
+      anim: null,
+      turnPulse: 0,
+      lastMove: null,
+      capturePulses: [],
+    });
+
+    expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(false);
+  });
+
+  it('draws orange turn rings on all cream beads at start of turn (nothing selected)', () => {
+    const strokeStyles: string[] = [];
+    const gradient = { addColorStop: () => {} };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      arc: () => {},
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
+      set strokeStyle(v: string) { strokeStyles.push(v); },
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('6x3x5');
+    const board = engine.getState().board;
+    const canvas = {
+      width: 420,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 420, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'RED',
+      gameOver: false,
+      selectedId: null,
+      legalTargets: [],
+      chainPieceId: null,
+      anim: null,
+      turnPulse: 0,
+      lastMove: null,
+      capturePulses: [],
+    });
+
+    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(false);
+  });
+
+  it('does not draw turn rings on other beads when one bead is selected', () => {
+    const strokeStyles: string[] = [];
+    const gradient = { addColorStop: () => {} };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      arc: () => {},
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
+      set strokeStyle(v: string) { strokeStyles.push(v); },
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('8x4x6');
+    const board = engine.getState().board;
+    const blues = board.intersections.filter((n) => n.occupant === 'BLUE');
+    expect(blues.length).toBeGreaterThan(1);
+    const selected = blues[0]!;
+    const emptyTarget = board.intersections.findIndex((n) => !n.occupant);
+    const canvas = {
+      width: 560,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'BLUE',
+      gameOver: false,
+      selectedId: selected.id,
+      legalTargets: emptyTarget >= 0 ? [emptyTarget] : [],
+      chainPieceId: null,
+      anim: null,
+      turnPulse: 0,
+      lastMove: null,
+      capturePulses: [],
+    });
+
+    const limeCount = strokeStyles.filter((s) => s.includes('180, 255, 80')).length;
+    expect(limeCount).toBeGreaterThan(0);
+    expect(limeCount).toBeLessThan(blues.length * 4);
+  });
+
+  it('does not draw amber ring on idle board when it is not cream turn', () => {
     const strokeStyles: string[] = [];
     const gradient = { addColorStop: () => {} };
     const ctx = {
@@ -204,7 +356,7 @@ describe('CanvasBoardRenderer move feedback', () => {
     expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(false);
   });
 
-  it('suppresses lime under cream bead on final animation frame (t=1)', () => {
+  it('draws orange last-move trail on moving cream bead — same as next-position ring', () => {
     const strokeStyles: string[] = [];
     const gradient = { addColorStop: () => {} };
     const ctx = {
@@ -260,10 +412,11 @@ describe('CanvasBoardRenderer move feedback', () => {
       capturePulses: [],
     });
 
+    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(true);
     expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(false);
   });
 
-  it('draws no lime trail when cream (RED) moved', () => {
+  it('draws orange last-move trail when cream (RED) moved — same as next-position ring', () => {
     const strokeStyles: string[] = [];
     const gradient = { addColorStop: () => {} };
     const ctx = {
@@ -317,6 +470,58 @@ describe('CanvasBoardRenderer move feedback', () => {
       capturePulses: [],
     });
 
-    expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(false);
+    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(true);
+  });
+
+  it('draws orange last-move ring on cream bead at to-square', () => {
+    const strokeStyles: string[] = [];
+    const gradient = { addColorStop: () => {} };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      arc: () => {},
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
+      set strokeStyle(v: string) { strokeStyles.push(v); },
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('8x4x6');
+    const board = engine.getState().board;
+    const cream = board.intersections.find((n) => n.occupant === 'RED');
+    expect(cream).toBeDefined();
+    const canvas = {
+      width: 560,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'BLUE',
+      gameOver: false,
+      selectedId: null,
+      legalTargets: [],
+      chainPieceId: null,
+      anim: null,
+      turnPulse: 0,
+      lastMove: { from: cream!.id, to: cream!.id, player: 'RED' },
+      capturePulses: [],
+    });
+
+    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(true);
   });
 });

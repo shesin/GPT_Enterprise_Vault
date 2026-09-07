@@ -6,7 +6,8 @@ import { runAiTurn } from '../../PlayController';
 const base: GameFeatureSettings = {
   mode: 'pve',
   aiLevel: 2,
-  matchTimer: 'off',
+  timer: 'off',
+  tournamentTimer: 'off',
   shotClock: 'off',
   centerRule: 'off',
 };
@@ -88,11 +89,11 @@ describe('shot clock during AI turn (agent-verified)', () => {
     expect(session.getDisplayedReason()).toContain('Shot clock');
   });
 
-  it('PvP match timer depletes RED chess clock while RED to move', () => {
+  it('PvP tournament timer depletes RED chess clock while RED to move', () => {
     const session = new FeatureSession('16', {
       ...base,
       mode: 'pvp',
-      matchTimer: '3',
+      tournamentTimer: '3',
     });
     session.resetTurnClock();
     const before = session.getP1Clock();
@@ -100,6 +101,32 @@ describe('shot clock during AI turn (agent-verified)', () => {
     for (let i = 0; i < 5; i++) session.timerTick();
     expect(session.getP1Clock()).toBe(before - 5);
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
+  });
+
+  it('PvP shared timer depletes global clock (not per-side)', () => {
+    const session = new FeatureSession('16', {
+      ...base,
+      mode: 'pvp',
+      timer: '3',
+    });
+    expect(session.getP1Clock()).toBe(0);
+    expect(session.getP2Clock()).toBe(0);
+    const before = session.getGlobalMatchRemaining();
+    expect(before).toBe(3 * 60);
+    for (let i = 0; i < 5; i++) session.timerTick();
+    expect(session.getGlobalMatchRemaining()).toBe(before - 5);
+  });
+
+  it('tournament timer flag fall ends game instantly (chess style)', () => {
+    const session = new FeatureSession('16', {
+      ...base,
+      mode: 'pvp',
+      tournamentTimer: '3',
+    });
+    for (let i = 0; i < 3 * 60; i++) session.timerTick();
+    expect(session.isGameOver()).toBe(true);
+    expect(session.getDisplayedWinner()).toBe('BLUE');
+    expect(session.getDisplayedReason()).toContain('ran out of time');
   });
 });
 

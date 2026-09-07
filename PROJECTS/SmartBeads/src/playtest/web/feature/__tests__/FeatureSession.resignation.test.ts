@@ -6,7 +6,8 @@ describe('FeatureSession resignation', () => {
     const session = new FeatureSession('16', {
       mode: 'pvp',
       aiLevel: 2,
-      matchTimer: 'off',
+      timer: 'off',
+  tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -20,7 +21,8 @@ describe('FeatureSession resignation', () => {
     const session = new FeatureSession('16', {
       mode: 'pvp',
       aiLevel: 2,
-      matchTimer: 'off',
+      timer: 'off',
+  tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -33,7 +35,8 @@ describe('FeatureSession resignation', () => {
     const session = new FeatureSession('6', {
       mode: 'pvp',
       aiLevel: 2,
-      matchTimer: 'off',
+      timer: 'off',
+  tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -47,7 +50,8 @@ describe('shouldAcceptResignationDraw', () => {
     const session = new FeatureSession('16', {
       mode: 'pve',
       aiLevel: 2,
-      matchTimer: 'off',
+      timer: 'off',
+  tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });

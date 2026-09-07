@@ -9,8 +9,10 @@ export function isHumanVsAiMode(mode: GameMode): boolean {
   return mode === 'pve' || mode === 'coach';
 }
 export type CenterRule = 'off' | 'endgame' | 'cumulative';
-/** Minutes per side (PvP) or shared match budget (PvE). Values are string digits or off. */
-export type MatchTimerMinutes = 'off' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';
+/** Shared game timer (minutes) or off. */
+export type TimerMinutes = 'off' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';
+/** @deprecated use TimerMinutes */
+export type MatchTimerMinutes = TimerMinutes;
 /** Seconds per turn when enabled. */
 export type ShotClockSeconds = 'off' | '30' | '60' | '90' | '120';
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
@@ -31,7 +33,10 @@ export interface GameFeatureSettings {
   coachRedLevel?: AiLevel;
   /** Coach watch: black-side AI (BLUE). Ignored outside spectate mode. */
   coachBlueLevel?: AiLevel;
-  matchTimer: MatchTimerMinutes;
+  /** Shared timer — expiry uses captures → centre → beads on board. */
+  timer: TimerMinutes;
+  /** Human vs Human only — per-player chess clocks; centre off; flag fall = loss. */
+  tournamentTimer: TimerMinutes;
   shotClock: ShotClockSeconds;
   centerRule: CenterRule;
 }
@@ -77,22 +82,59 @@ export function parseShotLimit(shotClock: ShotClockSeconds): number {
   return shotClock === 'off' ? 0 : parseInt(shotClock, 10);
 }
 
-export function parseMatchSeconds(matchTimer: MatchTimerMinutes): number {
-  return matchTimer === 'off' ? 0 : parseInt(matchTimer, 10) * 60;
+export function parseTimerSeconds(timer: TimerMinutes): number {
+  return timer === 'off' ? 0 : parseInt(timer, 10) * 60;
 }
 
-export function formatMatchTimerLabel(value: MatchTimerMinutes): string {
+/** @deprecated use parseTimerSeconds */
+export const parseMatchSeconds = parseTimerSeconds;
+
+export function formatTimerLabel(value: TimerMinutes): string {
   return value === 'off' ? 'Off' : `${value} min`;
 }
 
+/** @deprecated use formatTimerLabel */
+export const formatMatchTimerLabel = formatTimerLabel;
+
 /** Settings dropdown — recommended option shows e.g. `20 (best)`. */
-export function formatMatchTimerOptionLabel(
-  value: MatchTimerMinutes,
-  best?: MatchTimerMinutes,
+export function formatTimerOptionLabel(
+  value: TimerMinutes,
+  best?: TimerMinutes,
 ): string {
   if (value === 'off') return 'Off';
   if (best && value === best) return `${value} (best)`;
   return `${value} min`;
+}
+
+/** @deprecated use formatTimerOptionLabel */
+export const formatMatchTimerOptionLabel = formatTimerOptionLabel;
+
+export function isTournamentTimerActive(settings: GameFeatureSettings): boolean {
+  return settings.mode === 'pvp' && parseTimerSeconds(settings.tournamentTimer) > 0;
+}
+
+export function isSharedTimerActive(settings: GameFeatureSettings): boolean {
+  return parseTimerSeconds(settings.timer) > 0 && !isTournamentTimerActive(settings);
+}
+
+export function effectiveCenterRule(settings: GameFeatureSettings): CenterRule {
+  if (isTournamentTimerActive(settings)) return 'off';
+  return settings.centerRule;
+}
+
+/** Timer and tournament timer are mutually exclusive; tournament forces centre off. */
+export function normalizeTimerSettings(settings: GameFeatureSettings): GameFeatureSettings {
+  let next = { ...settings };
+  if (next.mode !== 'pvp') {
+    next.tournamentTimer = 'off';
+  }
+  if (isTournamentTimerActive(next)) {
+    return { ...next, timer: 'off', centerRule: 'off' };
+  }
+  if (parseTimerSeconds(next.timer) > 0) {
+    return { ...next, tournamentTimer: 'off' };
+  }
+  return next;
 }
 
 export function formatShotClockLabel(value: ShotClockSeconds): string {
@@ -151,7 +193,8 @@ export function buildCoachWatchSettings(
     aiLevel: 3,
     coachRedLevel: 3,
     coachBlueLevel: 2,
-    matchTimer: 'off',
+    timer: 'off',
+    tournamentTimer: 'off',
     shotClock: 'off',
     centerRule: 'off',
     ...overrides,

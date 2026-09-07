@@ -51,13 +51,9 @@
             <span>Beads left</span>
             <span class="val" id="top-p2-beads">8</span>
           </div>
-        </div>
-        <div class="play-panel-spacer">
-          <div class="match-timer-stack">
-            <div class="play-block-row">
-              <span class="play-label">Match timer</span>
-              <span class="match-timer-mmss off" id="top-match-mmss" aria-live="polite">OFF</span>
-            </div>
+          <div class="play-block-row play-block-row-timer">
+            <span class="play-label">Timer</span>
+            <span class="match-timer-mmss off" id="timer-mmss-p2" aria-live="polite">OFF</span>
           </div>
         </div>
         <div class="play-block play-block-human" id="play-block-p1">
@@ -83,6 +79,10 @@
           <div class="play-block-row">
             <span>Beads left</span>
             <span class="val" id="top-p1-beads">8</span>
+          </div>
+          <div class="play-block-row play-block-row-timer">
+            <span class="play-label">Timer</span>
+            <span class="match-timer-mmss off" id="timer-mmss-p1" aria-live="polite">OFF</span>
           </div>
         </div>
       </div>
@@ -151,8 +151,12 @@
           <select id="coach-level-select"></select>
         </div>
         <div class="setting">
-          <label>Match timer</label>
-          <select id="match-timer-select"></select>
+          <label>Timer</label>
+          <select id="timer-select"></select>
+        </div>
+        <div class="setting" id="tournament-timer-setting" style="display: none;">
+          <label>Tournament timer</label>
+          <select id="tournament-timer-select"></select>
         </div>
         <div class="setting">
           <label>Turn shot clock</label>

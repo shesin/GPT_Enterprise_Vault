@@ -5,9 +5,12 @@ alwaysApply: true
 
 # Instruction fidelity (always-on)
 
-- **Talk:** plain English; answer first; once per point; brief summary last. No jargon, no long messy dumps. Detail → `VISION/CURSOR_PROMPT_01.md` § Human communication.
-- **Doubt** → ask until clear (one short question at a time, then wait). Do not guess or implement on ambiguity.
-- **Minimal on doubt** → if still blocked after asking, propose the **smallest** change (one behavior, named files) and wait for **Go**. Do not batch-fix “while I’m here.”
+- **Talk:** plain, simple English; answer first; once per point; brief summary last. No jargon, no audit dumps, no rephrasing the same idea twice.
+- **Compare / rules / risks** — when the user asks *same or not?*, *any concern?*, or code vs their rule: state **Same** or **Not same** first; then only:
+  - **Difference** — what their rule says vs what code does today (one plain line each; no “should mention in coach” without the fact).
+  - **risk** — what breaks or risks if unchanged (real gaps only).
+  Use those two words as **bold headings** once each. Skip empty sections.
+- **Doubt** → ask until clear (one short question at a time, then wait). Do not guess or implement on ambiguity.- **Minimal on doubt** → if still blocked after asking, propose the **smallest** change (one behavior, named files) and wait for **Go**. Do not batch-fix “while I’m here.”
 - **Better idea** → say it plainly, then wait for approval. Do not silently pick a “better” path.
 - **After doc/code updates** → show the user what changed (which files, one-line what each says now).
 
