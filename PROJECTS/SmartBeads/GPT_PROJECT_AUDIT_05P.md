@@ -33,7 +33,7 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 | **7-board core** | `allBoards.smoke.test.ts`, `Board*.test.ts` (×7), `FeatureSession.turnControl.test.ts`, `v1GeometryCaptureAudit.test.ts` | All 7 product boards: legal select, Medium AI reply, reset/New game, capture geometry, turn control |
 | **Engine + parity** | `SmartBeadsEngine*.test.ts`, `BoardCatalog.test.ts`, `*PrototypeParity.test.ts` (×7), `SelfPlayRunner`, `HumanVsAiRunner` | Engine rules, catalog defaults, prototype geometry parity per board |
 | **Feature / settings** | `GameFeatureSettings`, `FeatureSession.*`, `clockPolicy`, `aiTurnPath`, `HonestAi.test`, `spectate`, `CoachVideoScript.test`, `CoachVideoPlayer.test`, `CoachVoice.test`, `FeatureSession.coach.test` | Timers, center rules, resignation, AI level UI, **Watch AI** (spectate), **Coach** Video 1 (watch-only, **7-bead · 4×5**, ~1:53) |
-| **Shell / layout / audio** | `PlayController`, `playerBarShell`, `hubShell`, `viewportFit`, `creamCampRendersLower`, `CanvasBoardRenderer.moveFeedback`, `SoundEffects` | Settings DOM, cream-on-bottom, turn idle rings (lime/orange), selection + landing rings, last-move rings, capture pulse, layout contracts |
+| **Shell / layout / audio** | `PlayController`, `playerBarShell`, `hubShell`, `viewportFit`, `creamCampRendersLower`, `CanvasBoardRenderer.moveFeedback`, `SoundEffects` | Settings DOM, cream-on-bottom, moveFeedback (turn colour → STATUS / PENDING), capture pulse, layout contracts |
 | **Slow AI — tiers** | `HonestAi.difficultyTiers.test.ts` | Easy/Medium/Hard behaviour, Medium soft-miss, 8×4×6 and 16 gates (~7 min alone) |
 | **Slow AI — search** | `HonestAi.searchCompletion.test.ts` | Expert (level 3) depth-2 completion on all 7 boards + 16 midgame |
 
@@ -206,7 +206,7 @@ Agents must run the STOP gate in the **user-visible message** before calling edi
 
 ## Corrective work (2026-09-07)
 
-- **Turn bead highlighting:** Idle turn — **lime** on all black beads or **orange** on all cream beads; on select only that bead + legal landings; last-move same colours. Shared `drawCanvasBoard` (PvP, PvE, Watch AI). **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts` (10 cases; was 7).
+- **Turn bead highlighting:** Rule and gaps → `GPT_PROJECT_PENDING_01P.md` § Turn colour UI; shipped/test facts → `GPT_PROJECT_STATUS_01P.md`. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts` (10 cases; was 7).
 - **Docs synced:** `GPT_PROJECT_STATUS_01P.md`, `PROJECT_MAP_05P.md`, `VISION/CURSOR_PROMPT_01.md`; test count **511 / 44 suites**.
 
 ---

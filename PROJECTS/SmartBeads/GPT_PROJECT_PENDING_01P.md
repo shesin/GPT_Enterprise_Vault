@@ -21,8 +21,6 @@ Do **not** skip the flash on the AI’s turn. After start: last location, select
 
 ---
 
-## Turn interaction UI — risk register (2026-09-07)
-
 Living list. Update when code changes. Move fixed items to **Closed**.
 
 **Difference**
@@ -35,7 +33,7 @@ Living list. Update when code changes. Move fixed items to **Closed**.
 - **Vs AI / Watch AI** — on the AI side, all-bead start rings stay until the **first hop is applied** (can cover the full think delay, not a short flash).
 - **Watch AI preview** — before each AI hop, selection preview clears start rings and shows **landings only** (same as human select).
 - **Multi-jump chain** — after the first pick, start rings stay off for the rest of that turn, including further hops in the chain.
-- **Docs integrity row** — `GPT_PROJECT_STATUS_01P.md` still says “select → one bead + landings”; code is **landings only** (wording drift, not behaviour).
+- **Docs integrity row** — STATUS points here for the locked rule; it does not restate the lime/orange recipe. Human browser still **UNCONFIRMED**.
 - **Human browser** — still **UNCONFIRMED**; only Jest covers this.
 
 **risk**

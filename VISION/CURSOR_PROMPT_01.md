@@ -300,7 +300,7 @@ When building or modifying a **playable HTML board** (Human vs AI / PvP shell):
 2. **Geometry vs cosmetics** — Board node count, adjacency, starting position, and centre/endgame rules are geometry; panel chrome is shell. Do not ship a compact single-column lab UI when the reference is the full feature shell.
 3. **Smoke test ≠ visual parity** — Headless VM smoke tests (legal moves, game finish) do not confirm drawing, centre highlight, or layout. After smoke passes, assert in code or report explicitly what was **not** visually verified.
 4. **Centre highlight** — Endgame centre zones are drawn as **per-node amber glowing plates and rings** on the designated centre node(s), not an arbitrary filled square covering the whole centre region unless explicitly requested.
-5. **Turn bead highlighting (production canvas)** — Idle turn (nothing selected): **lime** rings on all black (BLUE) beads or **orange** rings on all cream (RED) beads. On select: only that bead + legal landing squares (same colour). Last-move from/to uses the same colour per side. One `drawCanvasBoard` path for PvP, PvE, and Watch AI. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts`.
+5. **Turn bead highlighting (production canvas)** — Locked rule → `PROJECTS/SmartBeads/GPT_PROJECT_PENDING_01P.md` § Turn colour UI. Shipped/test facts → `GPT_PROJECT_STATUS_01P.md`. Do not restate lime/orange here.
 6. **Completion claim** — Per `VISION/AGENT_RULE_05P.md`: user-visible behaviour is CONFIRMED only when directly observed (browser open, screenshot, or explicit human sign-off). Smoke-only passes are Technical Verification, not UI confirmation.
 
 ---

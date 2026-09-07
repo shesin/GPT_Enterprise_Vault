@@ -1,5 +1,7 @@
 # SmartBeads Project Map
 
+**Behaviour / UI rules** → `GPT_PROJECT_STATUS_01P.md` (shipped) and `GPT_PROJECT_PENDING_01P.md` (locked + gaps). This file is paths only.
+
 ## Structure
 
 ```text
@@ -128,7 +130,7 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`audio/SoundEffects.ts`** — fetches named WAV files from `public/audio/` via `SoundManifest.ts`; start overlay unlock; end celebration audio.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
-- **`render/CanvasBoardRenderer.ts`** — draws any board with layout coordinates on canvas. Turn idle rings (`listTurnHighlightNodeIds`): **lime** on all black or **orange** on all cream at start of turn; on select only that bead + legal landings; last-move from/to same colour. Shared by all play modes via `PlayController.drawBoard`. Board lines stroked from `board.connections`; `v1GeometryCaptureAudit.test.ts` pins geometry with a recording 2D context. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts` (10 cases).
+- **`render/CanvasBoardRenderer.ts`** — canvas board draw. Turn-colour behaviour → `GPT_PROJECT_STATUS_01P.md` / `GPT_PROJECT_PENDING_01P.md` § Turn colour UI. Geometry: `v1GeometryCaptureAudit.test.ts`. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts`.
 
 ### prototype/board4/
 
