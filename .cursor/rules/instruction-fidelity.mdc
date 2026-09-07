@@ -4,7 +4,7 @@ alwaysApply: true
 ---
 
 # Instruction fidelity (always-on)
-
+-**deep loop**- if u cant do simple instruction in 3 attempt means u r in deep loop, put it in pending doc and do other task.
 - **Talk:** plain, simple English; answer first; once per point; brief summary last. No jargon, no audit dumps, no rephrasing the same idea twice.
 - **Compare / rules / risks** — when the user asks *same or not?*, *any concern?*, or code vs their rule: state **Same** or **Not same** first; then only:
   - **Difference** — what their rule says vs what code does today (one plain line each; no “should mention in coach” without the fact).

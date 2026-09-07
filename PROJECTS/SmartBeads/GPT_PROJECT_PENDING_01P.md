@@ -8,6 +8,49 @@ Target: 01P (~2–3 pages, word-friendly)
 
 ---
 
+## Turn colour UI — locked rule (human approved 2026-09-07)
+
+Single source. Two states only. Human vs AI uses the **same** table as Human vs Human.
+
+| When | What shows |
+|------|------------|
+| **Turn start** | All beads of the side to move: **orange** cream, **lime** black. |
+| **After that** | **Selected bead** + **next squares** + **last location** in matching colour. No all-bead flash. |
+
+Do **not** skip the flash on the AI’s turn. After start: last location, select, and next squares stay. All-bead flash does not stay. Not Closed until human browser ok.
+
+---
+
+## Turn interaction UI — risk register (2026-09-07)
+
+Living list. Update when code changes. Move fixed items to **Closed**.
+
+**Difference**
+
+- **Coach / demo paths** — scripted coach selection (`setCoachDemoSelection`, board focus) does **not** always flip the same flag as a normal human pick. Coach steps may disagree with live PvP/PvE.
+- **Selected bead** — still **slightly larger** (18 vs 16) when picked, even with no ring. That is separate feedback from landing squares.
+- **Bead pulse** — your beads still **breathe/pulse** for the **whole turn**, not only at the start.
+- **Opponent dimming** — opponent beads stay at **72% brightness** for the whole turn.
+- **Board turn wash** — background half-board tint for whose turn it is runs the **whole turn**, not only at the start.
+- **Vs AI / Watch AI** — on the AI side, all-bead start rings stay until the **first hop is applied** (can cover the full think delay, not a short flash).
+- **Watch AI preview** — before each AI hop, selection preview clears start rings and shows **landings only** (same as human select).
+- **Multi-jump chain** — after the first pick, start rings stay off for the rest of that turn, including further hops in the chain.
+- **Docs integrity row** — `GPT_PROJECT_STATUS_01P.md` still says “select → one bead + landings”; code is **landings only** (wording drift, not behaviour).
+- **Human browser** — still **UNCONFIRMED**; only Jest covers this.
+
+**risk**
+
+- **Long AI think** — start rings on all AI beads for the whole wait may still feel like “always on” (size/pulse/dim/wash add to that).
+- **Coach vs live** — lesson playback may not match what players see in a real game.
+- **No Playwright check** — once-per-turn + deselect-not-return is not in browser gates; a regression would not be caught there.
+
+**Closed (rectified 2026-09-07)**
+
+- **Undo** — the once-per-turn flag is **not saved** in undo snapshots. After undo, start rings may show again when they should not, or stay off when they should show.
+- **Undo mismatch** — most likely real bug if players use undo mid-turn.
+
+---
+
 ## 1. Direction (human decisions captured)
 
 - **Not static-only.** Ship targets **online Human vs Human** plus vs AI and tutorial — not a download-only or same-device-only product long term.
@@ -19,6 +62,17 @@ Target: 01P (~2–3 pages, word-friendly)
 - **Tournament:** planned from the start in architecture; **Phase 3** delivery after online rooms work.
 
 ---
+
+## For human to human, tournament timer,	We will keep only one 90 sec enabled shot clock for 16,12,10 and	60 sec shot clock for 8,7,6
+
+
+## first web page must be like chess.com page
+-Left panel correction
+-Centre etc can go longer but right now only in 100% page area
+
+## congratulator message has issue, p2 win etc coming
+
+## check everything
 
 ## 2. Two-page UX (mandatory)
 
