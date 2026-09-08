@@ -51,7 +51,8 @@ SmartBeads/
 │   │   │   │   ├── coachPanelRender.ts   # short panel HTML
 │   │   │   │   ├── PlayHub.ts            # hub sidebar + Coach card; ?coach=1 / ?coach=start
 │   │   │   │   └── __tests__/         # firstMove, turnControl, resignation, difficulty,
-│   │   │   │                          #   featureRules, clockPolicy, allBoards.smoke,
+│   │   │   │                          #   featureRules, clockPolicy, allBoards.smoke, aiTurnPath,
+│   │   │   │                          #   HonestAi.test, HonestAi.testAudit, spectate,
 │   │   │   │                          #   CoachVideoScript, CoachVideoPlayer, FeatureSession.coach
 │   │   │   ├── audio/
 │   │   │   │   ├── SoundEffects.ts    # Web Audio — fetches WAV from public/audio/
@@ -77,6 +78,7 @@ SmartBeads/
 │       └── GameState.ts               # BoardDefinition + GameState
 │
 ├── scripts/                           # Browser verification (repo: PROJECTS/SmartBeads/scripts/)
+│   ├── run-jest-batched.mjs           # Jest batches — 50 test files, coverage audit gate
 │   ├── m1-browser-verify.mjs
 │   ├── m2-browser-verify.mjs          # 16-bead feature shell
 │   ├── m2-2step-observe.mjs           # two-click occupancy gate (all V1 boards; 16 = A41→A42)
@@ -127,7 +129,7 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. No 3-fold repetition in production.
 - **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy + center tie-break), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center + timer in eval when rules on.
 - **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.
-- **`audio/SoundEffects.ts`** — fetches named WAV files from `public/audio/` via `SoundManifest.ts`; start overlay unlock; end celebration audio.
+- **`audio/SoundEffects.ts`** — fetches eight named WAV files from repo-root `public/audio/` via `SoundManifest.ts`; start overlay unlock; end celebration audio. Regenerate: `node scripts/generate-sfx-wavs.mjs`.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
 - **`render/CanvasBoardRenderer.ts`** — canvas board draw. Turn-colour behaviour → `GPT_PROJECT_STATUS_01P.md` / `GPT_PROJECT_PENDING_01P.md` § Turn colour UI. Geometry: `v1GeometryCaptureAudit.test.ts`. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts`.

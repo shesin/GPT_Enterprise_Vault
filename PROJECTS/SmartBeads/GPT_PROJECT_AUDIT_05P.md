@@ -11,14 +11,14 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 ## Test catalog & how to run (2026-09-03)
 
 **Repo root:** `d:\Business Idea\Gpt_Enterprise_Vault`  
-**Verified:** **511 tests**, **44 Jest suites** — partial PASS via batched runner (2026-09-07 turn-highlight sync); full slow-AI batches UNCONFIRMED this session.
+**Verified:** **566 tests**, **50 Jest suites** — PASS via batched runner (2026-09-08: `test:jest:fast` + slow HonestAi batches).
 
 ### Commands (use these — do not use bare `jest PROJECTS/SmartBeads`)
 
 | Command | What it runs | Time |
 |---------|----------------|------|
 | `npm run test:jest:fast` | Jest only — skips slow AI search suites | ~40 s |
-| `npm run test:jest` | **All 511 Jest tests** (6 batches, live output, hard timeouts) | ~7 min |
+| `npm run test:jest` | **All 566 Jest tests** (6 batches, live output, hard timeouts) | ~7 min |
 | `npm test` | Full Jest + Playwright browser gates (`m2-2step-npm-gate.mjs`) | Jest ~7 min + browser |
 | `node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --batch=<id>` | One batch only | see below |
 

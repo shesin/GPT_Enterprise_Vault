@@ -9,19 +9,17 @@ const rootDir = path.resolve(__dirname, '..');
 const samplesDir = path.resolve(rootDir, 'public/audio/samples');
 const jinglesDir = path.resolve(rootDir, 'public/audio/jingles');
 const publicAudioDir = path.resolve(rootDir, 'public/audio');
-const assetAudioDir = path.resolve(rootDir, 'PROJECTS/SmartBeads/src/playtest/web/audio/assets');
 
 fs.mkdirSync(publicAudioDir, { recursive: true });
-fs.mkdirSync(assetAudioDir, { recursive: true });
 
 function copy(src, name) {
   const data = fs.readFileSync(src);
   fs.writeFileSync(path.join(publicAudioDir, name), data);
-  fs.writeFileSync(path.join(assetAudioDir, name), data);
   console.log(`Copied ${name}: ${data.length} bytes`);
 }
 
-// Map real CC0 studio recorded audio samples
+// Legacy helper — production SFX are the eight sfx_*.wav files (see generate-sfx-wavs.mjs).
+// Requires samples/ and jingles/ folders; not used at runtime.
 copy(path.join(samplesDir, 'pluck_001.wav'), 'sfx_select.wav');
 copy(path.join(samplesDir, 'drop_001.wav'), 'sfx_slide.wav');
 copy(path.join(samplesDir, 'confirmation_002.wav'), 'sfx_capture.wav');

@@ -20,7 +20,7 @@ The production codebase is fully implemented in clean TypeScript (`src/`), with 
 
 ## 7 Locked V1 Boards Status
 
-All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**511 tests**, 44 suites — Jest verified 2026-09-07 via targeted runs + `test:jest:fast` partial; full `test:jest` UNCONFIRMED this session; browser gates UNCONFIRMED):
+All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**566 tests**, 50 suites — Jest verified 2026-09-08 via `test:jest:fast` + slow HonestAi batches; browser gates UNCONFIRMED):
 
 | # | Board Variant | Geometry & Architecture | Status |
 |---|---|---|---|
@@ -47,7 +47,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 ### 2. Turn Interaction & UI Protocol (`FeatureSession.ts` & `CanvasBoardRenderer.ts`)
 - **Inert Opponent Beads:** Opponent beads are 100% inert (not clickable).
 - **Turn bead highlighting:** Locked rule → `GPT_PROJECT_PENDING_01P.md` § Turn colour UI. Shipped draw path: `drawCanvasBoard` (all modes). **TESTED** (`CanvasBoardRenderer.moveFeedback.test.ts` — 10 cases). Human browser **UNCONFIRMED**.
-- **Audio & Sound Effects (`SoundEffects.ts`):** Eight named WAV files in `public/audio/` (loaded at runtime via `SoundManifest.ts` — not embedded in JS bundle). Soft wooden slide, marimba capture with rising pitch on chains, flourish on 3+ hops, start/victory/defeat/draw stingers. **TESTED** (`SoundEffects.test.ts` — event dispatch; decode UNCONFIRMED in Jest).
+- **Audio & Sound Effects (`SoundEffects.ts`):** Eight production WAV files only — repo-root `public/audio/sfx_*.wav` (loaded at runtime via `SoundManifest.ts`; not embedded in JS). Orphan Kenney/voice/sample copies removed 2026-09-08. **TESTED** (`SoundEffects.test.ts` — event dispatch; decode UNCONFIRMED in Jest).
 - **Start Screen Overlay & First-Tap Unlock (Option B):** Gold-accented start card over board (mode select + **▶ START GAME**) unlocks browser AudioContext and BGM. **Start** always opens with human (cream / RED); AI must not move first. **New game / Play again** alternates opener (game 2 → AI in PvE). **Board switch** returns to start overlay with human first (does not consume alternation counter). Match then runs with animated kickoff banner and fanfare.
 - **Production play shell layout (2026-08):** Four-column shell — left play panel (AI top, match `mm:ss` centre, human bottom, shot rings, capture/centre/beads), board-only centre column, settings right, optional ad column. Bottom controls: single nowrap row (Resign · **Finish capture** · Sound · Undo · New game). Finish capture hidden until mid-chain optional jump. Viewport height-first sizing on `.shell`; 16-bead bump (`shell--board-16`, max frame height 860px); verified at 1366×768 and 1280×720 @ 100% zoom.
 - **Cream-camp orientation:** Jest gate `creamCampRendersLower.test.ts` — on every V1 board, cream (RED) beads average lower on canvas than ebony (BLUE). Board6 starting camps aligned to bottom convention.
@@ -79,7 +79,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Alternating opener (local):** Start overlay → human (cream) first; **New game / Play again** alternates opener in PvE. **FUNCTIONAL** (Jest + browser policy checks).
 
 ### 5. Test & Quality Gates
-- **Jest (511 tests, 44 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog. Batched runner: `scripts/run-jest-batched.mjs`.
+- **Jest (566 tests, 50 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — batched runner: `scripts/run-jest-batched.mjs` (50 files on disk, audit coverage gate).
 - **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback`), **process regression guards** (`processRegressionGuards` — cross-surface sync, match-start flash WHEN), Finish capture on all boards via session tests, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs`).
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
@@ -100,7 +100,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |
 | **Center** (Off / End-game / Cumulative) | **OK** — Jest + AI eval + timer urgency on levels 2–3 |
-| **SFX bundle** | **OK (2026-09-04)** — WAV in `public/audio/`; main JS ~74 kB (was ~601 kB with embed) |
+| **SFX bundle** | **OK (2026-09-08)** — eight WAV in repo-root `public/audio/` only; main JS ~74 kB (was ~601 kB with embed) |
 | **Resign modal a11y** | **OK (2026-09-04)** — dashed/solid + labels; not red/green-only |
 | **Shot clock** | **OK** — ticks during AI; expiry tested |
 | **Timer** | **OK** — shared clock; expiry → capture/centre/beads; **mm:ss text only** |
@@ -123,10 +123,10 @@ Run from: `d:\Business Idea\Gpt_Enterprise_Vault`
 **Tests**
 ```powershell
 npm run test:jest:fast   # skips slow AI suites, ~40s
-npm run test:jest        # all 511 Jest tests, ~7 min
+npm run test:jest        # all 566 Jest tests, ~7 min
 npm test                 # Jest + browser gates
 ```
-Details: **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog.
+Details: batched runner `scripts/run-jest-batched.mjs` (see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog for audit history only).
 
 **5173 — Hub (new home page)**
 ```powershell

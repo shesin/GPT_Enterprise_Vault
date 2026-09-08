@@ -22,6 +22,7 @@ Only when the user asks. **`ok` / `good`** = known-good checkpoint in the commit
 
 | User says | Agent must do |
 |-----------|----------------|
+Update status , map if required
 | `push to git all` / `push to git all ok` / `push to git all good` | `git add` all changed files (skip secrets) → commit → push to GitHub. Report push output. |
 
 `push to git` / `commit local` without **all** = agent may pick files. **Never** edit permission.

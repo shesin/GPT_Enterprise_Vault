@@ -10,6 +10,8 @@ GPT_Enterprise_Vault/
 ├── VISION/            # Agent prompts — see PROJECT_MAP agent-prompt table (external AI vs Cursor)
 │
 ├── PROJECT_MAP_05P.md # Repository map
+├── public/
+│   └── audio/                         # Production SFX only — eight sfx_*.wav (SoundManifest.ts)
 ├── package.json
 ├── package-lock.json
 └── .gitignore
@@ -28,5 +30,7 @@ Each project maintains its own:
 * PROJECT_MAP_05P.md
 * GPT_PROJECT_RULES_01P.md
 * GPT_PROJECT_STATUS_01P.md
+* GPT_PROJECT_PENDING_01P.md
+* GPT_PROJECT_AUDIT_05P.md (supporting audit trail, when used)
 
 The repository is organized to maximize reuse, minimize duplication, and support long-term project development.
