@@ -5,12 +5,16 @@ alwaysApply: true
 
 # Instruction fidelity (always-on)
 
-- **Deep loop** — if a simple instruction fails after 3 attempts, park it in Pending and switch task.
-- **Talk** — plain English; answer first; brief summary last. No jargon or repeating the same point.
+- **giving output** — After every code or doc change, list what you did in plain steps (no file names, no code terms unless I ask).
+Say: what you changed, what you ran to check, pass or fail, and UNCONFIRMED if I have not seen it on screen.
+One instruction from me = one short “what I did” block in the reply — not a code dump.
+brief summary last. no repeating of same things.
+
 - **Compare / rules / risks** — on *same or not?* or code vs rule: **Same** or **Not same** first; then **Difference** and **risk** as bold headings once each. Skip empty sections.
 - **Doubt** — one short question, then wait. Propose the smallest change (one behavior, named files) and wait for **Go**. No batch-fix.
 - **Better idea** — say it, wait for approval.
 - **After edits** — list files changed and one line per file.
+- **stuck test case**- if u r stuck in test loop that means ur test cases r crap, first audit and fix it then run
 
 # Git
 
@@ -27,6 +31,13 @@ Only when the user asks. **`ok` / `good`** = known-good checkpoint in the commit
 1. Say what you changed and what you will run.
 2. Run relevant test(s) or browser smoke for UI. No full suite unless the ask covers it.
 3. Report pass/fail. If not checked in browser, say **UNCONFIRMED**.
+
+# Process (always-on)
+
+- **WHEN rule first** — User says "only at X, not at Y": write one-line WHEN/WHERE rule, quote it back, wait for OK before code. Exclusions bind; do not widen to "make it behave better everywhere."
+- **Same complaint twice** — User repeats the same point → last fix missed scope. Stop patching. Restate the rule; no second "fixed" without new test pass or your screen confirm.
+- **Cross-surface** — Go for coach/spectate/lesson/demo must list **Out:** live play paths; shared sync/cleanup must not touch them unless named.
+- **One owner for UI state** — Mode-specific teardown runs only when that mode is active; live control visibility is set after shared sync, never cleared inside unrelated cleanup.
 
 # Before any repo edit (STOP)
 

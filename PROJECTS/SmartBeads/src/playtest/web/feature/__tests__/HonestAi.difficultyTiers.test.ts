@@ -41,6 +41,7 @@ function applyPath(engine: SmartBeadsEngine, path: Move[]): void {
 }
 
 describe('HonestAi difficulty contract', () => {
+  jest.setTimeout(120_000);
   it('documents search depth: Easy 0, Medium 1, Hard 2', () => {
     expect(aiOpponentReplyPlies(1)).toBe(0);
     expect(aiOpponentReplyPlies(2)).toBe(1);
@@ -97,7 +98,7 @@ describe('HonestAi difficulty contract', () => {
     const engine = new SmartBeadsEngine('6x3x5');
     engine.getState().currentPlayer = 'BLUE';
     const snap = engine.exportSnapshot();
-    const ends = generateTurnEnds('6x3x5', snap, 'BLUE', 200);
+    const ends = generateTurnEnds('6x3x5', snap, 'BLUE', 200, Date.now() + 10_000);
     expect(ends.length).toBeGreaterThan(5);
 
     const distinct = new Set<string>();

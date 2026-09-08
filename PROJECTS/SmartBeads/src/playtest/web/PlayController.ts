@@ -43,6 +43,9 @@ import {
   COACH_VIDEO_BOARD_ID,
   COACH_VIDEO_DURATION_MS,
   COACH_VIDEO_TRIPLE_SPEECH_TEXT,
+  COACH_FINISH_CAPTURE_DEMO_MS,
+  COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
+  isCoachFinishCaptureDemoActive,
   coachSegmentBannerUntilMs,
   coachSpeechForTime,
   findCoachKeyframeAt,
@@ -126,7 +129,7 @@ export function shouldContinueAiTurn(chainPieceId: number | null, hopsRemaining:
 
 /**
  * Capture optionality: AI may stop while follow-up jumps still exist.
- * Humans click Finish; AI has no Finish button, so the sequencer must end the turn.
+ * Humans use Finish capture; AI has no button, so the sequencer must end the turn.
  * Leaving the chain open keeps currentPlayer = BLUE and the shell sticks on “AI is thinking…”.
  */
 export function completeAiTurnIfChainOpen(session: FeatureSession): void {
@@ -274,8 +277,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const blackNameInput = document.getElementById('pvp-black-name') as HTMLInputElement;
   const pvpNamesContainer = document.getElementById('pvp-names-container') as HTMLDivElement;
   const canvas = document.getElementById('board') as HTMLCanvasElement;
-  const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
   const resignBtn = document.getElementById('resign-btn') as HTMLButtonElement;
+  const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement | null;
   const undoBtn = document.getElementById('undo-btn') as HTMLButtonElement;
   const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
   const playAgainBtn = document.getElementById('play-again-btn') as HTMLButtonElement;
@@ -635,15 +638,22 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     coachPauseBtn?.classList.toggle('is-hidden', !playing);
   }
 
-  function updateCoachVideoPanel(): void {
+  function updateCoachVideoPanel(timeMs = coachVideoPlayer?.getTimeMs() ?? 0): void {
     coachPanel?.classList.remove('is-hidden');
     if (coachLessonTitle) coachLessonTitle.textContent = COACH_VIDEO.title;
     if (coachLessonBody) {
       coachLessonBody.innerHTML = renderCoachPanelHtml({
         intro: COACH_VIDEO.intro,
         points: COACH_VIDEO.points,
+        emphasizeFinishCapture: isCoachFinishCaptureDemoActive(timeMs),
       });
     }
+  }
+
+  function syncCoachFinishCaptureDemo(timeMs: number): void {
+    if (!isCoachMode()) return;
+    updateCoachVideoPanel(timeMs);
+    updateUI();
   }
 
   function initCoachVideoPlayer(autoPlay = false): void {
@@ -660,6 +670,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     coachVideoPlayer = new CoachVideoPlayer(COACH_VIDEO, {
       onTimeChange: (ms) => {
         syncCoachVideoControls(ms, coachVideoPlayer?.isPlaying() ?? false);
+        syncCoachFinishCaptureDemo(ms);
       },
       onApplyKeyframe: (keyframe) => {
         applyCoachVideoKeyframe(session, keyframe);
@@ -759,7 +770,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     const coach = isCoachMode();
     if (!coach) {
       coachPanel?.classList.add('is-hidden');
-      stopCoachVideo();
+      if (coachVideoPlayer !== null) {
+        stopCoachVideo();
+      }
     }
     boardSelect.disabled = coach;
     centerRuleSelect.disabled = coach;
@@ -1245,6 +1258,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       chainPieceId: session.getEngine().getChainPieceId(),
       anim,
       turnPulse,
+      showTurnStartRings: session.shouldShowTurnStartRings(),
       lastMove,
       capturePulses: activeCapturePulses(),
       coachGlowNodeIds: session.getCoachGlowNodeIds(),
@@ -1297,17 +1311,27 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     );
 
     const uiState = session.getUiState();
-    const showFinish = uiState === 'chain'
-      && !animating
-      && !aiThinking
-      && settings.mode !== 'spectate'
-      && (settings.mode === 'pvp' || (isHumanVsAiMode(settings.mode) && state.currentPlayer === 'RED'));
-    finishBtn.style.display = showFinish ? 'inline-block' : 'none';
-
     undoBtn.disabled = undoStack.length === 0 || animating || aiThinking || settings.mode === 'spectate';
     resignBtn.disabled = !canOfferResignation();
 
     syncModeUi();
+
+    const coachFinishDemo =
+      coachVideoPlayer !== null
+      && isCoachFinishCaptureDemoActive(coachVideoPlayer.getTimeMs());
+    const chainOpen = session.getEngine().getChainPieceId() !== null;
+    const showFinishCapture =
+      coachFinishDemo
+      || (chainOpen
+        && session.canHumanAct()
+        && !animating
+        && !aiThinking);
+    if (finishBtn) {
+      finishBtn.hidden = !showFinishCapture;
+      finishBtn.classList.toggle('visible', showFinishCapture);
+      finishBtn.classList.toggle('coach-demo', coachFinishDemo);
+      finishBtn.disabled = !showFinishCapture || coachFinishDemo;
+    }
 
     const tournamentActive = isTournamentTimerActive(settings);
     const timerLimitSec = parseTimerSeconds(
@@ -1812,18 +1836,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     finishResignation(pendingResignPlayer, false);
   });
 
-  finishBtn.addEventListener('click', () => {
-    if (session.getUiState() !== 'chain' || animating) return;
-    soundEffects.playButtonTap();
-    pushUndoSnapshot();
-    session.finishChain();
-    if (turnCaptures >= 3 && !session.isGameOver()) {
-      soundEffects.playFlourish();
-    }
-    turnCaptures = 0;
-    afterHumanOrAiTurn();
-  });
-
   function switchBoard(boardId: ProductBoardId): void {
     if (timerId) clearInterval(timerId);
     cancelAnimationFrame(pulseRaf);
@@ -1922,6 +1934,17 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
   });
 
+  function finishCaptureChain(): void {
+    if (isAwaitingStart() || animating || aiThinking || session.isGameOver()) return;
+    if (isCoachMode()) return;
+    if (session.getEngine().getChainPieceId() === null || !session.canHumanAct()) return;
+    pushUndoSnapshot();
+    soundEffects.playButtonTap();
+    session.finishChain();
+    turnCaptures = 0;
+    afterHumanOrAiTurn();
+  }
+
   restartBtn.addEventListener('click', () => {
     resetGame();
   });
@@ -1931,6 +1954,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   undoBtn.addEventListener('click', () => {
     soundEffects.playButtonTap();
     undoMove();
+  });
+  finishBtn?.addEventListener('click', () => {
+    finishCaptureChain();
   });
   boardSelect.addEventListener('change', () => {
     switchBoard(boardSelect.value as ProductBoardId);

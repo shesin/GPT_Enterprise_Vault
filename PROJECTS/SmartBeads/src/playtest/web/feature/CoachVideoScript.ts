@@ -9,17 +9,29 @@ import type { CenterRule, GameFeatureSettings, TimerMinutes, ShotClockSeconds } 
 
 export const COACH_VIDEO_BOARD_ID = '7x4x5' as const satisfies ProductBoardId;
 
-/** Basics (moves + captures) end before win/draw/resign appendix. */
-export const COACH_VIDEO_BASICS_END_MS = 56_220;
-
 /** Pause after each slide demo before the next highlight or segment banner. */
 export const COACH_POST_DEMO_PAUSE_MS = 3_000;
 
-/** Win waits until triple voice finishes + post pause (see CoachVideoPlayer win gate). */
+/** Triple capture demo starts; chain completes at COACH_TRIPLE_CAPTURE_END_MS. */
 export const COACH_VIDEO_TRIPLE_DEMO_MS = 54_100;
+export const COACH_TRIPLE_CAPTURE_END_MS = 56_220;
+
+/** Voice + UI demo for optional stop — after triple capture, not after single. */
+export const COACH_FINISH_CAPTURE_DEMO_MS = COACH_TRIPLE_CAPTURE_END_MS;
+export const COACH_FINISH_CAPTURE_DEMO_DURATION_MS = 5_000;
+
+export const COACH_FINISH_CAPTURE_SPEECH_TEXT =
+  'Finish capture. You can jump again, or press Finish capture to end your turn. The same holds true for double and triple capture.';
+
+/** @deprecated use COACH_FINISH_CAPTURE_SPEECH_TEXT */
+export const COACH_FINISH_CAPTURE_SPEECH_TAIL = COACH_FINISH_CAPTURE_SPEECH_TEXT;
+
+/** Basics (moves + captures + finish demo) end before win/draw/resign appendix. */
+export const COACH_VIDEO_BASICS_END_MS =
+  COACH_FINISH_CAPTURE_DEMO_MS + COACH_FINISH_CAPTURE_DEMO_DURATION_MS;
 
 export const COACH_VIDEO_TRIPLE_SPEECH_TEXT =
-  'Triple capture. The same bead can keep jumping while captures stay open. Likewise you can capture four, five, or more beads in one turn while the chain stays open.';
+  'Triple capture. The same bead can keep jumping while captures stay open. Likewise four, five, or more beads in one turn.';
 
 export function estimateCoachSpeechMs(text: string, rate = 0.92): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
@@ -265,6 +277,7 @@ export const COACH_VIDEO_SEGMENT_BANNERS: CoachVideoSegmentBanner[] = [
   { atMs: 19_100, title: 'SINGLE CAPTURE' },
   { atMs: 37_940, title: 'DOUBLE CAPTURE' },
   { atMs: 48_100, title: 'TRIPLE CAPTURE' },
+  { atMs: COACH_FINISH_CAPTURE_DEMO_MS, title: 'FINISH CAPTURE' },
   { atMs: COACH_VIDEO_WIN_SEGMENT_START_MS, title: 'WIN' },
   { atMs: COACH_VIDEO_RESIGN_SEGMENT_START_MS, title: 'RESIGN' },
   { atMs: COACH_VIDEO_DRAW_SEGMENT_START_MS, title: 'DRAW' },
@@ -280,6 +293,7 @@ export const COACH_VIDEO: CoachVideoScript = {
   points: [
     'Move — slide one step to an empty node.',
     'Single capture — jump over one neighbour bead.',
+    'Finish capture — jump again or press Finish capture to end your turn. Same for double and triple capture.',
     'Double capture — same bead jumps twice.',
     'Triple capture — same bead jumps three times; likewise four, five, or more while the chain stays open.',
     'Win — capture all opponent beads to win.',
@@ -325,6 +339,10 @@ export const COACH_VIDEO: CoachVideoScript = {
     ),
   ],
   speeches: [
+    {
+      atMs: COACH_FINISH_CAPTURE_DEMO_MS,
+      text: COACH_FINISH_CAPTURE_SPEECH_TEXT,
+    },
     {
       atMs: COACH_VIDEO_WIN_SEGMENT_START_MS,
       text: COACH_WIN_SPEECH_TEXT,
@@ -583,6 +601,14 @@ export function findCoachCueAtTime(ms: number, cues: readonly CoachVideoCue[] = 
     if (cue.atMs <= ms) latest = cue;
   }
   return latest;
+}
+
+export function isCoachFinishCaptureDemoActive(
+  ms: number,
+  startMs: number = COACH_FINISH_CAPTURE_DEMO_MS,
+  durationMs: number = COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
+): boolean {
+  return ms >= startMs && ms < startMs + durationMs;
 }
 
 export function coachSpeechForTime(ms: number, script: CoachVideoScript = COACH_VIDEO): string {

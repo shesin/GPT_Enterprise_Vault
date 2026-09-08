@@ -14,7 +14,13 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
     board.intersections.find((p) => p.label === 'A03')!.occupant = 'RED';
     engine.getState().currentPlayer = 'BLUE';
 
-    const ends = generateTurnEnds('16', engine.exportSnapshot(), 'BLUE', 140);
+    const ends = generateTurnEnds(
+      '16',
+      engine.exportSnapshot(),
+      'BLUE',
+      32,
+      Date.now() + 5_000,
+    );
     const from = id('A00');
     const stop = ends.find((e) => e.path.length === 1 && e.path[0].from === from && e.path[0].to === id('A02'));
     const cont = ends.find((e) => e.path.length === 2 && e.path[0].to === id('A02') && e.path[1].to === id('A04'));
@@ -24,9 +30,9 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
   });
 
   it('returns a legal path even when the think budget is already exhausted', () => {
-    const engine = new SmartBeadsEngine('16');
+    const engine = new SmartBeadsEngine('6x3x5');
     engine.getState().currentPlayer = 'BLUE';
-    const path = selectAiTurnPath('16', 2, engine.exportSnapshot(), 'BLUE', 0);
+    const path = selectAiTurnPath('6x3x5', 1, engine.exportSnapshot(), 'BLUE', 0);
     expect(path?.length).toBeGreaterThan(0);
     engine.applyMove(path![0]);
     expect(engine.getState().board.intersections[path![0].to]?.occupant).toBe('BLUE');

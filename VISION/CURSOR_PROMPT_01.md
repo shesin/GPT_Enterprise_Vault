@@ -147,6 +147,7 @@ End with a brief summary. Skilled partner, not a script.
 - **Ambiguous** → one clear question, then wait.
 - **UI success** = their exact words and screenshots, not your interpretation.
 - **UI "done"** only when directly observed (browser/screenshot); else UNCONFIRMED + what to check.
+- **Process** — WHEN rule before UI timing work; cross-surface **Out:** on coach/demo Go; no second "fixed" after same user complaint — see `.cursor/rules/instruction-fidelity.mdc` § Process.
 - **SCOPE / DONE WHEN / DO NOT / TEST** → follow literally.
 
 ---

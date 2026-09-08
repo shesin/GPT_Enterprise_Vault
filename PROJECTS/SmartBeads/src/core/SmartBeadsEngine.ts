@@ -19,12 +19,12 @@ import {
  * Capture rules (project):
  * - Jumps are optional (slides remain legal when not mid-chain).
  * - Multi-jump chaining is allowed via sequential Move applications.
- * - After a capture, further jumps from the same bead are optional; call endTurn() to stop.
+ * - After a capture, further jumps from the same bead are optional; call endTurn() or abandonChain().
  */
 export class SmartBeadsEngine {
   private readonly variant: BoardVariant;
   private currentState: GameState;
-  /** When set, the current player must continue or end a capture chain with this bead. */
+  /** When set, the chaining bead may continue capturing; stop only via endTurn (Finish capture). */
   private chainPieceId: number | null = null;
 
   constructor(variant: BoardVariant) {
@@ -77,7 +77,7 @@ export class SmartBeadsEngine {
   /**
    * Legal moves for the current player.
    * - Normal turn: optional slides and optional jumps.
-   * - Mid multi-jump: only continuing jumps from the chaining bead.
+   * - Mid multi-jump: only continuing jumps from the chaining bead (stop via endTurn / Finish capture).
    */
   getLegalMoves(): Move[] {
     if (this.currentState.gameOver) {
@@ -107,6 +107,14 @@ export class SmartBeadsEngine {
     }
 
     return moves;
+  }
+
+  /** Follow-up capture jumps from the chaining bead, if any. */
+  getChainContinuationMoves(): Move[] {
+    if (this.chainPieceId === null || this.currentState.gameOver) {
+      return [];
+    }
+    return this.getJumpMovesFrom(this.chainPieceId);
   }
 
   applyMove(move: Move): void {
@@ -159,6 +167,14 @@ export class SmartBeadsEngine {
     const mover = this.currentState.currentPlayer;
     this.chainPieceId = null;
     this.completeTurn(mover);
+  }
+
+  /** Stop continuing jumps but keep the same turn (optional capture — play another bead). */
+  abandonChain(): void {
+    if (this.currentState.gameOver) {
+      throw new Error('Game is already over.');
+    }
+    this.chainPieceId = null;
   }
 
   private completeTurn(mover: Player): void {

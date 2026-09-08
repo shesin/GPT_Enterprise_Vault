@@ -33,6 +33,8 @@ export interface CanvasBoardView {
   chainPieceId: number | null;
   anim: BoardAnimState | null;
   turnPulse: number;
+  /** False after first pick this turn — all-bead flash does not return on deselect. */
+  showTurnStartRings?: boolean;
   lastMove?: LastMoveHighlight | null;
   capturePulses?: CapturePulse[];
   coachGlowNodeIds?: readonly number[];
@@ -258,6 +260,7 @@ export function drawCanvasBoard(
   const w = canvas.width;
   const h = canvas.height;
   const { board, currentPlayer, gameOver, selectedId, legalTargets, chainPieceId, anim, turnPulse } = view;
+  const showTurnStartRings = view.showTurnStartRings ?? true;
   const lastMove = view.lastMove ?? null;
   const capturePulses = view.capturePulses ?? [];
   const coachGlowNodeIds = view.coachGlowNodeIds ?? [];
@@ -280,7 +283,8 @@ export function drawCanvasBoard(
     !gameOver
     && !animating
     && selectedId === null
-    && legalTargets.length === 0;
+    && legalTargets.length === 0
+    && showTurnStartRings;
   const turnHighlightSet = turnIdleHighlight
     ? new Set(listTurnHighlightNodeIds(board, currentPlayer, chainPieceId))
     : new Set<number>();

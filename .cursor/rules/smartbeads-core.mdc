@@ -12,6 +12,7 @@ When work touches `PROJECTS/SmartBeads/`:
 - **Literal ask** — option ≠ default; one-line ask = one-line change unless user lists more
 - **Code vs claim** — read `GPT_PROJECT_STATUS_01P.md` § Integrity; edit any doc only on **Go —** + named file(s)
 - **One playtest bug** — failing test + related fixes
+- **Timing / WHEN** — lock once / per turn / per match / never in pending before UI work; Jest must match that sentence (`instruction-fidelity.mdc` § Process)
 - **Prototype ≠ production** — no shared code with `src/`
 - **Static assets** — SFX/images from `public/`; no large base64 in TS bundles
 - **Never edit** `VISION/CLAUDE_TEST_REPORT_05.md` (not agent scope)

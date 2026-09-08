@@ -16,3 +16,5 @@ Read — do not duplicate rules here:
 - `GPT_PROJECT_AUDIT_05P.md` — failure record
 
 Edit any file only per `instruction-fidelity.mdc` § STOP.
+
+Process guards (WHEN rule, cross-surface **Out:**, same complaint twice) → `instruction-fidelity.mdc` § Process — not duplicated here.

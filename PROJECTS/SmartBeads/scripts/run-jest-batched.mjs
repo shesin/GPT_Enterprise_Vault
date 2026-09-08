@@ -1,17 +1,20 @@
 /**
  * SmartBeads Jest runner — explicit batches, live stdout, hard timeouts.
- * Avoids broad `jest PROJECTS/SmartBeads` (parallel AI thrash + silent long runs on Windows).
+ * Every __tests__/*.test.ts under PROJECTS/SmartBeads must appear in exactly one batch.
  *
  * Usage:
  *   node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs
  *   node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --skip-slow
  *   node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --batch=seven-board
+ *   node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --audit-only
  */
 import { spawn } from 'child_process';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const SMARTBEADS = path.join(ROOT, 'PROJECTS', 'SmartBeads');
 const JEST = path.join(ROOT, 'node_modules', 'jest', 'bin', 'jest.js');
 
 const BATCHES = [
@@ -19,6 +22,7 @@ const BATCHES = [
     id: 'seven-board',
     label: '7-board core (smoke + unit + turn + geometry)',
     timeoutMs: 120_000,
+    testTimeoutMs: 30_000,
     files: [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/allBoards.smoke.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.turnControl.test.ts',
@@ -36,6 +40,7 @@ const BATCHES = [
     id: 'engine-parity',
     label: 'Engine, catalog, simulation, prototype parity',
     timeoutMs: 120_000,
+    testTimeoutMs: 30_000,
     files: [
       'PROJECTS/SmartBeads/src/config/__tests__/BoardCatalog.test.ts',
       'PROJECTS/SmartBeads/src/core/__tests__/SmartBeadsEngine.test.ts',
@@ -53,26 +58,33 @@ const BATCHES = [
   },
   {
     id: 'feature-session',
-    label: 'Feature session, settings, spectate (fast)',
+    label: 'Feature session, settings, spectate, coach',
     timeoutMs: 180_000,
+    testTimeoutMs: 60_000,
     files: [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/GameFeatureSettings.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.featureRules.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.firstMove.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.resignation.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.coach.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/clockPolicy.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/aiTurnPath.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/spectate.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/CoachVideoPlayer.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/CoachVideoScript.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/CoachVoice.test.ts',
     ],
   },
   {
     id: 'web-shell-layout',
-    label: 'Play shell, layout, render, audio',
+    label: 'Play shell, layout, render, audio, process guards',
     timeoutMs: 120_000,
+    testTimeoutMs: 30_000,
     files: [
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/PlayController.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/playerBarShell.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/__tests__/processRegressionGuards.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/hubShell.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/viewportFit.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/chromeScreenshotPositions.test.ts',
@@ -87,9 +99,10 @@ const BATCHES = [
   },
   {
     id: 'slow-ai-tiers',
-    label: 'HonestAi difficulty tiers (slow ~7 min)',
+    label: 'HonestAi difficulty tiers (slow ~5 min)',
     slow: true,
     timeoutMs: 900_000,
+    testTimeoutMs: 120_000,
     files: [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.difficultyTiers.test.ts',
     ],
@@ -98,18 +111,41 @@ const BATCHES = [
     id: 'slow-ai-search',
     label: 'HonestAi depth-2 search completion (slow)',
     slow: true,
-    timeoutMs: 2_700_000,
+    timeoutMs: 600_000,
+    testTimeoutMs: 120_000,
     files: [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.searchCompletion.test.ts',
     ],
   },
 ];
 
+function discoverAllTestFiles(dir = SMARTBEADS, acc = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      discoverAllTestFiles(full, acc);
+    } else if (entry.name.endsWith('.test.ts')) {
+      acc.push(path.relative(ROOT, full).replace(/\\/g, '/'));
+    }
+  }
+  return acc.sort();
+}
+
+function auditBatchCoverage() {
+  const onDisk = new Set(discoverAllTestFiles());
+  const batched = new Set(BATCHES.flatMap((b) => b.files));
+  const uncovered = [...onDisk].filter((f) => !batched.has(f));
+  const stale = [...batched].filter((f) => !onDisk.has(f));
+  const dupes = BATCHES.flatMap((b) => b.files).filter((f, i, a) => a.indexOf(f) !== i);
+  return { onDisk, batched, uncovered, stale, dupes };
+}
+
 function parseArgs() {
   const skipSlow = process.argv.includes('--skip-slow');
+  const auditOnly = process.argv.includes('--audit-only');
   const batchArg = process.argv.find((a) => a.startsWith('--batch='));
   const batchId = batchArg ? batchArg.slice('--batch='.length) : null;
-  return { skipSlow, batchId };
+  return { skipSlow, auditOnly, batchId };
 }
 
 function runBatch(batch) {
@@ -123,6 +159,7 @@ function runBatch(batch) {
       '--no-coverage',
       '--forceExit',
       '--verbose',
+      `--testTimeout=${batch.testTimeoutMs ?? 30_000}`,
     ];
 
     const child = spawn(process.execPath, [JEST, ...args], {
@@ -145,14 +182,13 @@ function runBatch(batch) {
 
     child.on('exit', (code, signal) => {
       clearTimeout(timer);
-      const elapsedMs = Date.now() - started;
       resolve({
         id: batch.id,
         label: batch.label,
         ok: !killed && code === 0,
         code: killed ? 'TIMEOUT' : code,
         signal,
-        elapsedMs,
+        elapsedMs: Date.now() - started,
         fileCount: batch.files.length,
       });
     });
@@ -174,7 +210,32 @@ function runBatch(batch) {
 }
 
 async function main() {
-  const { skipSlow, batchId } = parseArgs();
+  const { skipSlow, auditOnly, batchId } = parseArgs();
+  const audit = auditBatchCoverage();
+
+  console.log(`SmartBeads Jest: ${audit.onDisk.size} test files on disk, ${audit.batched.size} in batches`);
+
+  if (audit.dupes.length) {
+    console.error('\n*** AUDIT FAIL: duplicate batch entries ***');
+    for (const f of audit.dupes) console.error(`  ${f}`);
+    process.exit(1);
+  }
+  if (audit.stale.length) {
+    console.error('\n*** AUDIT FAIL: batch lists missing files ***');
+    for (const f of audit.stale) console.error(`  ${f}`);
+    process.exit(1);
+  }
+  if (audit.uncovered.length) {
+    console.error('\n*** AUDIT FAIL: test files not in any batch ***');
+    for (const f of audit.uncovered) console.error(`  ${f}`);
+    process.exit(1);
+  }
+  console.log('Audit: all test files covered exactly once.');
+
+  if (auditOnly) {
+    process.exit(0);
+  }
+
   let batches = BATCHES;
   if (skipSlow) batches = batches.filter((b) => !b.slow);
   if (batchId) {
@@ -186,9 +247,7 @@ async function main() {
     }
   }
 
-  const covered = new Set(BATCHES.flatMap((b) => b.files));
-  console.log(`SmartBeads Jest: ${covered.size} test files in ${BATCHES.length} batches`);
-  if (skipSlow) console.log('(--skip-slow: omitting HonestAi.difficultyTiers + HonestAi.searchCompletion)');
+  if (skipSlow) console.log('(--skip-slow: omitting slow HonestAi batches)');
 
   const results = [];
   for (const batch of batches) {

@@ -20,6 +20,7 @@ export interface SessionSnapshot {
   settings: GameFeatureSettings;
   uiState: UiInteractionState;
   selectedId: number | null;
+  turnStartRingsPending: boolean;
   p1Clock: number;
   p2Clock: number;
   globalMatchRemaining: number;
@@ -49,6 +50,8 @@ export class FeatureSession {
   private settings: GameFeatureSettings;
   private uiState: UiInteractionState = 'idle';
   private selectedId: number | null = null;
+  /** True only at match start; false after first pick or move — never again until reset/new game. */
+  private turnStartRingsPending = true;
   private coachGlowNodeIds: number[] = [];
   private coachHighlightTargets: number[] = [];
   private p1Clock = 0;
@@ -84,6 +87,7 @@ export class FeatureSession {
     this.engine = new SmartBeadsEngine(this.boardVariant);
     this.uiState = 'idle';
     this.selectedId = null;
+    this.turnStartRingsPending = true;
     this.p1CenterScore = 0;
     this.p2CenterScore = 0;
     this.featureOver = null;
@@ -97,6 +101,16 @@ export class FeatureSession {
     this.selectedId = null;
   }
 
+  shouldShowTurnStartRings(): boolean {
+    if (this.isGameOver()) return false;
+    if (this.engine.getChainPieceId() !== null) return false;
+    return this.turnStartRingsPending;
+  }
+
+  consumeTurnStartRings(): void {
+    this.turnStartRingsPending = false;
+  }
+
   exportSnapshot(): SessionSnapshot {
     return {
       boardVariant: this.boardVariant,
@@ -104,6 +118,7 @@ export class FeatureSession {
       settings: { ...this.settings },
       uiState: this.uiState,
       selectedId: this.selectedId,
+      turnStartRingsPending: this.turnStartRingsPending,
       p1Clock: this.p1Clock,
       p2Clock: this.p2Clock,
       globalMatchRemaining: this.globalMatchRemaining,
@@ -120,6 +135,8 @@ export class FeatureSession {
     this.settings = { ...snap.settings };
     this.uiState = snap.uiState;
     this.selectedId = snap.selectedId;
+    this.turnStartRingsPending = snap.turnStartRingsPending
+      ?? (snap.selectedId === null && snap.uiState === 'idle');
     this.p1Clock = snap.p1Clock;
     this.p2Clock = snap.p2Clock;
     this.globalMatchRemaining = snap.globalMatchRemaining;
@@ -211,7 +228,7 @@ export class FeatureSession {
     if (this.isGameOver()) return [];
     const chain = this.engine.getChainPieceId();
     if (chain !== null) {
-      return this.engine.getLegalMoves();
+      return this.engine.getChainContinuationMoves();
     }
     if (this.selectedId === null) return [];
     return this.engine.getLegalMoves().filter((m) => m.from === this.selectedId);
@@ -256,10 +273,12 @@ export class FeatureSession {
     if (this.isGameOver() || !this.canHumanAct()) return { kind: 'ignore' };
     const state = this.engine.getState();
     const occupant = state.board.intersections[nodeId]?.occupant;
+    const chain = this.engine.getChainPieceId();
 
-    if (this.engine.getChainPieceId() !== null) {
-      const move = this.resolveClickMove(nodeId);
-      return move ? { kind: 'move', move } : { kind: 'ignore' };
+    if (chain !== null) {
+      const continuation = this.engine.getChainContinuationMoves().find((m) => m.to === nodeId);
+      if (continuation) return { kind: 'move', move: continuation };
+      return { kind: 'ignore' };
     }
 
     if (occupant === state.currentPlayer) {
@@ -359,6 +378,7 @@ export class FeatureSession {
 
     this.selectedId = nodeId;
     this.uiState = 'selected';
+    this.consumeTurnStartRings();
     return true;
   }
 
@@ -377,6 +397,7 @@ export class FeatureSession {
     const stateBefore = this.engine.getState();
     const mover = stateBefore.currentPlayer;
 
+    this.consumeTurnStartRings();
     this.engine.applyMove(move);
 
     const chain = this.engine.getChainPieceId();

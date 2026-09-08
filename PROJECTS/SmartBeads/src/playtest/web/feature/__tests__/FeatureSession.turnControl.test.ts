@@ -251,9 +251,124 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
     // Chain piece remains
     expect(engine.getChainPieceId()).toBe(hop1.to);
 
-    // Optional capture / Finish chain works
+    // Optional capture — Finish capture ends the turn
     session.finishChain();
-    expect(session.getUiState()).not.toBe('chain');
+    expect(session.getUiState()).toBe('idle');
     expect(engine.getChainPieceId()).toBeNull();
+    expect(engine.getState().currentPlayer).toBe('BLUE');
+  });
+});
+
+describe('FeatureSession turn start rings', () => {
+  const pve = { ...off, mode: 'pve' as const };
+
+  it('shows all-bead flash only at match start — never on later turns', () => {
+    const session = new FeatureSession('8x4x6', pve);
+    expect(session.shouldShowTurnStartRings()).toBe(true);
+
+    const slide = firstOpeningSlide(session.getEngine());
+    expect(session.selectNode(slide.from)).toBe(true);
+    expect(session.shouldShowTurnStartRings()).toBe(false);
+
+    session.applyMove(slide);
+    expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
+    expect(session.shouldShowTurnStartRings()).toBe(false);
+  });
+
+  it('shows all-bead flash again only after reset/new game', () => {
+    const session = new FeatureSession('6x3x5', pve);
+    const slide = firstOpeningSlide(session.getEngine());
+    session.selectNode(slide.from);
+    session.applyMove(slide);
+    expect(session.shouldShowTurnStartRings()).toBe(false);
+
+    session.reset();
+    expect(session.shouldShowTurnStartRings()).toBe(true);
+  });
+
+  it('clears all-bead flash after first move on same turn (chain)', () => {
+    const session = new FeatureSession('8x4x6', { ...off, mode: 'pvp' as const });
+    const engine = session.getEngine();
+    const paths = engine.getLegalMoves().filter((m) => m.over !== undefined);
+    let chain: [typeof paths[0], typeof paths[0]] | null = null;
+    for (const p1 of paths) {
+      for (const p2 of paths) {
+        if (p1.to === p2.from && new Set([p1.from, p1.over, p1.to, p2.over, p2.to]).size === 5) {
+          chain = [p1, p2];
+          break;
+        }
+      }
+      if (chain) break;
+    }
+    if (!chain) return;
+
+    const [hop1] = chain;
+    for (const point of engine.getState().board.intersections) point.occupant = undefined;
+    engine.getState().board.intersections[hop1.from].occupant = 'RED';
+    engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
+    engine.getState().board.intersections[hop1.to].occupant = undefined;
+    engine.getState().currentPlayer = 'RED';
+
+    expect(session.selectNode(hop1.from)).toBe(true);
+    expect(session.shouldShowTurnStartRings()).toBe(false);
+    session.applyMove({ from: hop1.from, to: hop1.to });
+    expect(session.getEngine().getChainPieceId()).not.toBeNull();
+    expect(session.shouldShowTurnStartRings()).toBe(false);
+  });
+
+  it('mid-chain: tap another own bead is ignored until Finish capture', () => {
+    const session = new FeatureSession('8x4x6', { ...off, mode: 'pvp' as const });
+    const engine = session.getEngine();
+    const paths = engine.getLegalMoves().filter((m) => m.over !== undefined);
+    let chain: [typeof paths[0], typeof paths[0]] | null = null;
+    for (const p1 of paths) {
+      for (const p2 of paths) {
+        if (p1.to === p2.from && new Set([p1.from, p1.over, p1.to, p2.over, p2.to]).size === 5) {
+          chain = [p1, p2];
+          break;
+        }
+      }
+      if (chain) break;
+    }
+    if (!chain) return;
+
+    const [hop1] = chain;
+    for (const point of engine.getState().board.intersections) point.occupant = undefined;
+    engine.getState().board.intersections[hop1.from].occupant = 'RED';
+    engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
+    engine.getState().board.intersections[hop1.to].occupant = undefined;
+    const otherRed = engine.getState().board.intersections.find(
+      (p) => !new Set([hop1.from, hop1.over, hop1.to]).has(p.id),
+    );
+    expect(otherRed).toBeDefined();
+    otherRed!.occupant = 'RED';
+    engine.getState().currentPlayer = 'RED';
+
+    session.selectNode(hop1.from);
+    session.applyMove({ from: hop1.from, to: hop1.to });
+    expect(engine.getChainPieceId()).not.toBeNull();
+
+    expect(session.interpretClick(otherRed!.id).kind).toBe('ignore');
+    expect(engine.getChainPieceId()).toBe(hop1.to);
+    expect(engine.getState().currentPlayer).toBe('RED');
+
+    session.finishChain();
+    expect(engine.getChainPieceId()).toBeNull();
+    expect(engine.getState().currentPlayer).toBe('BLUE');
+  });
+
+  it('undo snapshot round-trips match-start flag', () => {
+    const session = new FeatureSession('6x3x5', pve);
+    expect(session.shouldShowTurnStartRings()).toBe(true);
+
+    const snap = session.exportSnapshot();
+    expect(snap.turnStartRingsPending).toBe(true);
+
+    session.selectNode(firstOpeningSlide(session.getEngine()).from);
+    expect(session.exportSnapshot().turnStartRingsPending).toBe(false);
+
+    session.loadSnapshot(snap);
+    expect(session.shouldShowTurnStartRings()).toBe(true);
+    expect(session.getSelectedId()).toBeNull();
   });
 });

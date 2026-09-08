@@ -23,6 +23,10 @@ import {
   COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS,
 
   COACH_VIDEO_TRIPLE_SPEECH_TEXT,
+  COACH_FINISH_CAPTURE_DEMO_MS,
+  COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
+  COACH_FINISH_CAPTURE_SPEECH_TAIL,
+  isCoachFinishCaptureDemoActive,
 
   COACH_VIDEO_WIN_SEGMENT_START_MS,
   COACH_VIDEO_RESIGN_SEGMENT_START_MS,
@@ -69,7 +73,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(COACH_VIDEO.durationMs).toBe(COACH_VIDEO_DURATION_MS);
 
-    expect(COACH_VIDEO_BASICS_END_MS).toBe(56_220);
+    expect(COACH_VIDEO_BASICS_END_MS).toBe(61_220);
 
     expect(COACH_VIDEO_WIN_SEGMENT_START_MS).toBe(
 
@@ -79,13 +83,13 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(COACH_VIDEO.moves).toHaveLength(11);
 
-    expect(COACH_VIDEO.speeches).toHaveLength(4);
+    expect(COACH_VIDEO.speeches).toHaveLength(5);
 
     expect(COACH_VIDEO.highlights).toHaveLength(11);
 
-    expect(COACH_VIDEO.points).toHaveLength(7);
+    expect(COACH_VIDEO.points).toHaveLength(8);
 
-    expect(COACH_VIDEO.segmentBanners).toHaveLength(7);
+    expect(COACH_VIDEO.segmentBanners).toHaveLength(8);
 
   });
 
@@ -133,7 +137,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(spokenMoves[3].speech).toBe(COACH_VIDEO_TRIPLE_SPEECH_TEXT);
 
-    expect(COACH_VIDEO_TRIPLE_SPEECH_TEXT).toMatch(/while the chain stays open/i);
+    expect(COACH_VIDEO_TRIPLE_SPEECH_TEXT).toMatch(/while captures stay open/i);
 
   });
 
@@ -170,6 +174,8 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
     expect(html).toMatch(/Watch move, capture, win, resign, and draw/i);
 
     expect(html).toContain('Triple capture');
+
+    expect(html).toContain('Finish capture');
 
     expect(html).toMatch(/four, five, or more/i);
 
@@ -256,10 +262,12 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
     expect(coachSpeechForTime(7_000)).toMatch(/Move/i);
 
     expect(coachSpeechForTime(26_000)).toMatch(/Single capture/i);
+    expect(coachSpeechForTime(26_000)).not.toMatch(/Finish capture/i);
 
     expect(coachSpeechForTime(44_000)).toMatch(/Double capture/i);
 
     expect(coachSpeechForTime(55_000)).toMatch(/Triple capture/i);
+    expect(coachSpeechForTime(COACH_FINISH_CAPTURE_DEMO_MS + 500)).toMatch(/Finish capture/i);
 
     expect(coachSpeechForTime(COACH_VIDEO_WIN_SEGMENT_START_MS)).toMatch(/Capture all opponent beads/i);
 
@@ -269,6 +277,26 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(coachSpeechForTime(COACH_VIDEO_DRAW_SEGMENT_START_MS)).toMatch(/^Draw\./i);
 
+  });
+
+
+
+  it('Finish capture coach demo is five seconds after triple capture', () => {
+    expect(isCoachFinishCaptureDemoActive(COACH_FINISH_CAPTURE_DEMO_MS - 1)).toBe(false);
+    expect(isCoachFinishCaptureDemoActive(COACH_FINISH_CAPTURE_DEMO_MS)).toBe(true);
+    expect(isCoachFinishCaptureDemoActive(
+      COACH_FINISH_CAPTURE_DEMO_MS + COACH_FINISH_CAPTURE_DEMO_DURATION_MS - 1,
+    )).toBe(true);
+    expect(isCoachFinishCaptureDemoActive(
+      COACH_FINISH_CAPTURE_DEMO_MS + COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
+    )).toBe(false);
+    expect(COACH_FINISH_CAPTURE_SPEECH_TAIL).toMatch(/Finish capture/i);
+    const emphasized = renderCoachPanelHtml({
+      intro: COACH_VIDEO.intro,
+      points: COACH_VIDEO.points,
+      emphasizeFinishCapture: true,
+    });
+    expect(emphasized).toContain('coach-point-emphasis');
   });
 
 
@@ -395,7 +423,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(formatCoachTime(0)).toBe('0:00');
 
-    expect(formatCoachTime(COACH_VIDEO_DURATION_MS)).toBe('1:53');
+    expect(formatCoachTime(COACH_VIDEO_DURATION_MS)).toBe(formatCoachTime(COACH_VIDEO.durationMs));
 
   });
 

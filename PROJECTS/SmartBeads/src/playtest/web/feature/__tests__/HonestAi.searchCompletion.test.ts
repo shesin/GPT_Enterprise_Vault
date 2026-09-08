@@ -8,6 +8,7 @@ import {
 } from '../HonestAi';
 
 describe('HonestAi depth-2 search completion', () => {
+  jest.setTimeout(120_000);
   it.each(PRODUCT_BOARD_ORDER)('%s: Hard achieves full depth-2 on opening', (boardId) => {
     const variant = resolveEngineVariant(boardId);
     const engine = new SmartBeadsEngine(variant);

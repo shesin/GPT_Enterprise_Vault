@@ -362,6 +362,7 @@ describe('SmartBeadsEngine', () => {
     expect(state.currentPlayer).toBe('RED');
     expect(engine.getChainPieceId()).toBe(8);
     expect(engine.getLegalMoves()).toEqual([{ from: 8, to: 10 }]);
+    expect(engine.getChainContinuationMoves()).toEqual([{ from: 8, to: 10 }]);
 
     engine.endTurn();
 
@@ -369,6 +370,26 @@ describe('SmartBeadsEngine', () => {
     expect(state.currentPlayer).toBe('BLUE');
     expect(state.captures.RED).toBe(1);
     expect(state.board.intersections.find((point) => point.id === 9)?.occupant).toBe('BLUE');
+  });
+
+  it('abandonChain stops jumping but keeps the same turn', () => {
+    const engine = new SmartBeadsEngine('4');
+    const state = engine.getState();
+
+    for (const point of state.board.intersections) {
+      point.occupant = undefined;
+    }
+    state.board.intersections.find((point) => point.id === 0)!.occupant = 'RED';
+    state.board.intersections.find((point) => point.id === 4)!.occupant = 'BLUE';
+    state.board.intersections.find((point) => point.id === 9)!.occupant = 'BLUE';
+    state.board.intersections.find((point) => point.id === 15)!.occupant = 'BLUE';
+
+    engine.applyMove({ from: 0, to: 8 });
+    engine.abandonChain();
+
+    expect(engine.getChainPieceId()).toBeNull();
+    expect(state.currentPlayer).toBe('RED');
+    expect(engine.getLegalMoves().some((m) => m.from === 8)).toBe(true);
   });
 
   it('completes a multi-jump chain when the player continues capturing', () => {

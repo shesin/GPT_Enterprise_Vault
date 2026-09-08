@@ -8,26 +8,21 @@ Target: 01P (~2–3 pages, word-friendly)
 
 ---
 
-## Turn colour UI — locked rule (human approved 2026-09-07)
-
-Single source. Two states only. Human vs AI uses the **same** table as Human vs Human.
-
-| When | What shows |
-|------|------------|
-| **Turn start** | All beads of the side to move: **orange** cream, **lime** black. |
-| **After that** | **Selected bead** + **next squares** + **last location** in matching colour. No all-bead flash. |
-
-Do **not** skip the flash on the AI’s turn. After start: last location, select, and next squares stay. All-bead flash does not stay. Not Closed until human browser ok.
-
----
+## Turn colour UI (locked rule + gaps)
 
 Living list. Update when code changes. Move fixed items to **Closed**.
+
+**Locked rule (human)**
+
+1. **Match start only** — all your beads flash lime (black) or orange (cream) once when the game begins; **not** again on later turns.
+2. **After first pick** — legal landing squares only; all-bead colour stays off for the rest of that turn (including multi-jump chains).
+3. **Deselect mid-turn** — all-bead colour does **not** return.
+4. **Moved path** — from/to rings show last move (separate from turn-start flash).
 
 **Difference**
 
 - **Coach / demo paths** — scripted coach selection (`setCoachDemoSelection`, board focus) does **not** always flip the same flag as a normal human pick. Coach steps may disagree with live PvP/PvE.
 - **Selected bead** — still **slightly larger** (18 vs 16) when picked, even with no ring. That is separate feedback from landing squares.
-- **Bead pulse** — your beads still **breathe/pulse** for the **whole turn**, not only at the start.
 - **Opponent dimming** — opponent beads stay at **72% brightness** for the whole turn.
 - **Board turn wash** — background half-board tint for whose turn it is runs the **whole turn**, not only at the start.
 - **Vs AI / Watch AI** — on the AI side, all-bead start rings stay until the **first hop is applied** (can cover the full think delay, not a short flash).
@@ -39,13 +34,49 @@ Living list. Update when code changes. Move fixed items to **Closed**.
 **risk**
 
 - **Long AI think** — start rings on all AI beads for the whole wait may still feel like “always on” (size/pulse/dim/wash add to that).
-- **Coach vs live** — lesson playback may not match what players see in a real game.
-- **No Playwright check** — once-per-turn + deselect-not-return is not in browser gates; a regression would not be caught there.
+- **Coach vs live** — lesson playback may not match what players see in a real game (Finish capture row guarded by Jest; other coach paths remain).
+- **No Playwright check** — match-start-only flash + deselect-not-return + Finish capture mid-chain not in browser gates; regression would not be caught there.
 
-**Closed (rectified 2026-09-07)**
+**Closed (rectified)**
 
-- **Undo** — the once-per-turn flag is **not saved** in undo snapshots. After undo, start rings may show again when they should not, or stay off when they should show.
-- **Undo mismatch** — most likely real bug if players use undo mid-turn.
+- **All-bead flash every turn** — fixed 2026-09-07: `turnStartRingsPending` true only at match start / reset; never re-armed in `afterTurnCompleted`. **Jest:** `FeatureSession.turnControl`, `processRegressionGuards`.
+- **Undo / turn-start flag** — fixed 2026-09-07: `turnStartRingsPending` in `SessionSnapshot`; undo round-trips flag. **Jest:** `FeatureSession.turnControl` undo snapshot test.
+
+---
+
+## Optional multi-jump capture — Finish capture (shipped 2026-09-08)
+
+**Locked rule (human)**
+
+- After a capture with **more jumps available**, player may continue **or** press **Finish capture** to end the turn (opponent moves).
+- **No tap-to-stop on board** — only the Finish capture button ends the chain early.
+- **Finish capture** sits in the controls row: **Resign · Finish capture · Sound · Undo · New game** (hidden until mid-chain).
+
+**Shipped**
+
+- Engine: mid-chain legal moves = chain jumps only; `finishChain()` → `endTurn()`.
+- UI: `#finish-btn` after `#resign-btn` in `index.html` + `play-board.html`; visibility owned by `updateUI` after `syncModeUi`.
+- Coach video: speech + panel bullet + button pulse demo after first capture (`CoachVideoScript`).
+- **Jest:** `processRegressionGuards`, `FeatureSession.turnControl`, `playerBarShell`, `CoachVideoScript`.
+
+**risk**
+
+- **Human browser** — Finish capture visible mid-chain in HvAI/HvH: **UNCONFIRMED** (Jest source + session tests only).
+
+**Closed (rectified 2026-09-08)**
+
+- **Coach sync hid Finish capture** — `stopCoachVideo` no longer clears live Finish visibility; coach teardown gated when `coachVideoPlayer !== null`.
+
+---
+
+## Agent process (2026-09-08)
+
+Generic guards in `.cursor/rules/instruction-fidelity.mdc` § Process + `processRegressionGuards.test.ts`:
+
+- **WHEN rule first** before timing/UI work (prevents “fix all colour” when user meant “only at start”).
+- **Same complaint twice** → stop patching; restate rule; no second “fixed” without test or screen confirm.
+- **Cross-surface Out:** on coach/demo Go; shared cleanup must not break live play.
+- **One owner for UI state** — live controls set after shared sync.
 
 ---
 
@@ -71,6 +102,14 @@ Living list. Update when code changes. Move fixed items to **Closed**.
 ## congratulator message has issue, p2 win etc coming
 
 ## check everything
+
+##  we have to keep highlighting next move/capture
+-	**Shipped (2026-09-08):** legal landing highlights during chain; **Finish capture** in controls + coach video demo.
+-	**Backlog:** option to hide next-move hints (see below).
+-	I will fix turn shot clock fix 90 sec for small board and 120 sec for 10,12,16 board
+-	Remove other option
+
+## we also need option where we dont show next move
 
 ## 2. Two-page UX (mandatory)
 
@@ -346,4 +385,4 @@ When work ships, move items from here → status. Do not duplicate pending lists
 
 ---
 
-*Draft maintained: 2026-08-30 (timer scope: HvH only; PvE frozen). Owner: human product decision.*
+*Draft maintained: 2026-09-08 (process rules, Finish capture, turn colour closed items). Owner: human product decision.*
