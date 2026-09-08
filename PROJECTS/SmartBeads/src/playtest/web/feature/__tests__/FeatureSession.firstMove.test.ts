@@ -3,6 +3,7 @@ import { findJumpPath } from '../../../../models/GameState';
 import { FeatureSession } from '../FeatureSession';
 import { applyAiHops, AiHopRecord } from '../aiTurnPath';
 import { selectAiTurnPath } from '../HonestAi';
+import { honestAiTestOpts } from './honestAiTestBudget';
 import {
   engineOccupancy,
   firstOpeningSlide,
@@ -108,7 +109,7 @@ describe('first-ply occupancy (app session — no DOM)', () => {
     const afterHuman = engineOccupancy(engine);
     expect(isolatedPly(start, afterHuman, slide, 'RED').ok).toBe(true);
 
-    const path = selectAiTurnPath(variant, 2, session.getEngine().exportSnapshot(), 'BLUE');
+    const path = selectAiTurnPath(variant, 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
     expect(path?.length).toBeGreaterThan(0);
     const hops = applyAiHops(session, path!, 'BLUE');
     expectBoundedAiHops(hops, 'BLUE');
@@ -132,7 +133,7 @@ describe('first-ply occupancy (app session — no DOM)', () => {
     expect(engine.getState().board.intersections.find((n) => n.label === 'A42')?.occupant).toBe('RED');
     expect(session.canHumanAct()).toBe(false);
 
-    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
+    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
     expect(path?.length).toBeGreaterThan(0);
     const hops = applyAiHops(session, path!, 'BLUE');
     expectBoundedAiHops(hops, 'BLUE');

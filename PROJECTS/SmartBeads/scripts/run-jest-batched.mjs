@@ -70,6 +70,7 @@ const BATCHES = [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/clockPolicy.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/aiTurnPath.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.testAudit.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/spectate.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/CoachVideoPlayer.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/CoachVideoScript.test.ts',

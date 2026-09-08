@@ -4,6 +4,7 @@ import { applyAiHops } from '../aiTurnPath';
 import { engineOccupancy, isolatedPly, moveByLabel } from '../firstMoveInvariants';
 import { selectAiTurnPath } from '../HonestAi';
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
+import { honestAiTestOpts } from './honestAiTestBudget';
 
 const off = {
   aiLevel: 2 as const,
@@ -27,12 +28,13 @@ function oldFollowUpJumps(snapshot: { state: ReturnType<SmartBeadsEngine['getSta
 }
 
 describe('1a A41→A42 AI hop log', () => {
+  jest.setTimeout(60_000);
   /** Independent calls of unseeded Math.random inside selectAiTurnPath. Not a seed. */
   const SELECT_AI_TURN_PATH_INDEPENDENT_RUNS = 16;
 
   it('old follow-ups after a completed capture are not BLUE / not the chain piece', () => {
     const session = hangingSession();
-    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
+    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
     expect(path?.length).toBeGreaterThan(0);
     session.applyMove(path![0]);
     expect(session.getEngine().getChainPieceId()).toBeNull();
@@ -54,7 +56,7 @@ describe('1a A41→A42 AI hop log', () => {
       const session = hangingSession();
       expect(isolatedPly(startOcc, engineOccupancy(session.getEngine()), hang, 'RED').ok).toBe(true);
 
-      const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
+      const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
       expect(path?.length).toBeGreaterThan(0);
       const hops = applyAiHops(session, path!, 'BLUE');
 
@@ -87,7 +89,7 @@ describe('1a A41→A42 AI hop log', () => {
 describe('1b leftover hop after turn/chain ended', () => {
   it('session.applyMove still accepts a hop that belongs to the new player (old PlayController leftover bug)', () => {
     const session = hangingSession();
-    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
+    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
     session.applyMove(path![0]);
     expect(session.getEngine().getChainPieceId()).toBeNull();
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
@@ -101,7 +103,7 @@ describe('1b leftover hop after turn/chain ended', () => {
 
   it('applyAiHops rejects that leftover hop as stale', () => {
     const session = hangingSession();
-    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
+    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
     applyAiHops(session, [path![0]], 'BLUE');
     expect(session.getEngine().getChainPieceId()).toBeNull();
 

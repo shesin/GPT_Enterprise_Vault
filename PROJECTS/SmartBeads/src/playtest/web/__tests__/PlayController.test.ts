@@ -3,6 +3,7 @@ import { FeatureSession } from '../feature/FeatureSession';
 import { engineOccupancy, isolatedPly, moveByLabel } from '../feature/firstMoveInvariants';
 import { selectAiTurnPath } from '../feature/HonestAi';
 import { planAiTurnPath, runAiTurn } from '../PlayController';
+import { honestAiTestOpts } from '../feature/__tests__/honestAiTestBudget';
 
 const off = {
   aiLevel: 2 as const,
@@ -50,7 +51,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
 
   it('does not apply a leftover hop still sitting on the selected path after the chain ends', () => {
     const session = hangingSession();
-    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE');
+    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
     expect(path?.length).toBeGreaterThan(0);
 
     const probe = hangingSession();

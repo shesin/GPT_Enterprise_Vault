@@ -12,23 +12,8 @@ export const COACH_VIDEO_BOARD_ID = '7x4x5' as const satisfies ProductBoardId;
 /** Pause after each slide demo before the next highlight or segment banner. */
 export const COACH_POST_DEMO_PAUSE_MS = 3_000;
 
-/** Triple capture demo starts; chain completes at COACH_TRIPLE_CAPTURE_END_MS. */
+/** Triple capture demo starts; voice + pause complete before finish appendix. */
 export const COACH_VIDEO_TRIPLE_DEMO_MS = 54_100;
-export const COACH_TRIPLE_CAPTURE_END_MS = 56_220;
-
-/** Voice + UI demo for optional stop — after triple capture, not after single. */
-export const COACH_FINISH_CAPTURE_DEMO_MS = COACH_TRIPLE_CAPTURE_END_MS;
-export const COACH_FINISH_CAPTURE_DEMO_DURATION_MS = 5_000;
-
-export const COACH_FINISH_CAPTURE_SPEECH_TEXT =
-  'Finish capture. You can jump again, or press Finish capture to end your turn. The same holds true for double and triple capture.';
-
-/** @deprecated use COACH_FINISH_CAPTURE_SPEECH_TEXT */
-export const COACH_FINISH_CAPTURE_SPEECH_TAIL = COACH_FINISH_CAPTURE_SPEECH_TEXT;
-
-/** Basics (moves + captures + finish demo) end before win/draw/resign appendix. */
-export const COACH_VIDEO_BASICS_END_MS =
-  COACH_FINISH_CAPTURE_DEMO_MS + COACH_FINISH_CAPTURE_DEMO_DURATION_MS;
 
 export const COACH_VIDEO_TRIPLE_SPEECH_TEXT =
   'Triple capture. The same bead can keep jumping while captures stay open. Likewise four, five, or more beads in one turn.';
@@ -40,9 +25,26 @@ export function estimateCoachSpeechMs(text: string, rate = 0.92): number {
 
 export const COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH_VIDEO_TRIPLE_SPEECH_TEXT);
 
-/** Earliest win segment — playback may hold here until triple voice ends + 3 s. */
-export const COACH_VIDEO_WIN_SEGMENT_START_MS =
+/** Triple voice + post pause — timeline holds here until release (then finish demo, then win). */
+export const COACH_VIDEO_TRIPLE_COMPLETE_MS =
   COACH_VIDEO_TRIPLE_DEMO_MS + COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS + COACH_POST_DEMO_PAUSE_MS;
+
+/** Finish capture demo — after triple is fully done, before win appendix. */
+export const COACH_FINISH_CAPTURE_DEMO_MS = COACH_VIDEO_TRIPLE_COMPLETE_MS;
+export const COACH_FINISH_CAPTURE_DEMO_DURATION_MS = 5_000;
+
+export const COACH_FINISH_CAPTURE_SPEECH_TEXT =
+  'Finish capture. You can jump again, or press Finish capture to end your turn. The same holds true for double and triple capture.';
+
+/** @deprecated use COACH_FINISH_CAPTURE_SPEECH_TEXT */
+export const COACH_FINISH_CAPTURE_SPEECH_TAIL = COACH_FINISH_CAPTURE_SPEECH_TEXT;
+
+/** Earliest win segment — after finish capture demo. Playback holds here until triple voice release. */
+export const COACH_VIDEO_WIN_SEGMENT_START_MS =
+  COACH_FINISH_CAPTURE_DEMO_MS + COACH_FINISH_CAPTURE_DEMO_DURATION_MS;
+
+/** Basics end when finish demo ends (win appendix follows). */
+export const COACH_VIDEO_BASICS_END_MS = COACH_VIDEO_WIN_SEGMENT_START_MS;
 
 export const COACH_WIN_SPEECH_TEXT =
   'Win. Capture all opponent beads to win. If your opponent captures all of yours, they win.';
@@ -289,13 +291,10 @@ export const COACH_VIDEO: CoachVideoScript = {
   boardId: COACH_VIDEO_BOARD_ID,
   durationMs: COACH_VIDEO_DURATION_MS,
   title: 'How to play',
-  intro: 'Smart Beads board. Watch move, capture, win, resign, and draw.',
+  intro: 'Watch demo of move, capture, finish capture, win, resign, and draw.',
   points: [
     'Move — slide one step to an empty node.',
-    'Single capture — jump over one neighbour bead.',
-    'Finish capture — jump again or press Finish capture to end your turn. Same for double and triple capture.',
-    'Double capture — same bead jumps twice.',
-    'Triple capture — same bead jumps three times; likewise four, five, or more while the chain stays open.',
+    'Capture — single, double, or triple capture; press Finish capture to end your turn early when more jumps are open.',
     'Win — capture all opponent beads to win.',
     'Resign — if a player resigns and the opponent declines, the resigning player loses.',
     'Draw — if the opponent agrees to a resignation, the game is a draw.',
@@ -559,6 +558,9 @@ export function coachSegmentBannerUntilMs(
         : banner.atMs + COACH_SEGMENT_BANNER_HOLD_MS;
     return Math.min(nextCap, Math.max(afterMove, minHold));
   }
+  if (banner.title === 'FINISH CAPTURE') {
+    return Math.min(banner.atMs + COACH_FINISH_CAPTURE_DEMO_DURATION_MS, nextCap);
+  }
   if (banner.title === 'WIN') {
     return Math.min(banner.atMs + COACH_WIN_BOARD_PHASE_MS, nextCap);
   }
@@ -609,6 +611,27 @@ export function isCoachFinishCaptureDemoActive(
   durationMs: number = COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
 ): boolean {
   return ms >= startMs && ms < startMs + durationMs;
+}
+
+/** Left-panel bullet index for the segment being explained (null = intro only). */
+export function coachPanelPointIndexAtTime(
+  ms: number,
+  banners: readonly CoachVideoSegmentBanner[] = COACH_VIDEO.segmentBanners,
+): number | null {
+  const banner = findCoachSegmentBannerAtTime(ms, banners);
+  if (!banner) return null;
+  switch (banner.title) {
+    case 'MOVE': return 0;
+    case 'SINGLE CAPTURE':
+    case 'DOUBLE CAPTURE':
+    case 'TRIPLE CAPTURE':
+    case 'FINISH CAPTURE':
+      return 1;
+    case 'WIN': return 2;
+    case 'RESIGN': return 3;
+    case 'DRAW': return 4;
+    default: return null;
+  }
 }
 
 export function coachSpeechForTime(ms: number, script: CoachVideoScript = COACH_VIDEO): string {

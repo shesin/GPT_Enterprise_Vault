@@ -46,6 +46,7 @@ import {
   COACH_FINISH_CAPTURE_DEMO_MS,
   COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
   isCoachFinishCaptureDemoActive,
+  coachPanelPointIndexAtTime,
   coachSegmentBannerUntilMs,
   coachSpeechForTime,
   findCoachKeyframeAt,
@@ -645,7 +646,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       coachLessonBody.innerHTML = renderCoachPanelHtml({
         intro: COACH_VIDEO.intro,
         points: COACH_VIDEO.points,
-        emphasizeFinishCapture: isCoachFinishCaptureDemoActive(timeMs),
+        emphasizedPointIndex: coachPanelPointIndexAtTime(timeMs),
       });
     }
   }

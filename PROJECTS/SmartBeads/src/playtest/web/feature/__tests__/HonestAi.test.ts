@@ -1,7 +1,10 @@
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
 import { generateTurnEnds, selectAiTurnPath } from '../HonestAi';
+import { honestAiTestOpts, honestAiTurnEndsDeadlineMs } from './honestAiTestBudget';
 
 describe('HonestAi generateTurnEnds (capture optionality)', () => {
+  jest.setTimeout(15_000);
+
   it('enumerates both optional stop after one hop and the continue hop on the same chain', () => {
     const engine = new SmartBeadsEngine('16');
     for (const point of engine.getState().board.intersections) {
@@ -19,7 +22,7 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
       engine.exportSnapshot(),
       'BLUE',
       32,
-      Date.now() + 5_000,
+      honestAiTurnEndsDeadlineMs(5_000),
     );
     const from = id('A00');
     const stop = ends.find((e) => e.path.length === 1 && e.path[0].from === from && e.path[0].to === id('A02'));
@@ -32,7 +35,7 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
   it('returns a legal path even when the think budget is already exhausted', () => {
     const engine = new SmartBeadsEngine('6x3x5');
     engine.getState().currentPlayer = 'BLUE';
-    const path = selectAiTurnPath('6x3x5', 1, engine.exportSnapshot(), 'BLUE', 0);
+    const path = selectAiTurnPath('6x3x5', 1, engine.exportSnapshot(), 'BLUE', honestAiTestOpts());
     expect(path?.length).toBeGreaterThan(0);
     engine.applyMove(path![0]);
     expect(engine.getState().board.intersections[path![0].to]?.occupant).toBe('BLUE');

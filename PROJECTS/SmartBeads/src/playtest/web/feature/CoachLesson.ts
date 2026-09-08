@@ -22,6 +22,7 @@ export {
   COACH_FINISH_CAPTURE_DEMO_MS,
   COACH_FINISH_CAPTURE_SPEECH_TAIL,
   isCoachFinishCaptureDemoActive,
+  coachPanelPointIndexAtTime,
   COACH_VIDEO_TRIPLE_SPEECH_TEXT,
   COACH_VIDEO_WIN_SEGMENT_START_MS,
   coachSegmentBannerUntilMs,
