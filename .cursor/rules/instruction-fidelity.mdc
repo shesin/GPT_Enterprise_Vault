@@ -4,45 +4,40 @@ alwaysApply: true
 ---
 
 # Instruction fidelity (always-on)
--**deep loop**- if u cant do simple instruction in 3 attempt means u r in deep loop, put it in pending doc and do other task.
-- **Talk:** plain, simple English; answer first; once per point; brief summary last. No jargon, no audit dumps, no rephrasing the same idea twice.
-- **Compare / rules / risks** — when the user asks *same or not?*, *any concern?*, or code vs their rule: state **Same** or **Not same** first; then only:
-  - **Difference** — what their rule says vs what code does today (one plain line each; no “should mention in coach” without the fact).
-  - **risk** — what breaks or risks if unchanged (real gaps only).
-  Use those two words as **bold headings** once each. Skip empty sections.
-- **Doubt** → ask until clear (one short question at a time, then wait). Do not guess or implement on ambiguity.- **Minimal on doubt** → if still blocked after asking, propose the **smallest** change (one behavior, named files) and wait for **Go**. Do not batch-fix “while I’m here.”
-- **Better idea** → say it plainly, then wait for approval. Do not silently pick a “better” path.
-- **After doc/code updates** → show the user what changed (which files, one-line what each says now).
 
-# Git checkpoints
+- **Deep loop** — if a simple instruction fails after 3 attempts, park it in Pending and switch task.
+- **Talk** — plain English; answer first; brief summary last. No jargon or repeating the same point.
+- **Compare / rules / risks** — on *same or not?* or code vs rule: **Same** or **Not same** first; then **Difference** and **risk** as bold headings once each. Skip empty sections.
+- **Doubt** — one short question, then wait. Propose the smallest change (one behavior, named files) and wait for **Go**. No batch-fix.
+- **Better idea** — say it, wait for approval.
+- **After edits** — list files changed and one line per file.
 
-Only commit or push when the user asks. **`ok` / `good`** = known-good checkpoint (say so in the commit message).
+# Git
+
+Only when the user asks. **`ok` / `good`** = known-good checkpoint in the commit message.
 
 | User says | Agent must do |
 |-----------|----------------|
-| `push to git all` / `push to git all ok` / `push to git all good` | Commit if needed + **push to GitHub** |
+| `push to git all` / `push to git all ok` / `push to git all good` | `git add` all changed files (skip secrets) → commit → push to GitHub. Report push output. |
 
-When pushing, report push output.
+`push to git` / `commit local` without **all** = agent may pick files. **Never** edit permission.
 
-# Verify before output (targeted)
+# Verify before claiming done
 
-Before telling the user something works, is fixed, or is done:
+1. Say what you changed and what you will run.
+2. Run relevant test(s) or browser smoke for UI. No full suite unless the ask covers it.
+3. Report pass/fail. If not checked in browser, say **UNCONFIRMED**.
 
-1. **Comment first** — one line: what you changed and what you will run to check it. Then run it. Then report.
-2. **Test only what you ship** — relevant test file(s), one browser smoke for UI/playtest, build only if bundle/config changed. **Do not** run the full suite unless the ask covers it or SmartBeads one-playtest-bug rule applies.
-3. **Evidence in the reply** — name the command(s) and pass/fail. If you could not run the check, say **UNCONFIRMED**; never claim fixed or complete without evidence.
+# Before any repo edit (STOP)
 
-# STOP — before any repo edit
+**Every file is protected.** No Write / StrReplace / Delete / edit Notebook until:
 
-Do **not** call Write / StrReplace / Delete / edit Notebook until all four pass:
+1. **Quote the ask** — one line (or “no edit requested”).
+2. **Approval** — **`Go — <task>`** + **Files:** (exact paths) + **Out:** (what you will not touch). Else **NONE**.
+3. Post this block in chat **before** edit tools. User did not see it → do not edit.
 
-1. **Quote the ask** — one line from the user (or “no edit requested”).
-2. **Approval** — explicit go for **this exact scope** (`Go — …`, `Fix X only`, `push to git`, `yes items 1 and 3`). Else **NONE**.
-3. **Files in scope** — list every file you will touch.
-4. **Out of scope** — name what you will **not** change (defaults, docs, tests, “best” labels, refactors).
+**Not approval:** `do it`, `restore`, `sync`, `fix mess`, `push to git`, `commit local`, handoff, silence, frustration.
 
-If 2 fails → words only. If 3 would exceed the ask → stop; say what/why; wait.
+**Plan / review / suggest** → words only until **Go**.
 
-**Plan / review / comment / suggest** → never edit until go.
-
-**Handoff ≠ approval** → summarized chat, prior task context, or uncommitted work does **not** count as approval. Re-quote ask, list files, wait for **Go** before any edit.
+Edited without approval → say so, offer revert, no extra fixes.
