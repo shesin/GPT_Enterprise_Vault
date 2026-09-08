@@ -42,7 +42,7 @@ import {
   COACH_VIDEO,
   COACH_VIDEO_BOARD_ID,
   COACH_VIDEO_DURATION_MS,
-  COACH_VIDEO_TRIPLE_SPEECH_TEXT,
+  COACH_FINISH_CAPTURE_SPEECH_TEXT,
   COACH_FINISH_CAPTURE_DEMO_MS,
   COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
   isCoachFinishCaptureDemoActive,
@@ -494,7 +494,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     updateCoachVoiceMuteButton();
   }
 
-  function scheduleWinSegmentAfterTripleVoice(): void {
+  function scheduleWinSegmentAfterFinishCaptureVoice(): void {
     clearCoachWinReleaseTimer();
     coachWinReleaseTimer = window.setTimeout(() => {
       coachVideoPlayer?.releaseWinSegment();
@@ -704,9 +704,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         });
       },
       onSpeak: (speech) => {
-        const isTripleSpeech = speech.text === COACH_VIDEO_TRIPLE_SPEECH_TEXT;
+        const isFinishSpeech = speech.text === COACH_FINISH_CAPTURE_SPEECH_TEXT;
         speakCoachText(speech.text, () => {
-          if (isTripleSpeech) scheduleWinSegmentAfterTripleVoice();
+          if (isFinishSpeech) scheduleWinSegmentAfterFinishCaptureVoice();
         });
       },
       onPlayingChange: (playing) => {

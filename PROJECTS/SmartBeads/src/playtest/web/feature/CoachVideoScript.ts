@@ -31,13 +31,18 @@ export const COACH_VIDEO_TRIPLE_COMPLETE_MS =
 
 /** Finish capture demo — after triple is fully done, before win appendix. */
 export const COACH_FINISH_CAPTURE_DEMO_MS = COACH_VIDEO_TRIPLE_COMPLETE_MS;
-export const COACH_FINISH_CAPTURE_DEMO_DURATION_MS = 5_000;
-
 export const COACH_FINISH_CAPTURE_SPEECH_TEXT =
-  'Finish capture. You can jump again, or press Finish capture to end your turn. The same holds true for double and triple capture.';
+  'Press Finish capture to end your turn early while more captures are still open.';
 
 /** @deprecated use COACH_FINISH_CAPTURE_SPEECH_TEXT */
 export const COACH_FINISH_CAPTURE_SPEECH_TAIL = COACH_FINISH_CAPTURE_SPEECH_TEXT;
+
+export const COACH_FINISH_CAPTURE_SPEECH_ESTIMATE_MS =
+  estimateCoachSpeechMs(COACH_FINISH_CAPTURE_SPEECH_TEXT);
+
+/** Finish demo — voice + post pause before win appendix. */
+export const COACH_FINISH_CAPTURE_DEMO_DURATION_MS =
+  COACH_FINISH_CAPTURE_SPEECH_ESTIMATE_MS + COACH_POST_DEMO_PAUSE_MS;
 
 /** Earliest win segment — after finish capture demo. Playback holds here until triple voice release. */
 export const COACH_VIDEO_WIN_SEGMENT_START_MS =
@@ -294,7 +299,8 @@ export const COACH_VIDEO: CoachVideoScript = {
   intro: 'Watch demo of move, capture, finish capture, win, resign, and draw.',
   points: [
     'Move — slide one step to an empty node.',
-    'Capture — single, double, or triple capture; press Finish capture to end your turn early when more jumps are open.',
+    'Capture — single, double, or triple capture.',
+    'Finish capture — press Finish capture to end your turn early while more captures are still open.',
     'Win — capture all opponent beads to win.',
     'Resign — if a player resigns and the opponent declines, the resigning player loses.',
     'Draw — if the opponent agrees to a resignation, the game is a draw.',
@@ -319,6 +325,12 @@ export const COACH_VIDEO: CoachVideoScript = {
     kf(54_480, [[4, 'RED'], [5, 'BLUE'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }, 4),
     kf(54_880, [[6, 'RED'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }, 6),
     kf(56_220, [[14, 'RED'], [16, 'RED'], [19, 'BLUE']], { RED: 3, BLUE: 0 }),
+    kf(
+      COACH_FINISH_CAPTURE_DEMO_MS,
+      [[6, 'RED'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']],
+      { RED: 2, BLUE: 0 },
+      6,
+    ),
     kf(
       COACH_VIDEO_WIN_SEGMENT_START_MS,
       [[4, 'RED'], [8, 'RED']],
@@ -625,11 +637,12 @@ export function coachPanelPointIndexAtTime(
     case 'SINGLE CAPTURE':
     case 'DOUBLE CAPTURE':
     case 'TRIPLE CAPTURE':
-    case 'FINISH CAPTURE':
       return 1;
-    case 'WIN': return 2;
-    case 'RESIGN': return 3;
-    case 'DRAW': return 4;
+    case 'FINISH CAPTURE':
+      return 2;
+    case 'WIN': return 3;
+    case 'RESIGN': return 4;
+    case 'DRAW': return 5;
     default: return null;
   }
 }

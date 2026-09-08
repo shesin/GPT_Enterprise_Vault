@@ -54,7 +54,7 @@ export class CoachVideoPlayer {
     return this.playing;
   }
 
-  /** Unblocks win/draw/resign appendix after triple voice + pause. */
+  /** Unblocks win appendix after finish-capture voice + pause. */
   releaseWinSegment(): void {
     this.winSegmentReleased = true;
     this.callbacks.onApplyKeyframe(

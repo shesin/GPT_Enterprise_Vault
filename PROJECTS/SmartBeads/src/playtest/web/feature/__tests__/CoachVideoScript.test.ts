@@ -90,7 +90,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(COACH_VIDEO.highlights).toHaveLength(11);
 
-    expect(COACH_VIDEO.points).toHaveLength(5);
+    expect(COACH_VIDEO.points).toHaveLength(6);
 
     expect(COACH_VIDEO.segmentBanners).toHaveLength(8);
 
@@ -174,8 +174,7 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(html).toMatch(/Watch demo of move, capture, finish capture, win, resign, and draw/i);
 
-    expect(COACH_VIDEO.points[1]).toMatch(/^Capture/);
-    expect(html).toMatch(/Finish capture/);
+    expect(COACH_VIDEO.points[2]).toMatch(/more captures are still open/i);
 
     expect(html).toMatch(/Win —/);
 
@@ -265,7 +264,9 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
     expect(coachSpeechForTime(44_000)).toMatch(/Double capture/i);
 
     expect(coachSpeechForTime(55_000)).toMatch(/Triple capture/i);
-    expect(coachSpeechForTime(COACH_FINISH_CAPTURE_DEMO_MS + 500)).toMatch(/Finish capture/i);
+    expect(coachSpeechForTime(COACH_FINISH_CAPTURE_DEMO_MS + 500)).toMatch(
+      /Press Finish capture to end your turn early while more captures are still open/i,
+    );
 
     expect(coachSpeechForTime(COACH_VIDEO_WIN_SEGMENT_START_MS)).toMatch(/Capture all opponent beads/i);
 
@@ -284,11 +285,11 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
     expect(coachPanelPointIndexAtTime(20_000)).toBe(1);
     expect(coachPanelPointIndexAtTime(40_000)).toBe(1);
     expect(coachPanelPointIndexAtTime(50_000)).toBe(1);
-    expect(coachPanelPointIndexAtTime(COACH_FINISH_CAPTURE_DEMO_MS + 500)).toBe(1);
-    expect(coachPanelPointIndexAtTime(COACH_VIDEO_WIN_SEGMENT_START_MS + 500)).toBe(2);
+    expect(coachPanelPointIndexAtTime(COACH_FINISH_CAPTURE_DEMO_MS + 500)).toBe(2);
+    expect(coachPanelPointIndexAtTime(COACH_VIDEO_WIN_SEGMENT_START_MS + 500)).toBe(3);
   });
 
-  it('Finish capture coach demo is five seconds after triple voice completes', () => {
+  it('Finish capture coach demo spans voice estimate plus post pause', () => {
     expect(isCoachFinishCaptureDemoActive(COACH_FINISH_CAPTURE_DEMO_MS - 1)).toBe(false);
     expect(isCoachFinishCaptureDemoActive(COACH_FINISH_CAPTURE_DEMO_MS)).toBe(true);
     expect(isCoachFinishCaptureDemoActive(
@@ -297,11 +298,12 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
     expect(isCoachFinishCaptureDemoActive(
       COACH_FINISH_CAPTURE_DEMO_MS + COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
     )).toBe(false);
-    expect(COACH_FINISH_CAPTURE_SPEECH_TAIL).toMatch(/Finish capture/i);
+    expect(COACH_FINISH_CAPTURE_DEMO_DURATION_MS).toBeGreaterThanOrEqual(8_000);
+    expect(COACH_FINISH_CAPTURE_SPEECH_TAIL).toMatch(/more captures are still open/i);
     const emphasized = renderCoachPanelHtml({
       intro: COACH_VIDEO.intro,
       points: COACH_VIDEO.points,
-      emphasizedPointIndex: 1,
+      emphasizedPointIndex: 2,
     });
     expect(emphasized).toContain('coach-point-emphasis');
   });
