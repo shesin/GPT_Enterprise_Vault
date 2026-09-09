@@ -456,6 +456,14 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const timerSelect = document.getElementById('timer-select') as HTMLSelectElement;
   const tournamentTimerSelect = document.getElementById('tournament-timer-select') as HTMLSelectElement;
   const tournamentTimerSetting = document.getElementById('tournament-timer-setting') as HTMLDivElement | null;
+  const timerHelpBtn = document.getElementById('timer-help-btn') as HTMLButtonElement | null;
+  const timerHelpText = document.getElementById('timer-help-text') as HTMLParagraphElement | null;
+  const tournamentTimerHelpBtn = document.getElementById('tournament-timer-help-btn') as HTMLButtonElement | null;
+  const tournamentTimerHelpText = document.getElementById('tournament-timer-help-text') as HTMLParagraphElement | null;
+  const shotClockHelpBtn = document.getElementById('shot-clock-help-btn') as HTMLButtonElement | null;
+  const shotClockHelpText = document.getElementById('shot-clock-help-text') as HTMLParagraphElement | null;
+  const centerRuleHelpBtn = document.getElementById('center-rule-help-btn') as HTMLButtonElement | null;
+  const centerRuleHelpText = document.getElementById('center-rule-help-text') as HTMLParagraphElement | null;
   const shotClockSelect = document.getElementById('shot-clock-select') as HTMLSelectElement;
   const centerRuleSelect = document.getElementById('center-rule-select') as HTMLSelectElement;
   const coachPanel = document.getElementById('coach-panel') as HTMLDivElement | null;
@@ -598,8 +606,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       resultTitle.classList.add('draw');
     } else if (winner === 'RED') {
       if (phase === 'congrats') {
-        resultTitle.textContent = 'CONGRATULATIONS! WHITE BEAD WON!';
-        scoreLine = 'White bead won by a capture of 2 beads more.';
+        resultTitle.textContent = 'CONGRATULATIONS! CREAM BEAD WON!';
+        scoreLine = 'Cream bead won by a capture of 2 beads more.';
         resultTitle.classList.add('victory');
       } else {
         resultTitle.textContent = `CONGRATULATIONS! ${creamName.toUpperCase()} WON!`;
@@ -612,7 +620,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     } else {
       if (phase === 'resignDeclinedCongrats') {
         resultTitle.textContent = 'CONGRATULATIONS! BLACK BEAD WON!';
-        scoreLine = 'Black bead won as white bead resign got declined.';
+        scoreLine = 'Black bead won as cream bead resign got declined.';
         resultTitle.classList.add('victory');
       } else {
         resultTitle.textContent = `CONGRATULATIONS! ${blackName.toUpperCase()} WON!`;
@@ -841,6 +849,30 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     };
   }
 
+  const settingHelpPairs: Array<{ btn: HTMLButtonElement | null; text: HTMLParagraphElement | null }> = [
+    { btn: timerHelpBtn, text: timerHelpText },
+    { btn: tournamentTimerHelpBtn, text: tournamentTimerHelpText },
+    { btn: shotClockHelpBtn, text: shotClockHelpText },
+    { btn: centerRuleHelpBtn, text: centerRuleHelpText },
+  ];
+
+  function closeAllSettingHelp(except?: HTMLParagraphElement): void {
+    for (const { btn, text } of settingHelpPairs) {
+      if (!btn || !text || text === except) continue;
+      text.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      btn.classList.remove('is-open');
+    }
+  }
+
+  function toggleSettingHelp(btn: HTMLButtonElement, text: HTMLParagraphElement): void {
+    const willOpen = text.hidden;
+    closeAllSettingHelp(willOpen ? text : undefined);
+    text.hidden = !willOpen;
+    btn.setAttribute('aria-expanded', String(willOpen));
+    btn.classList.toggle('is-open', willOpen);
+  }
+
   function syncTimerSettingLocks(): void {
     const mode = readGameMode();
     const tournamentOn = tournamentTimerSelect.value !== 'off';
@@ -1057,7 +1089,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
     if (settings.mode === 'coach' || settings.mode === 'pve') return 'You';
     const name = creamNameInput?.value.trim();
-    return name || 'Player 1';
+    return name || 'Cream side';
   }
 
   function blackPlayerLabel(): string {
@@ -1069,11 +1101,29 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       return `AI · ${formatAiLevelLabel(settings.aiLevel)}`;
     }
     const name = blackNameInput?.value.trim();
-    return name || 'Player 2';
+    return name || 'Black side';
   }
 
   function sideDisplayName(player: Player): string {
     return player === 'RED' ? creamPlayerLabel() : blackPlayerLabel();
+  }
+
+  /** Avoid duplicating capture win on the modal when scoreLine already states the margin. */
+  function composeResultDescription(scoreLine: string, reason: string | undefined): string {
+    if (!reason || reason === 'Normal') return scoreLine;
+    const skipEngineCodes = new Set([
+      'elimination',
+      'stalemate',
+      'repetition',
+      'ply_limit_captures',
+      'ply_limit_center',
+      'ply_limit_draw',
+    ]);
+    if (skipEngineCodes.has(reason)) return scoreLine;
+    if (/won on captures/i.test(reason) && /won by \d+ bead/i.test(scoreLine)) return scoreLine;
+    if (/won on captures/i.test(reason) && /\bYou won\b/i.test(scoreLine)) return scoreLine;
+    if (/won on captures/i.test(reason) && /\bWON!/i.test(scoreLine)) return scoreLine;
+    return `${scoreLine} • ${reason.trim()}`;
   }
 
   function syncModeUi(): void {
@@ -1419,7 +1469,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       }
 
       const reason = session.getDisplayedReason();
-      resultDesc.textContent = reason && reason !== 'Normal' ? `${scoreLine} • ${reason}` : scoreLine;
+      resultDesc.textContent = composeResultDescription(scoreLine, reason);
 
       if (!lastGameOverPlayed) {
         lastGameOverPlayed = true;
@@ -1978,6 +2028,13 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     syncTimerSettingLocks();
     resetGame();
   });
+  for (const { btn, text } of settingHelpPairs) {
+    if (!btn || !text) continue;
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleSettingHelp(btn, text);
+    });
+  }
   shotClockSelect.addEventListener('change', resetGame);
   aiLevelSelect.addEventListener('change', resetGame);
   coachLevelSelect?.addEventListener('change', resetGame);

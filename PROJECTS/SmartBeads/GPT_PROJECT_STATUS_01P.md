@@ -66,7 +66,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **3-fold repetition:** removed from production. See `GPT_PROJECT_AUDIT_05P.md`.
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
-- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`: Human vs AI · **Watch AI** · Human vs Human). Settings panel: Board, **AI level**, **Watch AI level** (Watch AI mode — cream-side AI vs black-side AI), **Timer**, **Tournament timer** (HvH only), Turn shot clock, Center rule.
+- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`: Human vs AI · **Watch AI vs AI** · Human vs Human). Settings panel: Board, **AI level**, **Watch AI level** (spectate mode — cream-side AI vs black-side AI), **Timer**, **Tournament timer** (HvH only), Turn shot clock, Center rule — each timer/center row has **?** help toggle.
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI) — chosen on start overlay, not duplicated in Settings.
 - **Default Feature Settings:**
   - `centerRule: 'off'` default on all 7 boards (End-Game/Cumulative selectable per board catalog).

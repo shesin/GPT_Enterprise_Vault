@@ -37,7 +37,7 @@ describe('production left play panel shell (index.html)', () => {
   });
 
   it('start screen offers Watch AI and settings has Watch AI level below AI level', () => {
-    expect(indexHtml).toContain('value="spectate">Watch AI');
+    expect(indexHtml).toContain('value="spectate">Watch AI vs AI');
     expect(indexHtml).toContain('id="coach-level-select"');
     expect(indexHtml).toContain('>Watch AI level</label>');
     expect(indexHtml).toContain('id="coach-level-setting"');

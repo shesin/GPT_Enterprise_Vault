@@ -170,7 +170,10 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     for (let i = 0; i < ticks; i++) session.timerTick();
     expect(session.isGameOver()).toBe(true);
     expect(session.getDisplayedWinner()).toBe('RED');
-    expect(session.getDisplayedReason()).toContain('captures');
+    const reason = session.getDisplayedReason() ?? '';
+    expect(reason).toContain('captures');
+    expect(reason).not.toMatch(/\bP1\b|\bP2\b/);
+    expect(reason).toContain('Cream bead');
   });
 });
 

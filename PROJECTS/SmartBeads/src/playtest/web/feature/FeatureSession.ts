@@ -2,6 +2,7 @@ import { BoardVariant } from '../../../config/BoardConfig';
 import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
 import { GameState, Move, Player } from '../../../models/GameState';
 import { countCenterOccupancy } from './centerScoring';
+import { beadSideLabel } from './beadSideLabel';
 import {
   GameFeatureSettings,
   effectiveCenterRule,
@@ -11,6 +12,11 @@ import {
   parseTimerSeconds,
   parseShotLimit,
 } from './GameFeatureSettings';
+
+function joinEndReason(prefix: string, body: string): string {
+  const p = prefix.trim();
+  return p ? `${p} ${body}` : body;
+}
 
 export type UiInteractionState = 'idle' | 'selected' | 'chain' | 'game_over';
 
@@ -461,11 +467,11 @@ export class FeatureSession {
 
     const prefix = state.endReason ? `${state.endReason} — ` : '';
     if (c1 > c2) {
-      this.endGameByFeature('RED', `${prefix}captures tied — P1 won on center.`);
+      this.endGameByFeature('RED', `${prefix}captures tied — ${beadSideLabel('RED')} won on center.`);
       return;
     }
     if (c2 > c1) {
-      this.endGameByFeature('BLUE', `${prefix}captures tied — P2 won on center.`);
+      this.endGameByFeature('BLUE', `${prefix}captures tied — ${beadSideLabel('BLUE')} won on center.`);
     }
   }
 
@@ -478,8 +484,8 @@ export class FeatureSession {
   /** Resignation: opponent accepts draw, or declines and wins. */
   resolveResignation(resigningPlayer: Player, acceptDraw: boolean): void {
     if (this.isGameOver()) return;
-    const resignLabel = resigningPlayer === 'RED' ? 'P1' : 'P2';
-    const oppLabel = resigningPlayer === 'RED' ? 'P2' : 'P1';
+    const resignLabel = beadSideLabel(resigningPlayer);
+    const oppLabel = beadSideLabel(resigningPlayer === 'RED' ? 'BLUE' : 'RED');
     if (acceptDraw) {
       this.endGameByFeature('DRAW', `${resignLabel} resigned — ${oppLabel} agreed to a draw.`);
       return;
@@ -494,11 +500,11 @@ export class FeatureSession {
     const blueCaps = state.captures.BLUE;
 
     if (redCaps > blueCaps) {
-      this.endGameByFeature('RED', `${prefixReason} P1 won on captures.`);
+      this.endGameByFeature('RED', joinEndReason(prefixReason, `${beadSideLabel('RED')} won on captures.`));
       return;
     }
     if (blueCaps > redCaps) {
-      this.endGameByFeature('BLUE', `${prefixReason} P2 won on captures.`);
+      this.endGameByFeature('BLUE', joinEndReason(prefixReason, `${beadSideLabel('BLUE')} won on captures.`));
       return;
     }
 
@@ -514,11 +520,11 @@ export class FeatureSession {
         c2 = countCenterOccupancy(state.board, 'BLUE');
       }
       if (c1 > c2) {
-        this.endGameByFeature('RED', `${prefixReason} captures tied — P1 won on center.`);
+        this.endGameByFeature('RED', joinEndReason(prefixReason, `captures tied — ${beadSideLabel('RED')} won on center.`));
         return;
       }
       if (c2 > c1) {
-        this.endGameByFeature('BLUE', `${prefixReason} captures tied — P2 won on center.`);
+        this.endGameByFeature('BLUE', joinEndReason(prefixReason, `captures tied — ${beadSideLabel('BLUE')} won on center.`));
         return;
       }
     }
@@ -549,8 +555,8 @@ export class FeatureSession {
     if (isTournamentTimerActive(this.settings)) {
       if (this.engine.getState().currentPlayer === 'RED') this.p1Clock -= 1;
       else this.p2Clock -= 1;
-      if (this.p1Clock <= 0) this.endGameByFeature('BLUE', 'P1 ran out of time.');
-      else if (this.p2Clock <= 0) this.endGameByFeature('RED', 'P2 ran out of time.');
+      if (this.p1Clock <= 0) this.endGameByFeature('BLUE', `${beadSideLabel('RED')} ran out of time.`);
+      else if (this.p2Clock <= 0) this.endGameByFeature('RED', `${beadSideLabel('BLUE')} ran out of time.`);
       return;
     }
 

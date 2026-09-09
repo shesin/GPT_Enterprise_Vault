@@ -128,7 +128,7 @@
               <label for="start-mode-select">Game mode</label>
               <select id="start-mode-select">
                 <option value="pve" selected>Human vs AI</option>
-                <option value="spectate">Watch AI</option>
+                <option value="spectate">Watch AI vs AI</option>
                 <option value="pvp">Human vs Human</option>
               </select>
             </div>
@@ -166,9 +166,9 @@
         </div>
         <div class="setting" id="pvp-names-container" style="display: none;">
           <label>Cream player name</label>
-          <input type="text" id="pvp-cream-name" maxlength="24" placeholder="Player 1">
+          <input type="text" id="pvp-cream-name" maxlength="24" placeholder="Cream side name">
           <label style="margin-top: 8px;">Black player name</label>
-          <input type="text" id="pvp-black-name" maxlength="24" placeholder="Player 2">
+          <input type="text" id="pvp-black-name" maxlength="24" placeholder="Black side name">
         </div>
         <div class="setting" id="ai-level-setting">
           <label>AI level</label>
@@ -179,19 +179,35 @@
           <select id="coach-level-select"></select>
         </div>
         <div class="setting">
-          <label>Timer</label>
+          <div class="setting-label-row">
+            <label for="timer-select">Timer</label>
+            <button type="button" class="setting-help-btn" id="timer-help-btn" aria-label="Timer help" aria-expanded="false" aria-controls="timer-help-text">?</button>
+          </div>
+          <p class="setting-help-text" id="timer-help-text" hidden>For Human vs AI and Watch AI vs AI only. One shared clock for both players. When time runs out, the match ends and the result is shown using captures (and the center rule, if enabled).</p>
           <select id="timer-select"></select>
         </div>
         <div class="setting" id="tournament-timer-setting" style="display: none;">
-          <label>Tournament timer</label>
+          <div class="setting-label-row">
+            <label for="tournament-timer-select">Tournament timer</label>
+            <button type="button" class="setting-help-btn" id="tournament-timer-help-btn" aria-label="Tournament timer help" aria-expanded="false" aria-controls="tournament-timer-help-text">?</button>
+          </div>
+          <p class="setting-help-text" id="tournament-timer-help-text" hidden>For Human vs Human only. Each player has their own clock; it runs only on their turn. When either clock hits zero, the match ends and the result is shown using captures. Center rule is disabled for this mode.</p>
           <select id="tournament-timer-select"></select>
         </div>
         <div class="setting">
-          <label>Turn shot clock</label>
+          <div class="setting-label-row">
+            <label for="shot-clock-select">Turn shot clock</label>
+            <button type="button" class="setting-help-btn" id="shot-clock-help-btn" aria-label="Turn shot clock help" aria-expanded="false" aria-controls="shot-clock-help-text">?</button>
+          </div>
+          <p class="setting-help-text" id="shot-clock-help-text" hidden>Max seconds allowed to complete one turn. The clock resets each turn. You must move before time runs out, or you lose the match.</p>
           <select id="shot-clock-select"></select>
         </div>
         <div class="setting">
-          <label>Center rule</label>
+          <div class="setting-label-row">
+            <label for="center-rule-select">Center rule</label>
+            <button type="button" class="setting-help-btn" id="center-rule-help-btn" aria-label="Center rule help" aria-expanded="false" aria-controls="center-rule-help-text">?</button>
+          </div>
+          <p class="setting-help-text" id="center-rule-help-text" hidden>Used when captures are tied at the end. Off — no center tiebreak. End-game — whoever holds more center seats on the board at the end wins. Cumulative — center seats are counted across the whole match (if the board supports it). Disabled when Tournament timer is on.</p>
           <select id="center-rule-select"></select>
         </div>
       </div>

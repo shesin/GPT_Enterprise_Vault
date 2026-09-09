@@ -72,7 +72,7 @@ export const COACH_RESIGN_SPEECH_TEXT =
   'Resign. If a player resigns and the opponent declines, the resigning player loses.';
 
 export const COACH_RESIGN_DECLINED_CONGRATS_SPEECH =
-  'Black bead won as white bead resign got declined.';
+  'Black bead won as cream bead resign got declined.';
 
 export const COACH_RESIGN_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH_RESIGN_SPEECH_TEXT);
 
