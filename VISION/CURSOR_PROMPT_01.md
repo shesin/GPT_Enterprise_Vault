@@ -287,6 +287,16 @@ Forbidden:
 
 If you cannot test a shipped feature on all relevant boards: remove the feature or explain blockers and wait — do not leave it as an open human chore.
 
+## PENDING & doc edits (SmartBeads)
+
+Turn-colour and mobile gaps live in `GPT_PROJECT_PENDING_01P.md` — do not restate lime/orange in STATUS or here.
+
+- **Difference** — rule vs what we ship; taste or doc split; **not** breakage.
+- **risk** — could confuse players; break or unverified on phone/browser; or **defer — mobile app** until fixed. Keep in **risk** until the human signs off (web or app).
+- **Closed** — code + Jest done; tag **Browser UNCONFIRMED** until human screen ok.
+
+**Doc edits:** `GPT_PROJECT_PENDING_01P.md`, `GPT_PROJECT_AUDIT_05P.md`, `VISION_05P.md`, `GPT_PROJECT_RULES_01P.md` — only on **Go —** + named file. `GPT_PROJECT_STATUS_01P.md` and `PROJECT_MAP_05P.md` — only when the human says **push to git all good** or **Go — STATUS/MAP**. No auto doc sync on code push.
+
 ---
 
 # Verification Rules

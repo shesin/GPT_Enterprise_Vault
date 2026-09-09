@@ -60,7 +60,9 @@ function isCenterHighlight(nodeId: number, cache: Set<number>): boolean {
   return cache.has(nodeId);
 }
 
-/** Nodes that receive the whose-turn pulse/ring — current player only, chain piece if chaining. */
+const BEAD_RADIUS = 16;
+
+/** Nodes that receive match-start turn rings — current player only, chain piece if chaining. */
 export function listTurnHighlightNodeIds(
   board: BoardDefinition,
   currentPlayer: Player,
@@ -288,7 +290,8 @@ export function drawCanvasBoard(
   const turnHighlightSet = turnIdleHighlight
     ? new Set(listTurnHighlightNodeIds(board, currentPlayer, chainPieceId))
     : new Set<number>();
-  if (!gameOver) {
+  const matchStartFlash = turnIdleHighlight && showTurnStartRings;
+  if (matchStartFlash) {
     drawTurnWash(ctx, w, h, washPlayer, visualProfile.turnWashAxis ?? 'horizontal');
   }
 
@@ -336,7 +339,7 @@ export function drawCanvasBoard(
       if (node.occupant !== opponent) {
         if (lastMove.player === 'RED') {
           // Cream last-move — same orange ring as legal landing squares.
-          drawAmberOrangeRing(ctx, x, y, node.occupant === 'RED' ? 16 : 16);
+          drawAmberOrangeRing(ctx, x, y, BEAD_RADIUS);
         } else {
           drawLastMoveNodeRing(ctx, x, y);
         }
@@ -354,22 +357,18 @@ export function drawCanvasBoard(
       if (selectedOccupant === 'BLUE') {
         drawLastMoveNodeRing(ctx, x, y);
       } else {
-        drawAmberOrangeRing(ctx, x, y, 16);
+        drawAmberOrangeRing(ctx, x, y, BEAD_RADIUS);
       }
     }
 
     if (node.occupant && node.id !== hideFrom && node.id !== hideTo) {
-      const isChainPiece = chainPieceId !== null && node.id === chainPieceId;
-      const isTurnPiece =
-        !gameOver
-        && node.occupant === currentPlayer
-        && !animating
-        && (chainPieceId === null || isChainPiece);
       const isSelected = selectedId === node.id;
       const isCoachGlow = coachGlowSet.has(node.id);
-      const pulse = isTurnPiece || isCoachGlow ? 1 + 0.08 * Math.sin(turnPulse) : 1;
-      const dimOpp = !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
-      const r = (isSelected || isCoachGlow ? 18 : 16) * pulse;
+      const isMatchStartRing = turnHighlightSet.has(node.id);
+      const pulse = isMatchStartRing ? 1 + 0.08 * Math.sin(turnPulse) : 1;
+      const dimOpp =
+        matchStartFlash && !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
+      const r = BEAD_RADIUS * pulse;
       drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
       if (isSelected) {
         if (node.occupant === 'BLUE') {

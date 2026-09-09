@@ -84,6 +84,43 @@ async function main() {
   const snapDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'evidence-2step');
   fs.mkdirSync(snapDir, { recursive: true });
 
+  await setup(page, '8x4x6', 'pvp');
+  const deselectSlide = await openingSlideNodes(page, '8x4x6', null, null);
+  await clickPrototypeNode(page, deselectSlide.from);
+  await page.waitForTimeout(120);
+  const afterSelect = await liveSnap(page);
+  const immobile = await page.evaluate(() => {
+    const session = window.__SB_TEST__.session;
+    const engine = session.getEngine();
+    const player = engine.getState().currentPlayer;
+    for (const n of engine.getState().board.intersections) {
+      if (n.occupant !== player) continue;
+      if (!engine.getLegalMoves().some((m) => m.from === n.id)) {
+        return { id: n.id, x: n.x, y: n.y, label: n.label };
+      }
+    }
+    return null;
+  });
+  if (immobile) {
+    await clickPrototypeNode(page, immobile);
+    await page.waitForTimeout(120);
+    const afterDeselect = await liveSnap(page);
+    record(
+      'deselect immobile own bead: match-start rings do not return',
+      afterSelect.turnStartRingsPending === false
+        && afterDeselect.turnStartRingsPending === false
+        && afterDeselect.selectedId == null,
+      JSON.stringify({
+        afterSelect: afterSelect.turnStartRingsPending,
+        afterDeselect: afterDeselect.turnStartRingsPending,
+        selectedId: afterDeselect.selectedId,
+        immobile: immobile.label,
+      }),
+    );
+  } else {
+    record('deselect immobile own bead: match-start rings do not return', false, 'no immobile cream bead at opening');
+  }
+
   for (const { catalogId, variant } of BOARDS) {
     await setup(page, catalogId, 'pvp');
     const emptyStart = await emptyNodesAreNotPieces(page);
@@ -102,6 +139,16 @@ async function main() {
       path.join(snapDir, `${catalogId}-1-selected.png`),
       hangFrom,
       hangTo,
+    );
+    record(
+      `${catalogId} match-start rings pending after game start`,
+      pvp.start.turnStartRingsPending === true,
+      JSON.stringify({ turnStartRingsPending: pvp.start.turnStartRingsPending }),
+    );
+    record(
+      `${catalogId} match-start rings clear after first select`,
+      pvp.selected.turnStartRingsPending === false,
+      JSON.stringify({ turnStartRingsPending: pvp.selected.turnStartRingsPending }),
     );
     const selectDiff = await occupancyUnchanged(page, pvp.start, pvp.selected);
     record(

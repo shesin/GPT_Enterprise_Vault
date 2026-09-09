@@ -37,9 +37,21 @@ describe('FeatureSession spectate watch mode', () => {
     expect(session.canHumanAct()).toBe(false);
     expect(session.selectNode(red!.id)).toBe(false);
 
-    expect(session.previewAutomatedSelection(red!.id)).toBe(true);
+    expect(session.previewScriptedSelection(red!.id)).toBe(true);
     expect(session.getSelectedId()).toBe(red!.id);
     expect(session.getLegalTargetIds().length).toBeGreaterThan(0);
+  });
+
+  it('scripted preview clears match-start rings like a human pick', () => {
+    const session = new FeatureSession('8x4x6', buildCoachWatchSettings());
+    const engine = session.getEngine();
+    expect(session.shouldShowTurnStartRings()).toBe(true);
+    const red = engine.getState().board.intersections.find(
+      (n) => n.occupant === 'RED' && engine.getLegalMoves().some((m) => m.from === n.id),
+    );
+    expect(red).toBeDefined();
+    expect(session.previewScriptedSelection(red!.id)).toBe(true);
+    expect(session.shouldShowTurnStartRings()).toBe(false);
   });
 });
 
@@ -272,6 +284,46 @@ describe('FeatureSession turn start rings', () => {
 
     session.applyMove(slide);
     expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
+    expect(session.shouldShowTurnStartRings()).toBe(false);
+  });
+
+  it('deselect or re-select does not re-arm match-start rings', () => {
+    const session = new FeatureSession('8x4x6', pve);
+    const engine = session.getEngine();
+    const slide = firstOpeningSlide(engine);
+    expect(session.selectNode(slide.from)).toBe(true);
+    expect(session.shouldShowTurnStartRings()).toBe(false);
+
+    const immobile = engine.getState().board.intersections.find(
+      (n) => n.occupant === 'RED'
+        && n.id !== slide.from
+        && !engine.getLegalMoves().some((m) => m.from === n.id),
+    );
+    if (immobile) {
+      expect(session.selectNode(immobile.id)).toBe(false);
+      expect(session.getSelectedId()).toBeNull();
+    } else {
+      const other = engine.getState().board.intersections.find(
+        (n) => n.occupant === 'RED'
+          && n.id !== slide.from
+          && engine.getLegalMoves().some((m) => m.from === n.id),
+      );
+      expect(other).toBeDefined();
+      expect(session.selectNode(other!.id)).toBe(true);
+      expect(session.getSelectedId()).toBe(other!.id);
+    }
+    expect(session.shouldShowTurnStartRings()).toBe(false);
+  });
+
+  it('keeps match-start rings until scripted preview (Watch AI / AI opens)', () => {
+    const session = new FeatureSession('8x4x6', buildCoachWatchSettings());
+    session.setStartingPlayer('RED');
+    expect(session.shouldShowTurnStartRings()).toBe(true);
+    const red = session.getEngine().getState().board.intersections.find(
+      (n) => n.occupant === 'RED' && session.getEngine().getLegalMoves().some((m) => m.from === n.id),
+    );
+    expect(red).toBeDefined();
+    expect(session.previewScriptedSelection(red!.id)).toBe(true);
     expect(session.shouldShowTurnStartRings()).toBe(false);
   });
 

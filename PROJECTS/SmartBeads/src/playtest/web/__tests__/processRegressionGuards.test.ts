@@ -14,6 +14,14 @@ const featureSessionSource = fs.readFileSync(
   path.resolve(__dirname, '../feature/FeatureSession.ts'),
   'utf8',
 );
+const coachVideoBoardSource = fs.readFileSync(
+  path.resolve(__dirname, '../feature/coachVideoBoard.ts'),
+  'utf8',
+);
+const m2GateSource = fs.readFileSync(
+  path.resolve(__dirname, '../../../../scripts/m2-2step-npm-gate.mjs'),
+  'utf8',
+);
 const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html'), 'utf8');
 const playBoardHtml = fs.readFileSync(path.join(repoRoot, 'play-board.html'), 'utf8');
 
@@ -80,6 +88,62 @@ describe('process regression guards', () => {
       expect(matches.length).toBe(2);
       expect(featureSessionSource).toMatch(/private turnStartRingsPending = true/);
       expect(featureSessionSource).toMatch(/reset\(\)[\s\S]*turnStartRingsPending = true/);
+    });
+
+    it('deselect path clears selection without re-arming turnStartRingsPending', () => {
+      const armBlock = featureSessionSource.slice(
+        featureSessionSource.indexOf('private armSelection'),
+        featureSessionSource.indexOf('canHumanAct():'),
+      );
+      expect(armBlock).toMatch(/if \(!hasMoves\)/);
+      expect(armBlock).not.toMatch(/turnStartRingsPending\s*=\s*true/);
+    });
+
+    it('browser snapshot exposes turnStartRingsPending for live gates', () => {
+      expect(playControllerSource).toMatch(/turnStartRingsPending:\s*session\.shouldShowTurnStartRings\(\)/);
+    });
+  });
+
+  describe('coach vs live — move hints use previewScriptedSelection', () => {
+    it('coach video board applies highlights via previewScriptedSelection', () => {
+      expect(coachVideoBoardSource).toMatch(/session\.previewScriptedSelection\(highlight\.selectedId\)/);
+      expect(coachVideoBoardSource).not.toMatch(/setCoachBoardFocus/);
+    });
+
+    it('setCoachDemoSelection delegates to previewScriptedSelection', () => {
+      expect(featureSessionSource).toMatch(
+        /setCoachDemoSelection[\s\S]*return this\.previewScriptedSelection\(nodeId\)/,
+      );
+    });
+
+    it('coach resign boardFocus uses previewScriptedSelection (not setCoachBoardFocus)', () => {
+      expect(playControllerSource).toMatch(
+        /cue\.kind === 'boardFocus'[\s\S]*session\.previewScriptedSelection\(cue\.selectedId\)/,
+      );
+      expect(playControllerSource).not.toMatch(
+        /cue\.kind === 'boardFocus'[\s\S]*setCoachBoardFocus/,
+      );
+    });
+
+    it('coach win keyframe uses previewScriptedSelection (not setCoachWinGlow)', () => {
+      expect(coachVideoBoardSource).not.toMatch(/setCoachWinGlow/);
+      expect(coachVideoBoardSource).toMatch(/previewScriptedSelection\(glow\[0\]\)/);
+    });
+  });
+
+  describe('browser gates — turn colour + Finish capture', () => {
+    it('npm test chains capture-geometry gate (Finish capture mid-chain)', () => {
+      expect(m2GateSource).toMatch(/m2-capture-geometry-browser\.mjs/);
+    });
+
+    it('two-click observe gate records match-start ring lifecycle', () => {
+      const observeSource = fs.readFileSync(
+        path.resolve(__dirname, '../../../../scripts/m2-2step-observe.mjs'),
+        'utf8',
+      );
+      expect(observeSource).toMatch(/turnStartRingsPending/);
+      expect(observeSource).toMatch(/match-start rings pending after game start/);
+      expect(observeSource).toMatch(/match-start rings clear after first select/);
     });
   });
 });

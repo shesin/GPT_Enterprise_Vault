@@ -8,44 +8,32 @@ Target: 01P (~2–3 pages, word-friendly)
 
 ---
 
-## Turn colour UI — locked rule (human approved 2026-09-07)
-
-Single source. Two states only. Human vs AI uses the **same** table as Human vs Human.
-
-| When | What shows |
-|------|------------|
-| **Turn start** | All beads of the side to move: **orange** cream, **lime** black. |
-| **After that** | **Selected bead** + **next squares** + **last location** in matching colour. No all-bead flash. |
-
-Do **not** skip the flash on the AI’s turn. After start: last location, select, and next squares stay. All-bead flash does not stay. Not Closed until human browser ok.
-
----
-
-Living list. Update when code changes. Move fixed items to **Closed**.
+If difference is not suitable for mobile app then it must be put in risk. If web and mobile needs 2 solution
+then it must be mentioned and stayed in risk so that while mobile app development it could be closed.
 
 **Difference**
-
-- **Coach / demo paths** — scripted coach selection (`setCoachDemoSelection`, board focus) does **not** always flip the same flag as a normal human pick. Coach steps may disagree with live PvP/PvE.
-- **Selected bead** — still **slightly larger** (18 vs 16) when picked, even with no ring. That is separate feedback from landing squares.
-- **Bead pulse** — your beads still **breathe/pulse** for the **whole turn**, not only at the start.
-- **Opponent dimming** — opponent beads stay at **72% brightness** for the whole turn.
-- **Board turn wash** — background half-board tint for whose turn it is runs the **whole turn**, not only at the start.
-- **Vs AI / Watch AI** — on the AI side, all-bead start rings stay until the **first hop is applied** (can cover the full think delay, not a short flash).
-- **Watch AI preview** — before each AI hop, selection preview clears start rings and shows **landings only** (same as human select).
-- **Multi-jump chain** — after the first pick, start rings stay off for the rest of that turn, including further hops in the chain.
-- **Docs integrity row** — STATUS points here for the locked rule; it does not restate the lime/orange recipe. Human browser still **UNCONFIRMED**.
-- **Human browser** — still **UNCONFIRMED**; only Jest covers this.
+No
 
 **risk**
+No
 
-- **Long AI think** — start rings on all AI beads for the whole wait may still feel like “always on” (size/pulse/dim/wash add to that).
+**Closed**
+
+- **Undo / match-start flag (rectified 2026-09-07)** — `turnStartRingsPending` is saved in undo snapshots and round-trips on restore. **Jest:** `FeatureSession.turnControl` undo snapshot test. **Browser UNCONFIRMED.**
+- **Turn colour UI(rectified 2026-09-07)** — at start colur in all beads will glow as per their turn be cream or black, after start for next step all bead glow wont happen.
+- **Selected bead 18 vs 16 (rectified 2026-09-09)** — Removed size bump; all beads draw at radius 16. **Jest:** `CanvasBoardRenderer.moveFeedback`. **Browser UNCONFIRMED.**
+- **Bead pulse whole turn (rectified 2026-09-09)** — Pulse only during match-start all-bead flash, not for the full turn. **Jest:** renderer + turn control. **Browser UNCONFIRMED.**
+- **Opponent dimming whole turn (rectified 2026-09-09)** — 72% dim only during match-start flash, not for the full turn. **Jest:** renderer tests. **Browser UNCONFIRMED.**
+- **Board turn wash whole turn (rectified 2026-09-09)** — Half-board tint only during match-start flash, not for the full turn. **Jest:** renderer tests. **Browser UNCONFIRMED.**
+- **Long AI think / Vs AI start rings (rectified 2026-09-09)** — Start rings clear when automated turn is scheduled; no all-bead rings through AI think delay. **Jest:** `FeatureSession.turnControl` (AI opens game). **Browser UNCONFIRMED.**
+- **Multi-jump chain (verified)** — Matches locked rule: after first pick, start rings stay off for the rest of that turn, including further hops. **Jest:** `FeatureSession.turnControl`.
+- **Coach video (rectified 2026-09-09)** — `setCoachDemoSelection` no longer sets flags alone; it calls **`previewScriptedSelection`** → same as a human tap.
+- **Watch AI vs AI (rectified 2026-09-09)** — still previews before each hop, now explicitly via **`previewScriptedSelection`** (was already close; now one shared method).
+- **Coach glow cleared (rectified 2026-09-09)** before scripted preview so old script state doesn’t mix with live-style rings.
+- **Human browser UNCONFIRMED** — turn-colour behaviour not signed off on a real browser or phone; Jest only.
 - **Coach vs live** — lesson playback may not match what players see in a real game.
-- **No Playwright check** — once-per-turn + deselect-not-return is not in browser gates; a regression would not be caught there.
-
-**Closed (rectified 2026-09-07)**
-
-- **Undo** — the once-per-turn flag is **not saved** in undo snapshots. After undo, start rings may show again when they should not, or stay off when they should show.
-- **Undo mismatch** — most likely real bug if players use undo mid-turn.
+- **No Playwright check** — match-start flash, deselect-not-return, and Finish capture mid-chain are not in browser gates; regression would not be caught there.
+- **Docs integrity row** — STATUS points here for the locked rule; it does not restate the lime/orange recipe.
 
 ---
 

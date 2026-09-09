@@ -305,12 +305,20 @@ export class FeatureSession {
   }
 
   /**
-   * Coach vs AI: show amber rings on the automated mover and its legal landings.
-   * Does not bypass turn rules — display only before the shell animates the hop.
+   * Scripted preview (Watch AI vs AI, coach video): same path as a human pick —
+   * `armSelection` + `consumeTurnStartRings`, legal targets from the engine.
    */
-  previewAutomatedSelection(from: number): boolean {
-    if (this.settings.mode !== 'spectate' || this.isGameOver()) return false;
+  previewScriptedSelection(from: number): boolean {
+    if (this.isGameOver()) return false;
+    if (this.settings.mode !== 'spectate' && this.settings.mode !== 'coach') return false;
+    this.coachGlowNodeIds = [];
+    this.coachHighlightTargets = [];
     return this.armSelection(from);
+  }
+
+  /** @deprecated use previewScriptedSelection */
+  previewAutomatedSelection(from: number): boolean {
+    return this.previewScriptedSelection(from);
   }
 
   /** Drop coach/AI preview selection before the hop animates (chain stays armed). */
@@ -350,16 +358,9 @@ export class FeatureSession {
     }
   }
 
-  /** Coach video: amber/lime rings for scripted demos (no human clicks). */
-  setCoachDemoSelection(nodeId: number): void {
-    const chain = this.engine.getChainPieceId();
-    if (chain !== null && chain === nodeId) {
-      this.selectedId = nodeId;
-      this.uiState = 'chain';
-      return;
-    }
-    this.selectedId = nodeId;
-    this.uiState = 'selected';
+  /** Coach video move hints — delegates to live `armSelection` (no parallel flag path). */
+  setCoachDemoSelection(nodeId: number): boolean {
+    return this.previewScriptedSelection(nodeId);
   }
 
   private armSelection(nodeId: number): boolean {

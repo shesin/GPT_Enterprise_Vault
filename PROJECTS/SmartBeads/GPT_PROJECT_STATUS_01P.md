@@ -20,7 +20,7 @@ The production codebase is fully implemented in clean TypeScript (`src/`), with 
 
 ## 7 Locked V1 Boards Status
 
-All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**566 tests**, 50 suites — Jest verified 2026-09-08 via `test:jest:fast` + slow HonestAi batches; browser gates UNCONFIRMED):
+All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**568 tests**, 50 suites — Jest verified 2026-09-09 via `test:jest`; browser gates UNCONFIRMED):
 
 | # | Board Variant | Geometry & Architecture | Status |
 |---|---|---|---|
@@ -46,12 +46,12 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 
 ### 2. Turn Interaction & UI Protocol (`FeatureSession.ts` & `CanvasBoardRenderer.ts`)
 - **Inert Opponent Beads:** Opponent beads are 100% inert (not clickable).
-- **Turn bead highlighting:** Locked rule → `GPT_PROJECT_PENDING_01P.md` § Turn colour UI. Shipped draw path: `drawCanvasBoard` (all modes). **TESTED** (`CanvasBoardRenderer.moveFeedback.test.ts` — 10 cases). Human browser **UNCONFIRMED**.
+- **Turn bead highlighting:** Locked rule → `GPT_PROJECT_PENDING_01P.md` (doc owner). Draw path: `drawCanvasBoard`. **Jest OK (2026-09-09).** **Human browser CONFIRMED (2026-09-09).**
 - **Audio & Sound Effects (`SoundEffects.ts`):** Eight production WAV files only — repo-root `public/audio/sfx_*.wav` (loaded at runtime via `SoundManifest.ts`; not embedded in JS). Orphan Kenney/voice/sample copies removed 2026-09-08. **TESTED** (`SoundEffects.test.ts` — event dispatch; decode UNCONFIRMED in Jest).
 - **Start Screen Overlay & First-Tap Unlock (Option B):** Gold-accented start card over board (mode select + **▶ START GAME**) unlocks browser AudioContext and BGM. **Start** always opens with human (cream / RED); AI must not move first. **New game / Play again** alternates opener (game 2 → AI in PvE). **Board switch** returns to start overlay with human first (does not consume alternation counter). Match then runs with animated kickoff banner and fanfare.
 - **Production play shell layout (2026-08):** Four-column shell — left play panel (AI top, match `mm:ss` centre, human bottom, shot rings, capture/centre/beads), board-only centre column, settings right, optional ad column. Bottom controls: single nowrap row (Resign · **Finish capture** · Sound · Undo · New game). Finish capture hidden until mid-chain optional jump. Viewport height-first sizing on `.shell`; 16-bead bump (`shell--board-16`, max frame height 860px); verified at 1366×768 and 1280×720 @ 100% zoom.
 - **Cream-camp orientation:** Jest gate `creamCampRendersLower.test.ts` — on every V1 board, cream (RED) beads average lower on canvas than ebony (BLUE). Board6 starting camps aligned to bottom convention.
-- **End-of-Game Celebration & Clear Outcome Statements:** Balanced celebratory sparkles (`★`, `✦`, `✧`) across all outcomes (Victory, Defeat, and Draw), clear result statements (*"CONGRATULATIONS! YOU WON!"*, *"WELL PLAYED! BETTER LUCK NEXT TIME"*, *"WELL PLAYED! IT'S A DRAW"*), clear bead capture differential display (e.g., *"You won by 3 beads (8 vs 5)"*), and a clean *"↻ PLAY AGAIN"* action button.
+- **End-of-Game Celebration & Clear Outcome Statements:** Balanced celebratory sparkles (`★`, `✦`, `✧`) across all outcomes (Victory, Defeat, and Draw), clear result statements (*"CONGRATULATIONS! YOU WON!"*, *"WELL PLAYED! BETTER LUCK NEXT TIME"*, *"WELL PLAYED! IT'S A DRAW"*), clear bead capture differential display (e.g., *"You won by 3 beads (8 vs 5)"*), and a clean *"↻ PLAY AGAIN"* action button. **2026-09-09:** user-facing end reasons use **cream/black bead** labels (not P1/P2/RED/BLUE); modal skips redundant “won on captures” when score line already states margin. **TESTED** (`FeatureSession.featureRules`). Human browser **UNCONFIRMED**.
 - **Selection safety:** Clicking an immobile own bead safely deselects; no stale selection lock.
 - **16-Bead Visual Layout:** Central 5×5 grid is rendered as a prominent 472px square matching 10-bead width with compact 59px-high wing caps (560×796 canvas, 0.70 aspect ratio).
 - **Unified Center Plates:** Consistent glowing amber square plates render under center nodes for all 7 boards.
@@ -79,7 +79,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Alternating opener (local):** Start overlay → human (cream) first; **New game / Play again** alternates opener in PvE. **FUNCTIONAL** (Jest + browser policy checks).
 
 ### 5. Test & Quality Gates
-- **Jest (566 tests, 50 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — batched runner: `scripts/run-jest-batched.mjs` (50 files on disk, audit coverage gate).
+- **Jest (568 tests, 50 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — batched runner: `scripts/run-jest-batched.mjs` (50 files on disk, audit coverage gate). Verified 2026-09-09.
 - **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback`), **process regression guards** (`processRegressionGuards` — cross-surface sync, match-start flash WHEN), Finish capture on all boards via session tests, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs`).
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
@@ -94,8 +94,8 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | Item | Verdict |
 |------|---------|
 | **AI levels 4–5** | **Fix/remove (UI done)** — Settings + coach show **1–2–3** only; HonestAi still accepts 4–5 if passed in code |
-| **Watch AI / spectate UX** | **OK (2026-09-04)** — start screen **Watch AI**; Settings **Watch AI level** + **AI level**; cream **Watch AI · level** / black **AI · level**; amber preview before each hop |
-| **Coach (teaching mode)** | **OK (2026-09-06)** — Video 1 on **7-bead · 4×5** (~**1:53**): move + single/double/triple capture; ending appendix **WIN** (decline glow) · **RESIGN** (below-board glow, decline congrats) · **DRAW** (resign agreed modal); left panel intro + bullets; play/pause/scrub; watch-only; `?coach=start`. Video 2 (timers/centre) **pending**. **Coach browser smoke:** CONFIRMED (`verify-coach-browser.mjs` 2026-09-06). **Human full watch-through:** UNCONFIRMED |
+| **Watch AI / spectate UX** | **OK (Jest, 2026-09-09)** — **Watch AI vs AI** mode; `previewScriptedSelection` before hops; match-start flash until first preview. **UNCONFIRMED** human browser |
+| **Coach (teaching mode)** | **OK (2026-09-09)** — Video 1 on **7-bead · 4×5** (~**1:53**): moves, captures, Finish capture demo; **WIN / RESIGN / DRAW** endings use **`previewScriptedSelection`** (same rings as live pick). Left panel intro + bullets; play/pause/scrub; watch-only; `?coach=start`. Video 2 (timers/centre) **pending**. **Coach browser smoke:** CONFIRMED (`verify-coach-browser.mjs` 2026-09-06). **Human full watch-through:** UNCONFIRMED |
 | **Settings game mode** | **OK (2026-09)** — removed from right panel; start screen only |
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |
@@ -107,7 +107,9 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **Tournament timer** | **OK (Jest)** — HvH chess clocks; flag fall = loss; centre off; **UNCONFIRMED** human browser |
 | **Engine** (moves, captures, chains) | **OK** — Jest + browser gates |
 | **Finish capture (optional chain stop)** | **OK (Jest)** — controls row, `finishChain` ends turn, coach demo; human browser **UNCONFIRMED** |
-| **Turn bead highlighting** | Locked rule → PENDING § Turn colour UI. Match-start-only flash **TESTED** (`FeatureSession.turnControl`, `processRegressionGuards`). Human browser **UNCONFIRMED**. |
+| **Turn bead highlighting** | **OK (Jest + human browser, 2026-09-09)** — locked rule doc owner: PENDING. Match-start-only flash, pulse, dim, wash; radius 16; coach/Watch AI/resign/win endings = live `previewScriptedSelection`. **Doc split closed** — STATUS does not restate lime/orange table |
+| **Settings ? help** | **OK (Jest, 2026-09-09)** — Timer, Tournament timer, Turn shot clock, Center rule rows in `index.html` / `play-board.html`. **UNCONFIRMED** human browser |
+| **End-game user copy** | **OK (Jest, 2026-09-09)** — cream/black bead labels; no P1/P2 in timer/resign reasons. **UNCONFIRMED** congratulations modal on screen |
 | **Recent colour / panel edits** | **UNCONFIRMED** — human browser sign-off pending for non-highlight panel tweaks |
 
 Update this table when code ≠ claim. Do not mark **VERIFIED CLEAN** for rows marked Fix/remove or UNCONFIRMED.
@@ -123,7 +125,7 @@ Run from: `d:\Business Idea\Gpt_Enterprise_Vault`
 **Tests**
 ```powershell
 npm run test:jest:fast   # skips slow AI suites, ~40s
-npm run test:jest        # all 566 Jest tests, ~7 min
+npm run test:jest        # all 568 Jest tests, ~7 min
 npm test                 # Jest + browser gates
 ```
 Details: batched runner `scripts/run-jest-batched.mjs` (see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog for audit history only).

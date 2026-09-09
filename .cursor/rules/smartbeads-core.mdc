@@ -11,6 +11,8 @@ When work touches `PROJECTS/SmartBeads/`:
 - **Engineering rules** → `GPT_PROJECT_RULES_01P.md` + `VISION/CURSOR_PROMPT_01.md` § SmartBeads Production Gates
 - **Literal ask** — option ≠ default; one-line ask = one-line change unless user lists more
 - **Code vs claim** — read `GPT_PROJECT_STATUS_01P.md` § Integrity; edit any doc only on **Go —** + named file(s)
+- **PENDING sections** — **Difference** = rule vs ship / taste, not breakage. **risk** = confuse players, break or unverified on phone/browser, or **defer — mobile app** until fixed; keep in risk until you sign off.
+- **Doc edits** — **PENDING / AUDIT / VISION / RULES** only on **Go —** + named file. **STATUS / MAP** only when you say **push to git all good**
 - **One playtest bug** — failing test + related fixes
 - **Timing / WHEN** — lock once / per turn / per match / never in pending before UI work; Jest must match that sentence (`instruction-fidelity.mdc` § Process)
 - **Prototype ≠ production** — no shared code with `src/`

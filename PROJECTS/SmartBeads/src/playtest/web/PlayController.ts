@@ -547,7 +547,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       resignOfferModal.style.display = 'none';
       resignOfferModal.classList.remove('coach-resign-offer-glow');
       setCoachModalSnapshot(false);
-      session.setCoachBoardFocus(cue.selectedId, cue.targetIds);
+      session.previewScriptedSelection(cue.selectedId);
       updateUI();
       return;
     }
@@ -1752,7 +1752,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       };
 
       if (settings.mode === 'spectate') {
-        session.previewAutomatedSelection(move.from);
+        session.previewScriptedSelection(move.from);
         soundEffects.playSelect();
         updateUI();
         setTimeout(() => {
@@ -2117,6 +2117,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         aiThinking,
         animFrom: anim?.from ?? null,
         animTo: anim?.to ?? null,
+        turnStartRingsPending: session.shouldShowTurnStartRings(),
       };
     },
     /** Browser gates: deterministic cream-first without consuming alternation counter. */

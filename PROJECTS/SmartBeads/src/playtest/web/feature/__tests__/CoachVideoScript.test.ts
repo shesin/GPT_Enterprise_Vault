@@ -222,6 +222,44 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
   });
 
+  it('coach move highlights match live pick legal targets (no scripted overlay)', () => {
+    for (const highlight of COACH_VIDEO.highlights) {
+      const session = new FeatureSession(resolveEngineVariant(COACH_VIDEO_BOARD_ID), buildCoachLessonSettings());
+      applyCoachVideoHighlight(session, COACH_VIDEO.keyframes, highlight);
+      expect(session.getCoachHighlightTargets()).toEqual([]);
+      const expected = new Set(
+        session.getEngine()
+          .getLegalMoves()
+          .filter((m) => m.from === highlight.selectedId)
+          .map((m) => m.to),
+      );
+      expect(new Set(session.getLegalTargetIds())).toEqual(expected);
+    }
+  });
+
+  it('win keyframe uses live selection on first survivor (not coach-only glow)', () => {
+    const session = new FeatureSession(resolveEngineVariant(COACH_VIDEO_BOARD_ID), buildCoachLessonSettings());
+    const winKf = COACH_VIDEO.keyframes.find((k) => k.atMs === COACH_VIDEO_WIN_SEGMENT_START_MS)!;
+    applyCoachVideoKeyframe(session, winKf);
+    expect(session.getCoachGlowNodeIds()).toEqual([]);
+    expect(session.getCoachHighlightTargets()).toEqual([]);
+    expect(session.getSelectedId()).toBe(winKf.glowNodeIds![0]);
+    expect(session.getLegalTargetIds().length).toBeGreaterThan(0);
+  });
+
+  it('resign board focus uses live selection on the resigning bead', () => {
+    const session = new FeatureSession(resolveEngineVariant(COACH_VIDEO_BOARD_ID), buildCoachLessonSettings());
+    const resignKf = COACH_VIDEO.keyframes.find((k) => k.atMs === COACH_VIDEO_RESIGN_SEGMENT_START_MS)!;
+    applyCoachVideoKeyframe(session, resignKf);
+    expect(session.previewScriptedSelection(4)).toBe(true);
+    expect(session.getCoachHighlightTargets()).toEqual([]);
+    expect(new Set(session.getLegalTargetIds())).toEqual(
+      new Set(
+        session.getEngine().getLegalMoves().filter((m) => m.from === 4).map((m) => m.to),
+      ),
+    );
+  });
+
 
 
   it('double and triple chains complete on engine', () => {

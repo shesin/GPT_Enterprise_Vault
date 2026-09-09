@@ -25,7 +25,10 @@ export function applyCoachVideoKeyframe(session: FeatureSession, keyframe: Coach
   snap.chainPieceId = keyframe.chainPieceId;
   engine.loadSnapshot(snap);
   session.clearArmedSelection();
-  session.setCoachWinGlow(keyframe.glowNodeIds ?? []);
+  const glow = keyframe.glowNodeIds ?? [];
+  if (glow.length > 0) {
+    session.previewScriptedSelection(glow[0]);
+  }
 }
 
 /** Amber/lime move hints during coach playback (watch-only). */
@@ -36,5 +39,5 @@ export function applyCoachVideoHighlight(
 ): void {
   const keyframe = findCoachKeyframeByTime(highlight.keyframeAtMs, keyframes);
   applyCoachVideoKeyframe(session, keyframe);
-  session.setCoachDemoSelection(highlight.selectedId);
+  session.previewScriptedSelection(highlight.selectedId);
 }
