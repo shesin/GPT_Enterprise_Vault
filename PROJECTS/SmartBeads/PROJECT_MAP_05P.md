@@ -1,4 +1,4 @@
-# SmartBeads Project Map
+# Smart Bead Chess — Project Map
 
 **Behaviour / UI rules** → `GPT_PROJECT_STATUS_01P.md` (shipped) and `GPT_PROJECT_PENDING_01P.md` (locked + gaps). This file is paths only.
 
@@ -243,7 +243,7 @@ All other agent prompts reference the above; they do not restate those sections.
 
 ## Summary
 
-SmartBeads is a strategic bead-based board game platform.
+Smart Bead Chess is a strategic bead-based board game platform ([smartbeadchess.com](https://smartbeadchess.com)).
 
 The physical board model (`BoardDefinition`: intersections and connections) is the source of truth. Configuration selects which board variant to use. The same engine and shared play shell serve all V1 boards.
 

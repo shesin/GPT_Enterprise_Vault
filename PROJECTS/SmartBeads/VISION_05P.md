@@ -1,8 +1,8 @@
-# SmartBeads Vision
+# Smart Bead Chess Vision
 
 ## Purpose
 
-This document defines the long-term vision and philosophy of SmartBeads, plus every project-specific decision and piece of reasoning that isn't a short, always-loaded rule.
+This document defines the long-term vision and philosophy of Smart Bead Chess, plus every project-specific decision and piece of reasoning that isn't a short, always-loaded rule.
 
 It explains why the project exists, what it aims to become, and the principles that should guide every future decision.
 
@@ -22,7 +22,7 @@ As the project matures:
 
 # Project Vision
 
-SmartBeads is a family of modern abstract strategy games inspired by traditional Indian bead games such as Guti and Sholo Guti.
+Smart Bead Chess is a family of modern abstract strategy games inspired by traditional Indian bead games such as Guti and Sholo Guti.
 
 Its purpose is not merely to digitize traditional games, but to build a world-class strategy game platform where authentic gameplay, disciplined engineering, artificial intelligence, and scientific experimentation work together to create outstanding strategy games.
 
@@ -41,7 +41,7 @@ Build the world's finest ecosystem for bead-based strategy games through:
 - player education
 - competitive play
 
-Every future SmartBeads game should inherit these principles.
+Every future Smart Bead Chess game should inherit these principles.
 
 ---
 
@@ -156,7 +156,7 @@ This is why the project only expands to new board variants after AI self-play ev
 
 # Smart Game Lab
 
-Smart Game Lab is the research engine behind SmartBeads.
+Smart Game Lab is the research engine behind Smart Bead Chess.
 
 Its purpose is to discover stronger games through disciplined experimentation.
 
@@ -258,7 +258,7 @@ Avoid:
 
 # Learning Philosophy
 
-SmartBeads should help players become stronger thinkers.
+Smart Bead Chess should help players become stronger thinkers.
 
 Future educational capabilities may include:
 - AI Coach
@@ -288,7 +288,7 @@ Fairness should be measured rather than assumed — this is why the match-termin
 
 # Design Principles
 
-Every SmartBeads game should strive for:
+Every Smart Bead Chess game should strive for:
 - simplicity
 - fairness
 - strategic depth
@@ -303,7 +303,7 @@ Players should finish every game thinking: "Just one more game." Not because of 
 
 # Long-Term Vision
 
-SmartBeads is more than a digital board game. It is:
+Smart Bead Chess is more than a digital board game. It is:
 - a strategy game platform
 - a configurable game engine
 - an AI-assisted research laboratory

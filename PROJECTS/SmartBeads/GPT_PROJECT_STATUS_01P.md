@@ -1,8 +1,9 @@
-# SmartBeads Project Status
+# Smart Bead Chess — Project Status
 
 ## Purpose
 
-This document records **what is built and verified** for SmartBeads.  
+This document records **what is built and verified** for **Smart Bead Chess** ([smartbeadchess.com](https://smartbeadchess.com)).  
+Repo folder `PROJECTS/SmartBeads/` and code names (e.g. `SmartBeadsEngine`) are internal — unchanged.  
 Pending and roadmap work lives in **`GPT_PROJECT_PENDING_01P.md`** only.  
 **Approved UI rules (locked)** → `GPT_PROJECT_PENDING_01P.md` § Turn colour UI.
 
@@ -178,10 +179,11 @@ Step 2  npm.cmd test                       → browser auto; Vite auto on 5173
 ----
 ## Which URL to use
 
-| Port | Use for |
-|------|---------|
-| **5173** | Hub → pick board → Human vs AI |
-| **5174** | Jump straight to all 7 boards (Settings → Board) |
+| URL / port | Use for |
+|------------|---------|
+| **https://smartbeadchess.com** | Production site (when deployed) |
+| **5173** (local) | Hub → pick board → Human vs AI |
+| **5174** (local) | Jump straight to all 7 boards (Settings → Board) |
 
 ---
 

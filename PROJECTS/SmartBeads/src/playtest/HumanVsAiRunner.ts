@@ -61,7 +61,7 @@ export function runInteractivePlaytest(): void {
 
   async function startSession(): Promise<void> {
     console.log('\n======================================');
-    console.log('   SmartBeads Board4 Playtest CLI');
+    console.log('   Smart Bead Chess Board4 Playtest CLI');
     console.log('======================================');
 
     const playerChoice = await promptUser('Choose your color (R for RED / B for BLUE) [default R]: ');

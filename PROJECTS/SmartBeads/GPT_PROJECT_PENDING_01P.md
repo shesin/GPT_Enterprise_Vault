@@ -1,4 +1,4 @@
-# SmartBeads — Pending Product Plan (DRAFT)
+# Smart Bead Chess — Pending Product Plan (DRAFT)
 
 **Status:** DRAFT — human approval required before implementation.  
 **Purpose:** Single plan for two-page play flow, **online multiplayer**, timers, hosting, and tournaments.  
@@ -116,7 +116,7 @@ Fields depend on mode:
 - Reach **0:00** → lose on time.
 - UI: **two clocks** — opponent top, you bottom — active clock highlighted.
 
-**Layer B — Shot clock (SmartBeads rule)**
+**Layer B — Shot clock (Smart Bead Chess rule)**
 
 - Each turn must complete within **60s or 90s** (preset-defined).
 - Exceed shot limit → **lose on time** (recommended; simple — same as match flag fall).

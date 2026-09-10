@@ -280,7 +280,7 @@ export const COACH_VIDEO_SEGMENT_STARTS_MS = [
 ] as const;
 
 export const COACH_VIDEO_SEGMENT_BANNERS: CoachVideoSegmentBanner[] = [
-  { atMs: 0, title: 'MOVE', subtitle: '★ SMARTBEADS COACH ★' },
+  { atMs: 0, title: 'MOVE', subtitle: '★ SMART BEAD CHESS COACH ★' },
   { atMs: 19_100, title: 'SINGLE CAPTURE' },
   { atMs: 37_940, title: 'DOUBLE CAPTURE' },
   { atMs: 48_100, title: 'TRIPLE CAPTURE' },

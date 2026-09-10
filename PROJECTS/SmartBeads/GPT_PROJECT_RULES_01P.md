@@ -1,4 +1,4 @@
-# SmartBeads Project Rules
+# Smart Bead Chess — Project Rules
 Short, actionable engineering rules. Cursor loads **minimal pointers** via `.cursor/rules/smartbeads-core.mdc` (always) and `smartbeads-rules.mdc` (SmartBeads paths). **Full implementer detail** for SmartBeads gates lives in `VISION/CURSOR_PROMPT_01.md` (SmartBeads Production Gates). Edit this file first for rule changes, then sync the slim `.mdc` pointers if needed.
 
 ## Purpose

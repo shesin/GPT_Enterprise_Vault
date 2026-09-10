@@ -98,9 +98,9 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
 
 
-  it('uses SmartBeads branding and 3 s pauses between slide moves', () => {
+  it('uses Smart Bead Chess branding and 3 s pauses between slide moves', () => {
 
-    expect(COACH_VIDEO_SEGMENT_BANNERS[0].subtitle).toMatch(/SMARTBEADS/i);
+    expect(COACH_VIDEO_SEGMENT_BANNERS[0].subtitle).toMatch(/SMART BEAD CHESS/i);
 
     const slideMoves = COACH_VIDEO.moves.slice(0, 3);
 

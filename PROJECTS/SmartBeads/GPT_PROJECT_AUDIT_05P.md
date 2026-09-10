@@ -1,4 +1,4 @@
-# SmartBeads — GPT Project Audit (4th cycle)
+# Smart Bead Chess — GPT Project Audit (4th cycle)
 
 Date: 2026-08-27 (test runner audit appended 2026-09-03)  
 Scope: Production `src/` (not prototype)  
