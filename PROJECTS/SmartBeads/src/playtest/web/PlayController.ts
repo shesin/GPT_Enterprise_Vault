@@ -1566,6 +1566,40 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     updateUI();
   }
 
+  /** Shared by __SB_TEST__.snapshot and browser gates (human ply before AI). */
+  function buildLiveSnap() {
+    const state = session.getEngine().getState();
+    return {
+      currentPlayer: state.currentPlayer,
+      selectedId: session.getSelectedId(),
+      moveCount: session.getMoveCount(),
+      canHumanAct: session.canHumanAct(),
+      gameOver: session.isGameOver(),
+      mode: session.getSettings().mode,
+      boardName: state.board.name,
+      uiState: session.getUiState(),
+      chainPieceId: session.getEngine().getChainPieceId(),
+      occupants: state.board.intersections.map((n) => ({
+        id: n.id,
+        label: n.label,
+        occupant: n.occupant,
+        x: n.x,
+        y: n.y,
+      })),
+      animating,
+      aiThinking,
+      animFrom: anim?.from ?? null,
+      animTo: anim?.to ?? null,
+      turnStartRingsPending: session.shouldShowTurnStartRings(),
+    };
+  }
+
+  function captureHumanPlySnapForGate(player: Player): void {
+    if (player !== 'RED') return;
+    const api = (window as unknown as { __SB_TEST__?: { lastHumanPlySnap?: ReturnType<typeof buildLiveSnap> | null } }).__SB_TEST__;
+    if (api) api.lastHumanPlySnap = buildLiveSnap();
+  }
+
   function playAnimated(move: Move, player: Player, onDone: () => void): void {
     if (animating) {
       completeAiTurnIfChainOpen(session);
@@ -1620,6 +1654,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         try {
           session.applyMove(move);
           lastMove = { from: move.from, to: move.to, player };
+          captureHumanPlySnapForGate(player);
         } catch {
           completeAiTurnIfChainOpen(session);
           if (player === 'BLUE' && !session.isGameOver() && session.getEngine().getState().currentPlayer === 'BLUE') {
@@ -1828,6 +1863,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     turnCaptures = 0;
     clearMoveFeedback();
     prevCaptures = { RED: 0, BLUE: 0 };
+    const testApi = (window as unknown as { __SB_TEST__?: { lastHumanPlySnap?: null } }).__SB_TEST__;
+    if (testApi) testApi.lastHumanPlySnap = null;
 
     const wasCoach = session.getSettings().mode === 'coach';
     if (wasCoach) {
@@ -2094,32 +2131,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     },
     updateUI,
     afterHumanOrAiTurn,
-    snapshot: () => {
-      const state = session.getEngine().getState();
-      return {
-        currentPlayer: state.currentPlayer,
-        selectedId: session.getSelectedId(),
-        moveCount: session.getMoveCount(),
-        canHumanAct: session.canHumanAct(),
-        gameOver: session.isGameOver(),
-        mode: session.getSettings().mode,
-        boardName: state.board.name,
-        uiState: session.getUiState(),
-        chainPieceId: session.getEngine().getChainPieceId(),
-        occupants: state.board.intersections.map((n) => ({
-          id: n.id,
-          label: n.label,
-          occupant: n.occupant,
-          x: n.x,
-          y: n.y,
-        })),
-        animating,
-        aiThinking,
-        animFrom: anim?.from ?? null,
-        animTo: anim?.to ?? null,
-        turnStartRingsPending: session.shouldShowTurnStartRings(),
-      };
-    },
+    snapshot: () => buildLiveSnap(),
+    lastHumanPlySnap: null as ReturnType<typeof buildLiveSnap> | null,
     /** Browser gates: deterministic cream-first without consuming alternation counter. */
     forceStarter: (player: Player) => {
       cancelAiWork();

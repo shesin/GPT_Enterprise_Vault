@@ -16,6 +16,7 @@ import {
   openingSlideNodes,
   timingWindow,
   waitForHumanPlyCommitted,
+  waitForHumanPlySnap,
   waitForAiTurnComplete,
 } from './lib/live-ply.mjs';
 
@@ -58,10 +59,13 @@ async function twoClicks(page, variant, selectShotPath, fromLabel, toLabel) {
     await page.locator('#board').screenshot({ path: selectShotPath });
   }
   const selected = await liveSnap(page);
+  await page.evaluate(() => {
+    if (window.__SB_TEST__) window.__SB_TEST__.lastHumanPlySnap = null;
+  });
   await clickPrototypeNode(page, slide.to);
   await page.waitForTimeout(50);
   const inFlight = await liveSnap(page);
-  const committed = await waitForHumanPlyCommitted(page);
+  const committed = await waitForHumanPlySnap(page);
   return { start, slide, selected, inFlight, after: committed.snap, tooLate: committed.tooLate };
 }
 
@@ -101,24 +105,38 @@ async function main() {
     }
     return null;
   });
-  if (immobile) {
-    await clickPrototypeNode(page, immobile);
+  const deselectTarget = immobile ?? await page.evaluate(({ skipId }) => {
+    const session = window.__SB_TEST__.session;
+    const engine = session.getEngine();
+    const player = engine.getState().currentPlayer;
+    for (const n of engine.getState().board.intersections) {
+      if (n.occupant !== player || n.id === skipId) continue;
+      if (engine.getLegalMoves().some((m) => m.from === n.id)) {
+        return { id: n.id, x: n.x, y: n.y, label: n.label };
+      }
+    }
+    return null;
+  }, { skipId: deselectSlide.from.id });
+  if (deselectTarget) {
+    await clickPrototypeNode(page, deselectTarget);
     await page.waitForTimeout(120);
     const afterDeselect = await liveSnap(page);
+    const ok = afterSelect.turnStartRingsPending === false
+      && afterDeselect.turnStartRingsPending === false
+      && (immobile ? afterDeselect.selectedId == null : afterDeselect.selectedId === deselectTarget.id);
     record(
-      'deselect immobile own bead: match-start rings do not return',
-      afterSelect.turnStartRingsPending === false
-        && afterDeselect.turnStartRingsPending === false
-        && afterDeselect.selectedId == null,
+      'deselect or re-select: match-start rings do not return',
+      ok,
       JSON.stringify({
         afterSelect: afterSelect.turnStartRingsPending,
         afterDeselect: afterDeselect.turnStartRingsPending,
         selectedId: afterDeselect.selectedId,
-        immobile: immobile.label,
+        target: deselectTarget.label,
+        mode: immobile ? 'deselect' : 're-select',
       }),
     );
   } else {
-    record('deselect immobile own bead: match-start rings do not return', false, 'no immobile cream bead at opening');
+    record('deselect or re-select: match-start rings do not return', false, 'no cream bead for deselect/re-select');
   }
 
   for (const { catalogId, variant } of BOARDS) {

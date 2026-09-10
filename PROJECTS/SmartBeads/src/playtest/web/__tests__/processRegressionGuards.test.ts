@@ -102,6 +102,11 @@ describe('process regression guards', () => {
     it('browser snapshot exposes turnStartRingsPending for live gates', () => {
       expect(playControllerSource).toMatch(/turnStartRingsPending:\s*session\.shouldShowTurnStartRings\(\)/);
     });
+
+    it('captures human ply snap at applyMove before AI (browser gate)', () => {
+      expect(playControllerSource).toMatch(/captureHumanPlySnapForGate\(player\)/);
+      expect(playControllerSource).toMatch(/lastHumanPlySnap = buildLiveSnap\(\)/);
+    });
   });
 
   describe('coach vs live — move hints use previewScriptedSelection', () => {
@@ -144,6 +149,7 @@ describe('process regression guards', () => {
       expect(observeSource).toMatch(/turnStartRingsPending/);
       expect(observeSource).toMatch(/match-start rings pending after game start/);
       expect(observeSource).toMatch(/match-start rings clear after first select/);
+      expect(observeSource).toMatch(/deselect or re-select: match-start rings do not return/);
     });
   });
 });

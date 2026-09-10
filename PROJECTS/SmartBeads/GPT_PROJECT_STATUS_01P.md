@@ -81,7 +81,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 ### 5. Test & Quality Gates
 - **Jest (568 tests, 50 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — batched runner: `scripts/run-jest-batched.mjs` (50 files on disk, audit coverage gate). Verified 2026-09-09.
 - **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback`), **process regression guards** (`processRegressionGuards` — cross-surface sync, match-start flash WHEN), Finish capture on all boards via session tests, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
-- **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs`).
+- **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, match-start rings, deselect/re-select, Finish capture mid-chain, and inert-bead safety (`npm.cmd test` chains `m2-2step-npm-gate.mjs`). PvE gate reads `lastHumanPlySnap` at human `applyMove` (before AI) — **CONFIRMED** 2026-09-10.
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
 - **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; gates in `VISION/CURSOR_PROMPT_01.md`; hooks in `.cursor/rules/smartbeads-core.mdc` + `instruction-fidelity.mdc` § Process.
 
@@ -146,7 +146,7 @@ Open: **http://localhost:5174/**
 
 ---
 
-## Steps next time
+## launch board and 
 
 1. Open **two** terminals (or two tabs in Cursor).
 2. In **both**, go to the project folder:
@@ -167,6 +167,15 @@ Open: **http://localhost:5174/**
 
 ---
 
+## Test suite
+open power shell and go to root    cd "d:\Business Idea\Gpt_Enterprise_Vault"
+
+```
+Step 1  npx.cmd npm run test:jest:fast     → no browser
+Step 2  npm.cmd test                       → browser auto; Vite auto on 5173
+
+
+----
 ## Which URL to use
 
 | Port | Use for |

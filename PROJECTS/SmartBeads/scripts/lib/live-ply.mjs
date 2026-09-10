@@ -51,6 +51,26 @@ export async function waitForHumanPlyCommitted(page, maxMs = 600) {
   return { snap: await liveSnap(page), tooLate: true };
 }
 
+/** Prefer gate capture taken at applyMove (before AI); fall back to live poll. */
+export async function waitForHumanPlySnap(page, maxMs = 3000) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < maxMs) {
+    const captured = await page.evaluate(() => {
+      const api = window.__SB_TEST__;
+      const snap = api?.lastHumanPlySnap ?? null;
+      if (snap) api.lastHumanPlySnap = null;
+      return snap;
+    });
+    if (captured) return { snap: captured, tooLate: false };
+    const live = await liveSnap(page);
+    if (live.moveCount >= 2 && !live.animating) {
+      return { snap: live, tooLate: true };
+    }
+    await page.waitForTimeout(5);
+  }
+  return { snap: await liveSnap(page), tooLate: true };
+}
+
 export async function waitForLaterPly(page, minMoves = 2, maxMs = 2500) {
   const t0 = Date.now();
   while (Date.now() - t0 < maxMs) {
