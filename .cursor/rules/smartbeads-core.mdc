@@ -10,6 +10,7 @@ When work touches `PROJECTS/SmartBeads/`:
 - **STOP** → `instruction-fidelity.mdc` § Before any repo edit
 - **Gameplay / UI / colours / modes** → read `GPT_PROJECT_DECISIONS_05P.md` when needed
 - **Engineering / agent workflow** → read `GPT_PROJECT_RULES_01P.md` when needed; gates → `VISION/CURSOR_PROMPT_01.md`
+- **Code–doc integrity** → RULES § Code–Doc Integrity · § Never Remove Safeguards Without Replacement; CURSOR_PROMPT § Code–doc integrity — no contradiction ship
 - **Shipped vs claim** → `GPT_PROJECT_STATUS_01P.md` § Integrity
 - **PENDING** → human-owned, read-only → RULES § PENDING Human-Owned
 - **Doc edits** → DECISIONS / AUDIT / VISION / RULES on **Go —** + **Files:**; STATUS / MAP on **push to git all good** only

@@ -6,8 +6,9 @@ import { chromium } from 'playwright';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { liveSnap, waitForAiTurnComplete } from './lib/live-ply.mjs';
+import { playShellUrl } from './lib/play-shell-setup.mjs';
 
-const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+const URL = playShellUrl();
 
 /**
  * AI is thinking, P1 15, P2 16, 1 Ebony capture.

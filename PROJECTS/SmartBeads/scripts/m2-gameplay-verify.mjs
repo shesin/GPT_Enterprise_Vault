@@ -13,8 +13,9 @@ import {
   timingWindow,
   waitForHumanPlyCommitted,
 } from './lib/live-ply.mjs';
+import { playShellUrl, setupBoardOnPlayShell } from './lib/play-shell-setup.mjs';
 
-const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+const URL = playShellUrl();
 
 const BOARDS = [
   { catalogId: '16', variant: '16' },
@@ -82,12 +83,7 @@ async function samplePiecePixels(page) {
 }
 
 async function setupBoard(page, catalogId, mode) {
-  await page.selectOption('#board-select', catalogId);
-  await page.selectOption('#start-mode-select', mode);
-  await page.selectOption('#timer-select', 'off');
-  await page.selectOption('#shot-clock-select', 'off');
-  await page.locator('#restart-btn').click();
-  await page.waitForTimeout(500);
+  await setupBoardOnPlayShell(page, catalogId, mode);
 }
 
 async function main() {

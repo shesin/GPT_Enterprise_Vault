@@ -5,8 +5,9 @@
 import { chromium } from 'playwright';
 import { clickNode } from './lib/project-node.mjs';
 import { playTwoClicksIsolated, timingWindow } from './lib/live-ply.mjs';
+import { playShellUrl } from './lib/play-shell-setup.mjs';
 
-const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+const URL = playShellUrl();
 const BOARD_ID = '6x3x5';
 const VARIANT = '6x3x5';
 const results = [];
@@ -89,7 +90,7 @@ async function main() {
     const turnAfterMove = await page.locator('#turn-count').textContent();
     record('AI reply is a later ply', parseInt(turnAfterMove || '0', 10) >= 2, `turns=${turnAfterMove}`);
 
-    await page.selectOption('#start-mode-select', 'pvp');
+    await page.selectOption('#hub-mode-select', 'pvp');
     await page.waitForTimeout(300);
     await page.locator('#restart-btn').click();
     await page.waitForTimeout(400);

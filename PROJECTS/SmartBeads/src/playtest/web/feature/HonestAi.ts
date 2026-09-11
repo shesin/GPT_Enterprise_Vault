@@ -1,5 +1,6 @@
 import { BoardVariant } from '../../../config/BoardConfig';
 import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
+import { repetitionPenaltyForPosition } from '../../../core/positionKey';
 import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
 import { AiLevel, CenterRule } from './GameFeatureSettings';
 import { countCenterOccupancy } from './centerScoring';
@@ -403,8 +404,15 @@ function scoreRootEnd(
   );
 }
 
-function endScore(end: TurnEnd, snapshotState: GameState, result: MinimaxResult): number {
-  return result.score + pathCaptureCount(snapshotState, end.path) * 0.05;
+function endScore(
+  end: TurnEnd,
+  snapshotState: GameState,
+  result: MinimaxResult,
+  positionHistory?: Record<string, number>,
+): number {
+  let score = result.score + pathCaptureCount(snapshotState, end.path) * 0.05;
+  score -= repetitionPenaltyForPosition(end.snapshot.state, end.snapshot.chainPieceId, positionHistory);
+  return score;
 }
 
 function normalizeOptions(budgetMsOrOptions: number | SelectAiOptions): Required<SelectAiOptions> {
@@ -483,7 +491,7 @@ function maxSearchBudgetMs(level: AiLevel): number {
 
 function searchLayerAtExactDepth(
   variant: BoardVariant,
-  snapshot: { state: GameState; chainPieceId: number | null },
+  snapshot: { state: GameState; chainPieceId: number | null; positionHistory?: Record<string, number> },
   ends: TurnEnd[],
   reply: number,
   replyBranch: number,
@@ -492,6 +500,7 @@ function searchLayerAtExactDepth(
   center: AiCenterContext | undefined,
   timer: AiTimerContext | undefined,
 ): { best: TurnEnd[]; completeCount: number } {
+  const positionHistory = snapshot.positionHistory;
   if (reply <= 0) {
     let best: TurnEnd[] = [];
     let bestScore = -Infinity;
@@ -499,7 +508,7 @@ function searchLayerAtExactDepth(
       const score = endScore(end, snapshot.state, {
         score: evaluate(end.snapshot.state, variant, aiPlayer, center, timer),
         complete: true,
-      });
+      }, positionHistory);
       if (score > bestScore) {
         bestScore = score;
         best = [end];
@@ -520,7 +529,7 @@ function searchLayerAtExactDepth(
     );
     if (!result.complete) continue;
     completeCount += 1;
-    const score = endScore(end, snapshot.state, result);
+    const score = endScore(end, snapshot.state, result, positionHistory);
     if (score > bestScore) {
       bestScore = score;
       best = [end];
@@ -534,7 +543,7 @@ function searchLayerAtExactDepth(
 
 function searchBestAtExactDepth(
   variant: BoardVariant,
-  snapshot: { state: GameState; chainPieceId: number | null },
+  snapshot: { state: GameState; chainPieceId: number | null; positionHistory?: Record<string, number> },
   ends: TurnEnd[],
   reply: number,
   replyBranch: number,
@@ -585,10 +594,33 @@ function pickRandomEnd(ends: TurnEnd[], rng: () => number): Move[] {
  * - Hard: 2 opponent complete-turn replies + full eval (incl. center when on);
  *   0% soft-miss; extends think time until full depth-2 completes (no depth-1 fallback).
  */
+function steerCapturePoolByRepetition(
+  pool: TurnEnd[],
+  positionHistory: Record<string, number> | undefined,
+): TurnEnd[] {
+  if (pool.length <= 1 || !positionHistory) return pool;
+  let bestPool = [pool[0]];
+  let bestPen = repetitionPenaltyForPosition(
+    pool[0].snapshot.state, pool[0].snapshot.chainPieceId, positionHistory,
+  );
+  for (let i = 1; i < pool.length; i += 1) {
+    const pen = repetitionPenaltyForPosition(
+      pool[i].snapshot.state, pool[i].snapshot.chainPieceId, positionHistory,
+    );
+    if (pen < bestPen) {
+      bestPen = pen;
+      bestPool = [pool[i]];
+    } else if (pen === bestPen) {
+      bestPool.push(pool[i]);
+    }
+  }
+  return bestPool;
+}
+
 export function selectAiTurnPath(
   variant: BoardVariant,
   level: AiLevel,
-  snapshot: { state: GameState; chainPieceId: number | null },
+  snapshot: { state: GameState; chainPieceId: number | null; positionHistory?: Record<string, number> },
   aiPlayer: Player = 'BLUE',
   budgetMsOrOptions: number | SelectAiOptions = 1500,
 ): Move[] | null {
@@ -603,7 +635,10 @@ export function selectAiTurnPath(
       return softMissPath(ends, snapshot.state, opts.rng);
     }
 
-    const pool = bestCapturePool(ends, snapshot.state, aiPlayer, opts.center);
+    const pool = steerCapturePoolByRepetition(
+      bestCapturePool(ends, snapshot.state, aiPlayer, opts.center),
+      snapshot.positionHistory,
+    );
     return pickRandomEnd(pool, opts.rng);
   }
 

@@ -6,7 +6,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { clickPrototypeNode, liveSnap, openingSlideNodes } from './lib/live-ply.mjs';
 
-const PROD = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+import { playShellUrl } from './lib/play-shell-setup.mjs';
+
+const PROD = playShellUrl();
 const PROTO = 'file:///' + path
   .join(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -33,7 +35,7 @@ async function main() {
   await page.goto(PROD, { waitUntil: 'networkidle' });
   await page.waitForSelector('#board');
   await page.selectOption('#board-select', '16');
-  await page.selectOption('#start-mode-select', 'pve');
+  await page.selectOption('#hub-mode-select', 'pve');
   await page.selectOption('#ai-level-select', '2');
   await page.selectOption('#timer-select', 'off');
   await page.selectOption('#shot-clock-select', 'off');

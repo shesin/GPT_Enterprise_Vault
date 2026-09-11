@@ -43,7 +43,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Collinear Jump Captures:** Short jump capture routes governed by strict collinearity algorithms (`sameDir`).
 - **Multi-Jump Chains:** Consecutive capture chaining with live state tracking (`chainPieceId`).
 - **Capture Optionality:** Players can voluntarily stop multi-jump sequences via **Finish capture** (controls row, hidden until mid-chain). Tap elsewhere does not end chain. **TESTED** (`FeatureSession.turnControl`, `processRegressionGuards`). Human browser **UNCONFIRMED**.
-- **Game Termination & Victory:** Elimination wins, stalemate wins, and capture-count victories on all V1 boards (`maxPlies: null` — no ply-cap endings in shipped boards). Center tiebreak at **timer** expiry lives in `FeatureSession.evaluateScoreAndEnd` (not core engine elimination path).
+- **Game Termination & Victory:** Elimination wins, stalemate wins, and capture-count victories on all V1 boards (`maxPlies: null` — no product move-limit on shipped boards). **3-fold repetition draw** + **120-ply engine safety cap** (`safety_cap`) on unlimited mode. Center tiebreak at **timer** expiry lives in `FeatureSession.evaluateScoreAndEnd` (not core engine elimination path).
 
 ### 2. Turn Interaction & UI Protocol (`FeatureSession.ts` & `CanvasBoardRenderer.ts`)
 - **Inert Opponent Beads:** Opponent beads are 100% inert (not clickable).
@@ -64,10 +64,10 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Depth-2 (Expert):** Full search required; extends think time up to ~45s on large boards rather than falling back to depth-1. Board-aware budgets (`thinkBudgetForLevel(level, variant)`).
 - **Still in code but improper UI:** levels **4–5** (Super Expert / +) — same depth as 3, extra time only. **Pending removal** per human direction (UI → 1–2–3 only).
 - **Easy / Medium / Hard:** unchanged contract; center + **timer** in eval on levels 2–3 when rules on; Easy center tie-break among equal captures. **TESTED** (`HonestAi.difficultyTiers.test.ts`).
-- **3-fold repetition:** removed from production. See `GPT_PROJECT_AUDIT_05P.md`.
+- **3-fold repetition draw:** **OK (Jest, 2026-09-11)** — `SmartBeadsEngine` ends match on third identical position (occupancies + side to move). **DECISIONS §4** · **UNCONFIRMED** human browser.
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
-- **Settings UI (2026-09):** Game mode on **start screen only** (`#start-mode-select`: Human vs AI · **Watch AI vs AI** · Human vs Human). Settings panel: Board, **AI level**, **Watch AI level** (spectate mode — cream-side AI vs black-side AI), **Timer**, **Tournament timer** (HvH only), Turn shot clock, Center rule — each timer/center row has **?** help toggle.
+- **Settings UI (2026-09):** Game mode on **hub page 1 only** (`#hub-mode-select`: Play vs AI · **Watch AI vs AI** · Play with a Friend). Board page settings: Board, **AI level**, **Watch AI level**, **Timer**, **Tournament timer** (HvH only), Turn shot clock, Center rule — each timer/center row has **?** help toggle.
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI) — chosen on start overlay, not duplicated in Settings.
 - **Default Feature Settings:**
   - `centerRule: 'off'` default on all 7 boards (End-Game/Cumulative selectable per board catalog).
@@ -95,9 +95,12 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | Item | Verdict |
 |------|---------|
 | **AI levels 4–5** | **Fix/remove (UI done)** — Settings + coach show **1–2–3** only; HonestAi still accepts 4–5 if passed in code |
-| **Watch AI / spectate UX** | **OK (Jest, 2026-09-09)** — **Watch AI vs AI** mode; `previewScriptedSelection` before hops; turn-start flash until first preview each turn. **UNCONFIRMED** human browser |
+| **Watch AI / spectate UX** | **OK (Jest, 2026-09-09)** — **Watch AI vs AI** mode; `previewScriptedSelection` before hops; turn-start flash until first preview each turn; **3-fold repetition draw** ends ping-pong loops (2026-09-11). **UNCONFIRMED** human browser |
+| **3-fold repetition draw** | **OK (Jest, 2026-09-11)** — engine `repetition` end reason; spectate + PvE + PvP. **UNCONFIRMED** human browser |
 | **Coach (teaching mode)** | **OK (2026-09-09)** — Video 1 on **7-bead · 4×5** (~**1:53**): moves, captures, Finish capture demo; **WIN / RESIGN / DRAW** endings use **`previewScriptedSelection`** (same rings as live pick). Left panel intro + bullets; play/pause/scrub; watch-only; `?coach=start`. Video 2 (timers/centre) **pending**. **Coach browser smoke:** CONFIRMED (`verify-coach-browser.mjs` 2026-09-06). **Human full watch-through:** UNCONFIRMED |
-| **Settings game mode** | **OK (2026-09)** — removed from right panel; start screen only |
+| **Settings game mode** | **OK (2026-09-11)** — hub page 1 `#hub-mode-select` only; not on board settings panel |
+| **Engine safety cap** | **OK (Jest, 2026-09-11)** — unlimited boards draw at 120 plies (`safety_cap`). **UNCONFIRMED** human browser |
+| **AI repetition steer** | **OK (Jest, 2026-09-11)** — HonestAi soft penalty on repeat positions. **UNCONFIRMED** human browser |
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |
 | **Center** (Off / End-game / Cumulative) | **OK** — Jest + AI eval + timer urgency on levels 2–3 |

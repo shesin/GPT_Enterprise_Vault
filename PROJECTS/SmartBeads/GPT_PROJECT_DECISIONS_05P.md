@@ -56,7 +56,13 @@ Three configurable end modes: move-limit, time-limit, unlimited — never hardco
 2. Center tiebreak — per active center rule (Off / End-game / Cumulative).
 3. Draw — if still tied.
 
-Draw is legitimate — not a failure to engineer away. No 3-fold repetition in production.
+Draw is legitimate — not a failure to engineer away.
+
+**Three-fold repetition:** same position (board occupancies + side to move + open chain state) occurring three times ends the match in a draw. Applies uniformly to PvE, PvP, and Watch AI vs AI.
+
+**Engine safety cap (unlimited mode only):** when board `maxPlies` is null, **120** completed plies without another end condition → draw (`safety_cap`). Last-resort belt (same order of magnitude as Lab harness) — **not** the product move-limit mode and **not** timer-based.
+
+**AI repetition steer:** `HonestAi` applies a soft eval penalty when a candidate turn would revisit an already-seen position (Lab-aligned). Does not forbid the legal third repeat — engine draw still owns termination.
 
 ---
 
@@ -132,7 +138,7 @@ Center nodes: amber square plates under center scoring nodes (all 7 boards).
 
 **Starter policy:** Human (cream) **first** on start overlay / new match. **New game / Play again** alternates opener in PvE. Board switch returns to start overlay with human first (does not consume alternation counter).
 
-**Watch AI inter-move pause:** 5s on 6/7/8-bead boards; 10s on larger boards.
+**Watch AI inter-move pause:** 5s on 6/7-bead boards; 10s on 8-bead and larger boards.
 
 ---
 
@@ -143,7 +149,7 @@ Center nodes: amber square plates under center scoring nodes (all 7 boards).
 | **BGM ▶ Play** | Field green gradient `#72bf77` → `#4caf50` |
 | **BGM ⏸ Pause** | Gold (`var(--gold)`) |
 | **Resign** | Gold bg, red border (see §3) |
-| **Finish capture** | Controls row after Resign; hidden until mid-chain |
+| **Finish capture** | **Same colours as Resign** (gold bg, red border, red hover inset); controls row after Resign; hidden until mid-chain |
 
 Game mode: chosen on hub or start overlay — **not** duplicated in Page 2 settings panel.
 
@@ -174,4 +180,4 @@ Central 5×5 matches 10-bead width prominence (~70% vertical play height). Wing 
 2. Implement in `src/` + Jest/WHEN tests must match the **WHEN** sentence.
 3. Update `GPT_PROJECT_STATUS_01P.md` integrity row — point to this section; do not restate full recipe.
 
-Forbidden without human approval: new draw rules, repetition draws, silent AI strength changes, prototype Lab rules ported to production.
+Forbidden without human approval: new draw rules beyond those locked above, silent AI strength changes, prototype Lab rules ported to production.

@@ -260,7 +260,7 @@ Also apply on SmartBeads work (one-line reminders — detail below):
 You MUST NOT add, port, or “complete” any gameplay / end-condition / scoring / timer / AI-difficulty product rule into `PROJECTS/SmartBeads/src/` unless it is already explicit in `GPT_PROJECT_RULES_01P.md` or `VISION_05P.md`, OR the human has explicitly approved it in the current task.
 
 Forbidden without approval:
-- 3-fold / N-fold repetition draws
+- 3-fold / N-fold repetition draws **unless already locked in `GPT_PROJECT_DECISIONS_05P.md` §4**
 - New draw conditions, move caps, alternate first-player as product defaults
 - New AI levels or silent strength changes beyond the approved contract
 - Copying prototype/board4 Lab rules into production “for completeness”
@@ -268,6 +268,16 @@ Forbidden without approval:
 If prototype has a rule and production docs do not: STOP. Report. Ask. Do not “helpfully” port it. Do not add a test that freezes an unapproved rule into the product.
 
 Do not edit `VISION_05P.md` or `GPT_PROJECT_RULES_01P.md` to fit an implementation — stop and report conflicts.
+
+## Code–doc integrity (no blunder ship)
+
+**Mismatch between code, DECISIONS, STATUS, MAP, AUDIT, tests, and verify scripts is forbidden.**
+
+- Same PR / same **Go** batch: code + DECISIONS (if product rule) + STATUS § Integrity + MAP + AUDIT supersession + Jest + scripts.
+- Never audit-order “remove unapproved rule” while shipped boards still allow infinite loops with no replacement termination.
+- Before closing mismatch work: grep for stale claims (`removed`, wrong DOM ids, forbidden lists that contradict DECISIONS).
+
+Detail → `GPT_PROJECT_RULES_01P.md` § Code–Doc Integrity · § Never Remove Safeguards Without Replacement.
 
 ## Never audit without failing tests + fixes
 

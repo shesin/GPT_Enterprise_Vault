@@ -44,6 +44,7 @@ const BATCHES = [
     files: [
       'PROJECTS/SmartBeads/src/config/__tests__/BoardCatalog.test.ts',
       'PROJECTS/SmartBeads/src/core/__tests__/SmartBeadsEngine.test.ts',
+      'PROJECTS/SmartBeads/src/core/__tests__/positionKey.test.ts',
       'PROJECTS/SmartBeads/src/core/__tests__/SmartBeadsEngine16.test.ts',
       'PROJECTS/SmartBeads/src/playtest/__tests__/HumanVsAiRunner.test.ts',
       'PROJECTS/SmartBeads/src/simulation/__tests__/SelfPlayRunner.test.ts',
@@ -70,7 +71,9 @@ const BATCHES = [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/clockPolicy.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/aiTurnPath.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.repetitionSteer.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.testAudit.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.repetition.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/spectate.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/CoachVideoPlayer.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/CoachVideoScript.test.ts',

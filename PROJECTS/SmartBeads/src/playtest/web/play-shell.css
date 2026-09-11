@@ -840,31 +840,26 @@ canvas {
 }
 .controls .finish {
   display: none;
-  background: #2f8c66;
-  color: #06261b;
-  font-weight: 600;
 }
 .controls .finish.visible {
   display: inline-block;
-  box-shadow: 0 0 0 2px #4ade80, 0 0 12px rgba(74, 222, 128, 0.45);
-  animation: finishPulse 1.4s ease-in-out infinite;
 }
 .controls .finish.visible.coach-demo {
-  box-shadow: 0 0 0 3px #86efac, 0 0 18px rgba(134, 239, 172, 0.65);
-  animation: finishPulse 0.9s ease-in-out infinite;
+  background: linear-gradient(180deg, #e8c860 0%, var(--gold) 100%);
+  box-shadow:
+    0 0 14px rgba(214, 69, 69, 0.55),
+    0 0 22px rgba(212, 168, 75, 0.45),
+    inset 0 0 10px rgba(214, 69, 69, 0.12);
+  animation: coach-resign-btn-glow 1.4s ease-in-out infinite;
 }
 .coach-lesson-points .coach-point-emphasis {
-  color: #86efac;
+  color: var(--gold);
   font-weight: 700;
-  background: rgba(47, 140, 102, 0.22);
+  background: rgba(212, 168, 75, 0.18);
   border-radius: 6px;
   padding: 4px 6px;
   margin: 0 -6px;
   list-style-position: inside;
-}
-@keyframes finishPulse {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.12); }
 }
 #undo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .stat { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
@@ -1035,17 +1030,20 @@ canvas {
   border: 2px solid var(--text);
   font-weight: 600;
 }
-#resign-btn {
+#resign-btn,
+#finish-btn {
   background: var(--gold);
   color: #06261b;
   border: 2px solid var(--red);
   font-weight: 600;
 }
-#resign-btn:hover:not(:disabled) {
+#resign-btn:hover:not(:disabled),
+#finish-btn:hover:not(:disabled) {
   background: var(--gold);
   box-shadow: inset 0 0 0 999px rgba(214, 69, 69, 0.14);
 }
-#resign-btn:focus-visible {
+#resign-btn:focus-visible,
+#finish-btn:focus-visible {
   outline: 2px solid var(--red);
   outline-offset: 2px;
 }

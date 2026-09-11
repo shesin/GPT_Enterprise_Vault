@@ -77,6 +77,43 @@ An audit is NOT done when you only list gaps. For every defect affecting shipped
 
 ---
 
+## Rule - Code–Doc Integrity (No Contradiction Ship)
+
+**Doc/code mismatch is a ship blocker — not a cleanup nicety.**
+
+When behaviour, termination, UI ids, or verify scripts change, the **same change set** must update together:
+
+1. Production code (`src/`)
+2. Locked product text in **`GPT_PROJECT_DECISIONS_05P.md`** (if it is a gameplay rule)
+3. **`GPT_PROJECT_STATUS_01P.md`** § Integrity (shipped vs claim)
+4. **`PROJECT_MAP_05P.md`** (if paths or ownership change)
+5. **`GPT_PROJECT_AUDIT_05P.md`** — supersede stale audit rows; do not leave “removed = safe” while players still hit the gap
+6. Jest + Playwright/verify scripts that exercise the behaviour
+
+**Never:**
+
+- Mark a safeguard **removed** in STATUS/AUDIT while a player-facing gap remains (e.g. Watch AI ping-pong with no draw and `maxPlies: null` on all boards).
+- Remove a prototype termination rule without an explicit human **keep vs remove** in DECISIONS, a **replacement** termination if removed, and a behavioural test that fails on infinite play.
+- Leave verify scripts on stale DOM ids (e.g. `#start-mode-select` after hub move to `#hub-mode-select`) or URLs that skip `?play=1` when the board shell is required.
+
+**Before claiming mismatch work done:** grep docs and `scripts/` for contradictory claims against code and DECISIONS.
+
+---
+
+## Rule - Never Remove Safeguards Without Replacement
+
+Prototype/Lab may include draw caps, repetition, or move limits. Production may differ — but **removal is a product decision**, not an audit cleanup.
+
+Removing any termination safeguard requires **all** of:
+
+- Human-approved text in **`GPT_PROJECT_DECISIONS_05P.md`**
+- Proof that remaining engine paths still end every reachable loop (test or explicit move-cap)
+- STATUS/MAP/AUDIT updated in the same PR — not “code only, docs later”
+
+If unsure whether removal is safe → **STOP**. Report the live failure mode. Do not “helpfully” delete.
+
+---
+
 ## Rule - Human Oracle
 
 When a bug is found by clicking on screen, encode those exact clicks as a Jest test first. Confirm the test FAILS, then fix engine/session/AI — not CSS/layout first.

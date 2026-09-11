@@ -69,7 +69,7 @@ Humans found basic defects in minutes. Prior AI audits listed gaps but did **not
 
 ## What the human ordered (this cycle)
 
-1. **Remove 3-fold repetition entirely** from production FeatureSession (not only delete a test). It was never approved for V1 Rules/VISION.
+1. **Remove 3-fold repetition entirely** from production FeatureSession (not only delete a test). It was never approved for V1 Rules/VISION. *(Superseded 2026-09-11 — re-approved DECISIONS §4; engine owner `SmartBeadsEngine`; see Failure class A2.)*
 2. **Explain how unapproved features entered** and write strict Cursor enforcement so agents never add product rules without approval.
 3. **Explain how major bugs survived 3 prior audits** and write strict enforcement against audit-without-fix behavior.
 4. Soften **Medium** so Hard feels tougher (especially on 8-bead); Easy already OK on 6×3×5.
@@ -91,7 +91,15 @@ Humans found basic defects in minutes. Prior AI audits listed gaps but did **not
 
 How it got in: agents treated prototype completeness (Lab matrix, INDEX HTML, chess-like draw rules) as license to copy into production. That violates human ownership of gameplay and Medium/Major approval gates.
 
-**Corrective action this cycle:** feature **removed** from production session code and tests. Prototype may still contain it; production must not.
+**Corrective action this cycle (2026-08):** feature **removed** from production session code and tests. Prototype may still contain it; production must not.
+
+> **Superseded 2026-09-11 (human playtest):** Removal caused **infinite AI ping-pong** in Watch AI vs AI with no termination. **Re-approved** in `GPT_PROJECT_DECISIONS_05P.md` §4 · implemented in `SmartBeadsEngine` · Jest `FeatureSession.repetition.test.ts`. **Lesson:** never remove a prototype termination safeguard without a human **keep vs remove** decision **and** a live-loop test. See RULES § Code–Doc Integrity.
+
+### Failure class A2 — Remove safeguard without replacement (2026-09-11)
+
+**Pattern:** Audit ordered “remove unapproved rule” while all V1 boards have `maxPlies: null` and production had **no** repetition draw → Watch AI could loop for minutes. Docs still said “removed = safe.”
+
+**Mandatory fix class:** code + DECISIONS + STATUS/MAP + tests/scripts that reference the behaviour — same change set, same PR.
 
 ### Failure class B — Audits that create false confidence
 
@@ -137,7 +145,7 @@ What they did **not** do:
 
 ## Corrective work in this cycle (code)
 
-- 3-fold removed from production `FeatureSession` + tests
+- 3-fold removed from production `FeatureSession` + tests *(superseded 2026-09-11 — restored in `SmartBeadsEngine`)*
 - Medium ~20% capture-aware soft-miss; Hard 0%; Easy unchanged (~30%)
 - Strength gates include **8x4x6** (human-reported Medium≈Hard) and Hard coverage on **16**
 - `shellTimerShouldSkip` — clocks tick during `aiThinking`/`animating`; Jest proves shot clock can expire on BLUE for Ivory win

@@ -295,7 +295,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const startGameBtn = document.getElementById('start-game-btn') as HTMLButtonElement | null;
   const startCoachBtn = document.getElementById('start-coach-btn') as HTMLButtonElement | null;
   const startBoardSelect = document.getElementById('start-board-select') as HTMLSelectElement | null;
-  const startModeSelect = document.getElementById('start-mode-select') as HTMLSelectElement | null;
+  const hubModeSelect = document.getElementById('hub-mode-select') as HTMLSelectElement | null;
   const celebrationFx = document.getElementById('board-celebration-fx') as HTMLDivElement | null;
   const celebrationParticles = document.getElementById('celebration-particles') as HTMLDivElement | null;
   const modalCelebrationParticles = document.getElementById('modal-celebration-particles') as HTMLDivElement | null;
@@ -796,7 +796,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     shotClockSelect.disabled = coach;
     aiLevelSelect.disabled = coach;
     if (coachLevelSelect) coachLevelSelect.disabled = coach;
-    if (startModeSelect) startModeSelect.disabled = coach;
+    if (hubModeSelect) hubModeSelect.disabled = coach;
     restartBtn.textContent = coach ? 'Restart video' : 'New game';
   }
 
@@ -825,7 +825,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     pendingResignPlayer = null;
 
     if (startScreenOverlay) startScreenOverlay.classList.add('hidden');
-    if (startModeSelect) startModeSelect.value = 'pve';
+    if (hubModeSelect) hubModeSelect.value = 'pve';
 
     syncCoachShellUi();
     syncModeUi();
@@ -910,10 +910,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }));
   }
 
-  /** Mode from page-1 hub or page-2 start overlay (not duplicated in Settings). */
+  /** Mode from page-1 hub `#hub-mode-select` (not duplicated in Settings). */
   function readGameMode(): GameFeatureSettings['mode'] {
-    const hubModeSelect = document.getElementById('hub-mode-select') as HTMLSelectElement | null;
-    return (startModeSelect?.value ?? hubModeSelect?.value ?? 'pve') as GameFeatureSettings['mode'];
+    return (hubModeSelect?.value ?? 'pve') as GameFeatureSettings['mode'];
   }
 
   function hasPlayHub(): boolean {
@@ -1049,8 +1048,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (timerId) clearInterval(timerId);
     timerId = null;
     cancelAiWork();
-    if (startModeSelect) {
-      startModeSelect.value = session.getSettings().mode;
+    if (hubModeSelect) {
+      hubModeSelect.value = session.getSettings().mode;
     }
     syncStartBoardSelect();
     syncModeUi();
@@ -1942,11 +1941,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     switchBoard(startBoardSelect.value as ProductBoardId);
   });
 
-  startModeSelect?.addEventListener('change', () => {
-    if (!isAwaitingStart()) return;
-    applyStartOverlayModeToSession();
-  });
-
   resignBtn.addEventListener('click', beginResignation);
   resignAgreeBtn.addEventListener('click', () => {
     if (pendingResignPlayer === null) return;
@@ -2001,7 +1995,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     mode: GameFeatureSettings['mode'],
     action: 'play' | 'coach' | 'spectate',
   ): void {
-    if (startModeSelect) startModeSelect.value = mode;
+    if (hubModeSelect) hubModeSelect.value = mode;
     prepareBoardSwitch(boardId);
     applyStartOverlayModeToSession();
     if (action === 'coach') {

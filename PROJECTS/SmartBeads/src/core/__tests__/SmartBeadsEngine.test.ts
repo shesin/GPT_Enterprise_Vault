@@ -1,4 +1,4 @@
-import { SmartBeadsEngine } from '../SmartBeadsEngine';
+import { ENGINE_SAFETY_MAX_PLIES, SmartBeadsEngine } from '../SmartBeadsEngine';
 import { listBoardVariants, resolveBoard } from '../../config/BoardConfig';
 import { Board4 } from '../../boards/Board4';
 import { Board5 } from '../../boards/Board5';
@@ -216,6 +216,18 @@ describe('SmartBeadsEngine', () => {
     expect(state.gameOver).toBe(false);
     expect(state.winner).toBeUndefined();
     expect(state.currentPlayer).toBe('BLUE');
+  });
+
+  it('ends unlimited boards at engine safety cap with a draw', () => {
+    const engine = new SmartBeadsEngine('6');
+    expect(engine.getState().board.maxPlies).toBeNull();
+    engine.getState().moveCount = ENGINE_SAFETY_MAX_PLIES - 1;
+    const move = engine.getLegalMoves()[0];
+    engine.applyMove(move);
+    if (engine.getChainPieceId() !== null) engine.endTurn();
+    expect(engine.getState().gameOver).toBe(true);
+    expect(engine.getState().winner).toBe('DRAW');
+    expect(engine.getState().endReason).toBe('safety_cap');
   });
 
   it('does not end the game when maxPlies is 0 (unlimited)', () => {

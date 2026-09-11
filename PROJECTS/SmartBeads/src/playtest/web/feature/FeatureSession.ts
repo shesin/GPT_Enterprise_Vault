@@ -48,7 +48,7 @@ function opponentOf(player: Player): Player {
 /**
  * Feature-layer session wrapping M1 SmartBeadsEngine.
  * Timers, center tiebreak, and undo live here — not in core rules.
- * 3-fold repetition was removed by product decision (never approved for V1).
+ * 3-fold repetition draw is enforced in SmartBeadsEngine — see GPT_PROJECT_DECISIONS_05P.md §4.
  */
 export class FeatureSession {
   private boardVariant: BoardVariant;
@@ -455,6 +455,7 @@ export class FeatureSession {
     if (this.featureOver) return;
     const state = this.engine.getState();
     if (!state.gameOver || this.activeCenterRule() === 'off') return;
+    if (state.winner === 'DRAW') return;
     if (state.captures.RED !== state.captures.BLUE) return;
 
     let c1 = 0;

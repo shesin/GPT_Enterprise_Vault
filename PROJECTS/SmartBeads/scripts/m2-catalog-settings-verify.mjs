@@ -3,8 +3,9 @@
  * Requires: npm run web:smartbeads (http://localhost:5173/)
  */
 import { chromium } from 'playwright';
+import { playShellUrl } from './lib/play-shell-setup.mjs';
 
-const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+const URL = playShellUrl();
 
 /** Expected catalog settings — must match BoardCatalog.ts exactly. */
 const EXPECTED = {

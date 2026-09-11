@@ -5,8 +5,9 @@
 import { chromium } from 'playwright';
 import { clickNode } from './lib/project-node.mjs';
 import { isolatedFromSnaps, liveSnap, openingSlideNodes, waitForHumanPlyCommitted, waitForLaterPly } from './lib/live-ply.mjs';
+import { playShellUrl } from './lib/play-shell-setup.mjs';
 
-const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+const URL = playShellUrl();
 const results = [];
 
 function record(name, ok, detail) {
@@ -67,7 +68,7 @@ async function main() {
     record('AI later advances the turn', parseInt(turnsAfterSlide || '0', 10) >= 2, `turns=${turnsAfterSlide}`);
 
     // Settings visible
-    record('start-screen mode select', await page.locator('#start-mode-select option[value="pvp"]').count() === 1, 'pvp option');
+    record('hub mode select', await page.locator('#hub-mode-select option[value="pvp"]').count() === 1, 'pvp option');
     record('AI level select', await page.locator('#ai-level-select').isVisible(), 'ai levels');
     record('timer select', await page.locator('#timer-select option[value="25"]').count() === 1, '25 min');
     record('shot clock select', await page.locator('#shot-clock-select option[value="90"]').count() === 1, '90 sec');
@@ -114,13 +115,13 @@ async function main() {
     );
 
     // PvP mode disables AI level
-    await page.selectOption('#start-mode-select', 'pvp');
+    await page.selectOption('#hub-mode-select', 'pvp');
     await page.waitForTimeout(400);
     record('PvP disables AI level', await page.locator('#ai-level-select').isDisabled(), 'ai disabled');
     record('PvP shows Human for P2', (await page.locator('#p2-role').textContent()) === '(Human)', await page.locator('#p2-role').textContent());
 
     // Active player pill
-    await page.selectOption('#start-mode-select', 'pve');
+    await page.selectOption('#hub-mode-select', 'pve');
     await page.locator('#restart-btn').click();
     await page.waitForTimeout(400);
     record('active pill on P1 at start', await page.locator('#pill-p1.active').isVisible(), 'pill-p1 active');

@@ -18,7 +18,7 @@ describe('Coach watch (AI vs AI)', () => {
     expect(spectateInterMoveDelayMs('6x3x5')).toBe(5_000);
     expect(spectateInterMoveDelayMs('6x4')).toBe(5_000);
     expect(spectateInterMoveDelayMs('7x4x5')).toBe(5_000);
-    expect(spectateInterMoveDelayMs('8x4x6')).toBe(5_000);
+    expect(spectateInterMoveDelayMs('8x4x6')).toBe(10_000);
     expect(spectateInterMoveDelayMs('10x5')).toBe(10_000);
     expect(spectateInterMoveDelayMs('16')).toBe(10_000);
   });

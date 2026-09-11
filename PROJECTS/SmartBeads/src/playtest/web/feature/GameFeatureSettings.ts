@@ -25,12 +25,12 @@ export const COACH_DEFAULT_BOARD_ID = '8x4x6' as const;
 export const SPECTATE_BOARD_ID = COACH_DEFAULT_BOARD_ID;
 /** Pause after each animated move completes (ms) — 10+ bead boards. */
 export const SPECTATE_INTER_MOVE_DELAY_MS = 10_000;
-/** Watch AI vs AI — 6-, 7-, and 8-bead boards. */
+/** Watch AI vs AI — 6- and 7-bead boards. */
 export const SPECTATE_INTER_MOVE_DELAY_SMALL_BOARD_MS = 5_000;
 
 export function spectateInterMoveDelayMs(boardId: ProductBoardId): number {
   const beadCount = getCatalogEntry(boardId)?.beadCount;
-  if (beadCount !== undefined && beadCount <= 8) {
+  if (beadCount !== undefined && beadCount <= 7) {
     return SPECTATE_INTER_MOVE_DELAY_SMALL_BOARD_MS;
   }
   return SPECTATE_INTER_MOVE_DELAY_MS;

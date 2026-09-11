@@ -3,8 +3,9 @@
  * Requires: npm run web:smartbeads (http://localhost:5173/)
  */
 import { chromium } from 'playwright';
+import { playShellUrl } from './lib/play-shell-setup.mjs';
 
-const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
+const URL = playShellUrl();
 const results = [];
 
 function record(name, ok, detail) {
@@ -26,7 +27,7 @@ async function cancelConfirm(page) {
 
 async function runPvpResign(page, acceptDraw) {
   await page.goto(URL, { waitUntil: 'networkidle' });
-  await page.selectOption('#start-mode-select', 'pvp');
+  await page.selectOption('#hub-mode-select', 'pvp');
   await page.locator('#restart-btn').click();
   await page.waitForTimeout(400);
 
@@ -52,7 +53,7 @@ async function runPveResign(page, aiOverride) {
     sessionStorage.setItem('sb-test-resign-ai', mode);
   }, aiOverride);
 
-  await page.selectOption('#start-mode-select', 'pve');
+  await page.selectOption('#hub-mode-select', 'pve');
   await page.locator('#restart-btn').click();
   await page.waitForTimeout(400);
 

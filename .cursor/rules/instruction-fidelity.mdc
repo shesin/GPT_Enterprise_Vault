@@ -15,6 +15,7 @@ brief summary last. no repeating of same things.
 - **Better idea** — say it, wait for approval.
 - **After edits** — list files changed and one line per file.
 - **stuck test case**- if u r stuck in test loop that means ur test cases r crap, first audit and fix it then run
+- **Code–doc mismatch (SmartBeads)** — doc says removed / forbidden while code or live play still needs the rule, or scripts use stale DOM ids: **ship blocker**. Fix code + DECISIONS + STATUS + MAP + AUDIT + tests + scripts in one **Go** batch. Never “removed = safe” with a live infinite-loop gap. Detail → `GPT_PROJECT_RULES_01P.md` § Code–Doc Integrity.
 
 # Git
 

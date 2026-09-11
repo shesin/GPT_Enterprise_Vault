@@ -11,6 +11,16 @@ import {
   requireIntersection,
   TerminationProfile,
 } from '../models/GameState';
+import { buildPositionKey, isThreefoldRepetition } from './positionKey';
+
+/** Last-resort draw when unlimited boards (`maxPlies: null`) exceed this many completed plies (Lab-aligned). */
+export const ENGINE_SAFETY_MAX_PLIES = 120;
+
+export type EngineSnapshot = {
+  state: GameState;
+  chainPieceId: number | null;
+  positionHistory?: Record<string, number>;
+};
 
 /**
  * Project gameplay engine.
@@ -26,10 +36,12 @@ export class SmartBeadsEngine {
   private currentState: GameState;
   /** When set, the chaining bead may continue capturing; stop only via endTurn (Finish capture). */
   private chainPieceId: number | null = null;
+  private positionHistory: Record<string, number> = {};
 
   constructor(variant: BoardVariant) {
     this.variant = variant;
     this.currentState = this.initializeInitialState(variant);
+    this.recordPositionCount();
   }
 
   getVariant(): BoardVariant {
@@ -41,7 +53,7 @@ export class SmartBeadsEngine {
   }
 
   /** Deep snapshot for undo, AI search, and feature-layer restore. */
-  exportSnapshot(): { state: GameState; chainPieceId: number | null } {
+  exportSnapshot(): EngineSnapshot {
     return {
       state: {
         ...this.currentState,
@@ -49,17 +61,29 @@ export class SmartBeadsEngine {
         captures: { ...this.currentState.captures },
       },
       chainPieceId: this.chainPieceId,
+      positionHistory: { ...this.positionHistory },
     };
   }
 
   /** Restore a prior snapshot without changing match rules. */
-  loadSnapshot(snapshot: { state: GameState; chainPieceId: number | null }): void {
+  loadSnapshot(snapshot: EngineSnapshot): void {
     this.currentState = {
       ...snapshot.state,
       board: cloneBoardDefinition(snapshot.state.board),
       captures: { ...snapshot.state.captures },
     };
     this.chainPieceId = snapshot.chainPieceId;
+    if (snapshot.positionHistory) {
+      this.positionHistory = { ...snapshot.positionHistory };
+    } else {
+      this.rebaselineRepetitionHistory();
+    }
+  }
+
+  /** Re-seed repetition counts after scripted board setup that bypasses applyMove. */
+  rebaselineRepetitionHistory(): void {
+    this.positionHistory = {};
+    this.recordPositionCount();
   }
 
   /** Counts remaining pieces on the board for the specified player. */
@@ -199,17 +223,10 @@ export class SmartBeadsEngine {
       return;
     }
 
-    if (hasReachedPlyLimit(this.currentState.board.maxPlies, this.currentState.moveCount)) {
-      this.currentState.gameOver = true;
-      this.evaluatePlyLimitWinner();
-      return;
-    }
+    if (this.tryEndAtPlyOrSafetyLimit()) return;
 
     this.currentState.currentPlayer = this.opponentOf(mover);
-
-    if (this.getLegalMoves().length === 0) {
-      this.endGame(mover, 'stalemate');
-    }
+    this.resolveTurnEnd(mover);
   }
 
   /** SHOLO_GUTI.html completeTurn semantics — elimination then stalemate. */
@@ -228,20 +245,47 @@ export class SmartBeadsEngine {
       return;
     }
 
+    if (this.tryEndAtPlyOrSafetyLimit()) return;
+
+    this.currentState.currentPlayer = this.opponentOf(mover);
+    this.resolveTurnEnd(mover);
+  }
+
+  /** Board maxPlies (product move-limit) or engine safety cap on unlimited boards. */
+  private tryEndAtPlyOrSafetyLimit(): boolean {
     if (hasReachedPlyLimit(this.currentState.board.maxPlies, this.currentState.moveCount)) {
       this.currentState.gameOver = true;
       this.evaluatePlyLimitWinner();
+      return true;
+    }
+    if (
+      this.currentState.board.maxPlies == null &&
+      this.currentState.moveCount >= ENGINE_SAFETY_MAX_PLIES
+    ) {
+      this.endGame('DRAW', 'safety_cap');
+      return true;
+    }
+    return false;
+  }
+
+  private resolveTurnEnd(mover: Player): void {
+    if (this.recordPositionCount()) {
+      this.endGame('DRAW', 'repetition');
       return;
     }
-
-    this.currentState.currentPlayer = this.opponentOf(mover);
-
     if (this.getLegalMoves().length === 0) {
       this.endGame(mover, 'stalemate');
     }
   }
 
-  private endGame(winner: Player, reason: string): void {
+  private recordPositionCount(): boolean {
+    const key = buildPositionKey(this.currentState, this.chainPieceId);
+    const count = (this.positionHistory[key] ?? 0) + 1;
+    this.positionHistory[key] = count;
+    return isThreefoldRepetition(count);
+  }
+
+  private endGame(winner: Player | 'DRAW', reason: string): void {
     this.currentState.gameOver = true;
     this.currentState.winner = winner;
     this.currentState.endReason = reason;

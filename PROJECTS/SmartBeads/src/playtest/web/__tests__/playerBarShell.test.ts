@@ -16,14 +16,14 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).not.toContain('id="top-timer-mmss"');
     expect(indexHtml).toContain('id="timer-select"');
     expect(indexHtml).toContain('id="tournament-timer-select"');
-    expect(indexHtml).toContain('id="start-mode-select"');
+    expect(indexHtml).not.toContain('id="start-mode-select"');
+    expect(indexHtml).toContain('id="hub-mode-select"');
     expect(indexHtml).toContain('id="shot-ring-p1"');
     expect(indexHtml).toContain('id="shot-ring-p2"');
     expect(indexHtml).not.toContain('class="player-bar"');
     expect(indexHtml).not.toContain('class="board-stack"');
     expect(indexHtml).not.toContain('timer-match-display');
     expect(indexHtml).not.toContain('id="game-mode-select"');
-    expect(indexHtml).toContain('id="start-mode-select"');
     expect(indexHtml).toContain('>AI level</label>');
     expect(indexHtml).toContain('id="ai-level-select"');
     expect(indexHtml).not.toContain('Super Expert');
@@ -36,8 +36,9 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).not.toContain('controls-pair');
   });
 
-  it('start screen offers Watch AI and settings has Watch AI level below AI level', () => {
-    expect(indexHtml).toContain('value="spectate">Watch AI vs AI');
+  it('hub offers Watch AI and board settings has Watch AI level below AI level', () => {
+    expect(indexHtml).toMatch(/value="spectate"[^>]*>Watch AI vs AI|Watch AI vs AI[^<]*<\/option>/);
+    expect(indexHtml).toContain('id="hub-mode-select"');
     expect(indexHtml).toContain('id="coach-level-select"');
     expect(indexHtml).toContain('>Watch AI level</label>');
     expect(indexHtml).toContain('id="coach-level-setting"');
