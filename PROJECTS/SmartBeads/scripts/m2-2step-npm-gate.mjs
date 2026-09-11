@@ -3,14 +3,15 @@
  *  - m2-2step-observe: 16-bead A41→A42 two-click occupancy.
  *  - m2-capture-geometry-browser: real-click captures, junction, chain, optional stop.
  * Starts Vite only if http://localhost:5173/ is not already up.
- * Play shell gates use /play-board.html because / is the hub (board hidden until direct play).
+ * Play shell gates use index.html?play=1 (direct board shell — same as production verify scripts).
  */
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { playShellUrl } from './lib/play-shell-setup.mjs';
 
 const HUB_URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
-const PLAY_URL = process.env.SMARTBEADS_PLAY_URL || 'http://localhost:5173/play-board.html';
+const PLAY_URL = playShellUrl(HUB_URL);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const GATES = [

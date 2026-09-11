@@ -87,6 +87,7 @@ SmartBeads/
 │   ├── m2-gameplay-verify.mjs         # prototype-pixel + isolated first ply
 │   ├── m2-all-boards-visual-verify.mjs
 │   ├── lib/live-ply.mjs               # live snapshot / isolated ply helpers
+│   ├── lib/play-shell-setup.mjs       # playShellUrl, waitForPlayShell, resetBoardViaTestApi
 │   ├── lib/project-node.mjs           # Playwright canvas click by node
 │   ├── m2-6x4-browser-verify.mjs
 │   ├── m2-6x3x5-browser-verify.mjs
@@ -188,7 +189,7 @@ Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for
 
 **Production PvE path:** `SmartBeadsEngine` → `FeatureSession` → `HonestAi.selectAiTurnPath` → `PlayController.runAiTurn` (the browser loop is the animated twin). Jest for that path: `src/playtest/web/__tests__/v1ProductionSanity.test.ts` (all seven V1 boards: every `jumpPath` captures, unique-over click, Easy games), `v1GeometryCaptureAudit.test.ts` (geometry, slides, captures, multi-jump, optional stop, illegal hops, renderer-vs-legality on all seven), plus `productionPve16.test.ts` and `PlayController.test.ts`. `HumanVsAiRunner` uses `executeAiRandomMove`, not HonestAi.
 
-**Live browser evidence** is separate from Jest and runs in `npm test`: `m2-2step-observe.mjs` (two-click occupancy) and `m2-capture-geometry-browser.mjs` (real-click captures and the 16-bead junction). `window.__SB_TEST__` exposes the session through a getter — it must never capture the session by value, because `switchBoard`/`resetGame` rebind it.
+**Live browser evidence** is separate from Jest and runs in `npm test`: `m2-2step-observe.mjs` (two-click occupancy) and `m2-capture-geometry-browser.mjs` (real-click captures and the 16-bead junction). Gates load `index.html?play=1` and reset boards via `__SB_TEST__.enterFromHub` (`lib/play-shell-setup.mjs`) — not `#restart-btn` (which returns to hub on index). `window.__SB_TEST__` exposes the session through a getter — it must never capture the session by value, because `switchBoard`/`resetGame` rebind it.
 
 ### src/simulation/
 

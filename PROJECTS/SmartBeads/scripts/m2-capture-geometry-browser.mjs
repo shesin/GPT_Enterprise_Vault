@@ -9,8 +9,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { clickPrototypeNode, liveSnap } from './lib/live-ply.mjs';
+import { playShellUrl, resetBoardViaTestApi, waitForPlayShell } from './lib/play-shell-setup.mjs';
 
-const URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/play-board.html';
+const URL = playShellUrl();
 const BOARDS = [
   { catalogId: '16', variant: '16' },
   { catalogId: '12x6x5', variant: '12x6x5' },
@@ -28,16 +29,8 @@ function record(name, ok, detail) {
 }
 
 async function setup(page, catalogId) {
-  await page.waitForFunction(() => document.querySelectorAll('#board-select option').length > 0);
-  await page.selectOption('#board-select', catalogId);
-  await page.selectOption('#hub-mode-select', 'pvp');
-  await page.selectOption('#timer-select', 'off');
-  await page.selectOption('#shot-clock-select', 'off');
-  await page.locator('#restart-btn').click();
-  await page.waitForTimeout(300);
-  await page.evaluate(() => window.__SB_TEST__.forceStarter('RED'));
-  await page.evaluate(() => document.getElementById('start-game-btn')?.click());
-  await page.waitForTimeout(200);
+  await page.waitForFunction(() => window.__SB_TEST__?.enterFromHub);
+  await resetBoardViaTestApi(page, catalogId, 'pvp');
 }
 
 /** Pick a capture route on this board, preferring the requested labels. */
@@ -143,10 +136,10 @@ function captureOk(route, selected, after) {
 
 async function main() {
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   await page.goto(URL, { waitUntil: 'networkidle' });
+  await waitForPlayShell(page);
   await page.waitForFunction(() => document.querySelectorAll('#board-select option').length > 0);
-  await page.evaluate(() => document.getElementById('start-game-btn')?.click());
   await page.waitForTimeout(400);
 
   const snapDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'evidence-capture');

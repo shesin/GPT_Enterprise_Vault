@@ -21,7 +21,7 @@ The production codebase is fully implemented in clean TypeScript (`src/`), with 
 
 ## 7 Locked V1 Boards Status
 
-All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**568 tests**, 50 suites — Jest verified 2026-09-09 via `test:jest`; browser gates UNCONFIRMED):
+All 7 production boards are registered in `BoardConfig.ts`, selectable in `BoardCatalog.ts`, and covered by Jest + headless browser gates (**591 tests**, 52 suites — Jest verified 2026-09-11 via `test:jest`; browser gates **automated pass** 2026-09-11 via `m2-2step-npm-gate.mjs`; human browser **UNCONFIRMED**):
 
 | # | Board Variant | Geometry & Architecture | Status |
 |---|---|---|---|
@@ -80,9 +80,9 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Alternating opener (local):** Start overlay → human (cream) first; **New game / Play again** alternates opener in PvE. **FUNCTIONAL** (Jest + browser policy checks).
 
 ### 5. Test & Quality Gates
-- **Jest (568 tests, 50 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — batched runner: `scripts/run-jest-batched.mjs` (50 files on disk, audit coverage gate). Verified 2026-09-09.
+- **Jest (591 tests, 52 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — batched runner: `scripts/run-jest-batched.mjs` (audit coverage gate). Verified 2026-09-11.
 - **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback`), **process regression guards** (`processRegressionGuards` — cross-surface sync, turn-start flash WHEN), Finish capture on all boards via session tests, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
-- **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs`).
+- **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs` on `index.html?play=1`; board reset via `__SB_TEST__.enterFromHub`). **Automated pass** 2026-09-11.
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
 - **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; gates in `VISION/CURSOR_PROMPT_01.md`; hooks in `.cursor/rules/smartbeads-core.mdc` + `instruction-fidelity.mdc` § Process.
 
@@ -110,7 +110,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **Shot clock** | **OK** — ticks during AI; expiry tested |
 | **Timer** | **OK** — shared clock; expiry → capture/centre/beads; **mm:ss text only** |
 | **Tournament timer** | **OK (Jest)** — HvH chess clocks; flag fall = loss; centre off; **UNCONFIRMED** human browser |
-| **Engine** (moves, captures, chains) | **OK** — Jest + browser gates |
+| **Engine** (moves, captures, chains) | **OK** — Jest + browser gates (automated pass 2026-09-11) |
 | **Finish capture (optional chain stop)** | **OK (Jest)** — controls row, `finishChain` ends turn, coach demo; human browser **UNCONFIRMED** |
 | **Turn bead highlighting** | **OK (Jest, 2026-09-11)** — see **DECISIONS §7–§8**. **Human browser UNCONFIRMED** |
 | **Settings ? help** | **OK (Jest, 2026-09-09)** — Timer, Tournament timer, Turn shot clock, Center rule rows in `index.html` / `play-board.html`. **UNCONFIRMED** human browser |
@@ -153,4 +153,4 @@ Step 3  npx.cmd vite                       → your eyes on coach / play (5173)
 
 Details: batched runner `scripts/run-jest-batched.mjs` (see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog for audit history only).
 
-**Dev only (not normal play):** automated browser gates and `play-board.html` may boot Vite on 5173 directly — you do not need a second local command or port 5174.
+**Dev only (not normal play):** automated browser gates boot Vite on 5173 and open `index.html?play=1` — you do not need a second local command or port 5174.
