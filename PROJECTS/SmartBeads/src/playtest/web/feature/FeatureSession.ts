@@ -56,7 +56,7 @@ export class FeatureSession {
   private settings: GameFeatureSettings;
   private uiState: UiInteractionState = 'idle';
   private selectedId: number | null = null;
-  /** True only at match start; false after first pick or move — never again until reset/new game. */
+  /** True at idle turn start; false after first pick on that turn — re-armed when each turn completes. */
   private turnStartRingsPending = true;
   private coachGlowNodeIds: number[] = [];
   private coachHighlightTargets: number[] = [];
@@ -444,6 +444,7 @@ export class FeatureSession {
     }
 
     this.shotRemaining = this.shotLimit;
+    this.turnStartRingsPending = true;
   }
 
   /**

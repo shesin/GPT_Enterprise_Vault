@@ -1,0 +1,8 @@
+{
+  "leftBg": "rgb(47, 77, 64)",
+  "rightBg": "rgb(47, 77, 64)",
+  "resignBg": "rgb(212, 168, 75)",
+  "resignBorder": "rgb(214, 69, 69)",
+  "p1Classes": "play-block play-block-human active",
+  "p2Classes": "play-block play-block-ai"
+}

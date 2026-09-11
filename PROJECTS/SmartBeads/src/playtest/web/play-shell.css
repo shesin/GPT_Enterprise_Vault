@@ -1035,31 +1035,44 @@ canvas {
   border: 2px solid var(--text);
   font-weight: 600;
 }
-#resign-btn { background: #5a4030; color: var(--text); }
+#resign-btn {
+  background: var(--gold);
+  color: #06261b;
+  border: 2px solid var(--red);
+  font-weight: 600;
+}
+#resign-btn:hover:not(:disabled) {
+  background: var(--gold);
+  box-shadow: inset 0 0 0 999px rgba(214, 69, 69, 0.14);
+}
+#resign-btn:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
 
 #resign-btn.coach-resign-btn-glow {
-  background: linear-gradient(180deg, #6b4a32 0%, #5a4030 100%);
-  color: var(--gold);
-  border: 2px solid var(--gold);
+  background: linear-gradient(180deg, #e8c860 0%, var(--gold) 100%);
+  color: #06261b;
+  border: 2px solid var(--red);
   box-shadow:
-    0 0 14px rgba(212, 168, 75, 0.85),
-    0 0 28px rgba(212, 168, 75, 0.45),
-    inset 0 0 12px rgba(212, 168, 75, 0.25);
+    0 0 14px rgba(214, 69, 69, 0.55),
+    0 0 22px rgba(212, 168, 75, 0.45),
+    inset 0 0 10px rgba(214, 69, 69, 0.12);
   animation: coach-resign-btn-glow 1.4s ease-in-out infinite;
 }
 
 @keyframes coach-resign-btn-glow {
   0%, 100% {
     box-shadow:
-      0 0 12px rgba(212, 168, 75, 0.65),
-      0 0 24px rgba(212, 168, 75, 0.3),
-      inset 0 0 8px rgba(212, 168, 75, 0.18);
+      0 0 10px rgba(214, 69, 69, 0.45),
+      0 0 20px rgba(212, 168, 75, 0.3),
+      inset 0 0 8px rgba(214, 69, 69, 0.1);
   }
   50% {
     box-shadow:
-      0 0 20px rgba(212, 168, 75, 0.95),
-      0 0 40px rgba(212, 168, 75, 0.5),
-      inset 0 0 16px rgba(212, 168, 75, 0.32);
+      0 0 18px rgba(214, 69, 69, 0.7),
+      0 0 32px rgba(212, 168, 75, 0.45),
+      inset 0 0 14px rgba(214, 69, 69, 0.18);
   }
 }
 
@@ -1108,7 +1121,11 @@ canvas {
   padding: 6px;
   font-size: 0.8rem;
 }
-#bgm-play { background: var(--ok); color: #06261b; border: none; }
+#bgm-play {
+  background: linear-gradient(180deg, #72bf77, #4caf50);
+  color: #06261b;
+  border: none;
+}
 #bgm-pause { background: var(--gold); color: #06261b; border: none; }
 .bgm-vol-row {
   display: flex;

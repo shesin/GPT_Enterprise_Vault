@@ -2153,7 +2153,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   bgmVol.addEventListener('input', () => {
     bgmAudio.volume = parseFloat(bgmVol.value) || 0;
   });
-
   const playShell = document.getElementById('play-shell') as HTMLDivElement | null;
 
   function applyPremiumShell(isPremium: boolean): void {

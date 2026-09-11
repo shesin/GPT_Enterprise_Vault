@@ -81,7 +81,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 
 ### 5. Test & Quality Gates
 - **Jest (568 tests, 50 suites):** run via `npm run test:jest` or `npm run test:jest:fast` — batched runner: `scripts/run-jest-batched.mjs` (50 files on disk, audit coverage gate). Verified 2026-09-09.
-- **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback`), **process regression guards** (`processRegressionGuards` — cross-surface sync, match-start flash WHEN), Finish capture on all boards via session tests, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
+- **Coverage:** AI tiers (incl. Medium soft-miss + 8x4x6/16 gates), center/timers, all-7-board smoke, first-ply occupancy, shell layout contracts (`playerBarShell`, `viewportFit`, `creamCampRendersLower`), move feedback (`CanvasBoardRenderer.moveFeedback`), **process regression guards** (`processRegressionGuards` — cross-surface sync, turn-start flash WHEN), Finish capture on all boards via session tests, shot clock during AI, PvP chess-clock tick, Expert depth-2 search completion (all 7 boards).
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs`).
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
 - **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; gates in `VISION/CURSOR_PROMPT_01.md`; hooks in `.cursor/rules/smartbeads-core.mdc` + `instruction-fidelity.mdc` § Process.
@@ -95,7 +95,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | Item | Verdict |
 |------|---------|
 | **AI levels 4–5** | **Fix/remove (UI done)** — Settings + coach show **1–2–3** only; HonestAi still accepts 4–5 if passed in code |
-| **Watch AI / spectate UX** | **OK (Jest, 2026-09-09)** — **Watch AI vs AI** mode; `previewScriptedSelection` before hops; match-start flash until first preview. **UNCONFIRMED** human browser |
+| **Watch AI / spectate UX** | **OK (Jest, 2026-09-09)** — **Watch AI vs AI** mode; `previewScriptedSelection` before hops; turn-start flash until first preview each turn. **UNCONFIRMED** human browser |
 | **Coach (teaching mode)** | **OK (2026-09-09)** — Video 1 on **7-bead · 4×5** (~**1:53**): moves, captures, Finish capture demo; **WIN / RESIGN / DRAW** endings use **`previewScriptedSelection`** (same rings as live pick). Left panel intro + bullets; play/pause/scrub; watch-only; `?coach=start`. Video 2 (timers/centre) **pending**. **Coach browser smoke:** CONFIRMED (`verify-coach-browser.mjs` 2026-09-06). **Human full watch-through:** UNCONFIRMED |
 | **Settings game mode** | **OK (2026-09)** — removed from right panel; start screen only |
 | **AI level control** | **OK (Jest)** — `playerBarShell` + `GameFeatureSettings`; **UNCONFIRMED** human browser sign-off |
@@ -103,15 +103,17 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **Center** (Off / End-game / Cumulative) | **OK** — Jest + AI eval + timer urgency on levels 2–3 |
 | **SFX bundle** | **OK (2026-09-08)** — eight WAV in repo-root `public/audio/` only; main JS ~74 kB (was ~601 kB with embed) |
 | **Resign modal a11y** | **OK (2026-09-04)** — dashed/solid + labels; not red/green-only |
+| **Resign button (shell)** | **OK (2026-09-11)** — gold background, red border, subtle red hover; coach glow aligned. **UNCONFIRMED** human browser |
+| **BGM Play button** | **OK (2026-09-11)** — Field green gradient (`#72bf77` → `#4caf50`); Pause stays gold. **UNCONFIRMED** human browser |
 | **Shot clock** | **OK** — ticks during AI; expiry tested |
 | **Timer** | **OK** — shared clock; expiry → capture/centre/beads; **mm:ss text only** |
 | **Tournament timer** | **OK (Jest)** — HvH chess clocks; flag fall = loss; centre off; **UNCONFIRMED** human browser |
 | **Engine** (moves, captures, chains) | **OK** — Jest + browser gates |
 | **Finish capture (optional chain stop)** | **OK (Jest)** — controls row, `finishChain` ends turn, coach demo; human browser **UNCONFIRMED** |
-| **Turn bead highlighting** | **OK (Jest + human browser, 2026-09-09)** — locked rule doc owner: PENDING. Match-start-only flash, pulse, dim, wash; radius 16; coach/Watch AI/resign/win endings = live `previewScriptedSelection`. **Doc split closed** — STATUS does not restate lime/orange table |
+| **Turn bead highlighting** | **OK (Jest, 2026-09-11)** — every-turn idle flash (orange/lime rings, pulse, 72% opp dim, half-board wash); clears on first pick; re-arms when turn completes. Coach/Watch AI/resign/win = live `previewScriptedSelection`. **Human browser UNCONFIRMED** for every-turn change |
 | **Settings ? help** | **OK (Jest, 2026-09-09)** — Timer, Tournament timer, Turn shot clock, Center rule rows in `index.html` / `play-board.html`. **UNCONFIRMED** human browser |
 | **End-game user copy** | **OK (Jest, 2026-09-09)** — cream/black bead labels; no P1/P2 in timer/resign reasons. **UNCONFIRMED** congratulations modal on screen |
-| **Recent colour / panel edits** | **UNCONFIRMED** — human browser sign-off pending for non-highlight panel tweaks |
+| **Recent colour / panel edits** | **Partial (2026-09-11)** — BGM Field green + resign gold/red shipped; panel bg unchanged (dark). **UNCONFIRMED** full browser sign-off |
 
 Update this table when code ≠ claim. Do not mark **VERIFIED CLEAN** for rows marked Fix/remove or UNCONFIRMED.
 

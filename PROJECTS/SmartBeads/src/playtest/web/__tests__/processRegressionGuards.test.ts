@@ -71,21 +71,21 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('WHEN rule — match-start flash only (not every turn)', () => {
-    it('documents match-start-only on turnStartRingsPending', () => {
+  describe('WHEN rule — turn-start flash every turn (idle until pick)', () => {
+    it('documents turn-start re-arm on each completed turn', () => {
       expect(featureSessionSource).toMatch(
-        /True only at match start[\s\S]*never again until reset/,
+        /re-armed when each turn completes/,
       );
     });
 
-    it('does not re-arm turnStartRingsPending after a completed turn', () => {
+    it('re-arms turnStartRingsPending after a completed turn', () => {
       const block = afterTurnCompletedBlock();
-      expect(block).not.toMatch(/turnStartRingsPending\s*=\s*true/);
+      expect(block).toMatch(/turnStartRingsPending\s*=\s*true/);
     });
 
-    it('only sets turnStartRingsPending true at init and reset', () => {
+    it('sets turnStartRingsPending true at init, reset, and after each turn', () => {
       const matches = [...featureSessionSource.matchAll(/turnStartRingsPending\s*=\s*true/g)];
-      expect(matches.length).toBe(2);
+      expect(matches.length).toBe(3);
       expect(featureSessionSource).toMatch(/private turnStartRingsPending = true/);
       expect(featureSessionSource).toMatch(/reset\(\)[\s\S]*turnStartRingsPending = true/);
     });

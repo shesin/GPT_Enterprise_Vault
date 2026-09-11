@@ -62,7 +62,7 @@ function isCenterHighlight(nodeId: number, cache: Set<number>): boolean {
 
 const BEAD_RADIUS = 16;
 
-/** Nodes that receive match-start turn rings — current player only, chain piece if chaining. */
+/** Nodes that receive turn-start rings — current player only, chain piece if chaining. */
 export function listTurnHighlightNodeIds(
   board: BoardDefinition,
   currentPlayer: Player,

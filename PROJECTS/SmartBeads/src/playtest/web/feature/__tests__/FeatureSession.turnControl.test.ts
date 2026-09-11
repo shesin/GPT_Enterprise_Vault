@@ -274,7 +274,7 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
 describe('FeatureSession turn start rings', () => {
   const pve = { ...off, mode: 'pve' as const };
 
-  it('shows all-bead flash only at match start — never on later turns', () => {
+  it('shows all-bead flash at every turn start — not again until that turn ends', () => {
     const session = new FeatureSession('8x4x6', pve);
     expect(session.shouldShowTurnStartRings()).toBe(true);
 
@@ -284,10 +284,10 @@ describe('FeatureSession turn start rings', () => {
 
     session.applyMove(slide);
     expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
-    expect(session.shouldShowTurnStartRings()).toBe(false);
+    expect(session.shouldShowTurnStartRings()).toBe(true);
   });
 
-  it('deselect or re-select does not re-arm match-start rings', () => {
+  it('deselect or re-select does not re-arm turn-start rings within the same turn', () => {
     const session = new FeatureSession('8x4x6', pve);
     const engine = session.getEngine();
     const slide = firstOpeningSlide(engine);
@@ -327,12 +327,12 @@ describe('FeatureSession turn start rings', () => {
     expect(session.shouldShowTurnStartRings()).toBe(false);
   });
 
-  it('shows all-bead flash again only after reset/new game', () => {
+  it('reset re-arms turn-start flash from idle mid-game', () => {
     const session = new FeatureSession('6x3x5', pve);
     const slide = firstOpeningSlide(session.getEngine());
     session.selectNode(slide.from);
     session.applyMove(slide);
-    expect(session.shouldShowTurnStartRings()).toBe(false);
+    expect(session.shouldShowTurnStartRings()).toBe(true);
 
     session.reset();
     expect(session.shouldShowTurnStartRings()).toBe(true);
