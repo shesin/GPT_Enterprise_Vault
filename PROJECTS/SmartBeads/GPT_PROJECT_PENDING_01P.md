@@ -4,7 +4,7 @@
 
 **This is Shekhar’s file.** Agents read it; they do **not** edit it unless the human says **`Go — PENDING`**.
 
-**Everything listed here is still open — minor or major — and must not ship in the final product (web or Android app) until it is fixed, decided, or explicitly waived by the human.** If it is unresolved, it stays here. When it ships and is verified, it leaves here and goes to **`GPT_PROJECT_DECISIONS_05P.md`** (locked choice) and/or **`GPT_PROJECT_STATUS_01P.md`** (verified today).
+**Everything listed here which is still open — minor or major — and must not ship in the final product (web or Android app) until it is fixed, decided, or explicitly waived by the human.** If it is unresolved, it stays here. When it ships and is verified, it leaves here and goes to **`GPT_PROJECT_DECISIONS_05P.md`** (locked choice) and/or **`GPT_PROJECT_STATUS_01P.md`** (verified today).
 
 **Status:** DRAFT — human approval required before implementation.  
 **Scope:** Open roadmap, gaps, risks, polish, and known blockers — online multiplayer, timers (HvH), hosting, tournaments, UX debt, browser sign-off gaps.  

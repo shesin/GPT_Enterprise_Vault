@@ -221,19 +221,21 @@ body.hub-page {
   padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 4px solid var(--gold);
-  background: rgba(10, 24, 19, 0.92);
+  border-left-width: 4px;
 }
-.play-block.active {
-  border-top-color: rgba(212, 168, 75, 0.55);
-  border-right-color: rgba(212, 168, 75, 0.55);
-  border-bottom-color: rgba(212, 168, 75, 0.55);
-  border-left-color: var(--gold);
-  background: rgba(212, 168, 75, 0.08);
+/* Upper panel = black side (fixed — does not swap on turn). */
+.play-block-ai {
+  flex-shrink: 0;
+  border-left-color: var(--black-bead);
+  border-color: rgba(60, 45, 38, 0.55);
+  background: rgba(20, 14, 10, 0.92);
 }
-.play-block-ai,
+/* Lower panel = cream side (fixed field-green accent — does not swap on turn). */
 .play-block-human {
   flex-shrink: 0;
+  border-left-color: #4caf50;
+  border-color: rgba(114, 191, 119, 0.4);
+  background: rgba(76, 175, 80, 0.14);
 }
 .play-block-head {
   display: flex;

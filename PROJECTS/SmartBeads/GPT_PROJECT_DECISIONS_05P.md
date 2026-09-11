@@ -103,7 +103,7 @@ Cumulative accrues each **completed turn** in session.
 - Current player’s beads: **orange ring** (cream / RED) or **lime ring** (black / BLUE).
 - Gentle **pulse** on those beads during this flash only.
 - Opponent beads **dimmed to 72%** during this flash only.
-- **Half-board turn wash** tint during this flash only.
+**Board canvas:** fixed **cream half tint** on the cream-camp side every frame — **no** turn-based wash swap (no blue/dark half flip).
 
 **Clears** on first pick or move on that turn. **Does not** return until that turn **completes**. Mid-chain: chain piece only; no full-board flash. Deselect/re-select within same turn: rings stay off.
 

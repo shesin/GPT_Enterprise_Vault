@@ -5,6 +5,14 @@ const indexHtml = fs.readFileSync(
   path.resolve(__dirname, '../../../../../../index.html'),
   'utf8',
 );
+const playShellCss = fs.readFileSync(
+  path.resolve(__dirname, '../play-shell.css'),
+  'utf8',
+);
+const playControllerSource = fs.readFileSync(
+  path.resolve(__dirname, '../PlayController.ts'),
+  'utf8',
+);
 
 describe('production left play panel shell (index.html)', () => {
   it('uses left panel with shot rings and match mm:ss, no board player bars', () => {
@@ -34,6 +42,16 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).not.toContain('id="resign-agree-btn">Agree to draw</button>');
     expect(indexHtml).toContain('id="sfx-mute-btn"');
     expect(indexHtml).not.toContain('controls-pair');
+  });
+
+  it('left panels stay fixed: upper black side, lower cream/green side (no turn swap)', () => {
+    expect(indexHtml).toMatch(/id="play-block-p2"[^>]*play-block-ai|play-block-ai[^>]*id="play-block-p2"/);
+    expect(indexHtml).toMatch(/id="play-block-p1"[^>]*play-block-human|play-block-human[^>]*id="play-block-p1"/);
+    expect(playShellCss).toMatch(/\.play-block-ai[\s\S]*--black-bead|var\(--black-bead\)/);
+    expect(playShellCss).toMatch(/\.play-block-human[\s\S]*#4caf50/);
+    expect(playShellCss).not.toContain('.play-block.active');
+    expect(playControllerSource).not.toMatch(/play-block-p1[\s\S]*classList\.toggle\(\s*'active'/);
+    expect(playControllerSource).not.toMatch(/play-block-p2[\s\S]*classList\.toggle\(\s*'active'/);
   });
 
   it('hub offers Watch AI and board settings has Watch AI level below AI level', () => {

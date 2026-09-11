@@ -22,7 +22,7 @@ export interface BoardVisualProfile {
   centerLine?: [LatticePoint, LatticePoint];
   /** Nodes that receive amber rings / highlight dots (canvas only). */
   centerRingPoints?: LatticePoint[];
-  /** 6×4 prototype uses vertical turn wash; others use horizontal. */
+  /** Cream half-tint axis: 6×4 vertical (bottom camp); others horizontal (left camp). */
   turnWashAxis?: 'horizontal' | 'vertical';
 }
 

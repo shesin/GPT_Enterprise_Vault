@@ -166,11 +166,11 @@ function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: num
   ctx.fill();
 }
 
-function drawTurnWash(
+/** Fixed cream-camp half tint — does not swap with currentPlayer (cream side only). */
+function drawCreamHalfTint(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
-  currentPlayer: Player,
   axis: 'horizontal' | 'vertical',
 ): void {
   const wash =
@@ -179,23 +179,13 @@ function drawTurnWash(
       : ctx.createLinearGradient(0, 0, w, 0);
 
   if (axis === 'vertical') {
-    if (currentPlayer === 'RED') {
-      wash.addColorStop(0, 'rgba(0,0,0,0)');
-      wash.addColorStop(0.55, 'rgba(255,245,220,0)');
-      wash.addColorStop(1, 'rgba(255,245,220,0.14)');
-    } else {
-      wash.addColorStop(0, 'rgba(40,90,160,0.16)');
-      wash.addColorStop(0.45, 'rgba(30,20,10,0)');
-      wash.addColorStop(1, 'rgba(0,0,0,0)');
-    }
-  } else if (currentPlayer === 'RED') {
+    wash.addColorStop(0, 'rgba(0,0,0,0)');
+    wash.addColorStop(0.55, 'rgba(255,245,220,0)');
+    wash.addColorStop(1, 'rgba(255,245,220,0.14)');
+  } else {
     wash.addColorStop(0, 'rgba(255,245,220,0.14)');
     wash.addColorStop(0.45, 'rgba(255,245,220,0)');
     wash.addColorStop(1, 'rgba(0,0,0,0)');
-  } else {
-    wash.addColorStop(0, 'rgba(0,0,0,0)');
-    wash.addColorStop(0.55, 'rgba(30,20,10,0)');
-    wash.addColorStop(1, 'rgba(40,90,160,0.16)');
   }
 
   ctx.fillStyle = wash;
@@ -279,8 +269,9 @@ export function drawCanvasBoard(
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 
+  drawCreamHalfTint(ctx, w, h, visualProfile.turnWashAxis ?? 'horizontal');
+
   const animating = anim !== null && anim.t < 1;
-  const washPlayer = animating && anim ? anim.player : currentPlayer;
   const turnIdleHighlight =
     !gameOver
     && !animating
@@ -291,9 +282,6 @@ export function drawCanvasBoard(
     ? new Set(listTurnHighlightNodeIds(board, currentPlayer, chainPieceId))
     : new Set<number>();
   const matchStartFlash = turnIdleHighlight && showTurnStartRings;
-  if (matchStartFlash) {
-    drawTurnWash(ctx, w, h, washPlayer, visualProfile.turnWashAxis ?? 'horizontal');
-  }
 
   ctx.strokeStyle = 'rgba(212,168,75,0.55)';
   ctx.lineWidth = 2;

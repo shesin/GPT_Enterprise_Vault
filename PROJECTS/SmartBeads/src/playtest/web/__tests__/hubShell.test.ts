@@ -78,6 +78,11 @@ describe('two-page play flow (index.html)', () => {
 
     expect(indexHtml).not.toContain('id="start-board-select"');
 
+    expect(indexHtml).toMatch(/id="board-select" hidden/);
+    expect(indexHtml).not.toMatch(
+      /<aside class="card right">[\s\S]*<label>Board<\/label>/,
+    );
+
     expect(indexHtml).toContain('id="coach-panel"');
 
     expect(indexHtml).toContain('hub-ad-bottom');

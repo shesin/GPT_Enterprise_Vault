@@ -24,6 +24,10 @@ const m2GateSource = fs.readFileSync(
 );
 const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html'), 'utf8');
 const playBoardHtml = fs.readFileSync(path.join(repoRoot, 'play-board.html'), 'utf8');
+const canvasRendererSource = fs.readFileSync(
+  path.resolve(__dirname, '../render/CanvasBoardRenderer.ts'),
+  'utf8',
+);
 
 function afterTurnCompletedBlock(): string {
   const start = featureSessionSource.indexOf('private afterTurnCompleted');
@@ -136,6 +140,15 @@ describe('process regression guards', () => {
     it('coach win keyframe uses previewScriptedSelection (not setCoachWinGlow)', () => {
       expect(coachVideoBoardSource).not.toMatch(/setCoachWinGlow/);
       expect(coachVideoBoardSource).toMatch(/previewScriptedSelection\(glow\[0\]\)/);
+    });
+  });
+
+  describe('board canvas — fixed cream half tint', () => {
+    it('uses drawCreamHalfTint every frame, not turn-based drawTurnWash', () => {
+      expect(canvasRendererSource).toMatch(/function drawCreamHalfTint/);
+      expect(canvasRendererSource).toMatch(/drawCreamHalfTint\(ctx, w, h,/);
+      expect(canvasRendererSource).not.toMatch(/function drawTurnWash/);
+      expect(canvasRendererSource).not.toMatch(/rgba\(40,90,160/);
     });
   });
 

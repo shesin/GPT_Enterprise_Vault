@@ -1376,15 +1376,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     prevCaptures = { RED: state.captures.RED, BLUE: state.captures.BLUE };
     (document.getElementById('turn-count') as HTMLElement).textContent = String(session.getMoveCount());
 
-    document.getElementById('play-block-p1')?.classList.toggle(
-      'active',
-      !isCoachMode() && state.currentPlayer === 'RED' && !session.isGameOver(),
-    );
-    document.getElementById('play-block-p2')?.classList.toggle(
-      'active',
-      !isCoachMode() && state.currentPlayer === 'BLUE' && !session.isGameOver(),
-    );
-
     const uiState = session.getUiState();
     undoBtn.disabled = undoStack.length === 0 || animating || aiThinking || settings.mode === 'spectate';
     resignBtn.disabled = !canOfferResignation();
