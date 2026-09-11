@@ -32,7 +32,7 @@ import {
   parseTimerSeconds,
   effectiveCenterRule,
   populateAiLevelSelect,
-  SPECTATE_INTER_MOVE_DELAY_MS,
+  spectateInterMoveDelayMs,
   ShotClockSeconds,
 } from './feature/GameFeatureSettings';
 import { applyAiHops, AiHopRecord } from './feature/aiTurnPath';
@@ -293,6 +293,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const resultDesc = document.getElementById('result-desc') as HTMLParagraphElement;
   const startScreenOverlay = document.getElementById('start-screen-overlay') as HTMLDivElement | null;
   const startGameBtn = document.getElementById('start-game-btn') as HTMLButtonElement | null;
+  const startCoachBtn = document.getElementById('start-coach-btn') as HTMLButtonElement | null;
+  const startBoardSelect = document.getElementById('start-board-select') as HTMLSelectElement | null;
   const startModeSelect = document.getElementById('start-mode-select') as HTMLSelectElement | null;
   const celebrationFx = document.getElementById('board-celebration-fx') as HTMLDivElement | null;
   const celebrationParticles = document.getElementById('celebration-particles') as HTMLDivElement | null;
@@ -756,6 +758,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     bgmAudio.src = bgmSelect.value;
   }
   populateBoardSelect(boardSelect);
+  if (startBoardSelect) {
+    populateBoardSelect(startBoardSelect);
+  }
 
   function syncAiLevelOptions(): void {
     const current = clampUiAiLevel(parseInt(aiLevelSelect.value, 10) || 2);
@@ -784,6 +789,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       }
     }
     boardSelect.disabled = coach;
+    if (startBoardSelect) startBoardSelect.disabled = coach;
     centerRuleSelect.disabled = coach;
     timerSelect.disabled = coach;
     if (tournamentTimerSelect) tournamentTimerSelect.disabled = coach;
@@ -803,6 +809,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
     currentBoardId = COACH_VIDEO_BOARD_ID;
     boardSelect.value = COACH_VIDEO_BOARD_ID;
+    if (startBoardSelect) startBoardSelect.value = COACH_VIDEO_BOARD_ID;
     syncBoardTitle();
     syncBoardPlayOptions();
     applyBoardDefaults(COACH_VIDEO_BOARD_ID);
@@ -903,9 +910,23 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }));
   }
 
-  /** Mode comes from start-screen picker only (not duplicated in Settings). */
+  /** Mode from page-1 hub or page-2 start overlay (not duplicated in Settings). */
   function readGameMode(): GameFeatureSettings['mode'] {
-    return (startModeSelect?.value ?? 'pve') as GameFeatureSettings['mode'];
+    const hubModeSelect = document.getElementById('hub-mode-select') as HTMLSelectElement | null;
+    return (startModeSelect?.value ?? hubModeSelect?.value ?? 'pve') as GameFeatureSettings['mode'];
+  }
+
+  function hasPlayHub(): boolean {
+    return !!document.getElementById('play-hub');
+  }
+
+  function returnToHub(): void {
+    if (timerId) clearInterval(timerId);
+    timerId = null;
+    cancelAiWork();
+    stopCoachVideo();
+    document.getElementById('play-shell')?.classList.add('is-hidden');
+    document.getElementById('play-hub')?.classList.remove('is-hidden');
   }
 
   function readSettings(): GameFeatureSettings {
@@ -1008,12 +1029,12 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function syncBoardTitle(): void {
     const entry = getCatalogEntry(currentBoardId);
     if (entry) {
-      document.title = `SmartBeads — ${entry.displayName}`;
-      const startHeading = document.getElementById('start-screen-heading');
-      if (startHeading) {
-        startHeading.textContent = `${entry.displayName.toUpperCase()} TOURNAMENT`;
-      }
+      document.title = `Smart Bead Chess — ${entry.displayName}`;
     }
+  }
+
+  function syncStartBoardSelect(): void {
+    if (startBoardSelect) startBoardSelect.value = currentBoardId;
   }
 
   function isAwaitingStart(): boolean {
@@ -1021,13 +1042,17 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   function showStartScreen(): void {
-    if (!startScreenOverlay) return;
+    if (!startScreenOverlay) {
+      if (hasPlayHub()) returnToHub();
+      return;
+    }
     if (timerId) clearInterval(timerId);
     timerId = null;
     cancelAiWork();
     if (startModeSelect) {
       startModeSelect.value = session.getSettings().mode;
     }
+    syncStartBoardSelect();
     syncModeUi();
     startScreenOverlay.classList.remove('hidden');
   }
@@ -1149,7 +1174,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
   function interMoveDelayMs(): number {
     return session.getSettings().mode === 'spectate'
-      ? SPECTATE_INTER_MOVE_DELAY_MS
+      ? spectateInterMoveDelayMs(currentBoardId)
       : AI_REPLY_DELAY_MS;
   }
 
@@ -1909,6 +1934,14 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     });
   }
 
+  startCoachBtn?.addEventListener('click', () => {
+    launchCoachLesson();
+  });
+
+  startBoardSelect?.addEventListener('change', () => {
+    switchBoard(startBoardSelect.value as ProductBoardId);
+  });
+
   startModeSelect?.addEventListener('change', () => {
     if (!isAwaitingStart()) return;
     applyStartOverlayModeToSession();
@@ -1924,7 +1957,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     finishResignation(pendingResignPlayer, false);
   });
 
-  function switchBoard(boardId: ProductBoardId): void {
+  function prepareBoardSwitch(boardId: ProductBoardId): void {
     if (timerId) clearInterval(timerId);
     cancelAnimationFrame(pulseRaf);
     cancelAnimationFrame(animRaf);
@@ -1939,6 +1972,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
     currentBoardId = boardId;
     boardSelect.value = boardId;
+    syncStartBoardSelect();
     syncBoardTitle();
     syncBoardPlayOptions();
     applyBoardDefaults(boardId);
@@ -1955,7 +1989,28 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     updateUI();
     undoBtn.disabled = true;
     pulseRaf = requestAnimationFrame(loopPulse);
+  }
+
+  function switchBoard(boardId: ProductBoardId): void {
+    prepareBoardSwitch(boardId);
     showStartScreen();
+  }
+
+  function enterFromHub(
+    boardId: ProductBoardId,
+    mode: GameFeatureSettings['mode'],
+    action: 'play' | 'coach' | 'spectate',
+  ): void {
+    if (startModeSelect) startModeSelect.value = mode;
+    prepareBoardSwitch(boardId);
+    applyStartOverlayModeToSession();
+    if (action === 'coach') {
+      launchCoachLesson();
+    } else if (action === 'spectate') {
+      beginCoachWatch();
+    } else {
+      beginPlayAfterStart();
+    }
   }
 
   function updateSfxButton(): void {
@@ -2034,6 +2089,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   restartBtn.addEventListener('click', () => {
+    if (hasPlayHub() && !isCoachMode()) {
+      returnToHub();
+      return;
+    }
     resetGame();
   });
   playAgainBtn.addEventListener('click', () => {
@@ -2144,6 +2203,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       applyPremiumShell(isPremium);
     },
     switchBoard,
+    enterFromHub,
     launchCoachLesson,
   };
 

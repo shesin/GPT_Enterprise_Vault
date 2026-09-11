@@ -8,31 +8,93 @@
   <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-hub.css">
 </head>
 <body>
-  <div id="play-hub" class="play-hub">
-    <aside class="hub-sidebar" aria-label="Hub navigation">
+  <div id="play-hub" class="play-hub" data-hub-theme="1">
+    <aside class="hub-rail hub-rail--left" aria-label="Hub navigation">
+      <div class="hub-brand">smartbeadchess.com</div>
       <nav class="hub-sidebar-nav">
-        <button type="button" class="hub-sidebar-link hub-sidebar-link--coach" data-hub-nav="coach">Coach</button>
-        <button type="button" class="hub-sidebar-link" data-hub-nav="Community">Community</button>
-        <button type="button" class="hub-sidebar-link" data-hub-nav="Tournaments">Tournaments</button>
+        <button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="community">Community</button>
+        <button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="tournaments">Tournaments</button>
       </nav>
+      <div class="hub-rail-foot">
+        <div class="hub-theme-picker" aria-label="Choose colour theme">
+          <span class="hub-theme-picker-label">Shade</span>
+          <div class="hub-theme-swatches">
+            <button type="button" class="hub-theme-swatch is-active" data-hub-theme="1" title="1 — Dark stack + green" aria-label="Theme 1"></button>
+            <button type="button" class="hub-theme-swatch" data-hub-theme="2" title="2 — Dark rails + light centre" aria-label="Theme 2"></button>
+            <button type="button" class="hub-theme-swatch" data-hub-theme="3" title="3 — Warm board + gold" aria-label="Theme 3"></button>
+            <button type="button" class="hub-theme-swatch" data-hub-theme="4" title="4 — Cool navy stack" aria-label="Theme 4"></button>
+          </div>
+        </div>
+        <span class="hub-player-name">Player</span>
+        <button type="button" class="hub-settings-link" disabled title="Settings on board page">Settings</button>
+      </div>
     </aside>
 
-    <div class="hub-content">
-      <p class="hub-slogan"><em>Simple play. Superior strategy. Sharper brain.</em></p>
-      <h1 class="hub-title">Smart Bead Chess</h1>
-      <div class="hub-centre" id="hub-centre">
-        <button type="button" class="hub-coach-card" id="hub-coach-card">
-          <div class="hub-card-name">Coach</div>
-          <div class="hub-card-size">7-bead · ~1:30 — moves, captures &amp; how games end</div>
-        </button>
-        <div class="hub-board-grid" id="hub-board-grid"></div>
-        <div class="hub-mode-picker is-hidden" id="hub-mode-picker"></div>
+    <div class="hub-main">
+      <div class="hub-content">
+        <div id="hub-rail-notice" class="hub-rail-notice is-hidden" role="status" aria-live="polite">
+          <span id="hub-rail-notice-text"></span>
+          <button type="button" id="hub-rail-notice-dismiss" class="hub-rail-notice-dismiss" aria-label="Dismiss">×</button>
+        </div>
+        <header class="hub-hero">
+          <p class="hub-slogan"><em>Simple play. Superior strategy. Sharper brain.</em></p>
+          <h1 class="hub-title">Smart Bead Chess</h1>
+        </header>
+
+        <div class="hub-sections">
+          <section class="hub-section" id="hub-section-board" aria-labelledby="hub-board-heading">
+            <h2 class="hub-section-title" id="hub-board-heading">Choose your board</h2>
+            <div id="hub-board-grid" class="hub-board-tile-grid" role="listbox" aria-labelledby="hub-board-heading"></div>
+            <select id="hub-board-select" hidden aria-hidden="true" tabindex="-1"></select>
+          </section>
+
+          <section class="hub-section" id="hub-section-lesson" aria-labelledby="hub-lesson-heading">
+            <h2 class="hub-section-title" id="hub-lesson-heading">How to play</h2>
+            <div class="hub-lesson-grid">
+              <button type="button" id="hub-lesson-basic" class="hub-lesson-btn">Basic</button>
+              <button type="button" id="hub-lesson-advanced" class="hub-lesson-btn" disabled title="Coming soon">Advanced</button>
+            </div>
+          </section>
+
+          <section class="hub-section" id="hub-section-mode" aria-labelledby="hub-mode-heading">
+            <div class="hub-section-head">
+              <h2 class="hub-section-title" id="hub-mode-heading">Who's playing</h2>
+              <button type="button" class="setting-help-btn" id="hub-mode-help-btn" aria-label="Who is playing help" aria-expanded="false" aria-controls="hub-mode-help-text">?</button>
+            </div>
+            <p class="setting-help-text hub-mode-help-text" id="hub-mode-help-text" hidden>Play vs AI — You vs the computer. Pick board and difficulty on the board page.
+
+Watch AI vs AI — Two AIs play; you watch. Good for learning pace and rules.
+
+Play with a Friend (Same Device) — Pass the phone after each turn. No room code needed.
+
+Play with a Friend (Online) — Create or join a room on another device. Coming soon until Phase 2.</p>
+            <div id="hub-mode-grid" class="hub-mode-tile-grid" role="group" aria-labelledby="hub-mode-heading"></div>
+            <select id="hub-mode-select" hidden aria-hidden="true" tabindex="-1">
+              <option value="pve" selected>Play vs AI</option>
+              <option value="spectate">Watch AI vs AI</option>
+              <option value="pvp">Play with a Friend (Same Device)</option>
+              <option value="pvp-online">Play with a Friend (Online)</option>
+            </select>
+          </section>
+        </div>
       </div>
+
       <footer class="hub-ad-bottom" aria-label="Advertisement">
         <span class="ad-label">Sponsored</span>
         <div class="ad-placeholder">Advertisement</div>
       </footer>
     </div>
+
+    <aside class="hub-rail hub-rail--right" aria-label="Reviews and promotions">
+      <div class="hub-reviews">
+        <h2 class="hub-rail-title">Review by users</h2>
+        <p class="hub-coming-soon">Player reviews coming soon.</p>
+      </div>
+      <div class="hub-ad-side" aria-label="Side advertisement">
+        <span class="ad-label">Sponsored</span>
+        <div class="ad-placeholder">Advertisement</div>
+      </div>
+    </aside>
   </div>
 
   <div class="shell shell--ads-on is-hidden" id="play-shell">
@@ -120,22 +182,6 @@
       <span id="turn-count" hidden aria-hidden="true">0</span>
       <div class="board-frame">
         <canvas id="board" width="500" height="680"></canvas>
-        <div id="start-screen-overlay" class="start-screen-overlay">
-          <div class="start-screen-card">
-            <div class="start-screen-badge">★ SMART BEAD CHESS ★</div>
-            <h2 class="start-screen-heading" id="start-screen-heading">16-BEAD TOURNAMENT</h2>
-            <div class="start-screen-mode">
-              <label for="start-mode-select">Game mode</label>
-              <select id="start-mode-select">
-                <option value="pve" selected>Human vs AI</option>
-                <option value="spectate">Watch AI vs AI</option>
-                <option value="pvp">Human vs Human</option>
-              </select>
-            </div>
-            <button type="button" id="start-game-btn" class="start-game-btn">▶ START GAME</button>
-            <p class="start-screen-hint">Tap to play with music & sound</p>
-          </div>
-        </div>
         <div id="board-celebration-fx" class="board-celebration-fx">
           <div id="celebration-halo" class="celebration-halo"></div>
           <div id="celebration-particles" class="celebration-particles"></div>

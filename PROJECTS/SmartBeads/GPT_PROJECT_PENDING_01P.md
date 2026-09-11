@@ -40,9 +40,10 @@ No
 ## 1. Direction (human decisions captured)
 
 - **Not static-only.** Ship targets **online Human vs Human** plus vs AI and tutorial — not a download-only or same-device-only product long term.
-- **Two pages mandatory** before live board (Chess.com-style progressive disclosure).
-- **Page 1 — Play hub:** choose mode only — **Human vs AI**, **Human vs Human (online)**, **Tutorial**. (Optional fourth: quick rematch — defer until hub exists.)
-- **Page 2 — Match setup:** board, time preset, rules, opponent (room code / invite for online), then **Start match**.
+- **Two pages mandatory** — Page 1 setup, then Page 2 live board (same site URL; shell swap, not a separate site).
+- **Page 1 — Play hub:** setup card with slogan, **Smart Bead Chess** title (not a board name), **Board** (all 7 V1) **above** **Game mode**, **▶ START GAME**, **Coach lesson**; sidebar Coach · Community · Tournaments.
+- **Page 2 — Live play:** land here only after a Page 1 choice (play, watch, or coach); full 4-column shell; **New game** returns to Page 1.
+- **Online HvH (Phase 2):** room/join and timer presets on Page 1 when mode is Human vs Human.
 - **Timers (Human vs Human only):** Chess.com-style **per-player match clock** (time runs only on your turn; play fast → save time) **plus** **shot clock** (must move within 60s or 90s each turn). Reject “whole game ends in 3 minutes total” as the main competitive mode — unfair when move counts differ.
 - **Timers (Human vs AI — frozen):** Do **not** change PvE timer behaviour or UI. Current local session (match/shot off by default, clocks tick during AI think, catalog toggles in settings) is **approved as-is** — no dual-clock rework, no new presets on Page 2 for vs AI.
 - **Tournament:** planned from the start in architecture; **Phase 3** delivery after online rooms work.
@@ -62,44 +63,28 @@ No
 
 ## 2. Two-page UX (mandatory)
 
-### Page 1 — Play hub
+### Page 1 — Play hub (setup — coach entry lives here)
 
-- Large mode cards (like Chess.com “Play Chess” panel).
-- **Human vs AI** — HonestAi PvE (existing engine path).
-- **Human vs Human** — online room (Phase 2); label clearly “Play online” (not same-device-only wording).
-- **Tutorial** — guided path on small board (6×3×5 or 6×4); no clocks by default.
-- Left rail (later, optional): Play · Learn · Stats · History · Tournament.
-- **Hide on hub:** match/shot settings, duplicate mode dropdowns, live player clocks, account chrome on board.
+- Slogan + **Smart Bead Chess** title (**not** “16-bead tournament” or other board label).
+- **Board** dropdown — all **7 locked V1** — **above** **Game mode**.
+- **Game mode:** Human vs AI · Watch AI vs AI · Human vs Human (not duplicated in Settings on Page 2).
+- **▶ START GAME** or **Coach lesson** → opens **Page 2** with that choice applied.
+- Left rail: Coach · Community · Tournaments (Community/Tournament placeholders OK).
+- **Hide on Page 1:** live board clocks, match in progress, settings panel.
 
-### Page 2 — Match setup
+### Page 2 — Live play (after Page 1 choice)
 
-Fields depend on mode:
+- Existing 4-column play shell (left stats/coach panel, board, settings, ad slot).
+- **No duplicate** board/mode setup overlay on hub URL — choices come from Page 1.
+- Direct URL `play-board.html` / port 5174 may keep inline start overlay for dev gates.
+- **New game** (non-coach) → back to **Page 1** hub.
+- **Starter policy (already shipped):** human (cream) first on match start; New game alternates in PvE.
 
-**Human vs AI**
+### Phase 2 add-ons (Page 1 fields when HvH selected)
 
-- Board (7 locked V1)
-- AI level (Easy / Medium / Hard)
-- Center rule (per catalog)
-- **No timer changes** — keep existing in-game settings (match/shot off by default; current `FeatureSession` / `clockPolicy` behaviour unchanged)
-- **Start match** → live game + audio unlock
+**Human vs Human (online)** — **time preset** (see §3), center rule, **Create room** / **Join room**, then **Start match** on Page 2 when connected.
 
-**Human vs Human (online)**
-
-- Board, **time preset** (see §3 — HvH only), center rule
-- **Create room** (code + share link) or **Join room** (enter code)
-- Optional display names
-- **Start match** when both connected (or host starts)
-
-**Tutorial**
-
-- Fixed small board; step script (slide → capture → chain + Finish → optional center)
-- **Begin** → in-place lesson; return to hub when done
-
-### Live game (after Start)
-
-- Existing 4-column play shell (left stats/clocks, board, settings collapsed or minimal, ad slot if not premium).
-- **Rematch / Change mode** returns to Page 1 or Page 2 — product choice at build time.
-- **Starter policy (already shipped):** Start overlay → human (cream) first; New game alternates in PvE; online matches use server-assigned or agreed opener.
+**Tutorial** — Coach lesson from Page 1; when done, return to Page 1 hub.
 
 ---
 

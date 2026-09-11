@@ -1,5 +1,7 @@
 /** Shared match settings for production play shell. */
 
+import type { ProductBoardId } from '../../../config/BoardCatalog';
+import { getCatalogEntry } from '../../../config/BoardCatalog';
 import type { Player } from '../../../models/GameState';
 
 export type GameMode = 'pve' | 'pvp' | 'spectate' | 'coach';
@@ -21,8 +23,18 @@ export type AiLevel = 1 | 2 | 3 | 4 | 5;
 export const COACH_DEFAULT_BOARD_ID = '8x4x6' as const;
 /** @deprecated use COACH_DEFAULT_BOARD_ID */
 export const SPECTATE_BOARD_ID = COACH_DEFAULT_BOARD_ID;
-/** Pause after each animated move completes (ms). */
+/** Pause after each animated move completes (ms) — 10+ bead boards. */
 export const SPECTATE_INTER_MOVE_DELAY_MS = 10_000;
+/** Watch AI vs AI — 6-, 7-, and 8-bead boards. */
+export const SPECTATE_INTER_MOVE_DELAY_SMALL_BOARD_MS = 5_000;
+
+export function spectateInterMoveDelayMs(boardId: ProductBoardId): number {
+  const beadCount = getCatalogEntry(boardId)?.beadCount;
+  if (beadCount !== undefined && beadCount <= 8) {
+    return SPECTATE_INTER_MOVE_DELAY_SMALL_BOARD_MS;
+  }
+  return SPECTATE_INTER_MOVE_DELAY_MS;
+}
 /** Coach vs AI: amber select + legal targets before each automated hop (ms). */
 export const COACH_MOVE_PREVIEW_MS = 450;
 

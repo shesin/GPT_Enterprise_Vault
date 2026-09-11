@@ -35,6 +35,15 @@ body {
   align-items: center;
   overflow: hidden;
 }
+body.hub-page {
+  padding: 0;
+  margin: 0;
+  align-items: stretch;
+  justify-content: stretch;
+  background: #100f0d;
+  overflow: hidden;
+  transition: background 0.2s ease;
+}
 .shell {
   width: 100%;
   max-width: calc(var(--left-column-width) + var(--frame-w) + var(--right-column-width) + var(--ad-column-width) + 36px);
@@ -464,6 +473,17 @@ button { cursor: pointer; font-weight: 700; }
   max-width: 88%;
 }
 
+.start-screen-slogan {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--gold);
+  margin: 0 0 8px;
+}
+
+.start-screen-slogan em {
+  font-style: italic;
+}
+
 .start-screen-badge {
   font-size: 0.75rem;
   font-weight: 800;
@@ -493,11 +513,22 @@ button { cursor: pointer; font-weight: 700; }
   letter-spacing: 0.04em;
   font-weight: 700;
 }
+.start-screen-mode .setting-help-text {
+  margin-bottom: 2px;
+}
+.hub-mode-help-text {
+  white-space: pre-line;
+}
 .start-screen-mode select {
   width: 100%;
   text-align: left;
 }
 
+.start-game-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 .start-game-btn {
   background: linear-gradient(180deg, #ffd700, #d4a84b);
   color: #06261b;
@@ -521,6 +552,24 @@ button { cursor: pointer; font-weight: 700; }
 
 .start-game-btn:active {
   transform: scale(0.97);
+}
+
+.start-coach-btn {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 168, 75, 0.55);
+  background: transparent;
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.start-coach-btn:hover {
+  background: rgba(212, 168, 75, 0.12);
 }
 
 .start-screen-hint {

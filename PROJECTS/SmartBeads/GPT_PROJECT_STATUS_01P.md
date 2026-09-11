@@ -117,74 +117,36 @@ Update this table when code ≠ claim. Do not mark **VERIFIED CLEAN** for rows m
 
 ---
 
-## Human Playtesting Method
-
-## Commands (npx)
+## Launch (local)
 
 Run from: `d:\Business Idea\Gpt_Enterprise_Vault`
 
-**Tests**
-```powershell
-npm run test:jest:fast   # skips slow AI suites, ~40s
-npm run test:jest        # all 568 Jest tests, ~7 min
-npm test                 # Jest + browser gates
-```
-Details: batched runner `scripts/run-jest-batched.mjs` (see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog for audit history only).
-
-**5173 — Hub (new home page)**
 ```powershell
 cd "d:\Business Idea\Gpt_Enterprise_Vault"
-npx vite
-```  
+npx.cmd vite
+```
+
 Open: **http://localhost:5173/**
 
-**5174 — All 7 boards (direct play)**  
-```powershell
-cd "d:\Business Idea\Gpt_Enterprise_Vault"
-npx vite --mode play
-```  
-Open: **http://localhost:5174/**
+- **Page 1** — setup: board, game mode, **Start game**, **Coach lesson**
+- **Page 2** — live board (same URL; opens after you choose on page 1)
+- **Coach shortcut:** `http://localhost:5173/?coach=start`
+- **Production (when deployed):** **https://smartbeadchess.com**
 
----
-
-## launch board and coach url
-
-1. Open **two** terminals (or two tabs in Cursor).
-2. In **both**, go to the project folder:
-   ```powershell
-   cd "d:\Business Idea\Gpt_Enterprise_Vault"
-   ```
-3. **Terminal 1** — hub:
-   ```powershell
-   npx vite
-   ```
-4. **Terminal 2** — 7 boards:
-   ```powershell
-   npx vite --mode play
-   ```
-5. Wait until each shows `Local: http://localhost:5173/` or `5174/`.
-6. Open the URL in your browser.
-7. **Leave both terminals running** while you play. Closing a terminal stops that server.
+Leave the terminal running while you play. If port 5173 is busy, close the old terminal and run again.
 
 ---
 
 ## Test suite
-open power shell and go to root    cd "d:\Business Idea\Gpt_Enterprise_Vault"
+
+From repo root (PowerShell):
 
 ```
 Step 1  npx.cmd npm run test:jest:fast     → no browser
 Step 2  npm.cmd test                       → browser auto; Vite auto on 5173
+Step 3  npx.cmd vite                       → your eyes on coach / play (5173)
+```
 
+Details: batched runner `scripts/run-jest-batched.mjs` (see **`GPT_PROJECT_AUDIT_05P.md`** § Test catalog for audit history only).
 
-----
-## Which URL to use
-
-| URL / port | Use for |
-|------------|---------|
-| **https://smartbeadchess.com** | Production site (when deployed) |
-| **5173** (local) | Hub → pick board → Human vs AI |
-| **5174** (local) | Jump straight to all 7 boards (Settings → Board) |
-
----
-
-**Note:** If a port is busy, close the old terminal or stop the process using that port, then run the command again.
+**Dev only (not normal play):** automated browser gates and `play-board.html` may boot Vite on 5173 directly — you do not need a second local command or port 5174.

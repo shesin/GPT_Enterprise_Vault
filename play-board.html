@@ -94,8 +94,13 @@
         <canvas id="board" width="500" height="680"></canvas>
         <div id="start-screen-overlay" class="start-screen-overlay">
           <div class="start-screen-card">
+            <p class="start-screen-slogan"><em>Simple play. Superior strategy. Sharper brain.</em></p>
             <div class="start-screen-badge">★ SMART BEAD CHESS ★</div>
-            <h2 class="start-screen-heading" id="start-screen-heading">16-BEAD TOURNAMENT</h2>
+            <h2 class="start-screen-heading" id="start-screen-heading">Smart Bead Chess</h2>
+            <div class="start-screen-mode">
+              <label for="start-board-select">Board</label>
+              <select id="start-board-select"></select>
+            </div>
             <div class="start-screen-mode">
               <label for="start-mode-select">Game mode</label>
               <select id="start-mode-select">
@@ -105,6 +110,7 @@
               </select>
             </div>
             <button type="button" id="start-game-btn" class="start-game-btn">▶ START GAME</button>
+            <button type="button" id="start-coach-btn" class="start-coach-btn">Coach lesson</button>
             <p class="start-screen-hint">Tap to play with music & sound</p>
           </div>
         </div>
