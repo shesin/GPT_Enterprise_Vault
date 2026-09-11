@@ -56,7 +56,7 @@ export class FeatureSession {
   private settings: GameFeatureSettings;
   private uiState: UiInteractionState = 'idle';
   private selectedId: number | null = null;
-  /** True at idle turn start; false after first pick on that turn — re-armed when each turn completes. */
+  /** WHEN → GPT_PROJECT_DECISIONS_05P.md §7. Re-armed when each turn completes. */
   private turnStartRingsPending = true;
   private coachGlowNodeIds: number[] = [];
   private coachHighlightTargets: number[] = [];

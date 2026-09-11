@@ -1,20 +1,22 @@
 ---
-description: SmartBeads path pointer (SmartBeads files only)
+description: SmartBeads doc map (path-scoped; read when needed)
 globs: PROJECTS/SmartBeads/**
 alwaysApply: false
 ---
 
 # SmartBeads (path-scoped)
 
-Read — do not duplicate rules here:
+| File | Role |
+|------|------|
+| `GPT_PROJECT_DECISIONS_05P.md` | Locked game & product decisions |
+| `GPT_PROJECT_RULES_01P.md` | Agent & engineering rules |
+| `GPT_PROJECT_STATUS_01P.md` | Shipped & verified |
+| `GPT_PROJECT_PENDING_01P.md` | Human roadmap (**read-only**) |
+| `VISION_05P.md` | Broad principles |
+| `VISION/CURSOR_PROMPT_01.md` | Production gates |
+| `PROJECT_MAP_05P.md` | Paths only |
+| `GPT_PROJECT_AUDIT_05P.md` | Failure record |
 
-- `GPT_PROJECT_RULES_01P.md` — engineering rules
-- `GPT_PROJECT_PENDING_01P.md` — locked UI rules + gaps
-- `GPT_PROJECT_STATUS_01P.md` — shipped today; § Integrity
-- `VISION/CURSOR_PROMPT_01.md` — production gates
-- `PROJECT_MAP_05P.md` — paths only
-- `GPT_PROJECT_AUDIT_05P.md` — failure record
+Edit permission → `instruction-fidelity.mdc` § STOP. PENDING → RULES § PENDING Human-Owned.
 
-Edit any file only per `instruction-fidelity.mdc` § STOP.
-
-Process guards (WHEN rule, cross-surface **Out:**, same complaint twice) → `instruction-fidelity.mdc` § Process — not duplicated here.
+Process guards → `instruction-fidelity.mdc` § Process.

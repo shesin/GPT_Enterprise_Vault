@@ -50,6 +50,8 @@ Update status , map if required
 
 **Not approval:** `do it`, `restore`, `sync`, `fix mess`, `push to git`, `commit local`, handoff, silence, frustration.
 
+**PENDING (SmartBeads):** `GPT_PROJECT_PENDING_01P.md` — human-owned; **`Go — PENDING`** only (detail → RULES § PENDING Human-Owned).
+
 **Plan / review / suggest** → words only until **Go**.
 
 Edited without approval → say so, offer revert, no extra fixes.

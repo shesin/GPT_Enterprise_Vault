@@ -1,14 +1,12 @@
 # Smart Bead Chess Vision
 
-## Purpose
+## What this file is
 
-This document defines the long-term vision and philosophy of Smart Bead Chess, plus every project-specific decision and piece of reasoning that isn't a short, always-loaded rule.
+**Broad mission and principles** — why Smart Bead Chess exists and how we think long term.
 
-It explains why the project exists, what it aims to become, and the principles that should guide every future decision.
+**Not in this file:** locked game/product choices (cream vs black, turn glow WHEN, resignation protocol, colours) → **`GPT_PROJECT_DECISIONS_05P.md`**. Agent/engineering process → **`GPT_PROJECT_RULES_01P.md`**. What is built → **`GPT_PROJECT_STATUS_01P.md`**. Roadmap → **`GPT_PROJECT_PENDING_01P.md`** (human-owned).
 
-GPT_PROJECT_RULES_01P.md states rules tersely with no reasoning, by design — it is loaded into every Cursor request and must stay small. If a sentence explains *why* a rule exists, or documents a decision that isn't a universal always-check rule, it belongs here, not there.
-
-Do not record implementation status details or historical session notes — those belong in `GPT_PROJECT_STATUS_01P.md`. Pending and roadmap tasks belong in `GPT_PROJECT_PENDING_01P.md` only.
+Agents read this for **direction and philosophy**, not for pixel-level gameplay rules.
 
 This is a living document.
 
@@ -89,52 +87,17 @@ Build long-term trust through quality.
 
 ---
 
-# Game Mechanics — Reasoning
+# Game Mechanics — Reasoning (why, not what)
 
-*(GPT_PROJECT_RULES_01P.md states each of these tersely. This section explains why.)*
+**Locked gameplay and UI choices** (capture optionality, match end hierarchy, resignation, turn colours, timers, hub flow) → **`GPT_PROJECT_DECISIONS_05P.md`** only. Do not restate them here.
 
-### Board Structure & Graph Adjacency
+**Why board fidelity matters:** A board is a graph of nodes and legal connections — never a plain square grid. Diagonal and orthogonal paths must match the real physical board. Engineering enforcement → RULES § Board Fidelity.
 
-A board is a graph of nodes and legal connections — never a plain square grid, even where nodes happen to be indexed by row/col internally for convenience. Diagonal and orthogonal jump paths must follow the same real physical adjacency the traditional board has. This is why "Board Fidelity" is a hard rule: representing coordinates as `row * width + col` is fine; silently dropping the diagonal edges that a real board has is not.
+**Why capture optionality:** Traditional bead games treat continuing a capture as the player's choice. We preserve that in product decisions, not AI implementation quirks.
 
-### 16-Bead Geometry & Proportion Standard (Web & Mobile Reference)
+**Why draw is legitimate:** Deadlocks and tied outcomes are part of strategy games; we do not engineer draws away without Lab evidence and explicit human sign-off.
 
-To ensure visual clarity, touch ergonomics, and strict line straightness across both Web and Android native apps, the 16-bead board follows these architectural proportions:
-- **Central 5×5 Grid Baseline:** The 10-bead 5×5 square board serves as the dimensional reference. The central 5×5 box occupies prominent width and height (~70% of vertical playable height, full width across columns `c1` to `c5`).
-- **Column Lattice (`c1`–`c5`):** 
-  - `c1` = Left outer vertical boundary
-  - `c2` = Left inner vertical line
-  - `c3` = Center vertical line (board spine)
-  - `c4` = Right inner vertical line
-  - `c5` = Right outer vertical boundary
-- **Triangle Caps (Top & Bottom Wings):**
-  - **Apex:** Meets the 5×5 rectangle at the center node (`c3`) of the outer rank.
-  - **Mid-Row (Inner Triangle Row):** 3 nodes placed strictly at columns `c2`, `c3`, and `c4` (narrower span).
-  - **Outer Base Row:** 3 nodes placed at columns `c1`, `c3`, and `c5` along the continuous diagonal trajectories.
-  - **Vertical Row Height:** The vertical height between triangle rows is compact (~50% of the 5×5 rectangular cell height).
-- **Collinearity Invariant:** All diagonal lines (`c3` ➔ `c2` ➔ `c1` and `c3` ➔ `c4` ➔ `c5`) maintain continuous straight-line alignment across the apex junction, preserving legal slide and jump-capture mechanics across both Web canvas and Android viewports.
-
-### Multi-Jump & Capture Optionality
-
-Chain jumps are permitted whenever a legal consecutive capture exists, but never forced. A player — human or AI — may always stop after completing a legal jump. This is "Capture Optionality," and it exists because traditional bead games have always treated continuing a capture as the player's choice, not an obligation. A specific AI's internal continue-vs-stop policy (e.g. a random opponent's odds of continuing) is an implementation detail of that AI only — it must never be promoted to a gameplay rule.
-
-### Match Termination & Victory Resolution
-
-Matches support three configurable end modes: move-limit, time-limit, unlimited. Gameplay logic must treat all three as configuration, never hardcode one as the only mode.
-
-When a match reaches its configured limit, resolve the winner using this hierarchy, in order:
-1. **Total captures** — most beads captured wins.
-2. **Center-hold plies** — if captures are tied, most plies spent occupying a center node wins.
-3. **Draw** — if both are tied, the match is a draw.
-
-Draw is a legitimate, accepted outcome of the hierarchy above — not a failure state to be engineered out of existence. We do not adopt scoring formulas or draw-elimination schemes that haven't been validated against actual play; if a future formula (e.g. a combined bead+center-hold score) is proposed, it must be tested through Smart Game Lab evidence before replacing this hierarchy, and any such change is a Major-tier gameplay decision requiring explicit human sign-off.
-
-### Resignation
-
-In bead strategy games, positions can reach mutually recognized deadlocks. Resignation is designed as a mutual-resolution mechanism: a player may offer resignation during their turn.
-- If the opponent **agrees** to the resignation, the game ends in a **Draw**.
-- If the opponent **declines** the resignation, the resigning player **Loses**.
-This protocol allows players to gracefully conclude drawn or non-viable endgames by mutual agreement, while ensuring that unilateral resignation yields a loss.
+**16-bead proportions:** Dimensional standard for web/mobile parity → DECISIONS §12.
 
 ---
 

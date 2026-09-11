@@ -27,10 +27,11 @@ GPT_Enterprise_Vault is the central repository for all software projects.
 
 Each project maintains its own:
 
-* PROJECT_MAP_05P.md
+* GPT_PROJECT_DECISIONS_05P.md (SmartBeads — locked game/product decisions)
 * GPT_PROJECT_RULES_01P.md
 * GPT_PROJECT_STATUS_01P.md
-* GPT_PROJECT_PENDING_01P.md
+* GPT_PROJECT_PENDING_01P.md (human-owned)
+* PROJECT_MAP_05P.md
 * GPT_PROJECT_AUDIT_05P.md (supporting audit trail, when used)
 
 The repository is organized to maximize reuse, minimize duplication, and support long-term project development.

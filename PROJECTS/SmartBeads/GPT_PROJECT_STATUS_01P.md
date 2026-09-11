@@ -4,8 +4,8 @@
 
 This document records **what is built and verified** for **Smart Bead Chess** ([smartbeadchess.com](https://smartbeadchess.com)).  
 Repo folder `PROJECTS/SmartBeads/` and code names (e.g. `SmartBeadsEngine`) are internal — unchanged.  
-Pending and roadmap work lives in **`GPT_PROJECT_PENDING_01P.md`** only.  
-**Approved UI rules (locked)** → `GPT_PROJECT_PENDING_01P.md` § Turn colour UI.
+Pending and roadmap work lives in **`GPT_PROJECT_PENDING_01P.md`** only (human-owned — agents do not edit).  
+**Locked game & product decisions** → **`GPT_PROJECT_DECISIONS_05P.md`** (single owner).
 
 Target: 01P (~1 page)
 
@@ -47,7 +47,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 
 ### 2. Turn Interaction & UI Protocol (`FeatureSession.ts` & `CanvasBoardRenderer.ts`)
 - **Inert Opponent Beads:** Opponent beads are 100% inert (not clickable).
-- **Turn bead highlighting:** Locked rule → `GPT_PROJECT_PENDING_01P.md` (doc owner). Draw path: `drawCanvasBoard`. **Jest OK (2026-09-09).** **Human browser CONFIRMED (2026-09-09).**
+- **Turn bead highlighting:** Locked → `GPT_PROJECT_DECISIONS_05P.md` §7–§8. Draw path: `drawCanvasBoard`. **Jest OK (2026-09-11).** **Human browser UNCONFIRMED** for every-turn change.
 - **Audio & Sound Effects (`SoundEffects.ts`):** Eight production WAV files only — repo-root `public/audio/sfx_*.wav` (loaded at runtime via `SoundManifest.ts`; not embedded in JS). Orphan Kenney/voice/sample copies removed 2026-09-08. **TESTED** (`SoundEffects.test.ts` — event dispatch; decode UNCONFIRMED in Jest).
 - **Start Screen Overlay & First-Tap Unlock (Option B):** Gold-accented start card over board (mode select + **▶ START GAME**) unlocks browser AudioContext and BGM. **Start** always opens with human (cream / RED); AI must not move first. **New game / Play again** alternates opener (game 2 → AI in PvE). **Board switch** returns to start overlay with human first (does not consume alternation counter). Match then runs with animated kickoff banner and fanfare.
 - **Production play shell layout (2026-08):** Four-column shell — left play panel (AI top, match `mm:ss` centre, human bottom, shot rings, capture/centre/beads), board-only centre column, settings right, optional ad column. Bottom controls: single nowrap row (Resign · **Finish capture** · Sound · Undo · New game). Finish capture hidden until mid-chain optional jump. Viewport height-first sizing on `.shell`; 16-bead bump (`shell--board-16`, max frame height 860px); verified at 1366×768 and 1280×720 @ 100% zoom.
@@ -76,7 +76,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Timer vs tournament timer:** **Timer** = shared clock (all modes); expiry → captures → centre → beads → draw. **Tournament timer** = HvH only per-player chess clocks; expiry → flag fall (instant loss); centre forced off. Mutually exclusive in UI.
 - **Center scoring contract:** End-Game/Cumulative tiebreak in `evaluateScoreAndEnd()` on **timer** expiry; cumulative accrual each completed turn; Medium/Hard AI eval + timer urgency via `planAiTurnPath`. Independent of timer on/off for center rule storage (except tournament timer forces centre off).
 - **Clocks during AI:** shot/timer tick while Ebony thinks (`shellTimerShouldSkip`); shot expiry on BLUE awards Ivory.
-- **Resignation Protocol:** Either player can resign during their turn. If the opponent accepts, the match ends in a Draw; if the opponent declines, the resigning player loses (matches `Rule - Resignation` in `GPT_PROJECT_RULES_01P.md`). Modal buttons use **dashed vs solid** styling (not red/green) for colorblind safety.
+- **Resignation Protocol:** → `GPT_PROJECT_DECISIONS_05P.md` §3. **TESTED** (`FeatureSession.resignation`). Human browser **UNCONFIRMED**.
 - **Alternating opener (local):** Start overlay → human (cream) first; **New game / Play again** alternates opener in PvE. **FUNCTIONAL** (Jest + browser policy checks).
 
 ### 5. Test & Quality Gates
@@ -102,15 +102,14 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **Expert think time** | **Inform** — can block UI up to ~45s on 16; needs “thinking…” or cap |
 | **Center** (Off / End-game / Cumulative) | **OK** — Jest + AI eval + timer urgency on levels 2–3 |
 | **SFX bundle** | **OK (2026-09-08)** — eight WAV in repo-root `public/audio/` only; main JS ~74 kB (was ~601 kB with embed) |
-| **Resign modal a11y** | **OK (2026-09-04)** — dashed/solid + labels; not red/green-only |
-| **Resign button (shell)** | **OK (2026-09-11)** — gold background, red border, subtle red hover; coach glow aligned. **UNCONFIRMED** human browser |
-| **BGM Play button** | **OK (2026-09-11)** — Field green gradient (`#72bf77` → `#4caf50`); Pause stays gold. **UNCONFIRMED** human browser |
+| **Resignation** | **OK (Jest)** — **DECISIONS §3**. Modal a11y + shell button. **UNCONFIRMED** human browser |
+| **BGM Play button** | **OK (2026-09-11)** — **DECISIONS §10**. **UNCONFIRMED** human browser |
 | **Shot clock** | **OK** — ticks during AI; expiry tested |
 | **Timer** | **OK** — shared clock; expiry → capture/centre/beads; **mm:ss text only** |
 | **Tournament timer** | **OK (Jest)** — HvH chess clocks; flag fall = loss; centre off; **UNCONFIRMED** human browser |
 | **Engine** (moves, captures, chains) | **OK** — Jest + browser gates |
 | **Finish capture (optional chain stop)** | **OK (Jest)** — controls row, `finishChain` ends turn, coach demo; human browser **UNCONFIRMED** |
-| **Turn bead highlighting** | **OK (Jest, 2026-09-11)** — every-turn idle flash (orange/lime rings, pulse, 72% opp dim, half-board wash); clears on first pick; re-arms when turn completes. Coach/Watch AI/resign/win = live `previewScriptedSelection`. **Human browser UNCONFIRMED** for every-turn change |
+| **Turn bead highlighting** | **OK (Jest, 2026-09-11)** — see **DECISIONS §7–§8**. **Human browser UNCONFIRMED** |
 | **Settings ? help** | **OK (Jest, 2026-09-09)** — Timer, Tournament timer, Turn shot clock, Center rule rows in `index.html` / `play-board.html`. **UNCONFIRMED** human browser |
 | **End-game user copy** | **OK (Jest, 2026-09-09)** — cream/black bead labels; no P1/P2 in timer/resign reasons. **UNCONFIRMED** congratulations modal on screen |
 | **Recent colour / panel edits** | **Partial (2026-09-11)** — BGM Field green + resign gold/red shipped; panel bg unchanged (dark). **UNCONFIRMED** full browser sign-off |

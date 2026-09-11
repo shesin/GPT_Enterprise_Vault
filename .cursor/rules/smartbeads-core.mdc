@@ -1,5 +1,5 @@
 ---
-description: SmartBeads hooks — detail in CURSOR_PROMPT + GPT_PROJECT_RULES
+description: SmartBeads hooks — pointers only; detail in RULES + DECISIONS
 alwaysApply: true
 ---
 
@@ -7,15 +7,16 @@ alwaysApply: true
 
 When work touches `PROJECTS/SmartBeads/`:
 
-- **STOP first** → `.cursor/rules/instruction-fidelity.mdc` § Before any repo edit
-- **Engineering rules** → `GPT_PROJECT_RULES_01P.md` + `VISION/CURSOR_PROMPT_01.md` § SmartBeads Production Gates
-- **Literal ask** — option ≠ default; one-line ask = one-line change unless user lists more
-- **Code vs claim** — read `GPT_PROJECT_STATUS_01P.md` § Integrity; edit any doc only on **Go —** + named file(s)
-- **PENDING sections** — **Difference** = rule vs ship / taste, not breakage. **risk** = confuse players, break or unverified on phone/browser, or **defer — mobile app** until fixed; keep in risk until you sign off.
-- **Doc edits** — **PENDING / AUDIT / VISION / RULES** only on **Go —** + named file. **STATUS / MAP** only when you say **push to git all good**
+- **STOP** → `instruction-fidelity.mdc` § Before any repo edit
+- **Gameplay / UI / colours / modes** → read `GPT_PROJECT_DECISIONS_05P.md` when needed
+- **Engineering / agent workflow** → read `GPT_PROJECT_RULES_01P.md` when needed; gates → `VISION/CURSOR_PROMPT_01.md`
+- **Shipped vs claim** → `GPT_PROJECT_STATUS_01P.md` § Integrity
+- **PENDING** → human-owned, read-only → RULES § PENDING Human-Owned
+- **Doc edits** → DECISIONS / AUDIT / VISION / RULES on **Go —** + **Files:**; STATUS / MAP on **push to git all good** only
+- **Literal ask** — option ≠ default; one line = one change unless user lists more
 - **One playtest bug** — failing test + related fixes
-- **Timing / WHEN** — lock once / per turn / per match / never in pending before UI work; Jest must match that sentence (`instruction-fidelity.mdc` § Process)
+- **WHEN** — lock in DECISIONS before UI; Jest must match
 - **Prototype ≠ production** — no shared code with `src/`
-- **Static assets** — SFX/images from `public/`; no large base64 in TS bundles
-- **Never edit** `VISION/CLAUDE_TEST_REPORT_05.md` (not agent scope)
-- **Cleanup on Go only** — remove dead code and false claims; no auto doc sync
+- **Static assets** — from `public/`; no large base64 in TS bundles
+- **Never edit** `VISION/CLAUDE_TEST_REPORT_05.md`
+- **Cleanup on Go only** — no auto doc sync

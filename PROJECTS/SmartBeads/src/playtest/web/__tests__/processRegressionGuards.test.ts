@@ -72,10 +72,13 @@ describe('process regression guards', () => {
   });
 
   describe('WHEN rule — turn-start flash every turn (idle until pick)', () => {
-    it('documents turn-start re-arm on each completed turn', () => {
-      expect(featureSessionSource).toMatch(
-        /re-armed when each turn completes/,
+    it('documents turn-start WHEN in DECISIONS and re-arms after each completed turn', () => {
+      const decisionsSource = fs.readFileSync(
+        path.resolve(__dirname, '../../../../GPT_PROJECT_DECISIONS_05P.md'),
+        'utf8',
       );
+      expect(decisionsSource).toMatch(/Re-arms.*when each turn completes/);
+      expect(featureSessionSource).toMatch(/GPT_PROJECT_DECISIONS_05P\.md §7/);
     });
 
     it('re-arms turnStartRingsPending after a completed turn', () => {

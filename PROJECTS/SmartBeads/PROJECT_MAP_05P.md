@@ -1,6 +1,6 @@
 # Smart Bead Chess — Project Map
 
-**Behaviour / UI rules** → `GPT_PROJECT_STATUS_01P.md` (shipped) and `GPT_PROJECT_PENDING_01P.md` (locked + gaps). This file is paths only.
+**Game decisions** → `GPT_PROJECT_DECISIONS_05P.md`. **Shipped** → `GPT_PROJECT_STATUS_01P.md`. **Roadmap** → `GPT_PROJECT_PENDING_01P.md` (human-owned). This file is paths only.
 
 ## Structure
 
@@ -107,7 +107,8 @@ SmartBeads/
 ├── WEB_REPORT_All_BEAD_05P.md         # All-board ladder + Cursor Index verdicts
 ├── WEB_FEATURE_TEST_05P.md            # Feature Test (KEEP boards only) — settings & timer ranges
 ├── PROJECT_MAP_05P.md                 # Project structure and navigation
-├── GPT_PROJECT_RULES_01P.md           # Permanent engineering and design principles
+├── GPT_PROJECT_DECISIONS_05P.md       # Locked game & product decisions (single owner)
+├── GPT_PROJECT_RULES_01P.md           # Agent & engineering rules (~1 page)
 ├── GPT_PROJECT_STATUS_01P.md          # Milestone status (shipped only)
 └── GPT_PROJECT_PENDING_01P.md         # Pending & roadmap (single list)
 ```
@@ -132,7 +133,7 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`audio/SoundEffects.ts`** — fetches eight named WAV files from repo-root `public/audio/` via `SoundManifest.ts`; start overlay unlock; end celebration audio. Regenerate: `node scripts/generate-sfx-wavs.mjs`.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
-- **`render/CanvasBoardRenderer.ts`** — canvas board draw. Turn-colour behaviour → `GPT_PROJECT_STATUS_01P.md` / `GPT_PROJECT_PENDING_01P.md` § Turn colour UI. Geometry: `v1GeometryCaptureAudit.test.ts`. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts`.
+- **`render/CanvasBoardRenderer.ts`** — canvas board draw. Turn/move colours → `GPT_PROJECT_DECISIONS_05P.md` §7–§8. Geometry: `v1GeometryCaptureAudit.test.ts`. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts`.
 
 ### prototype/board4/
 
@@ -199,10 +200,11 @@ Interactive CLI runner (`HumanVsAiRunner.ts`) and web feature shell (`web/`) for
 
 | File | Role |
 |------|------|
-| `GPT_PROJECT_RULES_01P.md` | Permanent engineering rules |
-| `VISION_05P.md` | Vision, locked V1 seven, design reasoning |
+| `GPT_PROJECT_DECISIONS_05P.md` | Locked game & product decisions (single owner) |
+| `GPT_PROJECT_RULES_01P.md` | Agent & engineering rules |
+| `VISION_05P.md` | Broad mission & principles |
 | `GPT_PROJECT_STATUS_01P.md` | Milestone status (shipped only) |
-| `GPT_PROJECT_PENDING_01P.md` | Pending work & roadmap (single list) |
+| `GPT_PROJECT_PENDING_01P.md` | Human roadmap (agents do not edit) |
 | `PROJECT_MAP_05P.md` | This file — structure and navigation |
 | `GPT_PROJECT_AUDIT_05P.md` | 4th-cycle process failure audit (supporting) |
 | `WEB_FEATURE_TEST_05P.md` | Per-board feature defaults (centre rule, timers) |

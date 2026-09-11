@@ -86,7 +86,7 @@ Humans found basic defects in minutes. Prior AI audits listed gaps but did **not
 **3-fold repetition draw** was ported from prototype Lab/HTML into production `FeatureSession` without:
 
 - Explicit human product approval
-- Entry in `GPT_PROJECT_RULES_01P.md` / `VISION_05P.md` as a V1 rule
+- Entry in `GPT_PROJECT_DECISIONS_05P.md` as a locked product decision
 - A “keep vs remove” decision offered to the human first
 
 How it got in: agents treated prototype completeness (Lab matrix, INDEX HTML, chess-like draw rules) as license to copy into production. That violates human ownership of gameplay and Medium/Major approval gates.
