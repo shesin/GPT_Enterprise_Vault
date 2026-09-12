@@ -19,8 +19,17 @@ describe('two-page play flow (index.html)', () => {
   it('page 1 hub has chess.com-style layout; page 2 play shell hidden until launch', () => {
 
     expect(indexHtml).toContain('id="play-hub"');
-    expect(indexHtml).toContain('data-hub-theme="1"');
-    expect(indexHtml).toContain('hub-theme-swatch');
+    expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-theme="2"/);
+    expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-board-match="side-only"/);
+    expect(indexHtml).toContain('id="hub-play-theme-setting"');
+    expect(indexHtml).toContain('id="hub-play-theme-mode"');
+    expect(indexHtml).toContain('name="hub-play-board-match"');
+    expect(indexHtml).not.toContain('hub-play-theme-picker');
+    expect(indexHtml).toContain('value="side-only"');
+    expect(indexHtml).toContain('data-play-theme="1"');
+    expect(indexHtml).toContain('data-play-theme="3"');
+    expect(indexHtml).not.toContain('hub-theme-swatch');
+    expect(indexHtml).not.toContain('data-hub-theme=');
 
     expect(indexHtml).toContain('hub-rail--left');
 

@@ -5,6 +5,13 @@ import {
   type BoardCatalogEntry,
 } from '../../config/BoardCatalog';
 import type { GameFeatureSettings } from './feature/GameFeatureSettings';
+import {
+  applySharedPlayTheme,
+  isPlayBoardMatchMode,
+  isPlayShellThemeId,
+  type PlayBoardMatchMode,
+  type PlayShellThemeId,
+} from './layout/playShellThemes';
 
 export type HubLaunchAction = 'play' | 'coach' | 'spectate';
 
@@ -153,44 +160,61 @@ function wireHubModeHelp(helpBtn: HTMLButtonElement, helpText: HTMLParagraphElem
   });
 }
 
-const HUB_THEME_IDS = ['1', '2', '3', '4'] as const;
-type HubThemeId = (typeof HUB_THEME_IDS)[number];
-
-function parseHubTheme(raw: string | null): HubThemeId {
-  if (raw === '2' || raw === '3' || raw === '4') return raw;
-  return '1';
+function parseHubPlayTheme(raw: string | null): PlayShellThemeId {
+  if (isPlayShellThemeId(raw)) return raw;
+  return '2';
 }
 
-function applyHubTheme(themeId: HubThemeId): void {
-  const hub = document.getElementById('play-hub');
-  if (!hub) return;
-  hub.setAttribute('data-hub-theme', themeId);
-  for (const swatch of document.querySelectorAll<HTMLButtonElement>('.hub-theme-swatch')) {
-    swatch.classList.toggle('is-active', swatch.dataset.hubTheme === themeId);
-  }
-  try {
-    localStorage.setItem('sb-hub-theme', themeId);
-  } catch {
-    /* ignore storage failures */
-  }
+function readHubBoardMatchFromUi(): PlayBoardMatchMode {
+  const selected = document.querySelector<HTMLInputElement>(
+    '#hub-play-theme-setting input[name="hub-play-board-match"]:checked',
+  );
+  return isPlayBoardMatchMode(selected?.value) ? selected.value : 'side-only';
 }
 
 function wireHubThemePicker(): void {
+  const hubThemeSetting = document.getElementById('hub-play-theme-setting');
+  if (!hubThemeSetting) return;
+
   const params = new URLSearchParams(window.location.search);
-  const fromUrl = params.get('hubTheme');
+  const fromUrl = params.get('playTheme') ?? params.get('hubTheme');
   const fromStore = (() => {
     try {
-      return localStorage.getItem('sb-hub-theme');
+      const playTheme = localStorage.getItem('sb-play-theme');
+      if (isPlayShellThemeId(playTheme)) return playTheme;
+      const legacyHub = localStorage.getItem('sb-hub-theme');
+      if (legacyHub === '4') return '1';
+      if (isPlayShellThemeId(legacyHub)) return legacyHub;
+      return null;
     } catch {
       return null;
     }
   })();
-  applyHubTheme(parseHubTheme(fromUrl ?? fromStore));
+  let boardMatch: PlayBoardMatchMode = 'side-only';
+  try {
+    const fromUrlMatch = params.get('playBoardMatch');
+    if (isPlayBoardMatchMode(fromUrlMatch)) boardMatch = fromUrlMatch;
+    else {
+      const storedMatch = localStorage.getItem('sb-play-board-match');
+      if (isPlayBoardMatchMode(storedMatch)) boardMatch = storedMatch;
+    }
+  } catch {
+    boardMatch = 'side-only';
+  }
+  applySharedPlayTheme(parseHubPlayTheme(fromUrl ?? fromStore), boardMatch);
 
-  for (const swatch of document.querySelectorAll<HTMLButtonElement>('.hub-theme-swatch')) {
+  for (const swatch of hubThemeSetting.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
     swatch.addEventListener('click', () => {
-      const themeId = parseHubTheme(swatch.dataset.hubTheme ?? '1');
-      applyHubTheme(themeId);
+      const themeId = swatch.dataset.playTheme;
+      if (isPlayShellThemeId(themeId)) applySharedPlayTheme(themeId, readHubBoardMatchFromUi());
+    });
+  }
+  for (const input of hubThemeSetting.querySelectorAll<HTMLInputElement>('input[name="hub-play-board-match"]')) {
+    input.addEventListener('change', () => {
+      if (input.checked && isPlayBoardMatchMode(input.value)) {
+        const themeId = document.getElementById('play-hub')?.getAttribute('data-play-theme');
+        if (isPlayShellThemeId(themeId)) applySharedPlayTheme(themeId, input.value);
+      }
     });
   }
 }

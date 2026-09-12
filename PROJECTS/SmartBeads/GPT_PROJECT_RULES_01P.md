@@ -11,7 +11,77 @@ Read when doing **implementation, verification, audits, or agent workflow** — 
 
 Production gates detail → `VISION/CURSOR_PROMPT_01.md` § SmartBeads Production Gates.
 
-Target: ~1 page.
+Target: ~1 page. **Extended workflow detail** (moved from `.cursor/rules/*.mdc` for a slimmer always-on prompt).
+
+---
+
+## Rule - Agent mode (Suggest vs Implement)
+
+| User intent | Agent must |
+|-------------|------------|
+| **Suggest / explain / plan / review / why / suggestion** | Words only. **No** Write / StrReplace / Delete / tests / git. |
+| **Do / go / implement / fix** (scoped) | May edit after STOP block in `instruction-fidelity.mdc`. |
+
+If the user says **suggestion**, treat it as feedback to discuss — **not** permission to ship.
+
+---
+
+## Rule - Completion report
+
+After every code or doc change: plain steps (no file names unless asked) — what changed, what you ran, pass/fail, **UNCONFIRMED** if not seen on screen. One instruction = one short block; brief summary last.
+
+- **After edits** — list files changed and one line per file when useful.
+- **Compare / rules / risks** — on *same or not?*: **Same** or **Not same** first; then **Difference** and **risk** as bold headings once each.
+- **Doubt** — one short question, wait. Smallest change + named files, wait for **Go**.
+- **Better idea** — say it, wait for approval.
+
+---
+
+## Rule - Verify before claiming done
+
+1. Say what you changed and what you will run.
+2. Run relevant test(s) or browser smoke for UI — not full suite unless the ask covers it.
+3. Report pass/fail. Browser not checked → **UNCONFIRMED**.
+4. **Say = do** — fewer items done correctly beats many items claimed done.
+
+**Play theme preview** — Side only: board always snapshot green; side follows swatch. Board + side same: board actually changes with swatch, not side card alone.
+
+**Stuck test loop** — audit and fix the test first, then re-run; do not patch product to satisfy a bad test.
+
+---
+
+## Rule - Process (WHEN / scope)
+
+- **WHEN rule first** — User says "only at X, not at Y": write one-line WHEN/WHERE rule, quote back, wait for OK before code. Exclusions bind.
+- **Same complaint twice** — last fix missed scope. Restate the rule; no second "fixed" without new test pass or screen confirm.
+- **Cross-surface** — Go for coach/spectate/lesson/demo must list **Out:** live play paths.
+- **One owner for UI state** — mode-specific teardown only when that mode is active; live control visibility after shared sync, never cleared in unrelated cleanup.
+- **Literal ask** — option ≠ default; one line = one change unless user lists more.
+- **One playtest bug** — failing test + related fixes.
+- **Cleanup on Go only** — no auto doc sync.
+
+---
+
+## Rule - Git (agent)
+
+Only when the user asks. **`ok` / `good`** = known-good checkpoint in the commit message.
+
+| User says | Agent must do |
+|-----------|----------------|
+| `push to git all` / `push to git all ok` / `push to git all good` | `git add` all changed files (skip secrets) → commit → push. Report push output. Update STATUS / MAP if required. |
+
+`push to git` / `commit local` without **all** = agent may pick files. **Never** edit permission.
+
+**Doc edits** — DECISIONS / AUDIT / VISION / RULES on **Go —** + **Files:**; STATUS / MAP on **push to git all good** only.
+
+---
+
+## Rule - SmartBeads hooks (detail)
+
+- **Prototype ≠ production** — no shared code with `src/`.
+- **Static assets** — from `public/`; no large base64 in TS bundles.
+- **WHEN** — lock in DECISIONS before UI; Jest must match.
+- **Shipped vs claim** → `GPT_PROJECT_STATUS_01P.md` § Integrity.
 
 ---
 

@@ -68,6 +68,9 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 
 ### 4. Match Controls & Features (`BoardCatalog.ts`, `FeatureSession.ts`)
 - **Settings UI (2026-09):** Game mode + board on **hub page 1 only** (`#hub-mode-select`, board tile grid). Page 2 settings: **AI level**, **Watch AI level**, **Timer**, **Tournament timer** (HvH only), Turn shot clock, Center rule — each timer/center row has **?** help toggle.
+- **Play shell themes (2026-09-12):** Three unified swatches (Classic Dark · Warm parchment · Camp edge glow) on **hub page 1** (`#hub-play-theme-setting`) and **board settings** (`#play-theme-setting`); shared sync via `playShellThemes.ts` (`applySharedPlayTheme`). **Side only** — board canvas stays snapshot green; side/rail follows swatch; hub centre stays classic green. **Board + side same** — board canvas + hub centre follow swatch. Classic gold grid lines locked. **TESTED** (`playShellThemes`, `hubShell`, `processRegressionGuards`). **Human browser UNCONFIRMED**.
+- **Result modal dismiss (2026-09-12):** **View board** closes congrats/draw overlay; final position stays until **Play again** / **New game**. **TESTED** (shell guards). **Human browser UNCONFIRMED**.
+- **New game control (2026-09-12):** Below-board **New game** resets match (same as **Play again**); gold styling without resign red border. **TESTED** (`processRegressionGuards`). **Human browser UNCONFIRMED**.
 - **Game Modes:** PvP (local 2-player) and PvE (vs AI) — chosen on start overlay, not duplicated in Settings.
 - **Default Feature Settings:**
   - `centerRule: 'off'` default on all 7 boards (End-Game/Cumulative selectable per board catalog).
@@ -115,7 +118,10 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **Turn bead highlighting** | **OK (Jest, 2026-09-11)** — see **DECISIONS §7–§8**. **Human browser UNCONFIRMED** |
 | **Settings ? help** | **OK (Jest, 2026-09-09)** — Timer, Tournament timer, Turn shot clock, Center rule rows in `index.html` / `play-board.html`. **UNCONFIRMED** human browser |
 | **End-game user copy** | **OK (Jest, 2026-09-09)** — cream/black bead labels; no P1/P2 in timer/resign reasons. **UNCONFIRMED** congratulations modal on screen |
-| **Recent colour / panel edits** | **Partial (2026-09-11)** — BGM Field green + resign gold/red shipped; panel bg unchanged (dark). **UNCONFIRMED** full browser sign-off |
+| **Recent colour / panel edits** | **Partial (2026-09-12)** — unified theme swatches + hub/board sync shipped; BGM Field green + resign gold/red. **UNCONFIRMED** full browser sign-off |
+| **Play shell themes (hub + board)** | **OK (Jest, 2026-09-12)** — matched vs side-only split on board canvas + hub centre/rail. **UNCONFIRMED** human browser |
+| **Result modal View board** | **OK (Jest, 2026-09-12)** — dismiss keeps final board. **UNCONFIRMED** human browser |
+| **Production deploy smartbeadchess.com** | **Partial (2026-09-12)** — domain live; requires full `dist/` upload (`index.html` + `assets/` + `audio/`). **UNCONFIRMED** styled load on live site |
 
 Update this table when code ≠ claim. Do not mark **VERIFIED CLEAN** for rows marked Fix/remove or UNCONFIRMED.
 
@@ -135,7 +141,7 @@ Open: **http://localhost:5173/**
 - **Page 1** — setup: board, game mode, **Start game**, **Coach lesson**
 - **Page 2** — live board (same URL; opens after you choose on page 1)
 - **Coach shortcut:** `http://localhost:5173/?coach=start`
-- **Production (when deployed):** **https://smartbeadchess.com**
+- **Production (when deployed):** **https://smartbeadchess.com** — build: `npx vite build`; upload all of `dist/` to Hostinger `public_html` (not `index.html` alone).
 
 Leave the terminal running while you play. If port 5173 is busy, close the old terminal and run again.
 

@@ -59,11 +59,18 @@ SmartBeads/
 │   │   │   │   ├── SoundManifest.ts   # Runtime SFX URL map
 │   │   │   │   └── __tests__/SoundEffects.test.ts
 │   │   │   ├── layout/
+│   │   │   │   ├── playShellThemes.ts    # 3 swatches; matched vs side-only; hub+board sync
+│   │   │   │   ├── boardLookThemes.ts    # canvas look from playShellThemes
+│   │   │   │   ├── sidePanelThemes.ts
+│   │   │   │   ├── boardLineGoldThemes.ts
+│   │   │   │   ├── creamCampTintThemes.ts
 │   │   │   │   ├── boardProjection.ts
 │   │   │   │   ├── boardVisualProfile.ts
 │   │   │   │   ├── canvasDisplay.ts   # --board-aspect on .shell; fitCanvasToFrame
 │   │   │   │   ├── prototypeProjectionOracle.ts
-│   │   │   │   └── __tests__/         # prototypeVisualParity, creamCampRendersLower
+│   │   │   │   └── __tests__/         # playShellThemes, boardLookThemes, sidePanelThemes,
+│   │   │   │                          #   boardLineGoldThemes, creamCampTintThemes,
+│   │   │   │                          #   prototypeVisualParity, creamCampRendersLower
 │   │   │   ├── render/
 │   │   │   │   └── CanvasBoardRenderer.ts
 │   │   │   └── __tests__/             # PlayController, playerBarShell, viewportFit,
@@ -124,7 +131,8 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 
 - **`main.ts`** — calls `bootstrapPlayShell()`.
 - **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`. **Coach mode:** watch-only ~**1:53** video (play/pause/scrub); ending cues WIN / RESIGN / DRAW; no board input.
-- **`PlayHub.ts`** — hub navigation; **Coach** sidebar + top card launches teaching video on **7-bead · 4×5** (`?coach=1` picker, `?coach=start` auto-launch).
+- **`PlayHub.ts`** — hub navigation; theme picker (`#hub-play-theme-setting`, `hub-play-board-match` radios) synced with board via `applySharedPlayTheme`; **Coach** sidebar + top card launches teaching video on **7-bead · 4×5** (`?coach=1` picker, `?coach=start` auto-launch).
+- **`layout/playShellThemes.ts`** — unified theme presets; `resolveBoardCanvasLook` (side-only = green board); `applyHubThemeCssVars` (hub rail vs centre split); localStorage `sb-play-theme` / `sb-play-board-match`.
 - **`feature/CoachVideoScript.ts`** — Video 1 on **7-bead** (~**1:53**): basics + **WIN** / **RESIGN** / **DRAW** appendix; amber/lime highlights; scripted cues and TTS speeches.
 - **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.
 - **`feature/CoachVoice.ts`** — browser TTS; mute and replay per segment.

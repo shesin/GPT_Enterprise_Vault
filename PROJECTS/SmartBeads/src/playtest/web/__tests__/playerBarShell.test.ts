@@ -54,6 +54,22 @@ describe('production left play panel shell (index.html)', () => {
     expect(playControllerSource).not.toMatch(/play-block-p2[\s\S]*classList\.toggle\(\s*'active'/);
   });
 
+  it('Settings offers three unified board+side panel preview swatches', () => {
+    expect(indexHtml).toContain('id="play-theme-swatches"');
+    expect(indexHtml).toContain('id="play-theme-mode"');
+    expect(indexHtml).toContain('name="play-board-match"');
+    expect(indexHtml).toContain('value="matched"');
+    expect(indexHtml).toContain('value="side-only"');
+    expect(indexHtml).toContain('data-play-theme="1"');
+    expect(indexHtml).toContain('data-play-theme="2"');
+    expect(indexHtml).toContain('data-play-theme="3"');
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-theme="2"/);
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-match="side-only"/);
+    expect(indexHtml).not.toContain('id="board-look-swatches"');
+    expect(indexHtml).not.toContain('id="line-gold-swatches"');
+    expect(indexHtml).not.toContain('id="side-panel-swatches"');
+  });
+
   it('hub offers Watch AI and board settings has Watch AI level below AI level', () => {
     expect(indexHtml).toMatch(/value="spectate"[^>]*>Watch AI vs AI|Watch AI vs AI[^<]*<\/option>/);
     expect(indexHtml).toContain('id="hub-mode-select"');
@@ -62,5 +78,13 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).toContain('id="coach-level-setting"');
     expect(indexHtml).not.toContain('coach-red-ai-select');
     expect(indexHtml).not.toContain('coach-blue-ai-select');
+  });
+
+  it('result modal can close so final board stays visible', () => {
+    expect(indexHtml).toContain('id="result-view-board-btn"');
+    expect(indexHtml).not.toContain('id="result-close-btn"');
+    expect(playControllerSource).toContain('resultModalDismissed');
+    expect(playControllerSource).toMatch(/function dismissResultModal\(\)/);
+    expect(playControllerSource).toMatch(/if \(!resultModalDismissed\)/);
   });
 });

@@ -28,6 +28,14 @@ const canvasRendererSource = fs.readFileSync(
   path.resolve(__dirname, '../render/CanvasBoardRenderer.ts'),
   'utf8',
 );
+const playHubSource = fs.readFileSync(
+  path.resolve(__dirname, '../PlayHub.ts'),
+  'utf8',
+);
+const playShellThemesSource = fs.readFileSync(
+  path.resolve(__dirname, '../layout/playShellThemes.ts'),
+  'utf8',
+);
 
 function afterTurnCompletedBlock(): string {
   const start = featureSessionSource.indexOf('private afterTurnCompleted');
@@ -81,18 +89,18 @@ describe('process regression guards', () => {
         path.resolve(__dirname, '../../../../GPT_PROJECT_DECISIONS_05P.md'),
         'utf8',
       );
-      expect(decisionsSource).toMatch(/Re-arms.*when each turn completes/);
+      expect(decisionsSource).toMatch(/Re-arms.*only on.*New game/i);
       expect(featureSessionSource).toMatch(/GPT_PROJECT_DECISIONS_05P\.md §7/);
     });
 
-    it('re-arms turnStartRingsPending after a completed turn', () => {
+    it('does not re-arm turnStartRingsPending after a completed turn', () => {
       const block = afterTurnCompletedBlock();
-      expect(block).toMatch(/turnStartRingsPending\s*=\s*true/);
+      expect(block).not.toMatch(/turnStartRingsPending\s*=\s*true/);
     });
 
-    it('sets turnStartRingsPending true at init, reset, and after each turn', () => {
+    it('sets turnStartRingsPending true at init and reset only', () => {
       const matches = [...featureSessionSource.matchAll(/turnStartRingsPending\s*=\s*true/g)];
-      expect(matches.length).toBe(3);
+      expect(matches.length).toBe(2);
       expect(featureSessionSource).toMatch(/private turnStartRingsPending = true/);
       expect(featureSessionSource).toMatch(/reset\(\)[\s\S]*turnStartRingsPending = true/);
     });
@@ -149,6 +157,73 @@ describe('process regression guards', () => {
       expect(canvasRendererSource).toMatch(/drawCreamHalfTint\(ctx, w, h,/);
       expect(canvasRendererSource).not.toMatch(/function drawTurnWash/);
       expect(canvasRendererSource).not.toMatch(/rgba\(40,90,160/);
+    });
+  });
+
+  describe('play theme — hub and board stay in sync', () => {
+    it('hub uses same setting block as board; shared sync; board listeners scoped', () => {
+      expect(playShellThemesSource).toMatch(/function applySharedPlayTheme/);
+      expect(playShellThemesSource).toMatch(/function applyHubThemeCssVars/);
+      expect(playShellThemesSource).toMatch(/resolveHubCentrePalette/);
+      expect(playHubSource).toMatch(/applySharedPlayTheme\(/);
+      expect(playHubSource).toMatch(/#hub-play-theme-setting/);
+      expect(playHubSource).toMatch(/hub-play-board-match/);
+      expect(playControllerSource).toMatch(/#play-theme-setting/);
+      expect(playControllerSource).not.toMatch(
+        /document\.querySelectorAll<HTMLButtonElement>\('\.play-theme-swatch'\)/,
+      );
+      expect(playControllerSource).toMatch(/function syncPlayShellThemeFromStorage/);
+      expect(playControllerSource).toMatch(/enterFromHub[\s\S]*syncPlayShellThemeFromStorage\(\)/);
+      expect(indexHtml).toContain('id="hub-play-theme-setting"');
+      expect(indexHtml).toContain('name="hub-play-board-match"');
+      expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-board-match="side-only"/);
+    });
+
+    it('side-only keeps snapshot board; matched applies swatch board paint', () => {
+      expect(playShellThemesSource).toMatch(/side-only is always snapshot green/);
+      expect(playShellThemesSource).toMatch(/creamHorizontalStops: classic\.creamHorizontalStops/);
+      expect(canvasRendererSource).toMatch(/getActiveBoardLookTheme/);
+    });
+  });
+
+  describe('below-board New game — reset not hub', () => {
+    it('restart button starts a new match (same as Play again), not returnToHub', () => {
+      expect(playControllerSource).toMatch(/restartBtn\.addEventListener\('click'/);
+      const restartHandler = playControllerSource.match(
+        /restartBtn\.addEventListener\('click', \(\) => \{([\s\S]*?)\}\);/,
+      )?.[1] ?? '';
+      expect(restartHandler).toMatch(/resetGame\(\)/);
+      expect(restartHandler).not.toMatch(/returnToHub\(\)/);
+    });
+
+    it('both HTML shells style New game like resign gold without red border hook', () => {
+      for (const html of [indexHtml, playBoardHtml]) {
+        expect(html).toMatch(/id="restart-btn"[^>]*type="button"/);
+        expect(html).toContain('class="new-game-new">New</span> game');
+      }
+      const playShellCss = fs.readFileSync(
+        path.resolve(__dirname, '../play-shell.css'),
+        'utf8',
+      );
+      expect(playShellCss).toMatch(/#restart-btn[\s\S]*border: 2px solid var\(--gold\)/);
+      expect(playShellCss).toMatch(/\.new-game-new[\s\S]*color: #000/);
+      expect(playShellCss).not.toMatch(/\.new-game-new[\s\S]*font-weight:\s*800/);
+    });
+  });
+
+  describe('result modal — dismiss keeps final board', () => {
+    it('both HTML shells expose view-board control (no separate close X)', () => {
+      for (const html of [indexHtml, playBoardHtml]) {
+        expect(html).toContain('id="result-view-board-btn"');
+        expect(html).not.toContain('id="result-close-btn"');
+      }
+    });
+
+    it('updateUI does not re-show modal after user dismisses at game over', () => {
+      expect(playControllerSource).toContain('let resultModalDismissed = false');
+      expect(playControllerSource).toMatch(/resultModalDismissed = true/);
+      expect(playControllerSource).toMatch(/if \(!resultModalDismissed\)/);
+      expect(playControllerSource).toMatch(/resultModalDismissed = false/);
     });
   });
 

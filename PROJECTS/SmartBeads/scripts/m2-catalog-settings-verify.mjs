@@ -20,7 +20,7 @@ const EXPECTED = {
   '6x4': {
     centerOptions: ['off', 'cumulative', 'endgame'],
     centerDefault: 'off',
-    timerOptions: ['off', '3', '5', '10'],
+    timerOptions: ['off', '2', '5', '10'],
     timerDefault: 'off',
     shotOptions: ['off', '30', '60'],
     shotDefault: 'off',
@@ -28,7 +28,7 @@ const EXPECTED = {
   '6x3x5': {
     centerOptions: ['off', 'cumulative', 'endgame'],
     centerDefault: 'off',
-    timerOptions: ['off', '3', '5', '10'],
+    timerOptions: ['off', '2', '5', '10'],
     timerDefault: 'off',
     shotOptions: ['off', '30', '60'],
     shotDefault: 'off',
@@ -60,7 +60,7 @@ const EXPECTED = {
   '7x4x5': {
     centerOptions: ['off', 'cumulative', 'endgame'],
     centerDefault: 'off',
-    timerOptions: ['off', '3', '5', '10'],
+    timerOptions: ['off', '2', '5', '10'],
     timerDefault: 'off',
     shotOptions: ['off', '30', '60'],
     shotDefault: 'off',

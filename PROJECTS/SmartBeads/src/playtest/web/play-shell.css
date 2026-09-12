@@ -84,11 +84,89 @@ body.hub-page {
   --controls-h: 34px;
   --stack-chrome: calc(var(--controls-h) + var(--main-gap));
 }
+.play-theme-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.play-theme-mode-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.play-theme-mode-opt input {
+  accent-color: var(--gold);
+}
+.play-theme-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+.play-theme-swatch {
+  width: 44px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 2px solid rgba(212, 168, 75, 0.35);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.play-theme-swatch[data-play-theme="1"] {
+  background: linear-gradient(165deg, #1a4030, #123528);
+  box-shadow: inset -10px -10px 0 -6px #241812, inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.play-theme-swatch[data-play-theme="2"] {
+  background: linear-gradient(165deg, #1a4030, #123528);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+.play-theme-swatch[data-play-theme="2"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 242, 215, 0.35) 0%, transparent 42%, transparent 58%, rgba(255, 242, 215, 0.22) 100%);
+  pointer-events: none;
+}
+.play-theme-swatch[data-play-theme="3"] {
+  background: linear-gradient(165deg, #1a4030, #123528);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 0 0 2px rgba(255, 245, 220, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+.play-theme-swatch[data-play-theme="3"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 245, 220, 0.45) 0%, transparent 35%, transparent 65%, rgba(255, 245, 220, 0.45) 100%);
+  pointer-events: none;
+}
+.play-theme-swatch.is-active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(212, 168, 75, 0.45);
+}
+#play-shell {
+  --side-card-bg: linear-gradient(165deg, #1a4030, #123528);
+  --side-card-border: rgba(212, 168, 75, 0.22);
+  --side-card-glow: none;
+  --play-ai-bg: rgba(20, 14, 10, 0.92);
+  --play-ai-border: rgba(60, 45, 38, 0.55);
+  --play-ai-accent: var(--black-bead);
+  --play-human-bg: rgba(76, 175, 80, 0.14);
+  --play-human-border: rgba(114, 191, 119, 0.4);
+  --play-human-accent: #4caf50;
+}
 .card {
-  background: rgba(18, 38, 30, 0.92);
-  border: 1px solid rgba(212,168,75,0.22);
+  background: var(--side-card-bg);
+  border: 1px solid var(--side-card-border);
   border-radius: 14px;
   padding: 12px;
+  box-shadow: var(--side-card-glow);
 }
 .card.left {
   padding-top: 0;
@@ -226,16 +304,16 @@ body.hub-page {
 /* Upper panel = black side (fixed — does not swap on turn). */
 .play-block-ai {
   flex-shrink: 0;
-  border-left-color: var(--black-bead);
-  border-color: rgba(60, 45, 38, 0.55);
-  background: rgba(20, 14, 10, 0.92);
+  border-left-color: var(--play-ai-accent);
+  border-color: var(--play-ai-border);
+  background: var(--play-ai-bg);
 }
 /* Lower panel = cream side (fixed field-green accent — does not swap on turn). */
 .play-block-human {
   flex-shrink: 0;
-  border-left-color: #4caf50;
-  border-color: rgba(114, 191, 119, 0.4);
-  background: rgba(76, 175, 80, 0.14);
+  border-left-color: var(--play-human-accent);
+  border-color: var(--play-human-border);
+  background: var(--play-human-bg);
 }
 .play-block-head {
   display: flex;
@@ -986,6 +1064,25 @@ canvas {
   line-height: 1.4;
 }
 
+.result-view-board-btn {
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 168, 75, 0.35);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.result-view-board-btn:hover {
+  color: #f8fafc;
+  border-color: rgba(212, 168, 75, 0.65);
+  background: rgba(212, 168, 75, 0.08);
+}
+
 .play-again-btn {
   background: linear-gradient(180deg, #ffd700, #d4a84b);
   color: #06261b;
@@ -1033,20 +1130,38 @@ canvas {
   font-weight: 600;
 }
 #resign-btn,
-#finish-btn {
+#finish-btn,
+#restart-btn {
   background: var(--gold);
   color: #06261b;
-  border: 2px solid var(--red);
   font-weight: 600;
+}
+#resign-btn,
+#finish-btn {
+  border: 2px solid var(--red);
+}
+#restart-btn {
+  border: 2px solid var(--gold);
+}
+#restart-btn .new-game-new {
+  color: #000;
 }
 #resign-btn:hover:not(:disabled),
 #finish-btn:hover:not(:disabled) {
   background: var(--gold);
   box-shadow: inset 0 0 0 999px rgba(214, 69, 69, 0.14);
 }
+#restart-btn:hover:not(:disabled) {
+  background: var(--gold);
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0.08);
+}
 #resign-btn:focus-visible,
 #finish-btn:focus-visible {
   outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+#restart-btn:focus-visible {
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 

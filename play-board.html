@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-shell.css">
 </head>
 <body data-sb-direct-play="1">
-  <div class="shell shell--ads-on" id="play-shell">
+  <div class="shell shell--ads-on" id="play-shell" data-play-theme="2" data-play-board-match="side-only">
     <aside class="card left">
       <div id="coach-panel" class="coach-panel is-hidden" aria-live="polite">
         <div class="coach-panel-head">
@@ -131,7 +131,7 @@
         <button class="finish" id="finish-btn" type="button" hidden>Finish capture</button>
         <button id="sfx-mute-btn" type="button" title="Toggle sound effects">🔊 Sound</button>
         <button id="undo-btn" type="button">Undo</button>
-        <button id="restart-btn">New game</button>
+        <button id="restart-btn" type="button"><span class="new-game-new">New</span> game</button>
       </div>
     </main>
 
@@ -144,6 +144,24 @@
           <input type="text" id="pvp-cream-name" maxlength="24" placeholder="Cream side name">
           <label style="margin-top: 8px;">Black player name</label>
           <input type="text" id="pvp-black-name" maxlength="24" placeholder="Black side name">
+        </div>
+        <div class="setting" id="play-theme-setting">
+          <label>Board + side panel (preview)</label>
+          <div class="play-theme-mode" id="play-theme-mode" role="radiogroup" aria-label="Board colour match mode">
+            <label class="play-theme-mode-opt">
+              <input type="radio" name="play-board-match" value="matched" />
+              Board + side same colour
+            </label>
+            <label class="play-theme-mode-opt">
+              <input type="radio" name="play-board-match" value="side-only" checked />
+              Side only (board stays green)
+            </label>
+          </div>
+          <div class="play-theme-swatches" id="play-theme-swatches" role="radiogroup" aria-label="Board and side panel theme preview">
+            <button type="button" class="play-theme-swatch" data-play-theme="1" title="Classic Dark" aria-label="Classic Dark"></button>
+            <button type="button" class="play-theme-swatch is-active" data-play-theme="2" title="Warm parchment" aria-label="Warm parchment"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="3" title="Camp edge glow" aria-label="Camp edge glow"></button>
+          </div>
         </div>
         <div class="setting" id="ai-level-setting">
           <label>AI level</label>
@@ -231,6 +249,7 @@
       <h3 id="result-title" class="result-title">CONGRATULATIONS! YOU WON!</h3>
       <p id="result-desc" class="result-desc"></p>
       <div class="modal-actions">
+        <button type="button" id="result-view-board-btn" class="result-view-board-btn">View board</button>
         <button type="button" id="play-again-btn" class="play-again-btn">↻ PLAY AGAIN</button>
       </div>
     </div>

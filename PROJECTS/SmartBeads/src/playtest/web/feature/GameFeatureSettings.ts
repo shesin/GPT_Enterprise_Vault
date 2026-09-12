@@ -12,7 +12,7 @@ export function isHumanVsAiMode(mode: GameMode): boolean {
 }
 export type CenterRule = 'off' | 'endgame' | 'cumulative';
 /** Shared game timer (minutes) or off. */
-export type TimerMinutes = 'off' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';
+export type TimerMinutes = 'off' | '2' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';
 /** @deprecated use TimerMinutes */
 export type MatchTimerMinutes = TimerMinutes;
 /** Seconds per turn when enabled. */

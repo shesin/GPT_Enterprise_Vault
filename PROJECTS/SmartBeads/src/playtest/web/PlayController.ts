@@ -7,6 +7,13 @@ import {
   resolveEngineVariant,
 } from '../../config/BoardCatalog';
 import { cloneBoardDefinition, findJumpPath, Move, Player } from '../../models/GameState';
+import {
+  applySharedPlayTheme,
+  isPlayBoardMatchMode,
+  isPlayShellThemeId,
+  type PlayBoardMatchMode,
+  type PlayShellThemeId,
+} from './layout/playShellThemes';
 import { formatCenterDisplay } from './feature/centerScoring';
 import {
   AiLevel,
@@ -252,6 +259,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const undoStack: SessionSnapshot[] = [];
   let pendingResignPlayer: Player | null = null;
   let lastGameOverPlayed = false;
+  /** User closed congrats/draw overlay — keep final board visible until new game. */
+  let resultModalDismissed = false;
   let turnCaptures = 0;
   let lastMove: LastMoveHighlight | null = null;
   const capturePulseStarts: Array<{ nodeId: number; startMs: number }> = [];
@@ -283,6 +292,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const undoBtn = document.getElementById('undo-btn') as HTMLButtonElement;
   const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
   const playAgainBtn = document.getElementById('play-again-btn') as HTMLButtonElement;
+  const resultViewBoardBtn = document.getElementById('result-view-board-btn') as HTMLButtonElement;
   const sfxMuteBtn = document.getElementById('sfx-mute-btn') as HTMLButtonElement | null;
   const resultModal = document.getElementById('result-modal') as HTMLDivElement;
   const resignOfferModal = document.getElementById('resign-offer-modal') as HTMLDivElement;
@@ -797,7 +807,15 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     aiLevelSelect.disabled = coach;
     if (coachLevelSelect) coachLevelSelect.disabled = coach;
     if (hubModeSelect) hubModeSelect.disabled = coach;
-    restartBtn.textContent = coach ? 'Restart video' : 'New game';
+    setRestartBtnLabel(coach);
+  }
+
+  function setRestartBtnLabel(coach: boolean): void {
+    if (coach) {
+      restartBtn.textContent = 'Restart video';
+    } else {
+      restartBtn.innerHTML = '<span class="new-game-new">New</span> game';
+    }
   }
 
   function launchCoachLesson(): void {
@@ -1439,7 +1457,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     );
 
     if (session.isGameOver() && pendingResignPlayer === null && !isCoachMode()) {
-      resultModal.style.display = 'flex';
       const winner = session.getDisplayedWinner();
       const redCaps = state.captures.RED;
       const blueCaps = state.captures.BLUE;
@@ -1486,29 +1503,35 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       const reason = session.getDisplayedReason();
       resultDesc.textContent = composeResultDescription(scoreLine, reason);
 
-      if (!lastGameOverPlayed) {
-        lastGameOverPlayed = true;
-        resultModal.classList.remove('animate');
-        void resultModal.offsetWidth;
-        resultModal.classList.add('animate');
-        emitCelebrationSparkles(modalCelebrationParticles);
+      if (!resultModalDismissed) {
+        resultModal.style.display = 'flex';
+        if (!lastGameOverPlayed) {
+          lastGameOverPlayed = true;
+          resultModal.classList.remove('animate');
+          void resultModal.offsetWidth;
+          resultModal.classList.add('animate');
+          emitCelebrationSparkles(modalCelebrationParticles);
 
-        if (winner === 'DRAW') {
-          soundEffects.playDraw();
-        } else if (winner === 'RED') {
-          soundEffects.playVictory();
-        } else if (winner === 'BLUE') {
-          if (isHumanVsAiMode(settings.mode)) {
-            soundEffects.playDefeat();
-          } else {
+          if (winner === 'DRAW') {
+            soundEffects.playDraw();
+          } else if (winner === 'RED') {
             soundEffects.playVictory();
+          } else if (winner === 'BLUE') {
+            if (isHumanVsAiMode(settings.mode)) {
+              soundEffects.playDefeat();
+            } else {
+              soundEffects.playVictory();
+            }
           }
         }
+      } else {
+        resultModal.style.display = 'none';
       }
     } else if (pendingResignPlayer === null) {
       resultModal.style.display = 'none';
       resultModal.classList.remove('animate');
       lastGameOverPlayed = false;
+      resultModalDismissed = false;
     }
 
     drawBoard();
@@ -1901,6 +1924,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     applyCanvasSizeForBoard();
     resultModal.style.display = 'none';
     resultModal.classList.remove('animate');
+    resultModalDismissed = false;
     resignOfferModal.style.display = 'none';
     pendingResignPlayer = null;
     session.resetTurnClock();
@@ -1986,6 +2010,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     mode: GameFeatureSettings['mode'],
     action: 'play' | 'coach' | 'spectate',
   ): void {
+    syncPlayShellThemeFromStorage();
     if (hubModeSelect) hubModeSelect.value = mode;
     prepareBoardSwitch(boardId);
     applyStartOverlayModeToSession();
@@ -2074,14 +2099,25 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   restartBtn.addEventListener('click', () => {
-    if (hasPlayHub() && !isCoachMode()) {
-      returnToHub();
-      return;
-    }
+    soundEffects.playButtonTap();
     resetGame();
   });
+  function dismissResultModal(): void {
+    if (!session.isGameOver() || pendingResignPlayer !== null || isCoachMode()) return;
+    resultModalDismissed = true;
+    resultModal.style.display = 'none';
+    resultModal.classList.remove('animate');
+  }
+
   playAgainBtn.addEventListener('click', () => {
     resetGame();
+  });
+  resultViewBoardBtn.addEventListener('click', () => {
+    soundEffects.playButtonTap();
+    dismissResultModal();
+  });
+  resultModal.addEventListener('click', (event) => {
+    if (event.target === resultModal) dismissResultModal();
   });
   undoBtn.addEventListener('click', () => {
     soundEffects.playButtonTap();
@@ -2140,6 +2176,88 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   });
   const playShell = document.getElementById('play-shell') as HTMLDivElement | null;
 
+  function readPlayBoardMatchModeFromUi(): PlayBoardMatchMode {
+    const fromShell = playShell?.getAttribute('data-play-board-match');
+    if (isPlayBoardMatchMode(fromShell)) return fromShell;
+    try {
+      const stored = localStorage.getItem('sb-play-board-match');
+      if (isPlayBoardMatchMode(stored)) return stored;
+    } catch {
+      /* storage unavailable */
+    }
+    const selected = document.querySelector<HTMLInputElement>(
+      '#play-theme-setting input[name="play-board-match"]:checked',
+    );
+    return isPlayBoardMatchMode(selected?.value) ? selected.value : 'side-only';
+  }
+
+  function syncPlayShellThemeFromStorage(): void {
+    if (!playShell) return;
+    let themeId: PlayShellThemeId = '2';
+    let boardMatch: PlayBoardMatchMode = 'side-only';
+    try {
+      const storedTheme = localStorage.getItem('sb-play-theme');
+      if (isPlayShellThemeId(storedTheme)) themeId = storedTheme;
+      const storedMatch = localStorage.getItem('sb-play-board-match');
+      if (isPlayBoardMatchMode(storedMatch)) boardMatch = storedMatch;
+    } catch {
+      /* storage unavailable */
+    }
+    applyPlayShellTheme(themeId, boardMatch);
+  }
+
+  function applyPlayShellTheme(themeId: PlayShellThemeId, boardMatch: PlayBoardMatchMode = readPlayBoardMatchModeFromUi()): void {
+    if (!playShell) return;
+    applySharedPlayTheme(themeId, boardMatch);
+    updateUI();
+  }
+
+  function initPlayShellTheme(): void {
+    if (!playShell) return;
+    const boardThemeSetting = document.getElementById('play-theme-setting');
+    if (!boardThemeSetting) return;
+    for (const btn of boardThemeSetting.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
+      btn.addEventListener('click', () => {
+        const next = btn.dataset.playTheme;
+        if (isPlayShellThemeId(next)) applyPlayShellTheme(next);
+      });
+    }
+    for (const input of boardThemeSetting.querySelectorAll<HTMLInputElement>('input[name="play-board-match"]')) {
+      input.addEventListener('change', () => {
+        if (input.checked && isPlayBoardMatchMode(input.value)) {
+          const themeId = playShell?.getAttribute('data-play-theme');
+          if (isPlayShellThemeId(themeId)) applyPlayShellTheme(themeId, input.value);
+        }
+      });
+    }
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('playTheme');
+    if (isPlayShellThemeId(fromUrl)) {
+      applyPlayShellTheme(fromUrl);
+      return;
+    }
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem('sb-play-theme');
+    } catch {
+      stored = null;
+    }
+    if (!isPlayShellThemeId(stored)) {
+      const legacyBoard = localStorage.getItem('sb-board-look');
+      const legacySide = localStorage.getItem('sb-side-panel-theme');
+      if (legacySide === '5' || legacySide === '3') stored = legacySide === '5' ? '3' : '2';
+      else if (legacyBoard === '2' || legacyBoard === '3') stored = '1';
+    }
+    let boardMatch: PlayBoardMatchMode = 'side-only';
+    try {
+      const storedMatch = localStorage.getItem('sb-play-board-match');
+      if (isPlayBoardMatchMode(storedMatch)) boardMatch = storedMatch;
+    } catch {
+      boardMatch = 'side-only';
+    }
+    applyPlayShellTheme(isPlayShellThemeId(stored) ? stored : '2', boardMatch);
+  }
+
   function applyPremiumShell(isPremium: boolean): void {
     if (!playShell) return;
     playShell.classList.toggle('shell--ads-on', !isPremium);
@@ -2159,6 +2277,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       savedPremium = false;
     }
     applyPremiumShell(savedPremium);
+    initPlayShellTheme();
   }
 
   syncBoardTitle();

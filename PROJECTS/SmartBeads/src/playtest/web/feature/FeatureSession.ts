@@ -56,7 +56,7 @@ export class FeatureSession {
   private settings: GameFeatureSettings;
   private uiState: UiInteractionState = 'idle';
   private selectedId: number | null = null;
-  /** WHEN → GPT_PROJECT_DECISIONS_05P.md §7. Re-armed when each turn completes. */
+  /** WHEN → GPT_PROJECT_DECISIONS_05P.md §7. Match start only — cleared on first pick; reset re-arms. */
   private turnStartRingsPending = true;
   private coachGlowNodeIds: number[] = [];
   private coachHighlightTargets: number[] = [];
@@ -444,7 +444,6 @@ export class FeatureSession {
     }
 
     this.shotRemaining = this.shotLimit;
-    this.turnStartRingsPending = true;
   }
 
   /**

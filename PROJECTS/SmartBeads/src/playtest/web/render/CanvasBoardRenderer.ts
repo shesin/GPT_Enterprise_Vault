@@ -1,4 +1,6 @@
 import { BoardDefinition, Move, Player } from '../../../models/GameState';
+import { getBoardLineGoldTheme, readBoardLineGoldThemeId } from '../layout/boardLineGoldThemes';
+import { getActiveBoardLookTheme } from '../layout/boardLookThemes';
 import { getBoardVisualProfile } from '../layout/boardVisualProfile';
 import { projectIntersectionOnCanvas, projectLatticePointOnCanvas } from '../layout/boardProjection';
 
@@ -166,6 +168,16 @@ function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: num
   ctx.fill();
 }
 
+function drawBoardEdgeGlow(ctx: CanvasRenderingContext2D, w: number, h: number, glowRgba: string): void {
+  ctx.save();
+  ctx.strokeStyle = glowRgba;
+  ctx.lineWidth = 3;
+  ctx.shadowColor = glowRgba;
+  ctx.shadowBlur = 14;
+  ctx.strokeRect(4, 4, w - 8, h - 8);
+  ctx.restore();
+}
+
 /** Fixed cream-camp half tint — does not swap with currentPlayer (cream side only). */
 function drawCreamHalfTint(
   ctx: CanvasRenderingContext2D,
@@ -173,19 +185,15 @@ function drawCreamHalfTint(
   h: number,
   axis: 'horizontal' | 'vertical',
 ): void {
+  const look = getActiveBoardLookTheme();
+  const stops = axis === 'vertical' ? look.creamVerticalStops : look.creamHorizontalStops;
   const wash =
     axis === 'vertical'
       ? ctx.createLinearGradient(0, 0, 0, h)
       : ctx.createLinearGradient(0, 0, w, 0);
 
-  if (axis === 'vertical') {
-    wash.addColorStop(0, 'rgba(0,0,0,0)');
-    wash.addColorStop(0.55, 'rgba(255,245,220,0)');
-    wash.addColorStop(1, 'rgba(255,245,220,0.14)');
-  } else {
-    wash.addColorStop(0, 'rgba(255,245,220,0.14)');
-    wash.addColorStop(0.45, 'rgba(255,245,220,0)');
-    wash.addColorStop(1, 'rgba(0,0,0,0)');
+  for (const [position, color] of stops) {
+    wash.addColorStop(position, color);
   }
 
   ctx.fillStyle = wash;
@@ -225,16 +233,12 @@ function drawPieceAt(
 ): void {
   ctx.save();
   ctx.globalAlpha = alpha;
+  const look = getActiveBoardLookTheme();
+  const bead = player === 'RED' ? look.creamBead : look.blackBead;
   const grd = ctx.createRadialGradient(x - 4, y - 5, 2, x, y, radius);
-  if (player === 'RED') {
-    grd.addColorStop(0, '#fffaf0');
-    grd.addColorStop(0.55, '#ebe2cf');
-    grd.addColorStop(1, '#b7ab92');
-  } else {
-    grd.addColorStop(0, '#5a4538');
-    grd.addColorStop(0.5, '#241812');
-    grd.addColorStop(1, '#0a0604');
-  }
+  grd.addColorStop(0, bead.highlight);
+  grd.addColorStop(0.55, bead.mid);
+  grd.addColorStop(1, bead.shadow);
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fillStyle = grd;
@@ -263,13 +267,16 @@ export function drawCanvasBoard(
     projectIntersectionOnCanvas(node as Parameters<typeof projectIntersectionOnCanvas>[0], w, h, board);
 
   ctx.clearRect(0, 0, w, h);
+  const look = getActiveBoardLookTheme();
+  const lineGold = getBoardLineGoldTheme(readBoardLineGoldThemeId());
   const g = ctx.createLinearGradient(0, 0, w, h);
-  g.addColorStop(0, '#1f4d39');
-  g.addColorStop(1, '#143328');
+  g.addColorStop(0, look.surfaceTop);
+  g.addColorStop(1, look.surfaceBottom);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 
   drawCreamHalfTint(ctx, w, h, visualProfile.turnWashAxis ?? 'horizontal');
+  drawBoardEdgeGlow(ctx, w, h, look.edgeGlowRgba);
 
   const animating = anim !== null && anim.t < 1;
   const turnIdleHighlight =
@@ -283,7 +290,7 @@ export function drawCanvasBoard(
     : new Set<number>();
   const matchStartFlash = turnIdleHighlight && showTurnStartRings;
 
-  ctx.strokeStyle = 'rgba(212,168,75,0.55)';
+  ctx.strokeStyle = lineGold.lineRgba;
   ctx.lineWidth = 2;
   for (const conn of board.connections) {
     const from = board.intersections[conn.from];
@@ -336,7 +343,7 @@ export function drawCanvasBoard(
 
     ctx.beginPath();
     ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(212,168,75,0.4)';
+    ctx.fillStyle = lineGold.nodeRgba;
     ctx.fill();
 
     const selectedOccupant =

@@ -1,58 +1,29 @@
 ---
-description: STOP gate before every repo edit — literal ask, explicit go only
+description: Mode gate + STOP before every repo edit
 alwaysApply: true
 ---
 
-# Instruction fidelity (always-on)
+# Instruction fidelity
 
-- **giving output** — After every code or doc change, list what you did in plain steps (no file names, no code terms unless I ask).
-Say: what you changed, what you ran to check, pass or fail, and UNCONFIRMED if I have not seen it on screen.
-One instruction from me = one short “what I did” block in the reply — not a code dump.
-brief summary last. no repeating of same things.
+## Mode (check first)
+- **Suggest / explain / plan / review / why / suggestion** → **words only. No repo edits.**
+- **Do / go / implement / fix** (scoped ask) → code or doc edits **only after** STOP block below.
 
-- **Compare / rules / risks** — on *same or not?* or code vs rule: **Same** or **Not same** first; then **Difference** and **risk** as bold headings once each. Skip empty sections.
-- **Doubt** — one short question, then wait. Propose the smallest change (one behavior, named files) and wait for **Go**. No batch-fix.
-- **Better idea** — say it, wait for approval.
-- **After edits** — list files changed and one line per file.
-- **stuck test case**- if u r stuck in test loop that means ur test cases r crap, first audit and fix it then run
-- **Code–doc mismatch (SmartBeads)** — doc says removed / forbidden while code or live play still needs the rule, or scripts use stale DOM ids: **ship blocker**. Fix code + DECISIONS + STATUS + MAP + AUDIT + tests + scripts in one **Go** batch. Never “removed = safe” with a live infinite-loop gap. Detail → `GPT_PROJECT_RULES_01P.md` § Code–Doc Integrity.
+- **`push to git all` / `push to git all ok` / `push to git all good`** → add all changed files (skip secrets), commit (`ok`/`good` in message if said), push; update STATUS + MAP if needed; reply in plain English what changed in each of those two docs + push result.
 
-# Git
+## STOP (before any repo edit)
+Every file is protected. Post in chat **before** Write / StrReplace / Delete:
 
-Only when the user asks. **`ok` / `good`** = known-good checkpoint in the commit message.
+1. **Quote the ask** — one line.
+2. **`Go — <task>`** + **Files:** (paths) + **Out:** (excluded) — else **NONE**.
 
-| User says | Agent must do |
-|-----------|----------------|
-Update status , map if required
-| `push to git all` / `push to git all ok` / `push to git all good` | `git add` all changed files (skip secrets) → commit → push to GitHub. Report push output. |
+**Not approval:** suggest/explain alone, silence, frustration. Plain `push to git` / `commit local` without **all** = agent picks files; no automatic STATUS/MAP sync.
 
-`push to git` / `commit local` without **all** = agent may pick files. **Never** edit permission.
+Edited without approval → say so, offer revert.
 
-# Verify before claiming done
+## After edits
+One short block per ask: what changed, what you ran, pass/fail, **UNCONFIRMED** if not seen on screen.
 
-1. Say what you changed and what you will run.
-2. Run relevant test(s) or browser smoke for UI. No full suite unless the ask covers it.
-3. Report pass/fail. If not checked in browser, say **UNCONFIRMED**.
-
-# Process (always-on)
-
-- **WHEN rule first** — User says "only at X, not at Y": write one-line WHEN/WHERE rule, quote it back, wait for OK before code. Exclusions bind; do not widen to "make it behave better everywhere."
-- **Same complaint twice** — User repeats the same point → last fix missed scope. Stop patching. Restate the rule; no second "fixed" without new test pass or your screen confirm.
-- **Cross-surface** — Go for coach/spectate/lesson/demo must list **Out:** live play paths; shared sync/cleanup must not touch them unless named.
-- **One owner for UI state** — Mode-specific teardown runs only when that mode is active; live control visibility is set after shared sync, never cleared inside unrelated cleanup.
-
-# Before any repo edit (STOP)
-
-**Every file is protected.** No Write / StrReplace / Delete / edit Notebook until:
-
-1. **Quote the ask** — one line (or “no edit requested”).
-2. **Approval** — **`Go — <task>`** + **Files:** (exact paths) + **Out:** (what you will not touch). Else **NONE**.
-3. Post this block in chat **before** edit tools. User did not see it → do not edit.
-
-**Not approval:** `do it`, `restore`, `sync`, `fix mess`, `push to git`, `commit local`, handoff, silence, frustration.
-
-**PENDING (SmartBeads):** `GPT_PROJECT_PENDING_01P.md` — human-owned; **`Go — PENDING`** only (detail → RULES § PENDING Human-Owned).
-
-**Plan / review / suggest** → words only until **Go**.
-
-Edited without approval → say so, offer revert, no extra fixes.
+## Always-on
+- **Say = do** — u must only claim outcomes you verified.
+- Git, verify, process, code–doc, tests, SmartBeads hooks → `GPT_PROJECT_RULES_01P.md`.

@@ -25,99 +25,77 @@
  * accent = selection only
  */
 
-/* 1 — Dark stack: grey rails + lighter centre + green accent */
-.play-hub[data-hub-theme="1"] {
-  --hub-page-bg: #100f0d;
-  --hub-rail-bg: #1a1917;
-  --hub-centre-bg: #272522;
-  --hub-card-bg: #33312d;
-  --hub-card-hover: #3f3d38;
-  --hub-border: #4a4742;
-  --hub-border-soft: #353330;
-  --hub-text: #eceae6;
-  --hub-muted: #9c9890;
+/* 1 — Classic Dark (same green family as board theme 1) */
+.play-hub[data-play-theme="1"] {
+  --hub-page-bg: #12281f;
+  --hub-rail-bg: #1a4030;
+  --hub-centre-bg: #1a3128;
+  --hub-card-bg: #1f4a38;
+  --hub-card-hover: #245542;
+  --hub-border: rgba(212, 168, 75, 0.22);
+  --hub-border-soft: rgba(212, 168, 75, 0.12);
+  --hub-text: #e8f0ea;
+  --hub-muted: #9bb5a6;
   --hub-centre-text: #faf9f7;
   --hub-centre-muted: #a8a49c;
-  --hub-accent: #85bb43;
-  --hub-accent-soft: rgba(133, 187, 67, 0.16);
-  --hub-accent-ring: rgba(133, 187, 67, 0.5);
-  --hub-brand: #b8d47a;
-  --hub-swatch: #85bb43;
+  --hub-accent: #4caf50;
+  --hub-accent-soft: rgba(76, 175, 80, 0.14);
+  --hub-accent-ring: rgba(114, 191, 119, 0.4);
+  --hub-brand: #72bf77;
+  --hub-swatch: #4caf50;
 }
 
-/* 2 — Split: dark side rails + light centre (Chess.com homepage feel) */
-.play-hub[data-hub-theme="2"] {
-  --hub-page-bg: #151515;
-  --hub-rail-bg: #1f1f1f;
-  --hub-centre-bg: #f0eeea;
-  --hub-card-bg: #ffffff;
-  --hub-card-hover: #f5f4f1;
-  --hub-border: #d5d3ce;
-  --hub-border-soft: #e3e1dc;
-  --hub-text: #e8e8e6;
-  --hub-muted: #9a9a96;
-  --hub-centre-text: #1a1a18;
-  --hub-centre-muted: #5e5e5a;
-  --hub-accent: #3d8a4a;
-  --hub-accent-soft: rgba(61, 138, 74, 0.12);
-  --hub-accent-ring: rgba(61, 138, 74, 0.45);
-  --hub-brand: #c4c2bc;
-  --hub-swatch: #3d8a4a;
-}
-
-/* 3 — Warm board room: brown page, tan centre, gold accent */
-.play-hub[data-hub-theme="3"] {
-  --hub-page-bg: #0f0c09;
-  --hub-rail-bg: #1a1510;
-  --hub-centre-bg: #2c241c;
-  --hub-card-bg: #3a3026;
-  --hub-card-hover: #463a2e;
-  --hub-border: #5c4d3d;
-  --hub-border-soft: #43382c;
-  --hub-text: #e8dfd0;
-  --hub-muted: #a89882;
+/* 2 — Warm parchment (matches play board theme 2) */
+.play-hub[data-play-theme="2"] {
+  --hub-page-bg: #12281f;
+  --hub-rail-bg: #1c261e;
+  --hub-centre-bg: #1a3128;
+  --hub-card-bg: #234036;
+  --hub-card-hover: #2a4a3e;
+  --hub-border: rgba(230, 210, 170, 0.28);
+  --hub-border-soft: rgba(230, 210, 170, 0.14);
+  --hub-text: #eceae6;
+  --hub-muted: #b8a894;
   --hub-centre-text: #f5efe6;
-  --hub-centre-muted: #b8a894;
-  --hub-accent: #d4a84b;
-  --hub-accent-soft: rgba(212, 168, 75, 0.18);
-  --hub-accent-ring: rgba(212, 168, 75, 0.5);
-  --hub-brand: #e0b85c;
-  --hub-swatch: #d4a84b;
+  --hub-centre-muted: #a89882;
+  --hub-accent: #c4a86a;
+  --hub-accent-soft: rgba(255, 242, 215, 0.12);
+  --hub-accent-ring: rgba(212, 190, 150, 0.45);
+  --hub-brand: #e6d4a8;
+  --hub-swatch: #c4a86a;
 }
 
-/* 4 — Cool stack: navy rails, blue-grey centre, blue accent */
-.play-hub[data-hub-theme="4"] {
-  --hub-page-bg: #0c0e12;
-  --hub-rail-bg: #141820;
-  --hub-centre-bg: #1c2230;
-  --hub-card-bg: #262e3e;
-  --hub-card-hover: #303a4d;
-  --hub-border: #3d4a62;
-  --hub-border-soft: #2a3344;
-  --hub-text: #dce4f0;
-  --hub-muted: #8a96a8;
-  --hub-centre-text: #eef2f8;
-  --hub-centre-muted: #9aa8bc;
-  --hub-accent: #6ea8fe;
-  --hub-accent-soft: rgba(110, 168, 254, 0.16);
-  --hub-accent-ring: rgba(110, 168, 254, 0.48);
-  --hub-brand: #9ec5fe;
-  --hub-swatch: #6ea8fe;
+/* 3 — Camp edge glow (matches play board theme 3) */
+.play-hub[data-play-theme="3"] {
+  --hub-page-bg: #0b1813;
+  --hub-rail-bg: #123528;
+  --hub-centre-bg: #1a4030;
+  --hub-card-bg: #1f4a38;
+  --hub-card-hover: #245542;
+  --hub-border: rgba(212, 168, 75, 0.22);
+  --hub-border-soft: rgba(255, 245, 220, 0.12);
+  --hub-text: #e8f0ea;
+  --hub-muted: #9bb5a6;
+  --hub-centre-text: #faf9f7;
+  --hub-centre-muted: #a8a49c;
+  --hub-accent: #d4a84b;
+  --hub-accent-soft: rgba(255, 245, 220, 0.16);
+  --hub-accent-ring: rgba(255, 245, 220, 0.35);
+  --hub-brand: #e5c158;
+  --hub-swatch: #ffcd5c;
 }
 
 .play-hub,
-.play-hub[data-hub-theme="1"],
-.play-hub[data-hub-theme="2"],
-.play-hub[data-hub-theme="3"],
-.play-hub[data-hub-theme="4"] {
+.play-hub[data-play-theme="1"],
+.play-hub[data-play-theme="2"],
+.play-hub[data-play-theme="3"] {
   --hub-ad-bg: #ececec;
   --hub-ad-border: #d4d4d4;
 }
 
-body.hub-page:has(.play-hub[data-hub-theme="1"]) { background: #100f0d; }
-body.hub-page:has(.play-hub[data-hub-theme="2"]) { background: #151515; }
-body.hub-page:has(.play-hub[data-hub-theme="3"]) { background: #0f0c09; }
-body.hub-page:has(.play-hub[data-hub-theme="4"]) { background: #0c0e12; }
+body.hub-page:has(.play-hub[data-play-theme="1"]) { background: #12281f; }
+body.hub-page:has(.play-hub[data-play-theme="2"]) { background: #12281f; }
+body.hub-page:has(.play-hub[data-play-theme="3"]) { background: #0b1813; }
 
 .play-hub.is-hidden {
   display: none;
@@ -239,52 +217,30 @@ body.hub-page:has(.play-hub[data-hub-theme="4"]) { background: #0c0e12; }
   border-top: 1px solid var(--hub-border-soft);
 }
 
-.hub-theme-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: center;
+.hub-rail-foot .hub-play-theme-setting {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
-.hub-theme-picker-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.hub-rail-foot .hub-play-theme-setting > label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--hub-muted);
+  margin-bottom: 2px;
+}
+
+.hub-rail-foot .hub-play-theme-setting .play-theme-mode {
+  font-size: 0.68rem;
+  margin: 2px 0 6px;
   color: var(--hub-muted);
 }
 
-.hub-theme-swatches {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
-  width: 100%;
-}
-
-.hub-theme-swatch {
-  width: 100%;
-  aspect-ratio: 1;
-  min-height: 22px;
-  padding: 0;
-  border-radius: 4px;
-  border: 2px solid var(--hub-border);
-  background: var(--hub-swatch, var(--hub-accent));
-  cursor: pointer;
-  transition: transform 0.12s, border-color 0.12s;
-}
-
-.hub-theme-swatch[data-hub-theme="1"] { background: linear-gradient(135deg, #1a1917 50%, #85bb43 50%); }
-.hub-theme-swatch[data-hub-theme="2"] { background: linear-gradient(135deg, #1f1f1f 50%, #f0eeea 50%); }
-.hub-theme-swatch[data-hub-theme="3"] { background: linear-gradient(135deg, #1a1510 50%, #d4a84b 50%); }
-.hub-theme-swatch[data-hub-theme="4"] { background: linear-gradient(135deg, #141820 50%, #6ea8fe 50%); }
-
-.hub-theme-swatch:hover {
-  transform: scale(1.06);
-}
-
-.hub-theme-swatch.is-active {
-  border-color: #fff;
-  box-shadow: 0 0 0 1px var(--hub-page-bg);
+.hub-rail-foot .hub-play-theme-setting .play-theme-mode-opt input {
+  accent-color: var(--hub-accent);
 }
 
 .hub-player-name {

@@ -142,7 +142,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
   it('PvE match timer expiry uses endgame center tiebreak when captures tied (full timerTick path)', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,
-      timer: '3',
+      timer: '2',
       centerRule: 'endgame',
     });
     clearOccupants(session);
@@ -151,7 +151,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     setOcc(session, 'A40', 'BLUE');
     session.getEngine().getState().captures.RED = 2;
     session.getEngine().getState().captures.BLUE = 2;
-    const ticks = 3 * 60;
+    const ticks = 2 * 60;
     for (let i = 0; i < ticks; i++) session.timerTick();
     expect(session.isGameOver()).toBe(true);
     expect(session.getDisplayedWinner()).toBe('RED');
@@ -161,12 +161,12 @@ describe('FeatureSession center / timer (runtime rules)', () => {
   it('PvE match timer expiry uses capture score hierarchy', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,
-      timer: '3',
+      timer: '2',
       centerRule: 'endgame',
     });
     session.getEngine().getState().captures.RED = 3;
     session.getEngine().getState().captures.BLUE = 1;
-    const ticks = 3 * 60;
+    const ticks = 2 * 60;
     for (let i = 0; i < ticks; i++) session.timerTick();
     expect(session.isGameOver()).toBe(true);
     expect(session.getDisplayedWinner()).toBe('RED');

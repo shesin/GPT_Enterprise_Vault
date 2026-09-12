@@ -94,9 +94,9 @@ Cumulative accrues each **completed turn** in session.
 
 ---
 
-## 7. Turn bead highlight (idle turn start)
+## 7. Match-start bead highlight (idle opening only)
 
-**WHEN:** At **idle start of each turn** (no selection, no chain, not animating) until **first pick** on that turn.
+**WHEN:** At **idle match start** (no selection, no chain, not animating) until **first pick** of the game.
 
 **What shows:**
 
@@ -105,9 +105,9 @@ Cumulative accrues each **completed turn** in session.
 - Opponent beads **dimmed to 72%** during this flash only.
 **Board canvas:** fixed **cream half tint** on the cream-camp side every frame — **no** turn-based wash swap (no blue/dark half flip).
 
-**Clears** on first pick or move on that turn. **Does not** return until that turn **completes**. Mid-chain: chain piece only; no full-board flash. Deselect/re-select within same turn: rings stay off.
+**Clears** on first pick or move and **does not return** on later turns. Mid-chain: chain piece only; no full-board flash. Deselect/re-select: rings stay off.
 
-**Re-arms** when each turn completes (`turnStartRingsPending`).
+**Re-arms** only on **New game / reset** (`turnStartRingsPending`).
 
 Coach, Watch AI, resign demo, win glow: use **`previewScriptedSelection`** — same rings as human tap, not separate coach-only flags.
 

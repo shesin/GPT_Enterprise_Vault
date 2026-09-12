@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-hub.css">
 </head>
 <body>
-  <div id="play-hub" class="play-hub" data-hub-theme="1">
+  <div id="play-hub" class="play-hub" data-play-theme="2" data-play-board-match="side-only">
     <aside class="hub-rail hub-rail--left" aria-label="Hub navigation">
       <div class="hub-brand">smartbeadchess.com</div>
       <nav class="hub-sidebar-nav">
@@ -16,13 +16,22 @@
         <button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="tournaments">Tournaments</button>
       </nav>
       <div class="hub-rail-foot">
-        <div class="hub-theme-picker" aria-label="Choose colour theme">
-          <span class="hub-theme-picker-label">Shade</span>
-          <div class="hub-theme-swatches">
-            <button type="button" class="hub-theme-swatch is-active" data-hub-theme="1" title="1 — Dark stack + green" aria-label="Theme 1"></button>
-            <button type="button" class="hub-theme-swatch" data-hub-theme="2" title="2 — Dark rails + light centre" aria-label="Theme 2"></button>
-            <button type="button" class="hub-theme-swatch" data-hub-theme="3" title="3 — Warm board + gold" aria-label="Theme 3"></button>
-            <button type="button" class="hub-theme-swatch" data-hub-theme="4" title="4 — Cool navy stack" aria-label="Theme 4"></button>
+        <div class="setting hub-play-theme-setting" id="hub-play-theme-setting">
+          <label>Board + side panel (preview)</label>
+          <div class="play-theme-mode" id="hub-play-theme-mode" role="radiogroup" aria-label="Board colour match mode">
+            <label class="play-theme-mode-opt">
+              <input type="radio" name="hub-play-board-match" value="matched" />
+              Board + side same colour
+            </label>
+            <label class="play-theme-mode-opt">
+              <input type="radio" name="hub-play-board-match" value="side-only" checked />
+              Side only (board stays green)
+            </label>
+          </div>
+          <div class="play-theme-swatches" id="hub-play-theme-swatches" role="radiogroup" aria-label="Board and side panel theme preview">
+            <button type="button" class="play-theme-swatch" data-play-theme="1" title="Classic Dark" aria-label="Classic Dark"></button>
+            <button type="button" class="play-theme-swatch is-active" data-play-theme="2" title="Warm parchment" aria-label="Warm parchment"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="3" title="Camp edge glow" aria-label="Camp edge glow"></button>
           </div>
         </div>
         <span class="hub-player-name">Player</span>
@@ -97,7 +106,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
     </aside>
   </div>
 
-  <div class="shell shell--ads-on is-hidden" id="play-shell">
+  <div class="shell shell--ads-on is-hidden" id="play-shell" data-play-theme="2" data-play-board-match="side-only">
     <select id="board-select" hidden aria-hidden="true" tabindex="-1"></select>
     <aside class="card left">
       <div id="coach-panel" class="coach-panel is-hidden" aria-live="polite">
@@ -200,7 +209,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
         <button class="finish" id="finish-btn" type="button" hidden>Finish capture</button>
         <button id="sfx-mute-btn" type="button" title="Toggle sound effects">🔊 Sound</button>
         <button id="undo-btn" type="button">Undo</button>
-        <button id="restart-btn">New game</button>
+        <button id="restart-btn" type="button"><span class="new-game-new">New</span> game</button>
       </div>
     </main>
 
@@ -212,6 +221,24 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
           <input type="text" id="pvp-cream-name" maxlength="24" placeholder="Cream side name">
           <label style="margin-top: 8px;">Black player name</label>
           <input type="text" id="pvp-black-name" maxlength="24" placeholder="Black side name">
+        </div>
+        <div class="setting" id="play-theme-setting">
+          <label>Board + side panel (preview)</label>
+          <div class="play-theme-mode" id="play-theme-mode" role="radiogroup" aria-label="Board colour match mode">
+            <label class="play-theme-mode-opt">
+              <input type="radio" name="play-board-match" value="matched" />
+              Board + side same colour
+            </label>
+            <label class="play-theme-mode-opt">
+              <input type="radio" name="play-board-match" value="side-only" checked />
+              Side only (board stays green)
+            </label>
+          </div>
+          <div class="play-theme-swatches" id="play-theme-swatches" role="radiogroup" aria-label="Board and side panel theme preview">
+            <button type="button" class="play-theme-swatch" data-play-theme="1" title="Classic Dark" aria-label="Classic Dark"></button>
+            <button type="button" class="play-theme-swatch is-active" data-play-theme="2" title="Warm parchment" aria-label="Warm parchment"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="3" title="Camp edge glow" aria-label="Camp edge glow"></button>
+          </div>
         </div>
         <div class="setting" id="ai-level-setting">
           <label>AI level</label>
@@ -299,6 +326,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
       <h3 id="result-title" class="result-title">CONGRATULATIONS! YOU WON!</h3>
       <p id="result-desc" class="result-desc"></p>
       <div class="modal-actions">
+        <button type="button" id="result-view-board-btn" class="result-view-board-btn">View board</button>
         <button type="button" id="play-again-btn" class="play-again-btn">↻ PLAY AGAIN</button>
       </div>
     </div>

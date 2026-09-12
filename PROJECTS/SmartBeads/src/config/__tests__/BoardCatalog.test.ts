@@ -46,12 +46,12 @@ describe('BoardCatalog human-decided settings', () => {
     }
   });
 
-  it('6-bead boards: Cumulative/End-Game/Off centre; 3 min in options; default off', () => {
+  it('6-bead boards: Cumulative/End-Game/Off centre; 2 min in options; default off', () => {
     for (const id of ['6x4', '6x3x5'] as const) {
       const play = byId[id].play;
       expect(play.centerRuleOptions).toEqual(['off', 'cumulative', 'endgame']);
       expect(play.defaultSettings.centerRule).toBe('off');
-      expect(play.timerOptions).toEqual(['off', '3', '5', '10']);
+      expect(play.timerOptions).toEqual(['off', '2', '5', '10']);
       expect(play.timerBest).toBe('5');
       expect(play.defaultSettings.timer).toBe('off');
     expect(play.defaultSettings.tournamentTimer).toBe('off');
@@ -61,11 +61,11 @@ describe('BoardCatalog human-decided settings', () => {
     }
   });
 
-  it('7-bead: Cumulative/End-Game/Off; 8-bead: End-Game/Off; 3 min in options; default off', () => {
+  it('7-bead: Cumulative/End-Game/Off; 8-bead: End-Game/Off; 2/3 min in options; default off', () => {
     const seven = byId['7x4x5'].play;
     expect(seven.centerRuleOptions).toEqual(['off', 'cumulative', 'endgame']);
     expect(seven.defaultSettings.centerRule).toBe('off');
-    expect(seven.timerOptions).toEqual(['off', '3', '5', '10']);
+    expect(seven.timerOptions).toEqual(['off', '2', '5', '10']);
     expect(seven.timerBest).toBe('10');
     expect(seven.defaultSettings.timer).toBe('off');
     expect(seven.defaultSettings.tournamentTimer).toBe('off');

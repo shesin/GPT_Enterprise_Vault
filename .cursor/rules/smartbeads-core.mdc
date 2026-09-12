@@ -1,23 +1,14 @@
 ---
-description: SmartBeads hooks — pointers only; detail in RULES + DECISIONS
+description: SmartBeads — pointers only; detail in project docs
 alwaysApply: true
 ---
 
-# SmartBeads (always-on)
+# SmartBeads
 
 When work touches `PROJECTS/SmartBeads/`:
 
-- **STOP** → `instruction-fidelity.mdc` § Before any repo edit
-- **Gameplay / UI / colours / modes** → read `GPT_PROJECT_DECISIONS_05P.md` when needed
-- **Engineering / agent workflow** → read `GPT_PROJECT_RULES_01P.md` when needed; gates → `VISION/CURSOR_PROMPT_01.md`
-- **Code–doc integrity** → RULES § Code–Doc Integrity · § Never Remove Safeguards Without Replacement; CURSOR_PROMPT § Code–doc integrity — no contradiction ship
-- **Shipped vs claim** → `GPT_PROJECT_STATUS_01P.md` § Integrity
-- **PENDING** → human-owned, read-only → RULES § PENDING Human-Owned
-- **Doc edits** → DECISIONS / AUDIT / VISION / RULES on **Go —** + **Files:**; STATUS / MAP on **push to git all good** only
-- **Literal ask** — option ≠ default; one line = one change unless user lists more
-- **One playtest bug** — failing test + related fixes
-- **WHEN** — lock in DECISIONS before UI; Jest must match
-- **Prototype ≠ production** — no shared code with `src/`
-- **Static assets** — from `public/`; no large base64 in TS bundles
+- **STOP** → `instruction-fidelity.mdc`
+- **Product / UI / colours** → `GPT_PROJECT_DECISIONS_05P.md`
+- **Engineering / agent workflow** → `GPT_PROJECT_RULES_01P.md`
+- **PENDING** → human-owned; **`Go — PENDING`** only
 - **Never edit** `VISION/CLAUDE_TEST_REPORT_05.md`
-- **Cleanup on Go only** — no auto doc sync
