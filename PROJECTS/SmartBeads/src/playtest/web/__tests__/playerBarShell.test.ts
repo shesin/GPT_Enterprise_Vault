@@ -48,26 +48,40 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).toMatch(/id="play-block-p2"[^>]*play-block-ai|play-block-ai[^>]*id="play-block-p2"/);
     expect(indexHtml).toMatch(/id="play-block-p1"[^>]*play-block-human|play-block-human[^>]*id="play-block-p1"/);
     expect(playShellCss).toMatch(/\.play-block-ai[\s\S]*--black-bead|var\(--black-bead\)/);
-    expect(playShellCss).toMatch(/\.play-block-human[\s\S]*#4caf50/);
+    expect(playShellCss).toMatch(/\.play-block-human[\s\S]*#c9a24e|--play-human-accent: #c9a24e/);
     expect(playShellCss).not.toContain('.play-block.active');
     expect(playControllerSource).not.toMatch(/play-block-p1[\s\S]*classList\.toggle\(\s*'active'/);
     expect(playControllerSource).not.toMatch(/play-block-p2[\s\S]*classList\.toggle\(\s*'active'/);
   });
 
-  it('Settings offers three unified board+side panel preview swatches', () => {
-    expect(indexHtml).toContain('id="play-theme-swatches"');
-    expect(indexHtml).toContain('id="play-theme-mode"');
-    expect(indexHtml).toContain('name="play-board-match"');
-    expect(indexHtml).toContain('value="matched"');
-    expect(indexHtml).toContain('value="side-only"');
-    expect(indexHtml).toContain('data-play-theme="1"');
-    expect(indexHtml).toContain('data-play-theme="2"');
-    expect(indexHtml).toContain('data-play-theme="3"');
-    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-theme="2"/);
-    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-match="side-only"/);
-    expect(indexHtml).not.toContain('id="board-look-swatches"');
-    expect(indexHtml).not.toContain('id="line-gold-swatches"');
-    expect(indexHtml).not.toContain('id="side-panel-swatches"');
+  it('board settings offers move hint aura presets off, original, and gold-fill', () => {
+    expect(indexHtml).toContain('id="move-hint-aura-setting"');
+    expect(indexHtml).toContain('id="move-hint-aura-select"');
+    expect(indexHtml).toContain('value="off"');
+    expect(indexHtml).toContain('Original (orange / lime)');
+    expect(indexHtml).toContain('Gold (fill)');
+    expect(indexHtml).not.toContain('White / gold (fill)');
+    expect(indexHtml).not.toContain('Gold (no fill)');
+  });
+
+  it('board settings offers five Lovable look swatches in two groups (hub has none)', () => {
+    expect(indexHtml).toContain('id="play-theme-swatches-complete"');
+    expect(indexHtml).toContain('id="play-theme-swatches-side"');
+    expect(indexHtml).toContain('id="play-theme-setting"');
+    expect(indexHtml).toContain('Complete (board + side)');
+    expect(indexHtml).toContain('Board stays same — side panels only');
+    expect(indexHtml).toContain('Deep teal / blue-green');
+    expect(indexHtml).toContain('Charcoal + gold accents');
+    expect(indexHtml).not.toContain('Warm parchment');
+    expect(indexHtml).not.toMatch(/data-play-theme="6"/);
+    expect(indexHtml).not.toContain('Forest green');
+    expect(indexHtml).not.toContain('Tan parchment');
+    expect(indexHtml).not.toContain('id="hub-play-theme-setting"');
+    expect(indexHtml).not.toContain('name="play-board-match"');
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-look="3"/);
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-side-look="5"/);
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-theme="5"/);
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-match="matched"/);
   });
 
   it('hub offers Watch AI and board settings has Watch AI level below AI level', () => {

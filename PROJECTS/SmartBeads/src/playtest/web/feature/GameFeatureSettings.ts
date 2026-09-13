@@ -23,14 +23,14 @@ export type AiLevel = 1 | 2 | 3 | 4 | 5;
 export const COACH_DEFAULT_BOARD_ID = '8x4x6' as const;
 /** @deprecated use COACH_DEFAULT_BOARD_ID */
 export const SPECTATE_BOARD_ID = COACH_DEFAULT_BOARD_ID;
-/** Pause after each animated move completes (ms) — 10+ bead boards. */
+/** Pause after each animated move completes (ms) — reserved for future large boards. */
 export const SPECTATE_INTER_MOVE_DELAY_MS = 10_000;
-/** Watch AI vs AI — 6- and 7-bead boards. */
+/** Watch AI vs AI — all shipped V1 boards (≤16 beads). */
 export const SPECTATE_INTER_MOVE_DELAY_SMALL_BOARD_MS = 5_000;
 
 export function spectateInterMoveDelayMs(boardId: ProductBoardId): number {
   const beadCount = getCatalogEntry(boardId)?.beadCount;
-  if (beadCount !== undefined && beadCount <= 7) {
+  if (beadCount !== undefined && beadCount <= 16) {
     return SPECTATE_INTER_MOVE_DELAY_SMALL_BOARD_MS;
   }
   return SPECTATE_INTER_MOVE_DELAY_MS;
@@ -192,23 +192,34 @@ export function aiLevelForActingPlayer(settings: GameFeatureSettings, player: Pl
   if (settings.mode === 'spectate') {
     return player === 'RED'
       ? clampUiAiLevel(settings.coachRedLevel ?? 3)
-      : clampUiAiLevel(settings.coachBlueLevel ?? 2);
+      : clampUiAiLevel(settings.coachBlueLevel ?? 3);
   }
   return clampUiAiLevel(settings.aiLevel);
 }
+
+/** Locked Watch AI vs AI launch defaults (2026-09). */
+export const SPECTATE_WATCH_DEFAULTS = {
+  centerRule: 'endgame',
+  timer: '2',
+  coachRedLevel: 3,
+  coachBlueLevel: 3,
+} as const satisfies Pick<
+  GameFeatureSettings,
+  'centerRule' | 'timer' | 'coachRedLevel' | 'coachBlueLevel'
+>;
 
 export function buildCoachWatchSettings(
   overrides: Partial<GameFeatureSettings> = {},
 ): GameFeatureSettings {
   return {
     mode: 'spectate',
-    aiLevel: 3,
-    coachRedLevel: 3,
-    coachBlueLevel: 2,
-    timer: 'off',
+    aiLevel: SPECTATE_WATCH_DEFAULTS.coachBlueLevel,
+    coachRedLevel: SPECTATE_WATCH_DEFAULTS.coachRedLevel,
+    coachBlueLevel: SPECTATE_WATCH_DEFAULTS.coachBlueLevel,
+    timer: SPECTATE_WATCH_DEFAULTS.timer,
     tournamentTimer: 'off',
     shotClock: 'off',
-    centerRule: 'off',
+    centerRule: SPECTATE_WATCH_DEFAULTS.centerRule,
     ...overrides,
   };
 }

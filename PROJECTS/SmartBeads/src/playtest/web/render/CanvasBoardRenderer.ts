@@ -1,6 +1,11 @@
 import { BoardDefinition, Move, Player } from '../../../models/GameState';
-import { getBoardLineGoldTheme, readBoardLineGoldThemeId } from '../layout/boardLineGoldThemes';
+import {
+  CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE,
+  getClassicBoardLineGold,
+} from '../layout/boardLineGoldThemes';
 import { getActiveBoardLookTheme } from '../layout/boardLookThemes';
+import { readPlayBoardMatchMode } from '../layout/playShellThemes';
+import { type MoveHintAuraStyle, readMoveHintAuraStyle } from '../layout/moveHintAuraThemes';
 import { getBoardVisualProfile } from '../layout/boardVisualProfile';
 import { projectIntersectionOnCanvas, projectLatticePointOnCanvas } from '../layout/boardProjection';
 
@@ -40,6 +45,8 @@ export interface CanvasBoardView {
   lastMove?: LastMoveHighlight | null;
   capturePulses?: CapturePulse[];
   coachGlowNodeIds?: readonly number[];
+  /** Original = orange/lime per side; gold-fill = gold glow on both beads. */
+  moveHintAura?: MoveHintAuraStyle;
 }
 
 function resolveCenterHighlight(board: BoardDefinition): Set<number> {
@@ -122,35 +129,96 @@ function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number): vo
   ctx.stroke();
 }
 
-function drawAmberOrangeRing(
+function drawTwinMoveHintRings(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  pieceRadius: number,
+  innerRing: string,
+  outerRing: string,
+  innerWidth: number,
+  outerWidth: number,
+): void {
+  const innerRadius = pieceRadius + innerWidth / 2;
+  const outerRadius = pieceRadius + innerWidth + outerWidth / 2 + 1;
+
+  ctx.beginPath();
+  ctx.arc(x, y, innerRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = innerRing;
+  ctx.lineWidth = innerWidth;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(x, y, outerRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = outerRing;
+  ctx.lineWidth = outerWidth;
+  ctx.stroke();
+}
+
+/** Original — orange (cream) or lime (black) twin rings per DECISIONS §8. */
+function drawOriginalMoveHintAura(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  pieceRadius: number,
+  side: Player,
+): void {
+  const isCream = side === 'RED';
+  drawTwinMoveHintRings(
+    ctx,
+    x,
+    y,
+    pieceRadius,
+    isCream ? 'rgba(255, 95, 25, 0.95)' : 'rgba(180, 255, 80, 0.95)',
+    isCream ? 'rgba(255, 60, 20, 0.45)' : 'rgba(180, 255, 80, 0.38)',
+    isCream ? 3.5 : 2.5,
+    isCream ? 2 : 1.5,
+  );
+}
+
+/** Gold (fill) — gold centre glow + twin rings; same on cream and black beads. */
+function drawGoldFillMoveHintAura(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   pieceRadius: number,
 ): void {
+  const glowRadius = pieceRadius + 12;
+  const aura = ctx.createRadialGradient(x, y, pieceRadius * 0.5, x, y, glowRadius);
+  aura.addColorStop(0, 'rgba(255, 205, 92, 0.40)');
+  aura.addColorStop(0.55, 'rgba(255, 195, 70, 0.22)');
+  aura.addColorStop(1, 'rgba(255, 180, 50, 0)');
   ctx.beginPath();
-  ctx.arc(x, y, pieceRadius + 5, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255, 95, 25, 0.95)';
-  ctx.lineWidth = 3.5;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(x, y, pieceRadius + 8, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255, 60, 20, 0.45)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+  ctx.fillStyle = aura;
+  ctx.fill();
+
+  drawTwinMoveHintRings(
+    ctx,
+    x,
+    y,
+    pieceRadius,
+    'rgba(255, 215, 100, 0.90)',
+    'rgba(255, 205, 92, 0.52)',
+    2.5,
+    2,
+  );
 }
 
-function drawLastMoveNodeRing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.beginPath();
-  ctx.arc(x, y, 20, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(180, 255, 80, 0.95)';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(x, y, 24, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(180, 255, 80, 0.38)';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+function drawBeadMoveHintAura(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  pieceRadius: number,
+  side: Player,
+  style: MoveHintAuraStyle,
+): void {
+  if (style === 'off') return;
+  if (style === 'gold-fill') {
+    drawGoldFillMoveHintAura(ctx, x, y, pieceRadius);
+    return;
+  }
+  drawOriginalMoveHintAura(ctx, x, y, pieceRadius, side);
 }
 
 function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: number, progress: number): void {
@@ -168,13 +236,12 @@ function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: num
   ctx.fill();
 }
 
-function drawBoardEdgeGlow(ctx: CanvasRenderingContext2D, w: number, h: number, glowRgba: string): void {
+function drawBoardInnerGoldBorder(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  const lineGold = getClassicBoardLineGold();
   ctx.save();
-  ctx.strokeStyle = glowRgba;
-  ctx.lineWidth = 3;
-  ctx.shadowColor = glowRgba;
-  ctx.shadowBlur = 14;
-  ctx.strokeRect(4, 4, w - 8, h - 8);
+  ctx.strokeStyle = lineGold.lineRgba;
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(1.25, 1.25, w - 2.5, h - 2.5);
   ctx.restore();
 }
 
@@ -235,6 +302,10 @@ function drawPieceAt(
   ctx.globalAlpha = alpha;
   const look = getActiveBoardLookTheme();
   const bead = player === 'RED' ? look.creamBead : look.blackBead;
+  ctx.shadowColor = player === 'RED' ? 'rgba(0, 0, 0, 0.28)' : 'rgba(0, 0, 0, 0.55)';
+  ctx.shadowBlur = player === 'RED' ? 5 : 7;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 2;
   const grd = ctx.createRadialGradient(x - 4, y - 5, 2, x, y, radius);
   grd.addColorStop(0, bead.highlight);
   grd.addColorStop(0.55, bead.mid);
@@ -261,6 +332,7 @@ export function drawCanvasBoard(
   const capturePulses = view.capturePulses ?? [];
   const coachGlowNodeIds = view.coachGlowNodeIds ?? [];
   const coachGlowSet = new Set(coachGlowNodeIds);
+  const moveHintAura = view.moveHintAura ?? readMoveHintAuraStyle();
   const visualProfile = getBoardVisualProfile(board.name);
   const centerHighlight = resolveCenterHighlight(board);
   const project = (node: { x?: number; y?: number; id: number }) =>
@@ -268,15 +340,21 @@ export function drawCanvasBoard(
 
   ctx.clearRect(0, 0, w, h);
   const look = getActiveBoardLookTheme();
-  const lineGold = getBoardLineGoldTheme(readBoardLineGoldThemeId());
-  const g = ctx.createLinearGradient(0, 0, w, h);
+  const lineGold = getClassicBoardLineGold();
+  const boardMatch = readPlayBoardMatchMode();
+  const g =
+    boardMatch === 'matched'
+      ? ctx.createLinearGradient(0, 0, 0, h)
+      : ctx.createLinearGradient(0, 0, w, h);
   g.addColorStop(0, look.surfaceTop);
   g.addColorStop(1, look.surfaceBottom);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 
-  drawCreamHalfTint(ctx, w, h, visualProfile.turnWashAxis ?? 'horizontal');
-  drawBoardEdgeGlow(ctx, w, h, look.edgeGlowRgba);
+  if (boardMatch === 'side-only') {
+    drawCreamHalfTint(ctx, w, h, visualProfile.turnWashAxis ?? 'horizontal');
+  }
+  drawBoardInnerGoldBorder(ctx, w, h);
 
   const animating = anim !== null && anim.t < 1;
   const turnIdleHighlight =
@@ -332,28 +410,21 @@ export function drawCanvasBoard(
     if (isLastMoveNode && node.id !== hideFrom && node.id !== hideTo && lastMove) {
       const opponent: Player = lastMove.player === 'RED' ? 'BLUE' : 'RED';
       if (node.occupant !== opponent) {
-        if (lastMove.player === 'RED') {
-          // Cream last-move — same orange ring as legal landing squares.
-          drawAmberOrangeRing(ctx, x, y, BEAD_RADIUS);
-        } else {
-          drawLastMoveNodeRing(ctx, x, y);
-        }
+        drawBeadMoveHintAura(ctx, x, y, BEAD_RADIUS, lastMove.player, moveHintAura);
       }
     }
 
+    const nodeRadius = node.occupant ? 3.5 : 4;
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = lineGold.nodeRgba;
+    ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+    ctx.fillStyle = node.occupant ? lineGold.nodeRgba : CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE;
     ctx.fill();
 
     const selectedOccupant =
       selectedId !== null ? board.intersections[selectedId]?.occupant : undefined;
     if (legalTargets.includes(node.id) && !anim) {
-      if (selectedOccupant === 'BLUE') {
-        drawLastMoveNodeRing(ctx, x, y);
-      } else {
-        drawAmberOrangeRing(ctx, x, y, BEAD_RADIUS);
-      }
+      const hintSide: Player = selectedOccupant === 'BLUE' ? 'BLUE' : 'RED';
+      drawBeadMoveHintAura(ctx, x, y, BEAD_RADIUS, hintSide, moveHintAura);
     }
 
     if (node.occupant && node.id !== hideFrom && node.id !== hideTo) {
@@ -364,21 +435,11 @@ export function drawCanvasBoard(
       const dimOpp =
         matchStartFlash && !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
       const r = BEAD_RADIUS * pulse;
+      const showOccupiedAura =
+        isSelected || turnHighlightSet.has(node.id) || (isCoachGlow && node.occupant === 'RED');
       drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
-      if (isSelected) {
-        if (node.occupant === 'BLUE') {
-          drawLastMoveNodeRing(ctx, x, y);
-        } else {
-          drawAmberOrangeRing(ctx, x, y, r);
-        }
-      } else if (turnHighlightSet.has(node.id)) {
-        if (node.occupant === 'BLUE') {
-          drawLastMoveNodeRing(ctx, x, y);
-        } else {
-          drawAmberOrangeRing(ctx, x, y, r);
-        }
-      } else if (isCoachGlow && node.occupant === 'RED') {
-        drawAmberOrangeRing(ctx, x, y, r);
+      if (showOccupiedAura) {
+        drawBeadMoveHintAura(ctx, x, y, r, node.occupant, moveHintAura);
       }
     }
   }
@@ -409,11 +470,7 @@ export function drawCanvasBoard(
       const mx = fromPt.x + (toPt.x - fromPt.x) * ease;
       const my = fromPt.y + (toPt.y - fromPt.y) * ease;
       drawPieceAt(ctx, mx, my, anim.player, 17, 1);
-      if (anim.player === 'RED') {
-        drawAmberOrangeRing(ctx, mx, my, 17);
-      } else {
-        drawLastMoveNodeRing(ctx, mx, my);
-      }
+      drawBeadMoveHintAura(ctx, mx, my, 17, anim.player, moveHintAura);
     }
   }
 }

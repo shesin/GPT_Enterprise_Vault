@@ -59,9 +59,10 @@ SmartBeads/
 │   │   │   │   ├── SoundManifest.ts   # Runtime SFX URL map
 │   │   │   │   └── __tests__/SoundEffects.test.ts
 │   │   │   ├── layout/
-│   │   │   │   ├── playShellThemes.ts    # 3 swatches; matched vs side-only; hub+board sync
-│   │   │   │   ├── boardLookThemes.ts    # canvas look from playShellThemes
+│   │   │   │   ├── playShellThemes.ts    # Lovable look swatches; board vs side split storage
+│   │   │   │   ├── boardLookThemes.ts    # canvas look from board look storage
 │   │   │   │   ├── sidePanelThemes.ts
+│   │   │   │   ├── moveHintAuraThemes.ts # Off · Original · Gold (fill); localStorage
 │   │   │   │   ├── boardLineGoldThemes.ts
 │   │   │   │   ├── creamCampTintThemes.ts
 │   │   │   │   ├── boardProjection.ts
@@ -69,8 +70,9 @@ SmartBeads/
 │   │   │   │   ├── canvasDisplay.ts   # --board-aspect on .shell; fitCanvasToFrame
 │   │   │   │   ├── prototypeProjectionOracle.ts
 │   │   │   │   └── __tests__/         # playShellThemes, boardLookThemes, sidePanelThemes,
-│   │   │   │                          #   boardLineGoldThemes, creamCampTintThemes,
-│   │   │   │                          #   prototypeVisualParity, creamCampRendersLower
+│   │   │   │                          #   moveHintAuraThemes, boardLineGoldThemes,
+│   │   │   │                          #   creamCampTintThemes, prototypeVisualParity,
+│   │   │   │                          #   creamCampRendersLower
 │   │   │   ├── render/
 │   │   │   │   └── CanvasBoardRenderer.ts
 │   │   │   └── __tests__/             # PlayController, playerBarShell, viewportFit,
@@ -132,14 +134,15 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`main.ts`** — calls `bootstrapPlayShell()`.
 - **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`. **Coach mode:** watch-only ~**1:53** video (play/pause/scrub); ending cues WIN / RESIGN / DRAW; no board input.
 - **`PlayHub.ts`** — hub navigation; theme picker (`#hub-play-theme-setting`, `hub-play-board-match` radios) synced with board via `applySharedPlayTheme`; **Coach** sidebar + top card launches teaching video on **7-bead · 4×5** (`?coach=1` picker, `?coach=start` auto-launch).
-- **`layout/playShellThemes.ts`** — unified theme presets; `resolveBoardCanvasLook` (side-only = green board); `applyHubThemeCssVars` (hub rail vs centre split); localStorage `sb-play-theme` / `sb-play-board-match`.
+- **`layout/playShellThemes.ts`** — Lovable look swatches (4 complete + charcoal side-only); `applyPlayLookFromSwatch`; separate `sb-play-board-look` / `sb-play-side-look`; hub centre/rail sync.
+- **`layout/moveHintAuraThemes.ts`** — move hint aura preset (`off` | `original` | `gold-fill`); localStorage `sb-move-hint-aura`.
 - **`feature/CoachVideoScript.ts`** — Video 1 on **7-bead** (~**1:53**): basics + **WIN** / **RESIGN** / **DRAW** appendix; amber/lime highlights; scripted cues and TTS speeches.
 - **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.
 - **`feature/CoachVoice.ts`** — browser TTS; mute and replay per segment.
 - **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. **Match termination** (3-fold draw, 120-ply `safety_cap`) → `SmartBeadsEngine`; **AI repetition steer** → `HonestAi.ts` (`GPT_PROJECT_DECISIONS_05P.md` §4).
 - **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy + center tie-break), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center + timer in eval when rules on.
 - **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.
-- **`audio/SoundEffects.ts`** — fetches eight named WAV files from repo-root `public/audio/` via `SoundManifest.ts`; start overlay unlock; end celebration audio. Regenerate: `node scripts/generate-sfx-wavs.mjs`.
+- **`audio/SoundEffects.ts`** — fetches eight named WAV files from repo-root `public/audio/` via `SoundManifest.ts`; **default muted**; start overlay unlock; end celebration audio. Regenerate: `node scripts/generate-sfx-wavs.mjs`.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
 - **`render/CanvasBoardRenderer.ts`** — canvas board draw. Turn/move colours → `GPT_PROJECT_DECISIONS_05P.md` §7–§8. Geometry: `v1GeometryCaptureAudit.test.ts`. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts`.

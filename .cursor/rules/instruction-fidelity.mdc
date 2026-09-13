@@ -8,9 +8,10 @@ alwaysApply: true
 ## Vault boundary (hard)
 - **Only this repo** (`Gpt_Enterprise_Vault`). **Never** create, edit, move, or delete anything outside it — siblings, parent folders, or anywhere else on disk.
 - **Shell:** no write/delete/rename outside this repo unless **`Go — outside vault`** names the exact path and action.
+- **Never edit GPT_PROJECT_PENDING_01P,md**- this is human file never edit without approval
 
 ## Mode (check first)
-- **Suggest / explain / plan / review / why / suggestion** → **words only. No repo edits.**
+- **Suggest / explain / suggestion** → **words only. No repo edits.**
 - **Do / go / implement / fix** (scoped ask) → code or doc edits **only after** STOP block below.
 
 - **`push to git all` / `push to git all ok` / `push to git all good`** → add all changed files (skip secrets), commit (`ok`/`good` in message if said), push; update STATUS + MAP if needed; reply in plain English what changed in each of those two docs + push result.

@@ -18,16 +18,16 @@ describe('Coach watch (AI vs AI)', () => {
     expect(spectateInterMoveDelayMs('6x3x5')).toBe(5_000);
     expect(spectateInterMoveDelayMs('6x4')).toBe(5_000);
     expect(spectateInterMoveDelayMs('7x4x5')).toBe(5_000);
-    expect(spectateInterMoveDelayMs('8x4x6')).toBe(10_000);
-    expect(spectateInterMoveDelayMs('10x5')).toBe(10_000);
-    expect(spectateInterMoveDelayMs('16')).toBe(10_000);
+    expect(spectateInterMoveDelayMs('8x4x6')).toBe(5_000);
+    expect(spectateInterMoveDelayMs('10x5')).toBe(5_000);
+    expect(spectateInterMoveDelayMs('12x6x5')).toBe(5_000);
+    expect(spectateInterMoveDelayMs('16')).toBe(5_000);
   });
 
   it('planAiTurnPath uses configured per-side coach levels on 8x4x6', () => {
     const settings = buildCoachWatchSettings({
       coachRedLevel: 3,
       coachBlueLevel: 2,
-      centerRule: 'endgame',
     });
     const session = new FeatureSession('8x4x6', settings);
     expect(session.getSettings().mode).toBe('spectate');

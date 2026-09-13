@@ -6,10 +6,10 @@ import {
 } from '../../config/BoardCatalog';
 import type { GameFeatureSettings } from './feature/GameFeatureSettings';
 import {
-  applySharedPlayTheme,
-  isPlayBoardMatchMode,
+  applyPlayLookState,
   isPlayShellThemeId,
-  type PlayBoardMatchMode,
+  readStoredBoardLookId,
+  readStoredSideLookId,
   type PlayShellThemeId,
 } from './layout/playShellThemes';
 
@@ -160,63 +160,27 @@ function wireHubModeHelp(helpBtn: HTMLButtonElement, helpText: HTMLParagraphElem
   });
 }
 
-function parseHubPlayTheme(raw: string | null): PlayShellThemeId {
-  if (isPlayShellThemeId(raw)) return raw;
-  return '2';
-}
-
-function readHubBoardMatchFromUi(): PlayBoardMatchMode {
-  const selected = document.querySelector<HTMLInputElement>(
-    '#hub-play-theme-setting input[name="hub-play-board-match"]:checked',
-  );
-  return isPlayBoardMatchMode(selected?.value) ? selected.value : 'side-only';
+function resolveHubPlayThemeId(): PlayShellThemeId {
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = params.get('playTheme') ?? params.get('hubTheme');
+  if (isPlayShellThemeId(fromUrl)) return fromUrl;
+  return readStoredSideLookId();
 }
 
 function wireHubThemePicker(): void {
-  const hubThemeSetting = document.getElementById('hub-play-theme-setting');
-  if (!hubThemeSetting) return;
+  const hub = document.getElementById('play-hub');
+  if (!hub) return;
 
-  const params = new URLSearchParams(window.location.search);
-  const fromUrl = params.get('playTheme') ?? params.get('hubTheme');
-  const fromStore = (() => {
-    try {
-      const playTheme = localStorage.getItem('sb-play-theme');
-      if (isPlayShellThemeId(playTheme)) return playTheme;
-      const legacyHub = localStorage.getItem('sb-hub-theme');
-      if (legacyHub === '4') return '1';
-      if (isPlayShellThemeId(legacyHub)) return legacyHub;
-      return null;
-    } catch {
-      return null;
-    }
-  })();
-  let boardMatch: PlayBoardMatchMode = 'side-only';
-  try {
-    const fromUrlMatch = params.get('playBoardMatch');
-    if (isPlayBoardMatchMode(fromUrlMatch)) boardMatch = fromUrlMatch;
-    else {
-      const storedMatch = localStorage.getItem('sb-play-board-match');
-      if (isPlayBoardMatchMode(storedMatch)) boardMatch = storedMatch;
-    }
-  } catch {
-    boardMatch = 'side-only';
+  const sideFromUrl = resolveHubPlayThemeId();
+  if (sideFromUrl === '5') {
+    applyPlayLookState(readStoredBoardLookId(), '5');
+    return;
   }
-  applySharedPlayTheme(parseHubPlayTheme(fromUrl ?? fromStore), boardMatch);
-
-  for (const swatch of hubThemeSetting.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
-    swatch.addEventListener('click', () => {
-      const themeId = swatch.dataset.playTheme;
-      if (isPlayShellThemeId(themeId)) applySharedPlayTheme(themeId, readHubBoardMatchFromUi());
-    });
+  if (isPlayShellThemeId(sideFromUrl)) {
+    applyPlayLookState(sideFromUrl, sideFromUrl);
+    return;
   }
-  for (const input of hubThemeSetting.querySelectorAll<HTMLInputElement>('input[name="hub-play-board-match"]')) {
-    input.addEventListener('change', () => {
-      if (input.checked && isPlayBoardMatchMode(input.value)) {
-        const themeId = document.getElementById('play-hub')?.getAttribute('data-play-theme');
-        if (isPlayShellThemeId(themeId)) applySharedPlayTheme(themeId, input.value);
-      }
-    });
-  }
+  applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
 }
 
 export function bootstrapPlayHub(

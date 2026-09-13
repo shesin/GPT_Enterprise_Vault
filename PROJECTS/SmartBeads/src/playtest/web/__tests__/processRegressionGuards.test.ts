@@ -36,6 +36,10 @@ const playShellThemesSource = fs.readFileSync(
   path.resolve(__dirname, '../layout/playShellThemes.ts'),
   'utf8',
 );
+const gameFeatureSettingsSource = fs.readFileSync(
+  path.resolve(__dirname, '../feature/GameFeatureSettings.ts'),
+  'utf8',
+);
 
 function afterTurnCompletedBlock(): string {
   const start = featureSessionSource.indexOf('private afterTurnCompleted');
@@ -160,28 +164,61 @@ describe('process regression guards', () => {
     });
   });
 
+  describe('Watch AI vs AI launch defaults', () => {
+    it('locks End-Game, 2 min timer, Expert vs Expert on hub spectate entry', () => {
+      expect(playControllerSource).toMatch(/function applySpectateDefaultsToUi/);
+      expect(playControllerSource).toMatch(/SPECTATE_WATCH_DEFAULTS/);
+      expect(playControllerSource).toMatch(/if \(action === 'spectate'\)[\s\S]*applySpectateDefaultsToUi\(boardId\)/);
+      expect(gameFeatureSettingsSource).toMatch(/SPECTATE_WATCH_DEFAULTS/);
+      expect(gameFeatureSettingsSource).toMatch(/centerRule: 'endgame'/);
+      expect(gameFeatureSettingsSource).toMatch(/timer: '2'/);
+      expect(gameFeatureSettingsSource).toMatch(/coachBlueLevel: 3/);
+    });
+  });
+
+  describe('move hint aura — off, original, and gold-fill preview', () => {
+    it('board settings toggle and renderer support all presets', () => {
+      expect(indexHtml).toContain('id="move-hint-aura-select"');
+      expect(indexHtml).toContain('value="off"');
+      expect(indexHtml).toContain('value="original"');
+      expect(indexHtml).toContain('value="gold-fill"');
+      expect(indexHtml).not.toContain('value="white-gold"');
+      expect(indexHtml).not.toContain('value="gold-no-fill"');
+      expect(playControllerSource).toMatch(/initMoveHintAuraSetting/);
+      expect(playControllerSource).toMatch(/moveHintAura: readMoveHintAuraFromUi\(\)/);
+      expect(canvasRendererSource).toMatch(/drawGoldFillMoveHintAura/);
+      expect(canvasRendererSource).toMatch(/drawOriginalMoveHintAura/);
+    });
+  });
+
   describe('play theme — hub and board stay in sync', () => {
     it('hub uses same setting block as board; shared sync; board listeners scoped', () => {
+      expect(playShellThemesSource).toMatch(/function applyPlayLookState/);
       expect(playShellThemesSource).toMatch(/function applySharedPlayTheme/);
       expect(playShellThemesSource).toMatch(/function applyHubThemeCssVars/);
       expect(playShellThemesSource).toMatch(/resolveHubCentrePalette/);
-      expect(playHubSource).toMatch(/applySharedPlayTheme\(/);
-      expect(playHubSource).toMatch(/#hub-play-theme-setting/);
-      expect(playHubSource).toMatch(/hub-play-board-match/);
-      expect(playControllerSource).toMatch(/#play-theme-setting/);
+      expect(playHubSource).toMatch(/applyPlayLookState\(/);
+      expect(playControllerSource).toMatch(/applyPlayLookFromSwatch\(/);
+      expect(playControllerSource).toMatch(/play-theme-setting/);
+      expect(indexHtml).toContain('id="play-theme-setting"');
+      expect(indexHtml).not.toContain('id="hub-play-theme-setting"');
       expect(playControllerSource).not.toMatch(
         /document\.querySelectorAll<HTMLButtonElement>\('\.play-theme-swatch'\)/,
       );
       expect(playControllerSource).toMatch(/function syncPlayShellThemeFromStorage/);
       expect(playControllerSource).toMatch(/enterFromHub[\s\S]*syncPlayShellThemeFromStorage\(\)/);
-      expect(indexHtml).toContain('id="hub-play-theme-setting"');
-      expect(indexHtml).toContain('name="hub-play-board-match"');
-      expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-board-match="side-only"/);
+      expect(indexHtml).toContain('play-theme-swatches--complete');
+      expect(indexHtml).toContain('play-theme-swatches--side');
+      expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-board-look="3"/);
+      expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-side-look="5"/);
+      expect(playShellThemesSource).toMatch(/readBoardLookThemeId/);
+      expect(playShellThemesSource).toMatch(/readSideLookThemeId/);
     });
 
-    it('side-only keeps snapshot board; matched applies swatch board paint', () => {
-      expect(playShellThemesSource).toMatch(/side-only is always snapshot green/);
-      expect(playShellThemesSource).toMatch(/creamHorizontalStops: classic\.creamHorizontalStops/);
+    it('board look is independent from side swatches 5/6', () => {
+      expect(playShellThemesSource).toMatch(/function applyPlayLookFromSwatch/);
+      expect(playShellThemesSource).toMatch(/boardChanged: false/);
+      expect(playShellThemesSource).toMatch(/resolveBoardCanvasLook/);
       expect(canvasRendererSource).toMatch(/getActiveBoardLookTheme/);
     });
   });

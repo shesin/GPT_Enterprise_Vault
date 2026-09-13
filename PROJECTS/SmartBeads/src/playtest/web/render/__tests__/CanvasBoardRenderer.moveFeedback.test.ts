@@ -1,5 +1,14 @@
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
+import * as moveHintAuraThemes from '../../layout/moveHintAuraThemes';
 import { drawCanvasBoard } from '../CanvasBoardRenderer';
+
+beforeEach(() => {
+  jest.spyOn(moveHintAuraThemes, 'readMoveHintAuraStyle').mockReturnValue('original');
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 function recordingContext(): CanvasRenderingContext2D {
   const gradient = {
@@ -573,5 +582,116 @@ describe('CanvasBoardRenderer move feedback', () => {
 
     expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(true);
     expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(true);
+  });
+
+  it('off aura draws no move-hint rings or glow', () => {
+    const strokeStyles: string[] = [];
+    const gradient = {
+      addColorStop: () => {},
+    };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      arc: () => {},
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
+      set strokeStyle(v: string) { strokeStyles.push(v); },
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('8x4x6');
+    const board = engine.getState().board;
+    const canvas = {
+      width: 560,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'BLUE',
+      gameOver: false,
+      selectedId: null,
+      legalTargets: [],
+      chainPieceId: null,
+      anim: null,
+      turnPulse: 0,
+      lastMove: null,
+      capturePulses: [],
+      moveHintAura: 'off',
+    });
+
+    expect(strokeStyles.some((s) => s.includes('255, 215, 100'))).toBe(false);
+    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(false);
+    expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(false);
+  });
+
+  it('gold-fill aura uses centre gold glow, not cream or lime', () => {
+    const strokeStyles: string[] = [];
+    const gradientStops: Array<[number, string]> = [];
+    const gradient = {
+      addColorStop: (pos: number, color: string) => {
+        gradientStops.push([pos, color]);
+      },
+    };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      arc: () => {},
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
+      set strokeStyle(v: string) { strokeStyles.push(v); },
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('8x4x6');
+    const board = engine.getState().board;
+    const canvas = {
+      width: 560,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'BLUE',
+      gameOver: false,
+      selectedId: null,
+      legalTargets: [],
+      chainPieceId: null,
+      anim: null,
+      turnPulse: 0,
+      lastMove: null,
+      capturePulses: [],
+      moveHintAura: 'gold-fill',
+    });
+
+    expect(gradientStops.some(([pos, c]) => pos === 0 && c.includes('255, 205, 92'))).toBe(true);
+    expect(gradientStops.some(([, c]) => c.includes('255, 242, 215'))).toBe(false);
+    expect(strokeStyles.some((s) => s.includes('255, 215, 100'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(false);
+    expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(false);
   });
 });

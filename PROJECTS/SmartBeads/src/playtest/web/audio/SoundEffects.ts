@@ -25,7 +25,7 @@ export interface SoundEvent {
  */
 export class SoundEffects {
   private ctx: AudioContext | null = null;
-  private muted: boolean = false;
+  private muted: boolean = true;
   private masterVolume: number = 0.90;
 
   private selectBuffer: AudioBuffer | null = null;
@@ -47,7 +47,9 @@ export class SoundEffects {
       const g = typeof globalThis !== 'undefined' ? (globalThis as unknown as { localStorage?: Storage }) : null;
       if (g?.localStorage) {
         const saved = g.localStorage.getItem('smartbeads_sfx_muted');
-        this.muted = saved === 'true';
+        if (saved !== null) {
+          this.muted = saved === 'true';
+        }
         const savedVol = g.localStorage.getItem('smartbeads_sfx_vol');
         if (savedVol !== null) {
           const parsed = parseFloat(savedVol);

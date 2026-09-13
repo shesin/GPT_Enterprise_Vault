@@ -38,7 +38,17 @@ export function getBoardLineGoldTheme(id: BoardLineGoldThemeId): BoardLineGoldTh
   return BOARD_LINE_GOLD_THEMES[id];
 }
 
-/** Locked — Classic gold (human pick 2026-09). Preview picker removed. */
+/** Locked board grid — always Classic gold (human pick 2026-09). */
+export const CLASSIC_BOARD_LINE_GOLD = BOARD_LINE_GOLD_THEMES['2'];
+
+/** Faint intersection dots on empty nodes — same gold family. */
+export const CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE = 'rgba(255, 205, 92, 0.24)';
+
+export function getClassicBoardLineGold(): BoardLineGoldTheme {
+  return CLASSIC_BOARD_LINE_GOLD;
+}
+
+/** Locked — Classic gold. Preview picker removed; shell theme does not change lines. */
 export function readBoardLineGoldThemeId(): BoardLineGoldThemeId {
   return '2';
 }

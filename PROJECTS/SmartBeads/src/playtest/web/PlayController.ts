@@ -8,10 +8,11 @@ import {
 } from '../../config/BoardCatalog';
 import { cloneBoardDefinition, findJumpPath, Move, Player } from '../../models/GameState';
 import {
-  applySharedPlayTheme,
-  isPlayBoardMatchMode,
+  applyPlayLookFromSwatch,
+  applyPlayLookState,
   isPlayShellThemeId,
-  type PlayBoardMatchMode,
+  readStoredBoardLookId,
+  readStoredSideLookId,
   type PlayShellThemeId,
 } from './layout/playShellThemes';
 import { formatCenterDisplay } from './feature/centerScoring';
@@ -22,9 +23,9 @@ import {
   COACH_MAX_AI_LEVEL,
   COACH_MOVE_PREVIEW_MS,
   buildCoachWatchSettings,
+  SPECTATE_WATCH_DEFAULTS,
   clampUiAiLevel,
   DEFAULT_BGM_VOLUME,
-  getDefaultBgmTrack,
   CenterRule,
   formatCenterRuleLabel,
   formatTimerOptionLabel,
@@ -78,6 +79,11 @@ import {
 import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
 import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
+import {
+  isMoveHintAuraStyle,
+  readMoveHintAuraStyle,
+  writeMoveHintAuraStyle,
+} from './layout/moveHintAuraThemes';
 import {
   BoardAnimState,
   drawCanvasBoard,
@@ -962,6 +968,23 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     syncTimerSettingLocks();
   }
 
+  function applySpectateDefaultsToUi(boardId: ProductBoardId): void {
+    const play = getPlayConfig(boardId);
+    const centerRule = play.centerRuleOptions.includes(SPECTATE_WATCH_DEFAULTS.centerRule)
+      ? SPECTATE_WATCH_DEFAULTS.centerRule
+      : play.defaultSettings.centerRule;
+    centerRuleSelect.value = centerRule;
+    timerSelect.value = play.timerOptions.includes(SPECTATE_WATCH_DEFAULTS.timer)
+      ? SPECTATE_WATCH_DEFAULTS.timer
+      : play.defaultSettings.timer;
+    tournamentTimerSelect.value = 'off';
+    populateAiLevelSelect(aiLevelSelect, HUMAN_PVE_MAX_AI_LEVEL, SPECTATE_WATCH_DEFAULTS.coachBlueLevel);
+    if (coachLevelSelect) {
+      populateAiLevelSelect(coachLevelSelect, COACH_MAX_AI_LEVEL, SPECTATE_WATCH_DEFAULTS.coachRedLevel);
+    }
+    syncTimerSettingLocks();
+  }
+
   function syncCenterRuleOptions(): void {
     const options = getPlayConfig(currentBoardId).centerRuleOptions;
     const current = centerRuleSelect.value as CenterRule;
@@ -1355,7 +1378,14 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       lastMove,
       capturePulses: activeCapturePulses(),
       coachGlowNodeIds: session.getCoachGlowNodeIds(),
+      moveHintAura: readMoveHintAuraFromUi(),
     });
+  }
+
+  function readMoveHintAuraFromUi(): ReturnType<typeof readMoveHintAuraStyle> {
+    const select = document.getElementById('move-hint-aura-select') as HTMLSelectElement | null;
+    if (select && isMoveHintAuraStyle(select.value)) return select.value;
+    return readMoveHintAuraStyle();
   }
 
   function updateUI(): void {
@@ -2013,6 +2043,11 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     syncPlayShellThemeFromStorage();
     if (hubModeSelect) hubModeSelect.value = mode;
     prepareBoardSwitch(boardId);
+    if (action === 'spectate') {
+      applySpectateDefaultsToUi(boardId);
+      session = createSession(boardId, readSettings());
+      session.reset();
+    }
     applyStartOverlayModeToSession();
     if (action === 'coach') {
       launchCoachLesson();
@@ -2176,59 +2211,40 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   });
   const playShell = document.getElementById('play-shell') as HTMLDivElement | null;
 
-  function readPlayBoardMatchModeFromUi(): PlayBoardMatchMode {
-    const fromShell = playShell?.getAttribute('data-play-board-match');
-    if (isPlayBoardMatchMode(fromShell)) return fromShell;
-    try {
-      const stored = localStorage.getItem('sb-play-board-match');
-      if (isPlayBoardMatchMode(stored)) return stored;
-    } catch {
-      /* storage unavailable */
-    }
-    const selected = document.querySelector<HTMLInputElement>(
-      '#play-theme-setting input[name="play-board-match"]:checked',
-    );
-    return isPlayBoardMatchMode(selected?.value) ? selected.value : 'side-only';
-  }
-
   function syncPlayShellThemeFromStorage(): void {
     if (!playShell) return;
-    let themeId: PlayShellThemeId = '2';
-    let boardMatch: PlayBoardMatchMode = 'side-only';
-    try {
-      const storedTheme = localStorage.getItem('sb-play-theme');
-      if (isPlayShellThemeId(storedTheme)) themeId = storedTheme;
-      const storedMatch = localStorage.getItem('sb-play-board-match');
-      if (isPlayBoardMatchMode(storedMatch)) boardMatch = storedMatch;
-    } catch {
-      /* storage unavailable */
-    }
-    applyPlayShellTheme(themeId, boardMatch);
+    applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
+    drawBoard();
   }
 
-  function applyPlayShellTheme(themeId: PlayShellThemeId, boardMatch: PlayBoardMatchMode = readPlayBoardMatchModeFromUi()): void {
+  function applyPlayShellTheme(swatchId: PlayShellThemeId): void {
     if (!playShell) return;
-    applySharedPlayTheme(themeId, boardMatch);
+    const { boardChanged } = applyPlayLookFromSwatch(swatchId);
+    if (boardChanged) drawBoard();
     updateUI();
+  }
+
+  function initMoveHintAuraSetting(): void {
+    const select = document.getElementById('move-hint-aura-select') as HTMLSelectElement | null;
+    if (!select) return;
+    select.value = readMoveHintAuraStyle();
+    select.addEventListener('change', () => {
+      if (!isMoveHintAuraStyle(select.value)) return;
+      writeMoveHintAuraStyle(select.value);
+      drawBoard();
+    });
   }
 
   function initPlayShellTheme(): void {
     if (!playShell) return;
     const boardThemeSetting = document.getElementById('play-theme-setting');
-    if (!boardThemeSetting) return;
-    for (const btn of boardThemeSetting.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
-      btn.addEventListener('click', () => {
-        const next = btn.dataset.playTheme;
-        if (isPlayShellThemeId(next)) applyPlayShellTheme(next);
-      });
-    }
-    for (const input of boardThemeSetting.querySelectorAll<HTMLInputElement>('input[name="play-board-match"]')) {
-      input.addEventListener('change', () => {
-        if (input.checked && isPlayBoardMatchMode(input.value)) {
-          const themeId = playShell?.getAttribute('data-play-theme');
-          if (isPlayShellThemeId(themeId)) applyPlayShellTheme(themeId, input.value);
-        }
-      });
+    if (boardThemeSetting) {
+      for (const btn of boardThemeSetting.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
+        btn.addEventListener('click', () => {
+          const next = btn.dataset.playTheme;
+          if (isPlayShellThemeId(next)) applyPlayShellTheme(next);
+        });
+      }
     }
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('playTheme');
@@ -2236,26 +2252,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       applyPlayShellTheme(fromUrl);
       return;
     }
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem('sb-play-theme');
-    } catch {
-      stored = null;
-    }
-    if (!isPlayShellThemeId(stored)) {
-      const legacyBoard = localStorage.getItem('sb-board-look');
-      const legacySide = localStorage.getItem('sb-side-panel-theme');
-      if (legacySide === '5' || legacySide === '3') stored = legacySide === '5' ? '3' : '2';
-      else if (legacyBoard === '2' || legacyBoard === '3') stored = '1';
-    }
-    let boardMatch: PlayBoardMatchMode = 'side-only';
-    try {
-      const storedMatch = localStorage.getItem('sb-play-board-match');
-      if (isPlayBoardMatchMode(storedMatch)) boardMatch = storedMatch;
-    } catch {
-      boardMatch = 'side-only';
-    }
-    applyPlayShellTheme(isPlayShellThemeId(stored) ? stored : '2', boardMatch);
+    applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
+    drawBoard();
   }
 
   function applyPremiumShell(isPremium: boolean): void {
@@ -2278,6 +2276,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
     applyPremiumShell(savedPremium);
     initPlayShellTheme();
+    initMoveHintAuraSetting();
   }
 
   syncBoardTitle();
@@ -2326,14 +2325,10 @@ function populateBoardSelect(select: HTMLSelectElement): void {
 
 function populateBgmSelect(select: HTMLSelectElement): void {
   select.innerHTML = '<option value="">— Select Music —</option>';
-  const defaultTrack = getDefaultBgmTrack();
   for (const track of BGM_TRACKS) {
     const opt = document.createElement('option');
     opt.value = track.url;
     opt.textContent = track.label;
-    if (track.url === defaultTrack.url) {
-      opt.selected = true;
-    }
     select.appendChild(opt);
   }
 }

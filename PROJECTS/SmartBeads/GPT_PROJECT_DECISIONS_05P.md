@@ -138,7 +138,7 @@ Center nodes: amber square plates under center scoring nodes (all 7 boards).
 
 **Starter policy:** Human (cream) **first** on start overlay / new match. **New game / Play again** alternates opener in PvE. Board switch returns to start overlay with human first (does not consume alternation counter).
 
-**Watch AI inter-move pause:** 5s on 6/7-bead boards; 10s on 8-bead and larger boards.
+**Watch AI inter-move pause:** **5s** after each animated move on **all shipped V1 boards** (6–16 beads). **10s** reserved for future larger boards only.
 
 ---
 

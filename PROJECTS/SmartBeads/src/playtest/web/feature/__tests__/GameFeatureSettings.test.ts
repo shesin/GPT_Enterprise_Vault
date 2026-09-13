@@ -42,6 +42,17 @@ describe('GameFeatureSettings coach watch', () => {
     expect(COACH_DEFAULT_BOARD_ID).toBe('8x4x6');
   });
 
+  it('buildCoachWatchSettings defaults to End-Game, 2 min, Expert vs Expert', () => {
+    const settings = buildCoachWatchSettings();
+    expect(settings.mode).toBe('spectate');
+    expect(settings.centerRule).toBe('endgame');
+    expect(settings.timer).toBe('2');
+    expect(settings.coachRedLevel).toBe(3);
+    expect(settings.coachBlueLevel).toBe(3);
+    expect(aiLevelForActingPlayer(settings, 'RED')).toBe(3);
+    expect(aiLevelForActingPlayer(settings, 'BLUE')).toBe(3);
+  });
+
   it('buildCoachWatchSettings maps cream coach + black AI levels', () => {
     const settings = buildCoachWatchSettings({
       coachRedLevel: 2,

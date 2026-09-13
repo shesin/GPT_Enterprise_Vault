@@ -1,56 +1,85 @@
 import {
-  HUB_CENTRE_PALETTES,
+  isSideOnlyLookId,
+  LOCKED_HUB_CENTRE,
+  migrateLegacyPlayThemeId,
+  normalizeSideLookId,
   PLAY_SHELL_THEMES,
   resolveBoardCanvasLook,
+  resolveBoardMatchForTheme,
+  resolveHubBoardMatchForSideLook,
   resolveHubCentrePalette,
   resolvePlayShellPresentation,
 } from '../playShellThemes';
 
 describe('playShellThemes', () => {
-  it('defines three unified board+side panel presets', () => {
+  it('defines five look presets in two groups (warm parchment removed)', () => {
     const themes = Object.values(PLAY_SHELL_THEMES);
-    expect(themes).toHaveLength(3);
-    expect(themes.map((t) => t.label)).toEqual(['Classic Dark', 'Warm parchment', 'Camp edge glow']);
-    expect(new Set(themes.map((t) => t.edgeGlowRgba)).size).toBe(3);
+    expect(themes).toHaveLength(5);
+    expect(themes.filter((t) => t.lookGroup === 'complete').map((t) => t.label)).toEqual([
+      'Deep teal / blue-green',
+      'Deep plum / violet',
+      'Forest & Gold',
+      'Warm brown',
+    ]);
+    expect(themes.filter((t) => t.lookGroup === 'side-only').map((t) => t.label)).toEqual([
+      'Charcoal + gold accents',
+    ]);
   });
 
-  it('pairs board and side within the same theme family', () => {
-    expect(PLAY_SHELL_THEMES['1'].sideCardBackground).toContain(PLAY_SHELL_THEMES['1'].surfaceTop);
-    expect(PLAY_SHELL_THEMES['3'].sideCardBackground).toContain(PLAY_SHELL_THEMES['3'].surfaceTop);
-    expect(PLAY_SHELL_THEMES['2'].surfaceTop).toBe('#1a4030');
-    expect(PLAY_SHELL_THEMES['2'].sideCardBackground).toContain('#1c261e');
+  it('pairs board and side within the same colour family for complete looks', () => {
+    expect(PLAY_SHELL_THEMES['1'].surfaceTop).toBe('#0f3d48');
+    expect(PLAY_SHELL_THEMES['1'].sideCardBackground).toContain('#143840');
+    expect(PLAY_SHELL_THEMES['2'].surfaceTop).toBe('#24162b');
+    expect(PLAY_SHELL_THEMES['2'].sideCardBackground).toContain('#2a1932');
+    expect(PLAY_SHELL_THEMES['3'].surfaceTop).toBe('#0a3828');
+    expect(PLAY_SHELL_THEMES['3'].sideCardBackground).toContain('#1a4030');
+    expect(PLAY_SHELL_THEMES['4'].surfaceTop).toBe('#3d2e22');
+    expect(PLAY_SHELL_THEMES['4'].sideCardBackground).toContain('#352820');
   });
 
-  it('keeps warm parchment on green board with cream wash (not brown)', () => {
-    expect(PLAY_SHELL_THEMES['2'].surfaceTop).toBe('#1a4030');
-    expect(PLAY_SHELL_THEMES['2'].sideCardBackground).toContain('#1c261e');
-    expect(PLAY_SHELL_THEMES['2'].bodyBackground).toContain('255,242,215');
+  it('uses flat cream stops on board looks (no asymmetric fade)', () => {
+    const matched = resolveBoardCanvasLook('1', 'matched');
+    expect(matched.creamHorizontalStops.every(([, c]) => c === 'rgba(0,0,0,0)')).toBe(true);
+    expect(matched.creamVerticalStops.every(([, c]) => c === 'rgba(0,0,0,0)')).toBe(true);
   });
 
-  it('keeps snapshot-green board in side-only and applies swatch board paint in matched mode', () => {
-    const classic = PLAY_SHELL_THEMES['1'];
-    const sideOnlyBoard = resolveBoardCanvasLook('3', 'side-only');
-    const matchedBoard = resolveBoardCanvasLook('3', 'matched');
-    expect(sideOnlyBoard).toEqual({
-      surfaceTop: classic.surfaceTop,
-      surfaceBottom: classic.surfaceBottom,
-      creamHorizontalStops: classic.creamHorizontalStops,
-      creamVerticalStops: classic.creamVerticalStops,
-      edgeGlowRgba: classic.edgeGlowRgba,
-    });
-    expect(matchedBoard.edgeGlowRgba).toContain('255, 245, 220');
-    expect(resolveBoardCanvasLook('2', 'side-only').creamHorizontalStops).toEqual(classic.creamHorizontalStops);
-    expect(resolveBoardCanvasLook('2', 'matched').creamHorizontalStops).toEqual(
-      PLAY_SHELL_THEMES['2'].creamHorizontalStops,
-    );
-    expect(resolvePlayShellPresentation('3', 'side-only').bodyBackground).toBe(classic.bodyBackground);
-    expect(resolvePlayShellPresentation('3', 'matched').bodyBackground).toContain('255,245,220');
+  it('board match always follows board look id (complete row)', () => {
+    expect(resolveBoardMatchForTheme('1')).toBe('matched');
+    expect(resolveBoardMatchForTheme('4')).toBe('matched');
+    expect(resolveHubBoardMatchForSideLook('5')).toBe('side-only');
+    expect(resolveHubBoardMatchForSideLook('3')).toBe('matched');
   });
 
-  it('hub centre stays classic green in side-only and follows swatch in matched mode', () => {
-    expect(resolveHubCentrePalette('2', 'side-only')).toEqual(HUB_CENTRE_PALETTES['1']);
-    expect(resolveHubCentrePalette('2', 'matched').cardBg).toBe('#234036');
-    expect(resolveHubCentrePalette('3', 'side-only').centreBg).toBe(HUB_CENTRE_PALETTES['1'].centreBg);
-    expect(resolveHubCentrePalette('3', 'matched').centreBg).toBe('#1a4030');
+  it('resolves board canvas from board look only', () => {
+    expect(resolveBoardCanvasLook('1', 'matched').surfaceTop).toBe('#0f3d48');
+    expect(resolveBoardCanvasLook('4', 'matched').surfaceTop).toBe('#3d2e22');
+    expect(resolveBoardCanvasLook('3', 'matched').surfaceTop).toBe('#0a3828');
+  });
+
+  it('charcoal side uses flat dark panels', () => {
+    expect(PLAY_SHELL_THEMES['5'].sideCardBackground).toBe('#121110');
+    expect(PLAY_SHELL_THEMES['5'].bodyBackground).toBe('#0e0d0b');
+  });
+
+  it('uses side theme body background for shell presentation', () => {
+    expect(resolvePlayShellPresentation('5', 'matched').bodyBackground).toBe('#0e0d0b');
+    expect(resolvePlayShellPresentation('3', 'matched').bodyBackground).toBe('#12281f');
+  });
+
+  it('keeps hub centre on locked green when side look is charcoal', () => {
+    expect(resolveHubCentrePalette('5', 'side-only')).toEqual(LOCKED_HUB_CENTRE);
+    expect(resolveHubCentrePalette('2', 'matched').centreBg).toBe('#24162b');
+  });
+
+  it('identifies side-only swatch as charcoal (5) only', () => {
+    expect(isSideOnlyLookId('5')).toBe(true);
+    expect(isSideOnlyLookId('3')).toBe(false);
+  });
+
+  it('migrates retired warm parchment id to charcoal', () => {
+    expect(normalizeSideLookId('6')).toBe('5');
+    expect(migrateLegacyPlayThemeId('6')).toBe('5');
+    expect(migrateLegacyPlayThemeId('4')).toBe('5');
+    expect(migrateLegacyPlayThemeId('5')).toBe('5');
   });
 });
