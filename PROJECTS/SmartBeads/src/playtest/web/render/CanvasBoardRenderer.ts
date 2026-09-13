@@ -176,33 +176,35 @@ function drawOriginalMoveHintAura(
   );
 }
 
-/** Gold (fill) — gold centre glow + twin rings; same on cream and black beads. */
+/** Gold (fill) — Lovable-style snug gold wash + bright rim hugging the bead. */
 function drawGoldFillMoveHintAura(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   pieceRadius: number,
 ): void {
-  const glowRadius = pieceRadius + 12;
-  const aura = ctx.createRadialGradient(x, y, pieceRadius * 0.5, x, y, glowRadius);
-  aura.addColorStop(0, 'rgba(255, 205, 92, 0.40)');
-  aura.addColorStop(0.55, 'rgba(255, 195, 70, 0.22)');
+  const glowRadius = pieceRadius + 11;
+  const aura = ctx.createRadialGradient(x, y, pieceRadius * 0.78, x, y, glowRadius);
+  aura.addColorStop(0, 'rgba(255, 220, 120, 0.52)');
+  aura.addColorStop(0.42, 'rgba(255, 205, 92, 0.30)');
   aura.addColorStop(1, 'rgba(255, 180, 50, 0)');
   ctx.beginPath();
   ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
   ctx.fillStyle = aura;
   ctx.fill();
 
-  drawTwinMoveHintRings(
-    ctx,
-    x,
-    y,
-    pieceRadius,
-    'rgba(255, 215, 100, 0.90)',
-    'rgba(255, 205, 92, 0.52)',
-    2.5,
-    2,
-  );
+  const innerRadius = pieceRadius + 0.55;
+  ctx.beginPath();
+  ctx.arc(x, y, innerRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255, 228, 140, 0.98)';
+  ctx.lineWidth = 2.35;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(x, y, pieceRadius + 3.2, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255, 205, 92, 0.38)';
+  ctx.lineWidth = 1.35;
+  ctx.stroke();
 }
 
 function drawBeadMoveHintAura(
@@ -302,11 +304,15 @@ function drawPieceAt(
   ctx.globalAlpha = alpha;
   const look = getActiveBoardLookTheme();
   const bead = player === 'RED' ? look.creamBead : look.blackBead;
-  ctx.shadowColor = player === 'RED' ? 'rgba(0, 0, 0, 0.28)' : 'rgba(0, 0, 0, 0.55)';
-  ctx.shadowBlur = player === 'RED' ? 5 : 7;
+  const isBlack = player === 'BLUE';
+  ctx.shadowColor = isBlack ? 'rgba(0, 0, 0, 0.55)' : 'rgba(0, 0, 0, 0.28)';
+  ctx.shadowBlur = isBlack ? 8 : 5;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 2;
-  const grd = ctx.createRadialGradient(x - 4, y - 5, 2, x, y, radius);
+
+  const lightX = x - radius * 0.28;
+  const lightY = y - radius * 0.32;
+  const grd = ctx.createRadialGradient(lightX, lightY, isBlack ? radius * 0.1 : 2, x + radius * 0.04, y + radius * 0.06, radius);
   grd.addColorStop(0, bead.highlight);
   grd.addColorStop(0.55, bead.mid);
   grd.addColorStop(1, bead.shadow);
@@ -314,6 +320,40 @@ function drawPieceAt(
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fillStyle = grd;
   ctx.fill();
+
+  if (isBlack) {
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    const spec = ctx.createRadialGradient(
+      x - radius * 0.4,
+      y - radius * 0.44,
+      0,
+      x - radius * 0.22,
+      y - radius * 0.28,
+      radius * 0.62,
+    );
+    spec.addColorStop(0, 'rgba(255, 255, 255, 0.82)');
+    spec.addColorStop(0.32, 'rgba(255, 255, 255, 0.24)');
+    spec.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = spec;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius - 0.5, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.50)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius - 0.12, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+    ctx.lineWidth = 2.1;
+    ctx.stroke();
+  }
+
   ctx.restore();
 }
 

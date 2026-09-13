@@ -688,10 +688,59 @@ describe('CanvasBoardRenderer move feedback', () => {
       moveHintAura: 'gold-fill',
     });
 
-    expect(gradientStops.some(([pos, c]) => pos === 0 && c.includes('255, 205, 92'))).toBe(true);
+    expect(gradientStops.some(([pos, c]) => pos === 0 && c.includes('255, 220, 120'))).toBe(true);
     expect(gradientStops.some(([, c]) => c.includes('255, 242, 215'))).toBe(false);
-    expect(strokeStyles.some((s) => s.includes('255, 215, 100'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('255, 228, 140'))).toBe(true);
     expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(false);
     expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(false);
+  });
+
+  it('black beads get lamp-lit rim highlight on dark boards', () => {
+    const strokeStyles: string[] = [];
+    const gradient = { addColorStop: () => {} };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      arc: () => {},
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
+      set strokeStyle(v: string) { strokeStyles.push(v); },
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('8x4x6');
+    const board = engine.getState().board;
+    const canvas = {
+      width: 560,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'RED',
+      gameOver: false,
+      selectedId: null,
+      legalTargets: [],
+      chainPieceId: null,
+      anim: null,
+      turnPulse: 0,
+      lastMove: null,
+      capturePulses: [],
+      moveHintAura: 'off',
+    });
+
+    expect(strokeStyles.some((s) => s.includes('255, 255, 255'))).toBe(true);
   });
 });

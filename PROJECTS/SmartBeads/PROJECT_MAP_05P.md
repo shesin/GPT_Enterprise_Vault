@@ -145,7 +145,7 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`audio/SoundEffects.ts`** — fetches eight named WAV files from repo-root `public/audio/` via `SoundManifest.ts`; **default muted**; start overlay unlock; end celebration audio. Regenerate: `node scripts/generate-sfx-wavs.mjs`.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.
-- **`render/CanvasBoardRenderer.ts`** — canvas board draw. Turn/move colours → `GPT_PROJECT_DECISIONS_05P.md` §7–§8. Geometry: `v1GeometryCaptureAudit.test.ts`. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts`.
+- **`render/CanvasBoardRenderer.ts`** — canvas board draw; lamp-lit black beads; gold-fill move hint aura. Turn/move colours → `GPT_PROJECT_DECISIONS_05P.md` §7–§8. **TESTED** `CanvasBoardRenderer.moveFeedback.test.ts`.
 
 ### prototype/board4/
 
