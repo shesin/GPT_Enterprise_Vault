@@ -5,6 +5,10 @@ alwaysApply: true
 
 # Instruction fidelity
 
+## Vault boundary (hard)
+- **Only this repo** (`Gpt_Enterprise_Vault`). **Never** create, edit, move, or delete anything outside it — siblings, parent folders, or anywhere else on disk.
+- **Shell:** no write/delete/rename outside this repo unless **`Go — outside vault`** names the exact path and action.
+
 ## Mode (check first)
 - **Suggest / explain / plan / review / why / suggestion** → **words only. No repo edits.**
 - **Do / go / implement / fix** (scoped ask) → code or doc edits **only after** STOP block below.
