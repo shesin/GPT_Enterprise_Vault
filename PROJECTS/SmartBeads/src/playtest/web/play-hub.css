@@ -20,104 +20,141 @@
 }
 
 /*
- * Four layers (background ≠ UI):
- * page → rails → centre column → cards/tiles
- * accent = selection only
+ * Lovable OKLCH hub themes — JS applyHubThemeCssVars overrides at runtime.
+ * Static fallbacks below match lovableOklchTokens.ts.
  */
 
-/* 1 — Deep teal / blue-green (complete) */
+/* 1 — Classic Green */
 .play-hub[data-play-theme="1"] {
-  --hub-page-bg: #0a1418;
-  --hub-rail-bg: #0f2830;
-  --hub-centre-bg: #0f2830;
-  --hub-card-bg: #1a3a42;
-  --hub-card-hover: #204850;
-  --hub-border: rgba(201, 162, 78, 0.26);
-  --hub-border-soft: rgba(201, 162, 78, 0.12);
-  --hub-text: #e8f2f4;
-  --hub-muted: #8aa8b0;
-  --hub-centre-text: #e8f2f4;
-  --hub-centre-muted: #8aa8b0;
-  --hub-accent: #c9a24e;
-  --hub-accent-soft: rgba(201, 162, 78, 0.12);
-  --hub-accent-ring: rgba(201, 162, 78, 0.38);
-  --hub-brand: #c9a24e;
+  --hub-page-bg: oklch(0.13 0.025 158);
+  --hub-rail-bg: oklch(0.22 0.055 157);
+  --hub-centre-bg: oklch(0.30 0.07 157);
+  --hub-card-bg: oklch(0.25 0.055 66);
+  --hub-card-hover: oklch(0.30 0.07 157);
+  --hub-border: oklch(0.45 0.055 95 / 35%);
+  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
+  --hub-text: oklch(0.93 0.025 82);
+  --hub-muted: oklch(0.70 0.025 145);
+  --hub-centre-text: oklch(0.93 0.025 82);
+  --hub-centre-muted: oklch(0.70 0.025 145);
+  --hub-accent: oklch(0.72 0.105 78);
+  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
+  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
+  --hub-brand: oklch(0.72 0.105 78);
 }
 
-/* 2 — Deep plum / violet (complete) */
+/* 2 — Wood Classic */
 .play-hub[data-play-theme="2"] {
-  --hub-page-bg: #0e0a12;
-  --hub-rail-bg: #24162b;
-  --hub-centre-bg: #24162b;
-  --hub-card-bg: #321f3d;
-  --hub-card-hover: #3c2548;
-  --hub-border: rgba(201, 162, 78, 0.24);
-  --hub-border-soft: rgba(201, 162, 78, 0.12);
-  --hub-text: #f0e8f4;
-  --hub-muted: #a894b8;
-  --hub-centre-text: #f0e8f4;
-  --hub-centre-muted: #a894b8;
-  --hub-accent: #c9a24e;
-  --hub-accent-soft: rgba(201, 162, 78, 0.12);
-  --hub-accent-ring: rgba(201, 162, 78, 0.38);
-  --hub-brand: #c9a24e;
+  --hub-page-bg: oklch(0.13 0.025 158);
+  --hub-rail-bg: oklch(0.29 0.07 57);
+  --hub-centre-bg: oklch(0.39 0.075 63);
+  --hub-card-bg: oklch(0.27 0.07 55);
+  --hub-card-hover: oklch(0.39 0.075 63);
+  --hub-border: oklch(0.45 0.055 95 / 35%);
+  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
+  --hub-text: oklch(0.93 0.025 82);
+  --hub-muted: oklch(0.70 0.025 145);
+  --hub-centre-text: oklch(0.93 0.025 82);
+  --hub-centre-muted: oklch(0.70 0.025 145);
+  --hub-accent: oklch(0.72 0.105 78);
+  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
+  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
+  --hub-brand: oklch(0.72 0.105 78);
 }
 
-/* 3 — Forest & Gold (complete) */
+/* 3 — Ocean Blue */
 .play-hub[data-play-theme="3"] {
-  --hub-page-bg: #12281f;
-  --hub-rail-bg: #1a4030;
-  --hub-centre-bg: #1a3128;
-  --hub-card-bg: #1f4a38;
-  --hub-card-hover: #245542;
-  --hub-border: rgba(212, 168, 75, 0.22);
-  --hub-border-soft: rgba(212, 168, 75, 0.12);
-  --hub-text: #e8f0ea;
-  --hub-muted: #9bb5a6;
-  --hub-centre-text: #faf9f7;
-  --hub-centre-muted: #a8a49c;
-  --hub-accent: #c9a24e;
-  --hub-accent-soft: rgba(201, 162, 78, 0.14);
-  --hub-accent-ring: rgba(201, 162, 78, 0.42);
-  --hub-brand: #c9a24e;
+  --hub-page-bg: oklch(0.13 0.025 158);
+  --hub-rail-bg: oklch(0.23 0.055 225);
+  --hub-centre-bg: oklch(0.34 0.07 220);
+  --hub-card-bg: oklch(0.22 0.045 225);
+  --hub-card-hover: oklch(0.34 0.07 220);
+  --hub-border: oklch(0.45 0.055 95 / 35%);
+  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
+  --hub-text: oklch(0.93 0.025 82);
+  --hub-muted: oklch(0.70 0.025 145);
+  --hub-centre-text: oklch(0.93 0.025 82);
+  --hub-centre-muted: oklch(0.70 0.025 145);
+  --hub-accent: oklch(0.72 0.105 78);
+  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
+  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
+  --hub-brand: oklch(0.72 0.105 78);
 }
 
-/* 4 — Warm brown (complete) */
+/* 4 — Sandy Beige */
 .play-hub[data-play-theme="4"] {
-  --hub-page-bg: #120e0a;
-  --hub-rail-bg: #2a2018;
-  --hub-centre-bg: #2a2018;
-  --hub-card-bg: #3a2e24;
-  --hub-card-hover: #45362a;
-  --hub-border: rgba(201, 162, 78, 0.26);
-  --hub-border-soft: rgba(201, 162, 78, 0.12);
-  --hub-text: #f0ebe4;
-  --hub-muted: #a89882;
-  --hub-centre-text: #f0ebe4;
-  --hub-centre-muted: #a89882;
-  --hub-accent: #c9a24e;
-  --hub-accent-soft: rgba(201, 162, 78, 0.12);
-  --hub-accent-ring: rgba(201, 162, 78, 0.38);
-  --hub-brand: #c9a24e;
+  --hub-page-bg: oklch(0.13 0.025 158);
+  --hub-rail-bg: oklch(0.59 0.065 78);
+  --hub-centre-bg: oklch(0.72 0.055 84);
+  --hub-card-bg: oklch(0.43 0.07 65);
+  --hub-card-hover: oklch(0.72 0.055 84);
+  --hub-border: oklch(0.45 0.055 95 / 35%);
+  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
+  --hub-text: oklch(0.93 0.025 82);
+  --hub-muted: oklch(0.70 0.025 145);
+  --hub-centre-text: oklch(0.93 0.025 82);
+  --hub-centre-muted: oklch(0.70 0.025 145);
+  --hub-accent: oklch(0.72 0.105 78);
+  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
+  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
+  --hub-brand: oklch(0.72 0.105 78);
 }
 
-/* 5 — Charcoal + gold (side panels only; centre stays green via JS) */
+/* 5 — Forest Green */
 .play-hub[data-play-theme="5"] {
-  --hub-page-bg: #0e0d0b;
-  --hub-rail-bg: #121110;
-  --hub-centre-bg: #1a3128;
-  --hub-card-bg: #1f4a38;
-  --hub-card-hover: #245542;
-  --hub-border: rgba(201, 162, 78, 0.28);
-  --hub-border-soft: rgba(201, 162, 78, 0.14);
-  --hub-text: #f5f0e8;
-  --hub-muted: #8a8278;
-  --hub-centre-text: #faf9f7;
-  --hub-centre-muted: #a8a49c;
-  --hub-accent: #c9a24e;
-  --hub-accent-soft: rgba(201, 162, 78, 0.14);
-  --hub-accent-ring: rgba(201, 162, 78, 0.42);
-  --hub-brand: #c9a24e;
+  --hub-page-bg: oklch(0.13 0.025 158);
+  --hub-rail-bg: oklch(0.18 0.055 145);
+  --hub-centre-bg: oklch(0.25 0.08 145);
+  --hub-card-bg: oklch(0.18 0.045 130);
+  --hub-card-hover: oklch(0.25 0.08 145);
+  --hub-border: oklch(0.45 0.055 95 / 35%);
+  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
+  --hub-text: oklch(0.93 0.025 82);
+  --hub-muted: oklch(0.70 0.025 145);
+  --hub-centre-text: oklch(0.93 0.025 82);
+  --hub-centre-muted: oklch(0.70 0.025 145);
+  --hub-accent: oklch(0.72 0.105 78);
+  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
+  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
+  --hub-brand: oklch(0.72 0.105 78);
+}
+
+/* 6 — Purple Night */
+.play-hub[data-play-theme="6"] {
+  --hub-page-bg: oklch(0.13 0.025 158);
+  --hub-rail-bg: oklch(0.17 0.055 305);
+  --hub-centre-bg: oklch(0.25 0.07 310);
+  --hub-card-bg: oklch(0.20 0.055 300);
+  --hub-card-hover: oklch(0.25 0.07 310);
+  --hub-border: oklch(0.45 0.055 95 / 35%);
+  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
+  --hub-text: oklch(0.93 0.025 82);
+  --hub-muted: oklch(0.70 0.025 145);
+  --hub-centre-text: oklch(0.93 0.025 82);
+  --hub-centre-muted: oklch(0.70 0.025 145);
+  --hub-accent: oklch(0.72 0.105 78);
+  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
+  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
+  --hub-brand: oklch(0.72 0.105 78);
+}
+
+/* 7 — Charcoal + gold (side panels only; centre stays Classic Green via JS) */
+.play-hub[data-play-theme="7"] {
+  --hub-page-bg: oklch(0.13 0.025 158);
+  --hub-rail-bg: oklch(0.10 0.02 157 / 94%);
+  --hub-centre-bg: oklch(0.30 0.07 157);
+  --hub-card-bg: oklch(0.25 0.055 66);
+  --hub-card-hover: oklch(0.30 0.07 157);
+  --hub-border: oklch(0.45 0.055 95 / 35%);
+  --hub-border-soft: oklch(0.72 0.105 78 / 14%);
+  --hub-text: oklch(0.93 0.025 82);
+  --hub-muted: oklch(0.70 0.025 145);
+  --hub-centre-text: oklch(0.93 0.025 82);
+  --hub-centre-muted: oklch(0.70 0.025 145);
+  --hub-accent: oklch(0.72 0.105 78);
+  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
+  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
+  --hub-brand: oklch(0.72 0.105 78);
 }
 
 .play-hub,
@@ -125,16 +162,20 @@
 .play-hub[data-play-theme="2"],
 .play-hub[data-play-theme="3"],
 .play-hub[data-play-theme="4"],
-.play-hub[data-play-theme="5"] {
+.play-hub[data-play-theme="5"],
+.play-hub[data-play-theme="6"],
+.play-hub[data-play-theme="7"] {
   --hub-ad-bg: #ececec;
   --hub-ad-border: #d4d4d4;
 }
 
-body.hub-page:has(.play-hub[data-play-theme="1"]) { background: #0a1418; }
-body.hub-page:has(.play-hub[data-play-theme="2"]) { background: #0e0a12; }
-body.hub-page:has(.play-hub[data-play-theme="3"]) { background: #12281f; }
-body.hub-page:has(.play-hub[data-play-theme="4"]) { background: #120e0a; }
-body.hub-page:has(.play-hub[data-play-theme="5"]) { background: #0e0d0b; }
+body.hub-page:has(.play-hub[data-play-theme="1"]) { background: oklch(0.13 0.025 158); }
+body.hub-page:has(.play-hub[data-play-theme="2"]) { background: oklch(0.13 0.025 158); }
+body.hub-page:has(.play-hub[data-play-theme="3"]) { background: oklch(0.13 0.025 158); }
+body.hub-page:has(.play-hub[data-play-theme="4"]) { background: oklch(0.13 0.025 158); }
+body.hub-page:has(.play-hub[data-play-theme="5"]) { background: oklch(0.13 0.025 158); }
+body.hub-page:has(.play-hub[data-play-theme="6"]) { background: oklch(0.13 0.025 158); }
+body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025 158); }
 
 .play-hub.is-hidden {
   display: none;

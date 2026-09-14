@@ -1,8 +1,5 @@
 import { BoardDefinition, Move, Player } from '../../../models/GameState';
-import {
-  CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE,
-  getClassicBoardLineGold,
-} from '../layout/boardLineGoldThemes';
+import { getActiveBeadSet } from '../layout/beadSetThemes';
 import { getActiveBoardLookTheme } from '../layout/boardLookThemes';
 import { readPlayBoardMatchMode } from '../layout/playShellThemes';
 import { type MoveHintAuraStyle, readMoveHintAuraStyle } from '../layout/moveHintAuraThemes';
@@ -238,12 +235,20 @@ function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: num
   ctx.fill();
 }
 
-function drawBoardInnerGoldBorder(ctx: CanvasRenderingContext2D, w: number, h: number): void {
-  const lineGold = getClassicBoardLineGold();
+function drawBoardFrame(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  frameOuter: string,
+  frameInner: string,
+): void {
   ctx.save();
-  ctx.strokeStyle = lineGold.lineRgba;
+  ctx.strokeStyle = frameOuter;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1.5, 1.5, w - 3, h - 3);
+  ctx.strokeStyle = frameInner;
   ctx.lineWidth = 1.5;
-  ctx.strokeRect(1.25, 1.25, w - 2.5, h - 2.5);
+  ctx.strokeRect(4.5, 4.5, w - 9, h - 9);
   ctx.restore();
 }
 
@@ -302,8 +307,8 @@ function drawPieceAt(
 ): void {
   ctx.save();
   ctx.globalAlpha = alpha;
-  const look = getActiveBoardLookTheme();
-  const bead = player === 'RED' ? look.creamBead : look.blackBead;
+  const beadSet = getActiveBeadSet();
+  const bead = player === 'RED' ? beadSet.creamBead : beadSet.blackBead;
   const isBlack = player === 'BLUE';
   ctx.shadowColor = isBlack ? 'rgba(0, 0, 0, 0.55)' : 'rgba(0, 0, 0, 0.28)';
   ctx.shadowBlur = isBlack ? 8 : 5;
@@ -380,7 +385,6 @@ export function drawCanvasBoard(
 
   ctx.clearRect(0, 0, w, h);
   const look = getActiveBoardLookTheme();
-  const lineGold = getClassicBoardLineGold();
   const boardMatch = readPlayBoardMatchMode();
   const g =
     boardMatch === 'matched'
@@ -394,7 +398,7 @@ export function drawCanvasBoard(
   if (boardMatch === 'side-only') {
     drawCreamHalfTint(ctx, w, h, visualProfile.turnWashAxis ?? 'horizontal');
   }
-  drawBoardInnerGoldBorder(ctx, w, h);
+  drawBoardFrame(ctx, w, h, look.frameOuter, look.frameInner);
 
   const animating = anim !== null && anim.t < 1;
   const turnIdleHighlight =
@@ -408,7 +412,7 @@ export function drawCanvasBoard(
     : new Set<number>();
   const matchStartFlash = turnIdleHighlight && showTurnStartRings;
 
-  ctx.strokeStyle = lineGold.lineRgba;
+  ctx.strokeStyle = look.lineColor;
   ctx.lineWidth = 2;
   for (const conn of board.connections) {
     const from = board.intersections[conn.from];
@@ -457,8 +461,10 @@ export function drawCanvasBoard(
     const nodeRadius = node.occupant ? 3.5 : 4;
     ctx.beginPath();
     ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
-    ctx.fillStyle = node.occupant ? lineGold.nodeRgba : CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE;
+    ctx.fillStyle = look.lineColor;
+    ctx.globalAlpha = node.occupant ? 0.46 : 0.24;
     ctx.fill();
+    ctx.globalAlpha = 1;
 
     const selectedOccupant =
       selectedId !== null ? board.intersections[selectedId]?.occupant : undefined;

@@ -7,6 +7,7 @@ import {
   resolveEngineVariant,
 } from '../../config/BoardCatalog';
 import { cloneBoardDefinition, findJumpPath, Move, Player } from '../../models/GameState';
+import { isBeadSetId, readBeadSetId, writeBeadSetId } from './layout/beadSetThemes';
 import {
   applyPlayLookFromSwatch,
   applyPlayLookState,
@@ -2235,6 +2236,17 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     });
   }
 
+  function initBeadSetSetting(): void {
+    const select = document.getElementById('bead-set-select') as HTMLSelectElement | null;
+    if (!select) return;
+    select.value = readBeadSetId();
+    select.addEventListener('change', () => {
+      if (!isBeadSetId(select.value)) return;
+      writeBeadSetId(select.value);
+      drawBoard();
+    });
+  }
+
   function initPlayShellTheme(): void {
     if (!playShell) return;
     const boardThemeSetting = document.getElementById('play-theme-setting');
@@ -2277,6 +2289,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     applyPremiumShell(savedPremium);
     initPlayShellTheme();
     initMoveHintAuraSetting();
+    initBeadSetSetting();
   }
 
   syncBoardTitle();

@@ -5,13 +5,7 @@ import {
   type BoardCatalogEntry,
 } from '../../config/BoardCatalog';
 import type { GameFeatureSettings } from './feature/GameFeatureSettings';
-import {
-  applyPlayLookState,
-  isPlayShellThemeId,
-  readStoredBoardLookId,
-  readStoredSideLookId,
-  type PlayShellThemeId,
-} from './layout/playShellThemes';
+import { applyPlayLookState, readStoredBoardLookId, readStoredSideLookId } from './layout/playShellThemes';
 
 export type HubLaunchAction = 'play' | 'coach' | 'spectate';
 
@@ -160,26 +154,7 @@ function wireHubModeHelp(helpBtn: HTMLButtonElement, helpText: HTMLParagraphElem
   });
 }
 
-function resolveHubPlayThemeId(): PlayShellThemeId {
-  const params = new URLSearchParams(window.location.search);
-  const fromUrl = params.get('playTheme') ?? params.get('hubTheme');
-  if (isPlayShellThemeId(fromUrl)) return fromUrl;
-  return readStoredSideLookId();
-}
-
 function wireHubThemePicker(): void {
-  const hub = document.getElementById('play-hub');
-  if (!hub) return;
-
-  const sideFromUrl = resolveHubPlayThemeId();
-  if (sideFromUrl === '5') {
-    applyPlayLookState(readStoredBoardLookId(), '5');
-    return;
-  }
-  if (isPlayShellThemeId(sideFromUrl)) {
-    applyPlayLookState(sideFromUrl, sideFromUrl);
-    return;
-  }
   applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
 }
 

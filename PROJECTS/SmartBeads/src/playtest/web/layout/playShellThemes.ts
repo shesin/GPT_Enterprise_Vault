@@ -1,13 +1,11 @@
-/** Unified board + side panel presets — preview until locked in DECISIONS. */
+/** Play look — 6 complete (board + side, one colour) + charcoal side-only (7). Lovable OKLCH. */
 
-export type PlayShellThemeId = '1' | '2' | '3' | '4' | '5';
+import { BEAD_SET_THEMES, DEFAULT_BEAD_SET_ID } from './beadSetThemes';
+import { LOVABLE_BOARD_THEMES, LOVABLE_SHELL } from './lovableOklchTokens';
 
-/** Board canvas presets — complete row only (1–4). */
-export type BoardLookThemeId = '1' | '2' | '3' | '4';
-
+export type BoardLookThemeId = '1' | '2' | '3' | '4' | '5' | '6';
+export type PlayShellThemeId = BoardLookThemeId | '7';
 export type PlayLookGroup = 'complete' | 'side-only';
-
-/** matched = board look from complete row; side-only = hub centre locked green while side is 5/6. */
 export type PlayBoardMatchMode = 'matched' | 'side-only';
 
 export type CreamHalfStop = readonly [position: number, color: string];
@@ -24,6 +22,9 @@ export interface PlayShellTheme {
   lookGroup: PlayLookGroup;
   surfaceTop: string;
   surfaceBottom: string;
+  frameOuter: string;
+  frameInner: string;
+  lineColor: string;
   edgeGlowRgba: string;
   creamHorizontalStops: readonly CreamHalfStop[];
   creamVerticalStops: readonly CreamHalfStop[];
@@ -43,272 +44,104 @@ export interface PlayShellTheme {
 export interface BoardCanvasLook {
   surfaceTop: string;
   surfaceBottom: string;
+  frameOuter: string;
+  frameInner: string;
+  lineColor: string;
   creamHorizontalStops: readonly CreamHalfStop[];
   creamVerticalStops: readonly CreamHalfStop[];
   edgeGlowRgba: string;
 }
 
-const CAMP_EDGE_CREAM: readonly CreamHalfStop[] = [
-  [0, 'rgba(255,245,220,0.12)'],
-  [0.15, 'rgba(255,245,220,0.05)'],
-  [0.28, 'rgba(255,245,220,0)'],
-  [1, 'rgba(0,0,0,0)'],
-];
-const CAMP_EDGE_CREAM_V: readonly CreamHalfStop[] = [
-  [0, 'rgba(0,0,0,0)'],
-  [0.72, 'rgba(255,245,220,0)'],
-  [0.85, 'rgba(255,245,220,0.05)'],
-  [1, 'rgba(255,245,220,0.12)'],
-];
-
-/** Complete (matched) looks — solid board; no asymmetric camp wash. */
 const FLAT_CREAM_STOPS: readonly CreamHalfStop[] = [
   [0, 'rgba(0,0,0,0)'],
   [1, 'rgba(0,0,0,0)'],
 ];
 
-const CLASSIC_BEADS = {
-  creamBead: { highlight: '#fffaf0', mid: '#ebe2cf', shadow: '#b7ab92' },
-  blackBead: { highlight: '#5a4538', mid: '#241812', shadow: '#0a0604' },
+const DEFAULT_BEADS = BEAD_SET_THEMES[DEFAULT_BEAD_SET_ID];
+
+const CHARCOAL_SIDE = {
+  label: 'Charcoal + gold accents',
+  bodyBackground: 'oklch(0.11 0.01 60)',
+  sideCardBackground: 'linear-gradient(165deg, oklch(0.16 0.012 60), oklch(0.11 0.01 60))',
+  sideCardBorder: LOVABLE_SHELL.border,
+  sideCardGlow: `inset 0 1px 0 ${LOVABLE_SHELL.gold}28`,
+  playAiBg: 'oklch(0.13 0.012 60)',
+  playAiBorder: LOVABLE_SHELL.border,
+  playHumanBg: `${LOVABLE_SHELL.gold}18`,
+  playHumanBorder: `${LOVABLE_SHELL.gold}52`,
+  playHumanAccent: LOVABLE_SHELL.gold,
+  railBg: 'oklch(0.13 0.012 60)',
 } as const;
 
-const CLASSIC_DARK_TOP = '#0a3828';
-const CLASSIC_DARK_BOTTOM = '#052818';
+function buildCompleteTheme(index: number, id: BoardLookThemeId): PlayShellTheme {
+  const t = LOVABLE_BOARD_THEMES[index];
+  return {
+    id,
+    label: t.label,
+    lookGroup: 'complete',
+    surfaceTop: t.surface,
+    surfaceBottom: t.shadow,
+    frameOuter: t.surface,
+    frameInner: t.shadow,
+    lineColor: t.lines,
+    edgeGlowRgba: 'rgba(0,0,0,0)',
+    creamHorizontalStops: FLAT_CREAM_STOPS,
+    creamVerticalStops: FLAT_CREAM_STOPS,
+    bodyBackground: t.shadow,
+    sideCardBackground: `linear-gradient(165deg, ${t.surface}, ${t.shadow})`,
+    sideCardBorder: LOVABLE_SHELL.border,
+    sideCardGlow: `inset 0 1px 0 ${t.lines}40`,
+    playAiBg: t.shadow,
+    playAiBorder: LOVABLE_SHELL.border,
+    playHumanBg: `${LOVABLE_SHELL.gold}18`,
+    playHumanBorder: `${LOVABLE_SHELL.gold}52`,
+    playHumanAccent: LOVABLE_SHELL.gold,
+    creamBead: DEFAULT_BEADS.creamBead,
+    blackBead: DEFAULT_BEADS.blackBead,
+  };
+}
 
-/** Side-only board canvas — always forest green; independent of look swatch. */
-export const SIDE_ONLY_BOARD_LOOK: BoardCanvasLook = {
-  surfaceTop: CLASSIC_DARK_TOP,
-  surfaceBottom: CLASSIC_DARK_BOTTOM,
-  creamHorizontalStops: CAMP_EDGE_CREAM,
-  creamVerticalStops: CAMP_EDGE_CREAM_V,
-  edgeGlowRgba: 'rgba(235, 226, 207, 0.42)',
-};
+function buildCharcoalSideTheme(): PlayShellTheme {
+  return {
+    id: '7',
+    label: CHARCOAL_SIDE.label,
+    lookGroup: 'side-only',
+    surfaceTop: LOVABLE_BOARD_THEMES[0].surface,
+    surfaceBottom: LOVABLE_BOARD_THEMES[0].shadow,
+    frameOuter: LOVABLE_BOARD_THEMES[0].surface,
+    frameInner: LOVABLE_BOARD_THEMES[0].shadow,
+    lineColor: LOVABLE_SHELL.gold,
+    edgeGlowRgba: 'rgba(0,0,0,0)',
+    creamHorizontalStops: FLAT_CREAM_STOPS,
+    creamVerticalStops: FLAT_CREAM_STOPS,
+    bodyBackground: CHARCOAL_SIDE.bodyBackground,
+    sideCardBackground: CHARCOAL_SIDE.sideCardBackground,
+    sideCardBorder: CHARCOAL_SIDE.sideCardBorder,
+    sideCardGlow: CHARCOAL_SIDE.sideCardGlow,
+    playAiBg: CHARCOAL_SIDE.playAiBg,
+    playAiBorder: CHARCOAL_SIDE.playAiBorder,
+    playHumanBg: CHARCOAL_SIDE.playHumanBg,
+    playHumanBorder: CHARCOAL_SIDE.playHumanBorder,
+    playHumanAccent: CHARCOAL_SIDE.playHumanAccent,
+    creamBead: DEFAULT_BEADS.creamBead,
+    blackBead: DEFAULT_BEADS.blackBead,
+  };
+}
 
-const TEAL_CREAM_H: readonly CreamHalfStop[] = [
-  [0, 'rgba(180,230,240,0.16)'],
-  [0.35, 'rgba(180,230,240,0.06)'],
-  [0.5, 'rgba(180,230,240,0)'],
-  [1, 'rgba(0,0,0,0)'],
-];
-const TEAL_CREAM_V: readonly CreamHalfStop[] = [
-  [0, 'rgba(0,0,0,0)'],
-  [0.5, 'rgba(180,230,240,0)'],
-  [0.65, 'rgba(180,230,240,0.08)'],
-  [1, 'rgba(180,230,240,0.14)'],
-];
-
-const PLUM_CREAM_H: readonly CreamHalfStop[] = [
-  [0, 'rgba(220,180,240,0.14)'],
-  [0.35, 'rgba(220,180,240,0.05)'],
-  [0.5, 'rgba(220,180,240,0)'],
-  [1, 'rgba(0,0,0,0)'],
-];
-const PLUM_CREAM_V: readonly CreamHalfStop[] = [
-  [0, 'rgba(0,0,0,0)'],
-  [0.5, 'rgba(220,180,240,0)'],
-  [0.65, 'rgba(220,180,240,0.07)'],
-  [1, 'rgba(220,180,240,0.12)'],
-];
-
-const FOREST_CREAM_H: readonly CreamHalfStop[] = [
-  [0, 'rgba(255,242,215,0.18)'],
-  [0.33, 'rgba(255,242,215,0.07)'],
-  [0.45, 'rgba(255,242,215,0)'],
-  [1, 'rgba(0,0,0,0)'],
-];
-const FOREST_CREAM_V: readonly CreamHalfStop[] = [
-  [0, 'rgba(0,0,0,0)'],
-  [0.55, 'rgba(255,242,215,0)'],
-  [0.67, 'rgba(255,242,215,0.09)'],
-  [1, 'rgba(255,242,215,0.18)'],
-];
-
-const BROWN_CREAM_H: readonly CreamHalfStop[] = [
-  [0, 'rgba(255,220,180,0.14)'],
-  [0.35, 'rgba(255,220,180,0.05)'],
-  [0.5, 'rgba(255,220,180,0)'],
-  [1, 'rgba(0,0,0,0)'],
-];
-const BROWN_CREAM_V: readonly CreamHalfStop[] = [
-  [0, 'rgba(0,0,0,0)'],
-  [0.5, 'rgba(255,220,180,0)'],
-  [0.65, 'rgba(255,220,180,0.08)'],
-  [1, 'rgba(255,220,180,0.14)'],
-];
-
-const PARCHMENT_CREAM_H: readonly CreamHalfStop[] = [
-  [0, 'rgba(255,242,215,0.20)'],
-  [0.33, 'rgba(255,242,215,0.08)'],
-  [0.45, 'rgba(255,242,215,0)'],
-  [1, 'rgba(0,0,0,0)'],
-];
-const PARCHMENT_CREAM_V: readonly CreamHalfStop[] = [
-  [0, 'rgba(0,0,0,0)'],
-  [0.55, 'rgba(255,242,215,0)'],
-  [0.67, 'rgba(255,242,215,0.10)'],
-  [1, 'rgba(255,242,215,0.20)'],
-];
-
-export const DEFAULT_BOARD_LOOK_ID: BoardLookThemeId = '3';
-export const DEFAULT_SIDE_LOOK_ID: PlayShellThemeId = '5';
+export const DEFAULT_BOARD_LOOK_ID: BoardLookThemeId = '1';
+export const DEFAULT_SIDE_LOOK_ID: PlayShellThemeId = '1';
 export const DEFAULT_PLAY_SHELL_THEME_ID: PlayShellThemeId = DEFAULT_SIDE_LOOK_ID;
+export const SIDE_ONLY_LOOK_ID: PlayShellThemeId = '7';
 
 export const PLAY_SHELL_THEMES: Record<PlayShellThemeId, PlayShellTheme> = {
-  '1': {
-    id: '1',
-    label: 'Deep teal / blue-green',
-    lookGroup: 'complete',
-    surfaceTop: '#0f3d48',
-    surfaceBottom: '#0d3842',
-    edgeGlowRgba: 'rgba(180, 230, 240, 0.28)',
-    creamHorizontalStops: TEAL_CREAM_H,
-    creamVerticalStops: TEAL_CREAM_V,
-    bodyBackground: '#0a1418',
-    sideCardBackground: 'linear-gradient(165deg, #143840, #0f2830)',
-    sideCardBorder: 'rgba(201, 162, 78, 0.26)',
-    sideCardGlow: 'inset 0 1px 0 rgba(201, 162, 78, 0.10)',
-    playAiBg: 'rgba(10, 22, 28, 0.96)',
-    playAiBorder: 'rgba(201, 162, 78, 0.18)',
-    playHumanBg: 'rgba(201, 162, 78, 0.08)',
-    playHumanBorder: 'rgba(201, 162, 78, 0.32)',
-    playHumanAccent: '#c9a24e',
-    ...CLASSIC_BEADS,
-  },
-  '2': {
-    id: '2',
-    label: 'Deep plum / violet',
-    lookGroup: 'complete',
-    surfaceTop: '#24162b',
-    surfaceBottom: '#201226',
-    edgeGlowRgba: 'rgba(220, 180, 240, 0.26)',
-    creamHorizontalStops: PLUM_CREAM_H,
-    creamVerticalStops: PLUM_CREAM_V,
-    bodyBackground: '#0e0a12',
-    sideCardBackground: 'linear-gradient(165deg, #2a1932, #24162b)',
-    sideCardBorder: 'rgba(201, 162, 78, 0.24)',
-    sideCardGlow: 'inset 0 1px 0 rgba(201, 162, 78, 0.08)',
-    playAiBg: 'rgba(18, 10, 22, 0.96)',
-    playAiBorder: 'rgba(201, 162, 78, 0.16)',
-    playHumanBg: 'rgba(201, 162, 78, 0.07)',
-    playHumanBorder: 'rgba(201, 162, 78, 0.30)',
-    playHumanAccent: '#c9a24e',
-    ...CLASSIC_BEADS,
-  },
-  '3': {
-    id: '3',
-    label: 'Forest & Gold',
-    lookGroup: 'complete',
-    surfaceTop: CLASSIC_DARK_TOP,
-    surfaceBottom: CLASSIC_DARK_BOTTOM,
-    edgeGlowRgba: 'rgba(235, 226, 207, 0.42)',
-    creamHorizontalStops: FOREST_CREAM_H,
-    creamVerticalStops: FOREST_CREAM_V,
-    bodyBackground: '#12281f',
-    sideCardBackground: 'linear-gradient(165deg, #1a4030, #123528)',
-    sideCardBorder: 'rgba(212, 168, 75, 0.22)',
-    sideCardGlow: '0 0 14px rgba(235, 226, 207, 0.14), inset 0 0 0 1px rgba(235, 226, 207, 0.06)',
-    playAiBg: 'rgba(14, 28, 22, 0.96)',
-    playAiBorder: 'rgba(201, 162, 78, 0.18)',
-    playHumanBg: 'rgba(201, 162, 78, 0.08)',
-    playHumanBorder: 'rgba(201, 162, 78, 0.32)',
-    playHumanAccent: '#c9a24e',
-    ...CLASSIC_BEADS,
-  },
-  '4': {
-    id: '4',
-    label: 'Warm brown',
-    lookGroup: 'complete',
-    surfaceTop: '#3d2e22',
-    surfaceBottom: '#2a1f16',
-    edgeGlowRgba: 'rgba(212, 168, 75, 0.32)',
-    creamHorizontalStops: BROWN_CREAM_H,
-    creamVerticalStops: BROWN_CREAM_V,
-    bodyBackground: '#120e0a',
-    sideCardBackground: 'linear-gradient(165deg, #352820, #2a1f16)',
-    sideCardBorder: 'rgba(201, 162, 78, 0.26)',
-    sideCardGlow: 'inset 0 1px 0 rgba(201, 162, 78, 0.08)',
-    playAiBg: 'rgba(22, 16, 12, 0.96)',
-    playAiBorder: 'rgba(201, 162, 78, 0.18)',
-    playHumanBg: 'rgba(201, 162, 78, 0.08)',
-    playHumanBorder: 'rgba(201, 162, 78, 0.30)',
-    playHumanAccent: '#c9a24e',
-    ...CLASSIC_BEADS,
-  },
-  '5': {
-    id: '5',
-    label: 'Charcoal + gold accents',
-    lookGroup: 'side-only',
-    surfaceTop: CLASSIC_DARK_TOP,
-    surfaceBottom: CLASSIC_DARK_BOTTOM,
-    edgeGlowRgba: 'rgba(201, 162, 78, 0.22)',
-    creamHorizontalStops: CAMP_EDGE_CREAM,
-    creamVerticalStops: CAMP_EDGE_CREAM_V,
-    bodyBackground: '#0e0d0b',
-    sideCardBackground: '#121110',
-    sideCardBorder: 'rgba(201, 162, 78, 0.32)',
-    sideCardGlow: 'inset 0 1px 0 rgba(201, 162, 78, 0.10)',
-    playAiBg: '#161412',
-    playAiBorder: 'rgba(201, 162, 78, 0.16)',
-    playHumanBg: 'rgba(201, 162, 78, 0.07)',
-    playHumanBorder: 'rgba(201, 162, 78, 0.34)',
-    playHumanAccent: '#c9a24e',
-    ...CLASSIC_BEADS,
-  },
+  '1': buildCompleteTheme(0, '1'),
+  '2': buildCompleteTheme(1, '2'),
+  '3': buildCompleteTheme(2, '3'),
+  '4': buildCompleteTheme(3, '4'),
+  '5': buildCompleteTheme(4, '5'),
+  '6': buildCompleteTheme(5, '6'),
+  '7': buildCharcoalSideTheme(),
 };
-
-/** Hub centre when board is locked to snapshot green (side-only group). */
-export const LOCKED_HUB_CENTRE: HubCentrePalette = {
-  pageBg: '#12281f',
-  centreBg: '#1a3128',
-  cardBg: '#1f4a38',
-  cardHover: '#245542',
-  centreText: '#faf9f7',
-  centreMuted: '#a8a49c',
-};
-
-/** Maps pre-v2 swatch ids (forest green / old forest & gold / brown / tan) to v2 ids. */
-const LEGACY_V1_THEME_MAP: Record<string, PlayShellThemeId> = {
-  '1': '3',
-  '2': '5',
-  '3': '4',
-  '4': '5',
-};
-
-export const PLAY_THEME_STORAGE_KEY = 'sb-play-theme-v2';
-export const PLAY_BOARD_LOOK_STORAGE_KEY = 'sb-play-board-look';
-export const PLAY_SIDE_LOOK_STORAGE_KEY = 'sb-play-side-look';
-const LEGACY_PLAY_THEME_STORAGE_KEY = 'sb-play-theme';
-
-export function isPlayBoardMatchMode(value: string | null | undefined): value is PlayBoardMatchMode {
-  return value === 'matched' || value === 'side-only';
-}
-
-export function isBoardLookThemeId(value: string | null | undefined): value is BoardLookThemeId {
-  return value === '1' || value === '2' || value === '3' || value === '4';
-}
-
-export function isSideOnlyLookId(value: string | null | undefined): value is '5' {
-  return value === '5';
-}
-
-/** Retired warm parchment (6) → charcoal side look. */
-export function normalizeSideLookId(value: string | null | undefined): PlayShellThemeId {
-  if (value === '6') return '5';
-  if (isPlayShellThemeId(value)) return value;
-  return DEFAULT_SIDE_LOOK_ID;
-}
-
-export function readPlayBoardMatchMode(): PlayBoardMatchMode {
-  return resolveBoardMatchForTheme(readBoardLookThemeId());
-}
-
-export function resolveBoardMatchForTheme(themeId: BoardLookThemeId): PlayBoardMatchMode {
-  return 'matched';
-}
-
-export function resolveHubBoardMatchForSideLook(sideLookId: PlayShellThemeId): PlayBoardMatchMode {
-  return isSideOnlyLookId(sideLookId) ? 'side-only' : 'matched';
-}
 
 export interface HubRailPalette {
   railBg: string;
@@ -331,122 +164,107 @@ export interface HubCentrePalette {
   centreMuted: string;
 }
 
+function buildHubCentrePalette(id: BoardLookThemeId): HubCentrePalette {
+  const theme = PLAY_SHELL_THEMES[id];
+  return {
+    pageBg: theme.bodyBackground,
+    centreBg: theme.surfaceTop,
+    cardBg: theme.surfaceTop,
+    cardHover: theme.surfaceBottom,
+    centreText: LOVABLE_SHELL.text,
+    centreMuted: LOVABLE_SHELL.muted,
+  };
+}
+
+function buildHubRailPalette(id: PlayShellThemeId): HubRailPalette {
+  const theme = PLAY_SHELL_THEMES[id];
+  const railBg = id === '7' ? CHARCOAL_SIDE.railBg : theme.bodyBackground;
+  return {
+    railBg,
+    text: LOVABLE_SHELL.text,
+    muted: LOVABLE_SHELL.muted,
+    border: LOVABLE_SHELL.border,
+    borderSoft: `${LOVABLE_SHELL.gold}1f`,
+    brand: LOVABLE_SHELL.gold,
+    accent: LOVABLE_SHELL.gold,
+    accentSoft: `${LOVABLE_SHELL.gold}24`,
+    accentRing: `${LOVABLE_SHELL.gold}61`,
+  };
+}
+
 export const HUB_RAIL_PALETTES: Record<PlayShellThemeId, HubRailPalette> = {
-  '1': {
-    railBg: '#0f2830',
-    text: '#e8f2f4',
-    muted: '#8aa8b0',
-    border: 'rgba(201, 162, 78, 0.26)',
-    borderSoft: 'rgba(201, 162, 78, 0.12)',
-    brand: '#c9a24e',
-    accent: '#c9a24e',
-    accentSoft: 'rgba(201, 162, 78, 0.12)',
-    accentRing: 'rgba(201, 162, 78, 0.38)',
-  },
-  '2': {
-    railBg: '#24162b',
-    text: '#f0e8f4',
-    muted: '#a894b8',
-    border: 'rgba(201, 162, 78, 0.24)',
-    borderSoft: 'rgba(201, 162, 78, 0.12)',
-    brand: '#c9a24e',
-    accent: '#c9a24e',
-    accentSoft: 'rgba(201, 162, 78, 0.12)',
-    accentRing: 'rgba(201, 162, 78, 0.38)',
-  },
-  '3': {
-    railBg: '#1a4030',
-    text: '#e8f0ea',
-    muted: '#9bb5a6',
-    border: 'rgba(212, 168, 75, 0.22)',
-    borderSoft: 'rgba(212, 168, 75, 0.12)',
-    brand: '#c9a24e',
-    accent: '#c9a24e',
-    accentSoft: 'rgba(201, 162, 78, 0.14)',
-    accentRing: 'rgba(201, 162, 78, 0.42)',
-  },
-  '4': {
-    railBg: '#2a2018',
-    text: '#f0ebe4',
-    muted: '#a89882',
-    border: 'rgba(201, 162, 78, 0.26)',
-    borderSoft: 'rgba(201, 162, 78, 0.12)',
-    brand: '#c9a24e',
-    accent: '#c9a24e',
-    accentSoft: 'rgba(201, 162, 78, 0.12)',
-    accentRing: 'rgba(201, 162, 78, 0.38)',
-  },
-  '5': {
-    railBg: '#121110',
-    text: '#f5f0e8',
-    muted: '#8a8278',
-    border: 'rgba(201, 162, 78, 0.28)',
-    borderSoft: 'rgba(201, 162, 78, 0.14)',
-    brand: '#c9a24e',
-    accent: '#c9a24e',
-    accentSoft: 'rgba(201, 162, 78, 0.14)',
-    accentRing: 'rgba(201, 162, 78, 0.42)',
-  },
+  '1': buildHubRailPalette('1'),
+  '2': buildHubRailPalette('2'),
+  '3': buildHubRailPalette('3'),
+  '4': buildHubRailPalette('4'),
+  '5': buildHubRailPalette('5'),
+  '6': buildHubRailPalette('6'),
+  '7': buildHubRailPalette('7'),
 };
 
-export const HUB_CENTRE_PALETTES: Record<PlayShellThemeId, HubCentrePalette> = {
-  '1': {
-    pageBg: '#0a1418',
-    centreBg: '#0f2830',
-    cardBg: '#1a3a42',
-    cardHover: '#204850',
-    centreText: '#e8f2f4',
-    centreMuted: '#8aa8b0',
-  },
-  '2': {
-    pageBg: '#0e0a12',
-    centreBg: '#24162b',
-    cardBg: '#321f3d',
-    cardHover: '#3c2548',
-    centreText: '#f0e8f4',
-    centreMuted: '#a894b8',
-  },
-  '3': {
-    pageBg: '#12281f',
-    centreBg: '#1a3128',
-    cardBg: '#1f4a38',
-    cardHover: '#245542',
-    centreText: '#faf9f7',
-    centreMuted: '#a8a49c',
-  },
-  '4': {
-    pageBg: '#120e0a',
-    centreBg: '#2a2018',
-    cardBg: '#3a2e24',
-    cardHover: '#45362a',
-    centreText: '#f0ebe4',
-    centreMuted: '#a89882',
-  },
-  '5': {
-    pageBg: '#0e0d0b',
-    centreBg: '#141210',
-    cardBg: '#161412',
-    cardHover: '#1e1b18',
-    centreText: '#f5f0e8',
-    centreMuted: '#8a8278',
-  },
+export const HUB_CENTRE_PALETTES: Record<BoardLookThemeId, HubCentrePalette> = {
+  '1': buildHubCentrePalette('1'),
+  '2': buildHubCentrePalette('2'),
+  '3': buildHubCentrePalette('3'),
+  '4': buildHubCentrePalette('4'),
+  '5': buildHubCentrePalette('5'),
+  '6': buildHubCentrePalette('6'),
 };
+
+export const PLAY_THEME_STORAGE_KEY = 'sb-play-theme-v2';
+export const PLAY_BOARD_LOOK_STORAGE_KEY = 'sb-play-board-look';
+export const PLAY_SIDE_LOOK_STORAGE_KEY = 'sb-play-side-look-v3';
+const LEGACY_SIDE_LOOK_STORAGE_KEY = 'sb-play-side-look';
+const LEGACY_PLAY_THEME_STORAGE_KEY = 'sb-play-theme';
+
+export function isPlayBoardMatchMode(value: string | null | undefined): value is PlayBoardMatchMode {
+  return value === 'matched' || value === 'side-only';
+}
+
+export function isBoardLookThemeId(value: string | null | undefined): value is BoardLookThemeId {
+  return value === '1' || value === '2' || value === '3' || value === '4' || value === '5' || value === '6';
+}
+
+export function isSideOnlyLookId(value: string | null | undefined): value is '7' {
+  return value === '7';
+}
+
+export function isPlayShellThemeId(value: string | null | undefined): value is PlayShellThemeId {
+  return isBoardLookThemeId(value) || value === '7';
+}
+
+export function normalizeSideLookId(value: string | null | undefined): PlayShellThemeId {
+  if (isPlayShellThemeId(value)) return value;
+  return DEFAULT_SIDE_LOOK_ID;
+}
+
+export function readPlayBoardMatchMode(): PlayBoardMatchMode {
+  return resolveHubBoardMatchForSideLook(readSideLookThemeId());
+}
+
+export function resolveBoardMatchForTheme(_themeId: BoardLookThemeId): PlayBoardMatchMode {
+  return 'matched';
+}
+
+export function resolveHubBoardMatchForSideLook(sideLookId: PlayShellThemeId): PlayBoardMatchMode {
+  return isSideOnlyLookId(sideLookId) ? 'side-only' : 'matched';
+}
 
 export function resolveHubCentrePalette(
-  themeId: PlayShellThemeId,
-  mode: PlayBoardMatchMode,
+  boardLookId: BoardLookThemeId,
+  sideLookId: PlayShellThemeId,
 ): HubCentrePalette {
-  if (mode === 'side-only') return LOCKED_HUB_CENTRE;
-  return HUB_CENTRE_PALETTES[themeId];
+  if (isSideOnlyLookId(sideLookId)) return HUB_CENTRE_PALETTES[boardLookId];
+  return HUB_CENTRE_PALETTES[boardLookId];
 }
 
 export function applyHubThemeCssVars(
   hub: HTMLElement,
-  themeId: PlayShellThemeId,
-  mode: PlayBoardMatchMode,
+  sideLookId: PlayShellThemeId,
+  boardLookId: BoardLookThemeId,
 ): void {
-  const rail = HUB_RAIL_PALETTES[themeId];
-  const centre = resolveHubCentrePalette(themeId, mode);
+  const rail = HUB_RAIL_PALETTES[sideLookId];
+  const centre = resolveHubCentrePalette(boardLookId, sideLookId);
   hub.style.setProperty('--hub-rail-bg', rail.railBg);
   hub.style.setProperty('--hub-text', rail.text);
   hub.style.setProperty('--hub-muted', rail.muted);
@@ -464,15 +282,14 @@ export function applyHubThemeCssVars(
   hub.style.setProperty('--hub-centre-muted', centre.centreMuted);
 }
 
-/** Board canvas from stored board look only — side swatches (5/6) never reach here. */
-export function resolveBoardCanvasLook(
-  boardLookId: BoardLookThemeId,
-  mode: PlayBoardMatchMode = 'matched',
-): BoardCanvasLook {
+export function resolveBoardCanvasLook(boardLookId: BoardLookThemeId): BoardCanvasLook {
   const theme = getPlayShellTheme(boardLookId);
   return {
     surfaceTop: theme.surfaceTop,
     surfaceBottom: theme.surfaceBottom,
+    frameOuter: theme.frameOuter,
+    frameInner: theme.frameInner,
+    lineColor: theme.lineColor,
     creamHorizontalStops: FLAT_CREAM_STOPS,
     creamVerticalStops: FLAT_CREAM_STOPS,
     edgeGlowRgba: theme.edgeGlowRgba,
@@ -480,11 +297,13 @@ export function resolveBoardCanvasLook(
 }
 
 export function resolvePlayShellPresentation(
-  themeId: PlayShellThemeId,
-  mode: PlayBoardMatchMode,
+  sideLookId: PlayShellThemeId,
+  boardLookId: BoardLookThemeId,
 ): Pick<PlayShellTheme, 'bodyBackground'> {
-  const theme = getPlayShellTheme(themeId);
-  return { bodyBackground: theme.bodyBackground };
+  if (isSideOnlyLookId(sideLookId)) {
+    return { bodyBackground: PLAY_SHELL_THEMES['7'].bodyBackground };
+  }
+  return { bodyBackground: PLAY_SHELL_THEMES[boardLookId].bodyBackground };
 }
 
 export function syncThemeSwatchActive(
@@ -505,6 +324,36 @@ export function syncThemeSwatchActive(
   }
 }
 
+function applyShellThemeVars(
+  target: HTMLElement,
+  sideLookId: PlayShellThemeId,
+  boardLookId: BoardLookThemeId,
+): void {
+  const sideTheme = getPlayShellTheme(sideLookId);
+  const boardTheme = getPlayShellTheme(boardLookId);
+  const presentation = resolvePlayShellPresentation(sideLookId, boardLookId);
+  target.style.setProperty('--bg', presentation.bodyBackground);
+  target.style.setProperty('--text', LOVABLE_SHELL.text);
+  target.style.setProperty('--muted', LOVABLE_SHELL.muted);
+  target.style.setProperty('--gold', LOVABLE_SHELL.gold);
+  target.style.setProperty('--line', LOVABLE_SHELL.border);
+  target.style.setProperty('--side-card-bg', sideTheme.sideCardBackground);
+  target.style.setProperty('--side-card-border', sideTheme.sideCardBorder);
+  target.style.setProperty('--side-card-glow', sideTheme.sideCardGlow);
+  target.style.setProperty('--play-ai-bg', sideTheme.playAiBg);
+  target.style.setProperty('--play-ai-border', sideTheme.playAiBorder);
+  target.style.setProperty('--play-human-bg', sideTheme.playHumanBg);
+  target.style.setProperty('--play-human-border', sideTheme.playHumanBorder);
+  target.style.setProperty('--play-human-accent', sideTheme.playHumanAccent);
+  target.style.setProperty('--panel', isSideOnlyLookId(sideLookId) ? sideTheme.playAiBg : boardTheme.bodyBackground);
+  target.style.setProperty(
+    '--panel-2',
+    isSideOnlyLookId(sideLookId) ? sideTheme.playAiBg : boardTheme.playAiBg,
+  );
+  target.style.setProperty('--board-frame-bg', boardTheme.surfaceBottom);
+  target.style.setProperty('--board-frame-border', boardTheme.lineColor);
+}
+
 export function applyPlayLookState(
   boardLookId: BoardLookThemeId,
   sideLookId: PlayShellThemeId,
@@ -512,28 +361,20 @@ export function applyPlayLookState(
   if (typeof document === 'undefined') return;
   const hub = document.getElementById('play-hub');
   const shell = document.getElementById('play-shell');
-  const boardMatch = resolveBoardMatchForTheme(boardLookId);
-  const hubCentreMode = resolveHubBoardMatchForSideLook(sideLookId);
+  const boardMatch = resolveHubBoardMatchForSideLook(sideLookId);
 
-  hub?.setAttribute('data-play-board-look', boardLookId);
-  hub?.setAttribute('data-play-side-look', sideLookId);
-  shell?.setAttribute('data-play-board-look', boardLookId);
-  shell?.setAttribute('data-play-side-look', sideLookId);
-  hub?.setAttribute('data-play-theme', sideLookId);
-  shell?.setAttribute('data-play-theme', sideLookId);
-  hub?.setAttribute('data-play-board-match', boardMatch);
-  shell?.setAttribute('data-play-board-match', boardMatch);
-  document.body.setAttribute('data-play-board-look', boardLookId);
-  document.body.setAttribute('data-play-side-look', sideLookId);
-  document.body.setAttribute('data-play-theme', sideLookId);
-  document.body.setAttribute('data-play-board-match', boardMatch);
+  for (const el of [hub, shell, document.body]) {
+    el?.setAttribute('data-play-board-look', boardLookId);
+    el?.setAttribute('data-play-side-look', sideLookId);
+    el?.setAttribute('data-play-theme', sideLookId);
+    el?.setAttribute('data-play-board-match', boardMatch);
+  }
 
   syncThemeSwatchActive(boardLookId, sideLookId);
-  if (hub) applyHubThemeCssVars(hub, sideLookId, hubCentreMode);
-  if (shell) applyPlayShellThemeCssVars(shell, sideLookId);
-  else if (hub) {
-    document.body.style.background = getPlayShellTheme(sideLookId).bodyBackground;
-  }
+  if (hub) applyHubThemeCssVars(hub, sideLookId, boardLookId);
+  if (shell) applyShellThemeVars(shell, sideLookId, boardLookId);
+  applyShellThemeVars(document.body, sideLookId, boardLookId);
+  document.body.style.background = resolvePlayShellPresentation(sideLookId, boardLookId).bodyBackground;
 
   try {
     localStorage.setItem(PLAY_BOARD_LOOK_STORAGE_KEY, boardLookId);
@@ -545,11 +386,16 @@ export function applyPlayLookState(
   }
 }
 
-/** @deprecated Use applyPlayLookState(boardLookId, sideLookId). */
-export function applySharedPlayTheme(
-  themeId: PlayShellThemeId,
-  boardMatch: PlayBoardMatchMode = resolveHubBoardMatchForSideLook(themeId),
+export function applyPlayShellThemeCssVars(
+  shell: HTMLElement,
+  sideLookId: PlayShellThemeId = readSideLookThemeId(),
+  boardLookId: BoardLookThemeId = readBoardLookThemeId(),
 ): void {
+  applyShellThemeVars(shell, sideLookId, boardLookId);
+}
+
+/** @deprecated Use applyPlayLookState(boardLookId, sideLookId). */
+export function applySharedPlayTheme(themeId: PlayShellThemeId): void {
   if (isBoardLookThemeId(themeId)) {
     applyPlayLookState(themeId, themeId);
     return;
@@ -557,41 +403,14 @@ export function applySharedPlayTheme(
   applyPlayLookState(readStoredBoardLookId(), themeId);
 }
 
-export function applyPlayShellThemeCssVars(
-  shell: HTMLElement,
-  sideLookId: PlayShellThemeId,
-): void {
-  const theme = getPlayShellTheme(sideLookId);
-  const presentation = resolvePlayShellPresentation(sideLookId, 'matched');
-  shell.style.setProperty('--side-card-bg', theme.sideCardBackground);
-  shell.style.setProperty('--side-card-border', theme.sideCardBorder);
-  shell.style.setProperty('--side-card-glow', theme.sideCardGlow);
-  shell.style.setProperty('--play-ai-bg', theme.playAiBg);
-  shell.style.setProperty('--play-ai-border', theme.playAiBorder);
-  shell.style.setProperty('--play-human-bg', theme.playHumanBg);
-  shell.style.setProperty('--play-human-border', theme.playHumanBorder);
-  shell.style.setProperty('--play-human-accent', theme.playHumanAccent);
-  if (sideLookId === '5') {
-    shell.style.setProperty('--panel', '#121110');
-    shell.style.setProperty('--panel-2', '#161412');
-  } else {
-    shell.style.setProperty('--panel', theme.bodyBackground);
-    shell.style.setProperty('--panel-2', theme.playAiBg.startsWith('#') ? theme.playAiBg : theme.bodyBackground);
-  }
-  if (typeof document !== 'undefined') {
-    document.body.style.background = presentation.bodyBackground;
-  }
+/** @deprecated Use applyPlayLookState('1', '1'). */
+export function applyFixedPlayLook(): void {
+  applyPlayLookState(DEFAULT_BOARD_LOOK_ID, DEFAULT_SIDE_LOOK_ID);
 }
 
-export function isPlayShellThemeId(value: string | null | undefined): value is PlayShellThemeId {
-  return value === '1' || value === '2' || value === '3' || value === '4' || value === '5';
-}
-
-/** Migrate v1 localStorage value only — v2 ids 1–5 pass through; retired 6 → 5. */
 export function migrateLegacyPlayThemeId(value: string | null | undefined): PlayShellThemeId | null {
   if (!value) return null;
-  if (value === '6') return '5';
-  if (LEGACY_V1_THEME_MAP[value]) return LEGACY_V1_THEME_MAP[value];
+  if (value === '5' || value === '6') return '7';
   if (isPlayShellThemeId(value)) return value;
   return null;
 }
@@ -600,25 +419,37 @@ export function readStoredBoardLookId(): BoardLookThemeId {
   try {
     const stored = localStorage.getItem(PLAY_BOARD_LOOK_STORAGE_KEY);
     if (isBoardLookThemeId(stored)) return stored;
+    const sideStored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
     const v2 = localStorage.getItem(PLAY_THEME_STORAGE_KEY);
-    if (isBoardLookThemeId(v2)) return v2;
-    if (v2 === '5' || v2 === '6') return DEFAULT_BOARD_LOOK_ID;
+    if (isBoardLookThemeId(v2) && (sideStored === v2 || sideStored === null)) return v2;
+    if (v2 === '7' || v2 === '5' || v2 === '6') return DEFAULT_BOARD_LOOK_ID;
     const legacy = localStorage.getItem(LEGACY_PLAY_THEME_STORAGE_KEY);
     const migrated = migrateLegacyPlayThemeId(legacy);
     if (isBoardLookThemeId(migrated)) return migrated;
-    if (migrated === '5') return DEFAULT_BOARD_LOOK_ID;
+    if (migrated === '7') return DEFAULT_BOARD_LOOK_ID;
   } catch {
     /* storage unavailable */
   }
   return DEFAULT_BOARD_LOOK_ID;
 }
 
+function migrateLegacySideLookId(value: string | null | undefined): PlayShellThemeId | null {
+  if (!value) return null;
+  if (value === '7') return '7';
+  if (isBoardLookThemeId(value)) return value;
+  if (value === '5' || value === '6') return '7';
+  return null;
+}
+
 export function readStoredSideLookId(): PlayShellThemeId {
   try {
     const stored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
     if (stored) return normalizeSideLookId(stored);
+    const legacySide = migrateLegacySideLookId(localStorage.getItem(LEGACY_SIDE_LOOK_STORAGE_KEY));
+    if (legacySide) return legacySide;
     const v2 = localStorage.getItem(PLAY_THEME_STORAGE_KEY);
-    if (v2) return normalizeSideLookId(v2);
+    const migratedV2 = migrateLegacySideLookId(v2);
+    if (migratedV2) return migratedV2;
     const legacy = localStorage.getItem(LEGACY_PLAY_THEME_STORAGE_KEY);
     const migrated = migrateLegacyPlayThemeId(legacy);
     if (migrated) return migrated;
@@ -633,13 +464,15 @@ export function readStoredPlayThemeId(): PlayShellThemeId {
 }
 
 export function readBoardLookThemeId(): BoardLookThemeId {
-  if (typeof document === 'undefined') return DEFAULT_BOARD_LOOK_ID;
+  const stored = readStoredBoardLookId();
+  if (typeof document === 'undefined') return stored;
   const shell = document.getElementById('play-shell');
   const hub = document.getElementById('play-hub');
   const fromDom =
     shell?.getAttribute('data-play-board-look') ?? hub?.getAttribute('data-play-board-look');
-  if (isBoardLookThemeId(fromDom)) return fromDom;
-  return DEFAULT_BOARD_LOOK_ID;
+  if (!isBoardLookThemeId(fromDom)) return stored;
+  if (isSideOnlyLookId(readSideLookThemeId()) && fromDom !== stored) return stored;
+  return fromDom;
 }
 
 export function readSideLookThemeId(): PlayShellThemeId {
@@ -664,7 +497,7 @@ export function applyPlayLookFromSwatch(swatchId: PlayShellThemeId): {
   sideLookId: PlayShellThemeId;
   boardChanged: boolean;
 } {
-  const boardLookId = readBoardLookThemeId();
+  const boardLookId = readStoredBoardLookId();
   if (isBoardLookThemeId(swatchId)) {
     applyPlayLookState(swatchId, swatchId);
     return { boardLookId: swatchId, sideLookId: swatchId, boardChanged: boardLookId !== swatchId };

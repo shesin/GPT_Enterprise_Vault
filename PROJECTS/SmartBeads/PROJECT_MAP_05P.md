@@ -59,8 +59,10 @@ SmartBeads/
 │   │   │   │   ├── SoundManifest.ts   # Runtime SFX URL map
 │   │   │   │   └── __tests__/SoundEffects.test.ts
 │   │   │   ├── layout/
-│   │   │   │   ├── playShellThemes.ts    # Lovable look swatches; board vs side split storage
-│   │   │   │   ├── boardLookThemes.ts    # canvas look from board look storage
+│   │   │   │   ├── lovableOklchTokens.ts # OKLCH tokens — 6 board looks, shell, bead sets
+│   │   │   │   ├── beadSetThemes.ts      # bead set picker; localStorage sb-bead-set
+│   │   │   │   ├── playShellThemes.ts    # 6 complete + charcoal side-only (7); applyPlayLookFromSwatch
+│   │   │   │   ├── boardLookThemes.ts    # canvas look from stored board id (1–6)
 │   │   │   │   ├── sidePanelThemes.ts
 │   │   │   │   ├── moveHintAuraThemes.ts # Off · Original · Gold (fill); localStorage
 │   │   │   │   ├── boardLineGoldThemes.ts
@@ -133,8 +135,10 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 
 - **`main.ts`** — calls `bootstrapPlayShell()`.
 - **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`. **Coach mode:** watch-only ~**1:53** video (play/pause/scrub); ending cues WIN / RESIGN / DRAW; no board input.
-- **`PlayHub.ts`** — hub navigation; theme picker (`#hub-play-theme-setting`, `hub-play-board-match` radios) synced with board via `applySharedPlayTheme`; **Coach** sidebar + top card launches teaching video on **7-bead · 4×5** (`?coach=1` picker, `?coach=start` auto-launch).
-- **`layout/playShellThemes.ts`** — Lovable look swatches (4 complete + charcoal side-only); `applyPlayLookFromSwatch`; separate `sb-play-board-look` / `sb-play-side-look`; hub centre/rail sync.
+- **`PlayHub.ts`** — hub navigation; applies stored look via `applyPlayLookState` on bootstrap; **Coach** sidebar + top card launches teaching video on **7-bead · 4×5** (`?coach=1` picker, `?coach=start` auto-launch).
+- **`layout/lovableOklchTokens.ts`** — Lovable OKLCH source of truth (6 board palettes, shell chrome, 5 bead sets).
+- **`layout/playShellThemes.ts`** — 6 complete (unified colour) + side-only charcoal (`7`); `applyPlayLookFromSwatch`; storage `sb-play-board-look` / `sb-play-side-look-v3`; hub centre/rail sync.
+- **`layout/beadSetThemes.ts`** — bead set picker (`ivory-ebony` … `metallic`); localStorage `sb-bead-set`.
 - **`layout/moveHintAuraThemes.ts`** — move hint aura preset (`off` | `original` | `gold-fill`); localStorage `sb-move-hint-aura`.
 - **`feature/CoachVideoScript.ts`** — Video 1 on **7-bead** (~**1:53**): basics + **WIN** / **RESIGN** / **DRAW** appendix; amber/lime highlights; scripted cues and TTS speeches.
 - **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.

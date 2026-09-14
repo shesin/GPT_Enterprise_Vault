@@ -48,7 +48,8 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).toMatch(/id="play-block-p2"[^>]*play-block-ai|play-block-ai[^>]*id="play-block-p2"/);
     expect(indexHtml).toMatch(/id="play-block-p1"[^>]*play-block-human|play-block-human[^>]*id="play-block-p1"/);
     expect(playShellCss).toMatch(/\.play-block-ai[\s\S]*--black-bead|var\(--black-bead\)/);
-    expect(playShellCss).toMatch(/\.play-block-human[\s\S]*#c9a24e|--play-human-accent: #c9a24e/);
+    expect(playShellCss).toMatch(/\.play-block-human[\s\S]*var\(--play-human-accent\)/);
+    expect(playShellCss).toMatch(/--play-human-accent:\s*var\(--gold\)/);
     expect(playShellCss).not.toContain('.play-block.active');
     expect(playControllerSource).not.toMatch(/play-block-p1[\s\S]*classList\.toggle\(\s*'active'/);
     expect(playControllerSource).not.toMatch(/play-block-p2[\s\S]*classList\.toggle\(\s*'active'/);
@@ -64,23 +65,16 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).not.toContain('Gold (no fill)');
   });
 
-  it('board settings offers five Lovable look swatches in two groups (hub has none)', () => {
-    expect(indexHtml).toContain('id="play-theme-swatches-complete"');
-    expect(indexHtml).toContain('id="play-theme-swatches-side"');
+  it('board settings has look swatches (6 complete + charcoal side) and bead set picker', () => {
+    expect(indexHtml).toContain('id="bead-set-select"');
+    expect(indexHtml).toContain('Ivory &amp; Ebony');
     expect(indexHtml).toContain('id="play-theme-setting"');
-    expect(indexHtml).toContain('Complete (board + side)');
-    expect(indexHtml).toContain('Board stays same — side panels only');
-    expect(indexHtml).toContain('Deep teal / blue-green');
-    expect(indexHtml).toContain('Charcoal + gold accents');
-    expect(indexHtml).not.toContain('Warm parchment');
-    expect(indexHtml).not.toMatch(/data-play-theme="6"/);
-    expect(indexHtml).not.toContain('Forest green');
-    expect(indexHtml).not.toContain('Tan parchment');
+    expect(indexHtml).toContain('play-theme-swatches--complete');
+    expect(indexHtml).toContain('data-play-theme="7"');
     expect(indexHtml).not.toContain('id="hub-play-theme-setting"');
-    expect(indexHtml).not.toContain('name="play-board-match"');
-    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-look="3"/);
-    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-side-look="5"/);
-    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-theme="5"/);
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-look="1"/);
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-side-look="1"/);
+    expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-theme="1"/);
     expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-match="matched"/);
   });
 

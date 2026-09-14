@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/PROJECTS/SmartBeads/src/playtest/web/play-shell.css">
 </head>
 <body data-sb-direct-play="1">
-  <div class="shell shell--ads-on" id="play-shell" data-play-board-look="3" data-play-side-look="5" data-play-theme="5" data-play-board-match="matched">
+  <div class="shell shell--ads-on" id="play-shell" data-play-board-look="1" data-play-side-look="1" data-play-theme="1" data-play-board-match="matched">
     <aside class="card left">
       <div id="coach-panel" class="coach-panel is-hidden" aria-live="polite">
         <div class="coach-panel-head">
@@ -152,15 +152,27 @@
           <label>Look preview</label>
           <p class="play-theme-group-label">Complete (board + side)</p>
           <div class="play-theme-swatches play-theme-swatches--complete" id="play-theme-swatches-complete" role="radiogroup" aria-label="Complete look preview">
-            <button type="button" class="play-theme-swatch" data-play-theme="1" title="Deep teal / blue-green" aria-label="Deep teal blue-green"></button>
-            <button type="button" class="play-theme-swatch" data-play-theme="2" title="Deep plum / violet" aria-label="Deep plum violet"></button>
-            <button type="button" class="play-theme-swatch is-active" data-play-theme="3" title="Forest & Gold" aria-label="Forest and Gold"></button>
-            <button type="button" class="play-theme-swatch" data-play-theme="4" title="Warm brown" aria-label="Warm brown"></button>
+            <button type="button" class="play-theme-swatch is-active" data-play-theme="1" title="Classic Green" aria-label="Classic Green"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="2" title="Wood Classic" aria-label="Wood Classic"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="3" title="Ocean Blue" aria-label="Ocean Blue"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="4" title="Sandy Beige" aria-label="Sandy Beige"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="5" title="Forest Green" aria-label="Forest Green"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="6" title="Purple Night" aria-label="Purple Night"></button>
           </div>
           <p class="play-theme-group-label">Board stays same — side panels only</p>
           <div class="play-theme-swatches play-theme-swatches--side" id="play-theme-swatches-side" role="radiogroup" aria-label="Side panel look preview">
-            <button type="button" class="play-theme-swatch is-active" data-play-theme="5" title="Charcoal + gold accents" aria-label="Charcoal and gold accents"></button>
+            <button type="button" class="play-theme-swatch" data-play-theme="7" title="Charcoal + gold accents" aria-label="Charcoal and gold accents"></button>
           </div>
+        </div>
+        <div class="setting" id="bead-set-setting">
+          <label for="bead-set-select">Bead set</label>
+          <select id="bead-set-select">
+            <option value="ivory-ebony">Ivory &amp; Ebony</option>
+            <option value="white-black">White &amp; Black</option>
+            <option value="wooden">Wooden</option>
+            <option value="pearl">Pearl</option>
+            <option value="metallic">Metallic</option>
+          </select>
         </div>
         <div class="setting" id="move-hint-aura-setting">
           <label for="move-hint-aura-select">Move hint aura</label>

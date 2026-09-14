@@ -36,6 +36,10 @@ const playShellThemesSource = fs.readFileSync(
   path.resolve(__dirname, '../layout/playShellThemes.ts'),
   'utf8',
 );
+const playShellCss = fs.readFileSync(
+  path.resolve(__dirname, '../play-shell.css'),
+  'utf8',
+);
 const gameFeatureSettingsSource = fs.readFileSync(
   path.resolve(__dirname, '../feature/GameFeatureSettings.ts'),
   'utf8',
@@ -191,34 +195,23 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('play theme — hub and board stay in sync', () => {
-    it('hub uses same setting block as board; shared sync; board listeners scoped', () => {
+  describe('play theme — 6 complete + charcoal side-only', () => {
+    it('swatch UI, storage split, unified complete colours', () => {
+      expect(playShellThemesSource).toMatch(/function applyPlayLookFromSwatch/);
       expect(playShellThemesSource).toMatch(/function applyPlayLookState/);
-      expect(playShellThemesSource).toMatch(/function applySharedPlayTheme/);
-      expect(playShellThemesSource).toMatch(/function applyHubThemeCssVars/);
-      expect(playShellThemesSource).toMatch(/resolveHubCentrePalette/);
-      expect(playHubSource).toMatch(/applyPlayLookState\(/);
-      expect(playControllerSource).toMatch(/applyPlayLookFromSwatch\(/);
-      expect(playControllerSource).toMatch(/play-theme-setting/);
+      expect(playShellThemesSource).toMatch(/SIDE_ONLY_LOOK_ID.*'7'/);
+      expect(playHubSource).toMatch(/applyPlayLookState/);
+      expect(playControllerSource).toMatch(/applyPlayLookFromSwatch/);
+      expect(playControllerSource).toMatch(/play-theme-swatch/);
       expect(indexHtml).toContain('id="play-theme-setting"');
-      expect(indexHtml).not.toContain('id="hub-play-theme-setting"');
-      expect(playControllerSource).not.toMatch(
-        /document\.querySelectorAll<HTMLButtonElement>\('\.play-theme-swatch'\)/,
-      );
-      expect(playControllerSource).toMatch(/function syncPlayShellThemeFromStorage/);
-      expect(playControllerSource).toMatch(/enterFromHub[\s\S]*syncPlayShellThemeFromStorage\(\)/);
       expect(indexHtml).toContain('play-theme-swatches--complete');
       expect(indexHtml).toContain('play-theme-swatches--side');
-      expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-board-look="3"/);
-      expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-side-look="5"/);
-      expect(playShellThemesSource).toMatch(/readBoardLookThemeId/);
-      expect(playShellThemesSource).toMatch(/readSideLookThemeId/);
-    });
-
-    it('board look is independent from side swatches 5/6', () => {
-      expect(playShellThemesSource).toMatch(/function applyPlayLookFromSwatch/);
-      expect(playShellThemesSource).toMatch(/boardChanged: false/);
-      expect(playShellThemesSource).toMatch(/resolveBoardCanvasLook/);
+      expect(indexHtml).toContain('data-play-theme="7"');
+      expect(playControllerSource).toMatch(/function syncPlayShellThemeFromStorage/);
+      expect(playControllerSource).toMatch(/enterFromHub[\s\S]*syncPlayShellThemeFromStorage\(\)/);
+      expect(playShellThemesSource).toMatch(/frameOuter: t\.surface/);
+      expect(playControllerSource).toMatch(/initBeadSetSetting/);
+      expect(indexHtml).toContain('id="bead-set-select"');
       expect(canvasRendererSource).toMatch(/getActiveBoardLookTheme/);
     });
   });
@@ -238,10 +231,6 @@ describe('process regression guards', () => {
         expect(html).toMatch(/id="restart-btn"[^>]*type="button"/);
         expect(html).toContain('class="new-game-new">New</span> game');
       }
-      const playShellCss = fs.readFileSync(
-        path.resolve(__dirname, '../play-shell.css'),
-        'utf8',
-      );
       expect(playShellCss).toMatch(/#restart-btn[\s\S]*border: 2px solid var\(--gold\)/);
       expect(playShellCss).toMatch(/\.new-game-new[\s\S]*color: #000/);
       expect(playShellCss).not.toMatch(/\.new-game-new[\s\S]*font-weight:\s*800/);

@@ -1,11 +1,12 @@
 :root {
-  --bg: #0e0d0b;
-  --panel: #121110;
-  --panel-2: #1a1816;
-  --line: rgba(201, 162, 78, 0.22);
-  --text: #f5f0e8;
-  --muted: #8a8278;
-  --gold: #c9a24e;
+  --bg: oklch(0.13 0.025 158);
+  --panel: oklch(0.155 0.028 157 / 91%);
+  --panel-2: oklch(0.10 0.02 157 / 94%);
+  --line: oklch(0.45 0.055 95 / 35%);
+  --text: oklch(0.93 0.025 82);
+  --muted: oklch(0.70 0.025 145);
+  --gold: oklch(0.72 0.105 78);
+  --soft-gold: oklch(0.82 0.075 82);
   --red: #d64545;
   --blue: #3d8fd1;
   --ok: #3cb89a;
@@ -106,39 +107,35 @@ body.hub-page {
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 .play-theme-swatch[data-play-theme="1"] {
-  background: linear-gradient(165deg, #0f3d48, #0d3842);
-  box-shadow: inset 0 0 0 1px rgba(201, 162, 78, 0.35);
+  background: linear-gradient(165deg, oklch(0.30 0.07 157), oklch(0.22 0.055 157));
 }
 .play-theme-swatch[data-play-theme="2"] {
-  background: linear-gradient(165deg, #24162b, #201226);
-  box-shadow: inset 0 0 0 1px rgba(201, 162, 78, 0.35);
+  background: linear-gradient(165deg, oklch(0.39 0.075 63), oklch(0.29 0.07 57));
 }
 .play-theme-swatch[data-play-theme="3"] {
-  background: linear-gradient(165deg, #0a3828, #052818);
-  box-shadow: inset 0 0 0 1px rgba(212, 168, 75, 0.35);
+  background: linear-gradient(165deg, oklch(0.34 0.07 220), oklch(0.23 0.055 225));
 }
 .play-theme-swatch[data-play-theme="4"] {
-  background: linear-gradient(165deg, #3d2e22, #2a1f16);
-  box-shadow: inset 0 0 0 1px rgba(201, 162, 78, 0.35);
+  background: linear-gradient(165deg, oklch(0.72 0.055 84), oklch(0.59 0.065 78));
 }
 .play-theme-swatch[data-play-theme="5"] {
-  background: linear-gradient(165deg, #121110, #0e0d0b);
+  background: linear-gradient(165deg, oklch(0.25 0.08 145), oklch(0.18 0.055 145));
+}
+.play-theme-swatch[data-play-theme="6"] {
+  background: linear-gradient(165deg, oklch(0.25 0.07 310), oklch(0.17 0.055 305));
+}
+.play-theme-swatch[data-play-theme="7"] {
+  background: linear-gradient(165deg, oklch(0.16 0.012 60), oklch(0.11 0.01 60));
   box-shadow: inset 0 0 0 1px rgba(201, 162, 78, 0.45);
 }
 .play-theme-swatch.is-active {
   border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(212, 168, 75, 0.45);
 }
-#play-shell {
-  --side-card-bg: #121110;
-  --side-card-border: rgba(201, 162, 78, 0.28);
-  --side-card-glow: inset 0 1px 0 rgba(201, 162, 78, 0.08);
-  --play-ai-bg: #161412;
-  --play-ai-border: rgba(201, 162, 78, 0.16);
+#play-shell,
+body {
   --play-ai-accent: var(--black-bead);
-  --play-human-bg: rgba(201, 162, 78, 0.07);
-  --play-human-border: rgba(201, 162, 78, 0.34);
-  --play-human-accent: #c9a24e;
+  --play-human-accent: var(--gold);
 }
 .card {
   background: var(--side-card-bg);
@@ -501,10 +498,10 @@ button { cursor: pointer; font-weight: 700; }
   max-height: var(--frame-h);
   flex-shrink: 1;
   min-height: 0;
-  background: #0a0908;
+  background: var(--board-frame-bg, oklch(0.22 0.055 157));
   border-radius: 12px;
   padding: 14px;
-  border: 1px solid rgba(201, 162, 78, 0.38);
+  border: 1px solid color-mix(in oklch, var(--board-frame-border, var(--gold)) 38%, transparent);
   box-shadow:
     0 18px 44px rgba(0, 0, 0, 0.55),
     inset 0 0 0 1px rgba(201, 162, 78, 0.14);
@@ -889,7 +886,7 @@ canvas {
   height: 100%;
   display: block;
   border-radius: 4px;
-  background: #063b21;
+  background: transparent;
   box-shadow: inset 0 0 0 1px rgba(201, 162, 78, 0.42);
   cursor: pointer;
 }

@@ -1,16 +1,9 @@
-import { SIDE_PANEL_THEMES } from '../sidePanelThemes';
-
-describe('sidePanelThemes', () => {
-  it('defines five unified side panel presets', () => {
-    const themes = Object.values(SIDE_PANEL_THEMES);
-    expect(themes).toHaveLength(5);
-    expect(themes.map((t) => t.label)).toEqual([
-      'Deep teal / blue-green',
-      'Deep plum / violet',
-      'Forest & Gold',
-      'Warm brown',
-      'Charcoal + gold accents',
-    ]);
-  });
-});
-
+import { SIDE_PANEL_THEMES } from '../sidePanelThemes';
+
+describe('sidePanelThemes', () => {
+  it('defines six complete side presets plus charcoal side-only label via shell themes', () => {
+    expect(Object.keys(SIDE_PANEL_THEMES)).toEqual(['1', '2', '3', '4', '5', '6', '7']);
+    expect(SIDE_PANEL_THEMES['1'].label).toBe('Classic Green');
+    expect(SIDE_PANEL_THEMES['7'].label).toContain('Charcoal');
+  });
+});
