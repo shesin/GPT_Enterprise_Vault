@@ -9,14 +9,13 @@ import {
 import { cloneBoardDefinition, findJumpPath, Move, Player } from '../../models/GameState';
 import { isBeadSetId, readBeadSetId, writeBeadSetId } from './layout/beadSetThemes';
 import {
-  applyPlayLookFromRow,
   applyPlayLookFromSwatch,
   applyPlayLookState,
   isLookSwatchId,
   readStoredBoardLookId,
   readStoredSideLookId,
   syncPlayLookFromStorageIfDrifted,
-  type PlayLookRow,
+  wirePlayLookPreviewSetting,
   type PlayShellThemeId,
 } from './layout/playShellThemes';
 import { formatCenterDisplay } from './feature/centerScoring';
@@ -1570,6 +1569,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       resultModalDismissed = false;
     }
 
+    syncLookPreviewLock();
     drawBoard();
   }
 
@@ -2223,24 +2223,28 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     drawBoard();
   }
 
-  function resolvePlayLookRow(btn: HTMLButtonElement): PlayLookRow | null {
-    if (btn.closest('.play-theme-swatches--dark-charcoal')) return 'dark-charcoal';
-    if (btn.closest('.play-theme-swatches--light-charcoal')) return 'light-charcoal';
-    if (btn.closest('.play-theme-swatches--dark-same')) return 'dark-same';
-    return null;
+  /** Lock look preview once the match has moves — not on page load (index.html has no start overlay). */
+  function isLookPreviewLocked(): boolean {
+    if (session.isGameOver()) return false;
+    if (isAwaitingStart()) return false;
+    return session.getMoveCount() > 0;
   }
 
-  function applyPlayShellThemeFromRow(swatchId: string, row: PlayLookRow): void {
-    if (!playShell) return;
-    const { boardChanged } = applyPlayLookFromRow(swatchId, row);
-    if (boardChanged) drawBoard();
-    updateUI();
+  function syncLookPreviewLock(): void {
+    const setting = document.getElementById('play-theme-setting');
+    if (!setting) return;
+    const locked = isLookPreviewLocked();
+    setting.classList.toggle('play-theme-setting--locked', locked);
+    for (const btn of setting.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
+      btn.disabled = locked;
+      btn.setAttribute('aria-disabled', String(locked));
+    }
   }
 
   function applyPlayShellTheme(swatchId: PlayShellThemeId): void {
-    if (!playShell) return;
-    const { boardChanged } = applyPlayLookFromSwatch(swatchId);
-    if (boardChanged) drawBoard();
+    if (!playShell || isLookPreviewLocked()) return;
+    applyPlayLookFromSwatch(swatchId);
+    drawBoard();
     updateUI();
   }
 
@@ -2268,20 +2272,13 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
   function initPlayShellTheme(): void {
     if (!playShell) return;
-    const boardThemeSetting = document.getElementById('play-theme-setting');
-    if (boardThemeSetting) {
-      for (const btn of boardThemeSetting.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
-        btn.addEventListener('click', () => {
-          const next = btn.dataset.playTheme;
-          const row = resolvePlayLookRow(btn);
-          if (row && next) {
-            applyPlayShellThemeFromRow(next, row);
-            return;
-          }
-          if (isLookSwatchId(next)) applyPlayShellTheme(next);
-        });
-      }
-    }
+    wirePlayLookPreviewSetting(document.getElementById('play-theme-setting'), {
+      isLocked: isLookPreviewLocked,
+      onApplied: () => {
+        drawBoard();
+        updateUI();
+      },
+    });
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('playTheme');
     if (isLookSwatchId(fromUrl)) {
@@ -2289,6 +2286,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       return;
     }
     applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
+    syncLookPreviewLock();
     drawBoard();
   }
 

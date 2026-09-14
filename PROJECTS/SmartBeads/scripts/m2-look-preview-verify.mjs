@@ -5,6 +5,7 @@
 import { chromium } from 'playwright';
 import { playShellUrl } from './lib/play-shell-setup.mjs';
 
+const HUB_URL = process.env.SMARTBEADS_URL || 'http://localhost:5173/';
 const URL = playShellUrl();
 const results = [];
 
@@ -26,8 +27,8 @@ async function readShellLook(page) {
   });
 }
 
-async function clickSwatch(page, rowClass, themeId) {
-  await page.locator(`.${rowClass} .play-theme-swatch[data-play-theme="${themeId}"]`).click();
+async function clickSwatch(page, rootId, rowClass, themeId) {
+  await page.locator(`#${rootId} .${rowClass} .play-theme-swatch[data-play-theme="${themeId}"]`).click();
   await page.waitForTimeout(150);
 }
 
@@ -36,20 +37,35 @@ async function main() {
   try {
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+
+    await page.goto(HUB_URL, { waitUntil: 'networkidle' });
+    await page.waitForSelector('#hub-play-theme-setting', { timeout: 15000 });
+    record('hub page 1 look section', await page.locator('#hub-section-look').count() === 1);
+    await clickSwatch(page, 'hub-play-theme-setting', 'play-theme-swatches--light-charcoal', '12');
+    const hubLook = await page.evaluate(() => ({
+      board: localStorage.getItem('sb-play-board-look'),
+      side: localStorage.getItem('sb-play-side-look-v3'),
+      hubActive: document.querySelectorAll('#hub-play-theme-setting .play-theme-swatch.is-active').length,
+    }));
+    record(
+      'hub warm walnut before play',
+      hubLook.board === '12' && hubLook.side === '7' && hubLook.hubActive === 1,
+      JSON.stringify(hubLook),
+    );
+
     await page.goto(URL, { waitUntil: 'networkidle' });
     await page.waitForSelector('#play-theme-setting', { timeout: 15000 });
 
     const labels = await page.locator('#play-theme-setting .play-theme-group-label').allTextContents();
     record(
-      'three row labels',
-      labels.length === 3
-        && labels[0].includes('charcol side panel')
-        && labels[1].includes('charcoal side panel')
-        && labels[2].includes('same side panel'),
+      'two row labels (dark theme + light theme)',
+      labels.length === 2
+        && labels[0] === 'Dark theme'
+        && labels[1] === 'Light theme',
       labels.join(' | '),
     );
 
-    const darkCharcoalIds = await page.locator('.play-theme-swatches--dark-charcoal .play-theme-swatch').evaluateAll(
+    const darkCharcoalIds = await page.locator('#play-theme-setting .play-theme-swatches--dark-charcoal .play-theme-swatch').evaluateAll(
       (nodes) => nodes.map((n) => n.getAttribute('data-play-theme')),
     );
     record(
@@ -58,7 +74,7 @@ async function main() {
       darkCharcoalIds.join(','),
     );
 
-    const lightIds = await page.locator('.play-theme-swatches--light-charcoal .play-theme-swatch').evaluateAll(
+    const lightIds = await page.locator('#play-theme-setting .play-theme-swatches--light-charcoal .play-theme-swatch').evaluateAll(
       (nodes) => nodes.map((n) => n.getAttribute('data-play-theme')),
     );
     record(
@@ -77,7 +93,7 @@ async function main() {
     await page.reload({ waitUntil: 'networkidle' });
     await page.waitForSelector('#play-theme-setting', { timeout: 15000 });
 
-    await clickSwatch(page, 'play-theme-swatches--dark-charcoal', '6');
+    await clickSwatch(page, 'play-theme-setting', 'play-theme-swatches--dark-charcoal', '6');
     let look = await readShellLook(page);
     record(
       'purple night in dark-charcoal → board 6 + charcoal side',
@@ -85,15 +101,7 @@ async function main() {
       JSON.stringify(look),
     );
 
-    await clickSwatch(page, 'play-theme-swatches--dark-same', '6');
-    look = await readShellLook(page);
-    record(
-      'purple night in dark-same → matched board 6 + side 6',
-      look.board === '6' && look.side === '6' && look.match === 'matched',
-      JSON.stringify(look),
-    );
-
-    await clickSwatch(page, 'play-theme-swatches--light-charcoal', '12');
+    await clickSwatch(page, 'play-theme-setting', 'play-theme-swatches--light-charcoal', '12');
     look = await readShellLook(page);
     const walnutFrame = await page.evaluate(() =>
       getComputedStyle(document.getElementById('play-shell')).getPropertyValue('--board-frame-border').trim(),
@@ -109,10 +117,17 @@ async function main() {
       walnutFrame || '(empty)',
     );
 
-    const activeWalnut = await page.locator(
-      '.play-theme-swatches--light-charcoal .play-theme-swatch[data-play-theme="12"].is-active',
+    const activeWalnutShell = await page.locator(
+      '#play-theme-setting .play-theme-swatches--light-charcoal .play-theme-swatch[data-play-theme="12"].is-active',
     ).count();
-    record('active swatch highlights clicked light row only', activeWalnut === 1, `active=${activeWalnut}`);
+    const activeWalnutHub = await page.locator(
+      '#hub-play-theme-setting .play-theme-swatches--light-charcoal .play-theme-swatch[data-play-theme="12"].is-active',
+    ).count();
+    record(
+      'active swatch synced on shell and hub',
+      activeWalnutShell === 1 && activeWalnutHub === 1,
+      `shell=${activeWalnutShell} hub=${activeWalnutHub}`,
+    );
 
     const removed = await page.locator(
       '.play-theme-swatches--light-charcoal .play-theme-swatch[data-play-theme="8"],'

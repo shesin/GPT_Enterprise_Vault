@@ -5,7 +5,12 @@ import {
   type BoardCatalogEntry,
 } from '../../config/BoardCatalog';
 import type { GameFeatureSettings } from './feature/GameFeatureSettings';
-import { applyPlayLookState, readStoredBoardLookId, readStoredSideLookId } from './layout/playShellThemes';
+import {
+  applyPlayLookState,
+  readStoredBoardLookId,
+  readStoredSideLookId,
+  wirePlayLookPreviewSetting,
+} from './layout/playShellThemes';
 
 export type HubLaunchAction = 'play' | 'coach' | 'spectate';
 
@@ -156,6 +161,8 @@ function wireHubModeHelp(helpBtn: HTMLButtonElement, helpText: HTMLParagraphElem
 
 function wireHubThemePicker(): void {
   applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
+  const hubLook = document.getElementById('hub-play-theme-setting');
+  wirePlayLookPreviewSetting(hubLook);
 }
 
 export function bootstrapPlayHub(

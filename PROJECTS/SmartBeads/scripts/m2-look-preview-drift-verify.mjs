@@ -21,7 +21,7 @@ async function main() {
   await page.goto(URL, { waitUntil: 'networkidle' });
   await page.waitForSelector('#play-theme-setting');
 
-  await page.locator('.play-theme-swatches--light-charcoal .play-theme-swatch[data-play-theme="12"]').click();
+  await page.locator('#play-theme-setting .play-theme-swatches--light-charcoal .play-theme-swatch[data-play-theme="12"]').click();
   await page.waitForTimeout(200);
   const afterClick = await readLook(page);
   console.log('after walnut click:', JSON.stringify(afterClick));

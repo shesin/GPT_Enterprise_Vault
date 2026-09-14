@@ -195,22 +195,31 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('play theme — three look rows (dark-charcoal, light-charcoal, dark-same)', () => {
+  describe('play theme — two look rows (dark theme, light theme)', () => {
     it('swatch UI, storage split, unified complete colours', () => {
       expect(playShellThemesSource).toMatch(/function applyPlayLookFromRow/);
       expect(playShellThemesSource).toMatch(/function applyPlayLookState/);
       expect(playShellThemesSource).toMatch(/LOVABLE_LIGHT_BOARD_THEMES/);
       expect(playShellThemesSource).toMatch(/isLightBoardLookId/);
       expect(playHubSource).toMatch(/applyPlayLookState/);
-      expect(playControllerSource).toMatch(/applyPlayLookFromRow/);
-      expect(playControllerSource).toMatch(/resolvePlayLookRow/);
+      expect(playHubSource).toMatch(/wirePlayLookPreviewSetting/);
+      expect(playControllerSource).toMatch(/wirePlayLookPreviewSetting/);
+      expect(playShellThemesSource).toMatch(/function wirePlayLookPreviewSetting/);
+      expect(playShellThemesSource).toMatch(/data-play-look-setting/);
+      expect(indexHtml).toContain('id="hub-play-theme-setting"');
+      expect(indexHtml).toContain('Choose your look');
       expect(playControllerSource).toMatch(/syncPlayLookFromStorageIfDrifted/);
       expect(playShellThemesSource).toMatch(/function syncPlayLookFromStorageIfDrifted/);
+      expect(playControllerSource).toMatch(/function isLookPreviewLocked/);
+      expect(playControllerSource).toMatch(/play-theme-setting--locked/);
+      expect(playShellThemesSource).toMatch(/syncThemeSwatchActive\(boardLookId, sideLookId\)/);
       expect(playControllerSource).toMatch(/play-theme-swatch/);
       expect(indexHtml).toContain('id="play-theme-setting"');
       expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');
       expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
-      expect(indexHtml).toContain('play-theme-swatches--dark-same');
+      expect(indexHtml).toContain('Dark theme');
+      expect(indexHtml).toContain('Light theme');
+      expect(indexHtml).not.toContain('play-theme-swatches--dark-same');
       expect(indexHtml).toContain('data-play-theme="4"');
       expect(indexHtml).toContain('data-play-theme="10"');
       expect(indexHtml).toContain('data-play-theme="12"');

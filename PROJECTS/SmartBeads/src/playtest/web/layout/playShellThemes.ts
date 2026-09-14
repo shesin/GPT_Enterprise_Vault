@@ -376,24 +376,26 @@ export function resolvePlayShellPresentation(
   return { bodyBackground: PLAY_SHELL_THEMES[boardLookId].bodyBackground };
 }
 
+export function resolvePlayLookRowFromButton(btn: HTMLElement): PlayLookRow | null {
+  if (btn.closest('.play-theme-swatches--dark-charcoal')) return 'dark-charcoal';
+  if (btn.closest('.play-theme-swatches--light-charcoal')) return 'light-charcoal';
+  return null;
+}
+
 export function syncThemeSwatchActive(
   boardLookId: BoardLookThemeId,
   sideLookId: PlayShellThemeId,
 ): void {
   if (typeof document === 'undefined') return;
-  const root = document.getElementById('play-theme-setting');
-  if (!root) return;
+  const roots = document.querySelectorAll<HTMLElement>('[data-play-look-setting]');
+  if (roots.length === 0) return;
+  for (const root of roots) {
   for (const swatch of root.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
     const id = swatch.dataset.playTheme;
     const inDarkCharcoal = swatch.closest('.play-theme-swatches--dark-charcoal') !== null;
     const inLightCharcoal = swatch.closest('.play-theme-swatches--light-charcoal') !== null;
-    const inDarkSame = swatch.closest('.play-theme-swatches--dark-same') !== null;
     const active =
-      (inDarkSame
-        && id === boardLookId
-        && sideLookId === boardLookId
-        && isCompleteLookId(boardLookId))
-      || (inDarkCharcoal
+      (inDarkCharcoal
         && id === boardLookId
         && sideLookId === '7'
         && isCompleteLookId(boardLookId))
@@ -402,6 +404,36 @@ export function syncThemeSwatchActive(
         && sideLookId === '7'
         && isLightBoardLookId(boardLookId));
     swatch.classList.toggle('is-active', Boolean(active));
+  }
+  }
+}
+
+export type PlayLookPreviewWireOptions = {
+  isLocked?: () => boolean;
+  onApplied?: () => void;
+};
+
+/** Wire row-aware swatch clicks on hub (page 1) or board settings (page 2). */
+export function wirePlayLookPreviewSetting(
+  root: HTMLElement | null,
+  options: PlayLookPreviewWireOptions = {},
+): void {
+  if (!root || typeof document === 'undefined') return;
+  for (const btn of root.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
+    btn.addEventListener('click', () => {
+      if (options.isLocked?.()) return;
+      const next = btn.dataset.playTheme;
+      const row = resolvePlayLookRowFromButton(btn);
+      if (row && next) {
+        applyPlayLookFromRow(next, row);
+        options.onApplied?.();
+        return;
+      }
+      if (isLookSwatchId(next)) {
+        applyPlayLookFromSwatch(next);
+        options.onApplied?.();
+      }
+    });
   }
 }
 
@@ -448,14 +480,8 @@ export function coalesceStoredLookState(): {
   if (boardLookId === '4' && sideLookId === '4') {
     return { boardLookId: '4', sideLookId: '7' };
   }
-  if (isCompleteLookId(boardLookId) && sideLookId === boardLookId) {
-    return { boardLookId, sideLookId };
-  }
-  if (isCompleteLookId(boardLookId) && sideLookId === '7') {
-    return { boardLookId, sideLookId: '7' };
-  }
   if (isCompleteLookId(boardLookId)) {
-    return { boardLookId, sideLookId: boardLookId };
+    return { boardLookId, sideLookId: '7' };
   }
   return { boardLookId: DEFAULT_BOARD_LOOK_ID, sideLookId: DEFAULT_SIDE_LOOK_ID };
 }
@@ -471,7 +497,7 @@ export function applyPlayLookState(
   if (isLightBoardLookId(board)) {
     side = '7';
   } else if (isCompleteLookId(board)) {
-    side = isSideOnlyLookId(side) ? '7' : board;
+    side = '7';
   }
 
   const boardMatch = resolveHubBoardMatchForSideLook(side);
@@ -494,7 +520,8 @@ export function applyPlayLookState(
   try {
     localStorage.setItem(PLAY_BOARD_LOOK_STORAGE_KEY, board);
     localStorage.setItem(PLAY_SIDE_LOOK_STORAGE_KEY, side);
-    localStorage.setItem(PLAY_THEME_STORAGE_KEY, side);
+    // When side is charcoal-only, keep board id in v2 so board can be recovered if primary key is lost
+    localStorage.setItem(PLAY_THEME_STORAGE_KEY, side === '7' ? board : side);
     localStorage.setItem('sb-play-board-match', boardMatch);
   } catch {
     /* storage unavailable */
@@ -541,6 +568,8 @@ function readStoredBoardLookIdRaw(): BoardLookThemeId {
     if (isBoardLookThemeId(stored)) return stored;
     const sideStored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
     const v2 = localStorage.getItem(PLAY_THEME_STORAGE_KEY);
+    // v2 stores board id when side is charcoal-only (7) — recover board if primary key lost
+    if (sideStored === '7' && isBoardLookThemeId(v2) && v2 !== '7') return v2;
     if (isCompleteLookId(v2) && (sideStored === v2 || sideStored === null)) return v2;
     if (v2 === '7') return DEFAULT_LIGHT_BOARD_LOOK_ID;
     if (v2 === '5' || v2 === '6') return DEFAULT_BOARD_LOOK_ID;
@@ -607,6 +636,8 @@ export function syncPlayLookFromStorageIfDrifted(): boolean {
   const { boardLookId, sideLookId } = coalesceStoredLookState();
   const shell = document.getElementById('play-shell');
   if (!shell) return false;
+  // Swatch highlight can drift even when data-* attrs match — always reconcile active row
+  syncThemeSwatchActive(boardLookId, sideLookId);
   const boardDom = shell.getAttribute('data-play-board-look');
   const sideDom = shell.getAttribute('data-play-side-look');
   if (boardDom === boardLookId && sideDom === sideLookId) return false;
@@ -652,7 +683,7 @@ export function applyPlayLookFromSwatch(swatchId: PlayShellThemeId): {
   sideLookId: PlayShellThemeId;
   boardChanged: boolean;
 } {
-  if (isCompleteLookId(swatchId)) return applyPlayLookFromRow(swatchId, 'dark-same');
+  if (isCompleteLookId(swatchId)) return applyPlayLookFromRow(swatchId, 'dark-charcoal');
   if (isLightBoardLookId(swatchId)) return applyPlayLookFromRow(swatchId, 'light-charcoal');
   if (isSideOnlyLookId(swatchId)) {
     const boardLookId = readStoredBoardLookId();

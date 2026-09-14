@@ -297,6 +297,21 @@ body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025
   border-top: 1px solid var(--hub-border-soft);
 }
 
+#hub-section-look .hub-play-theme-setting {
+  margin: 0;
+  padding: 0;
+}
+
+#hub-section-look .play-theme-swatch {
+  width: 40px;
+  height: 28px;
+}
+
+#hub-section-look .play-theme-group-label {
+  font-size: 0.72rem;
+  color: var(--hub-centre-muted);
+}
+
 .hub-rail-foot .hub-play-theme-setting {
   width: 100%;
   margin: 0;

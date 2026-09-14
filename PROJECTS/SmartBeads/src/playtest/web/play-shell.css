@@ -143,6 +143,17 @@ body.hub-page {
   border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(212, 168, 75, 0.45);
 }
+.play-theme-setting--locked .play-theme-swatch {
+  cursor: not-allowed;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.play-theme-setting--locked .play-theme-group-label::after {
+  content: ' (locked during match)';
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.85em;
+}
 #play-shell,
 body {
   --play-ai-accent: var(--black-bead);

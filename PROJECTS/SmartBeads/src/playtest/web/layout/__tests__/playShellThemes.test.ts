@@ -6,6 +6,7 @@ import {
   COMPLETE_LOOK_IDS,
   LIGHT_BOARD_LOOK_IDS,
   PLAY_SHELL_THEMES,
+  PLAY_THEME_STORAGE_KEY,
   readBoardLookThemeId,
   readPlayBoardMatchMode,
   readSideLookThemeId,
@@ -40,6 +41,9 @@ function mockPlayThemeDom(
       getItem: (key: string) => store.get(key) ?? null,
       setItem: (key: string, value: string) => {
         store.set(key, value);
+      },
+      removeItem: (key: string) => {
+        store.delete(key);
       },
     },
     configurable: true,
@@ -133,14 +137,6 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
     expect(readPlayBoardMatchMode()).toBe('side-only');
   });
 
-  it('dark-same row sets board and side to the same id', () => {
-    mockPlayThemeDom('4', '7', 'side-only');
-    const result = applyPlayLookFromRow('2', 'dark-same');
-    expect(result.boardLookId).toBe('2');
-    expect(result.sideLookId).toBe('2');
-    expect(readPlayBoardMatchMode()).toBe('matched');
-  });
-
   it('dark-charcoal row applies charcoal sides for the same swatch id', () => {
     mockPlayThemeDom('6', '6', 'matched', {
       'sb-play-board-look': '6',
@@ -172,16 +168,91 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
     expect(document.getElementById('play-shell')?.getAttribute('data-play-side-look')).toBe('7');
   });
 
-  it('same swatch id differs by row (purple night matched vs charcoal sides)', () => {
-    mockPlayThemeDom('1', '1', 'matched');
-    const matched = applyPlayLookFromRow('6', 'dark-same');
-    expect(matched.boardLookId).toBe('6');
-    expect(matched.sideLookId).toBe('6');
-    expect(readPlayBoardMatchMode()).toBe('matched');
-
-    const charcoal = applyPlayLookFromRow('6', 'dark-charcoal');
-    expect(charcoal.boardLookId).toBe('6');
-    expect(charcoal.sideLookId).toBe('7');
+  it('migrates old matched dark storage to dark theme with charcoal sides', () => {
+    mockPlayThemeDom('6', '6', 'matched', {
+      'sb-play-board-look': '6',
+      'sb-play-side-look-v3': '6',
+    });
+    expect(readStoredBoardLookId()).toBe('6');
+    expect(readStoredSideLookId()).toBe('7');
     expect(readPlayBoardMatchMode()).toBe('side-only');
+  });
+
+  it('stores board id in v2 when side is charcoal-only (recovery backup)', () => {
+    mockPlayThemeDom('1', '1', 'matched');
+    applyPlayLookState('6', '7');
+    expect(localStorage.getItem(PLAY_THEME_STORAGE_KEY)).toBe('6');
+    applyPlayLookState('12', '7');
+    expect(localStorage.getItem(PLAY_THEME_STORAGE_KEY)).toBe('12');
+    applyPlayLookState('6', '6');
+    expect(localStorage.getItem(PLAY_THEME_STORAGE_KEY)).toBe('6');
+  });
+
+  it('recovers purple night board from v2 when primary board key is missing', () => {
+    mockPlayThemeDom('6', '7', 'side-only', {
+      'sb-play-side-look-v3': '7',
+      'sb-play-theme-v2': '6',
+    });
+    localStorage.removeItem('sb-play-board-look');
+    expect(readStoredBoardLookId()).toBe('6');
+    expect(readStoredSideLookId()).toBe('7');
+  });
+
+  it('syncs swatch highlight even when shell attrs already match storage', () => {
+    const swatches: Array<{ id: string; row: string; active: boolean }> = [
+      { id: '6', row: 'dark-charcoal', active: false },
+    ];
+    const shell = {
+      attrs: new Map<string, string>([
+        ['data-play-board-look', '6'],
+        ['data-play-side-look', '7'],
+      ]),
+      setAttribute(key: string, value: string) {
+        this.attrs.set(key, value);
+      },
+      getAttribute(key: string) {
+        return this.attrs.get(key) ?? null;
+      },
+      style: { setProperty: jest.fn() },
+    };
+    const store = new Map(Object.entries({
+      'sb-play-board-look': '6',
+      'sb-play-side-look-v3': '7',
+    }));
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: (key: string) => store.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          store.set(key, value);
+        },
+        removeItem: (key: string) => {
+          store.delete(key);
+        },
+      },
+      configurable: true,
+    });
+    Object.defineProperty(globalThis, 'document', {
+      value: {
+        getElementById: (id: string) => (id === 'play-shell' ? shell : null),
+        querySelectorAll: (sel: string) => {
+          if (!sel.includes('data-play-look-setting')) return [];
+          return [{
+            querySelectorAll: () => swatches.map((s) => ({
+              dataset: { playTheme: s.id },
+              closest: (sel: string) => (sel.includes(s.row) ? {} : null),
+              classList: { toggle: (_: string, on: boolean) => { s.active = on; } },
+            })),
+          }];
+        },
+        body: {
+          setAttribute: jest.fn(),
+          style: { background: '', setProperty: jest.fn() },
+        },
+      },
+      configurable: true,
+    });
+
+    expect(syncPlayLookFromStorageIfDrifted()).toBe(false);
+    expect(swatches.find((s) => s.row === 'dark-charcoal')?.active).toBe(true);
   });
 });
