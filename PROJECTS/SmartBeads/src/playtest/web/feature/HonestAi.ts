@@ -39,7 +39,17 @@ export interface AiTimerContext {
   globalRemainingSec: number;
   redRemainingSec: number;
   blueRemainingSec: number;
-  /** Tournament timer — chess clocks in HvH only. */
+  /**
+   * Tournament timer — chess clocks in HvH only.
+   * Currently always `false` when the AI actually evaluates a position: the AI
+   * only moves in pve/coach/spectate (`isHumanVsAiMode` + spectate), and
+   * `isTournamentTimerActive` only returns true for `mode === 'pvp'` — the two
+   * conditions can't hold at once under today's product rules. The
+   * `usePerSideClocks` branches in `timerUrgency`/`timerEvalAdjust` below are
+   * kept as the intended seam for a future "AI under tournament rules" mode
+   * (analysis/lab tooling, or an eventual AI opponent in HvH-style formats),
+   * but are unreachable — and therefore untested — in the shipped product today.
+   */
   usePerSideClocks: boolean;
 }
 

@@ -551,6 +551,11 @@ export class FeatureSession {
       if (this.shotRemaining <= 0) {
         const loser = this.engine.getState().currentPlayer;
         this.endGameByFeature(opponentOf(loser), 'Shot clock expired.');
+        // Shot clock, tournament timer, and shared timer are independent settings
+        // that can all be active together — without this return, a tournament/
+        // shared-timer expiry in the same tick would silently overwrite the
+        // shot-clock winner/reason set above.
+        return;
       }
     }
 

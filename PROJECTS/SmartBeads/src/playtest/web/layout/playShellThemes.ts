@@ -474,8 +474,7 @@ export function coalesceStoredLookState(): {
   boardLookId: BoardLookThemeId;
   sideLookId: PlayShellThemeId;
 } {
-  let boardLookId = readStoredBoardLookIdRaw();
-  let sideLookId = readStoredSideLookIdRaw();
+  const boardLookId = readStoredBoardLookIdRaw();
 
   if (isLightBoardLookId(boardLookId)) {
     // Covers boardLookId === '4' too — the older board+side-both-'4' branch this
@@ -586,31 +585,11 @@ function readStoredBoardLookIdRaw(): BoardLookThemeId {
   return DEFAULT_BOARD_LOOK_ID;
 }
 
-function readStoredSideLookIdRaw(): PlayShellThemeId {
-  try {
-    const stored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
-    if (stored) return normalizeSideLookId(stored);
-    const legacySide = migrateLegacySideLookId(localStorage.getItem(LEGACY_SIDE_LOOK_STORAGE_KEY));
-    if (legacySide) return legacySide;
-    const v2 = localStorage.getItem(PLAY_THEME_STORAGE_KEY);
-    const migratedV2 = migrateLegacySideLookId(v2);
-    if (migratedV2) return migratedV2;
-    const legacy = localStorage.getItem(LEGACY_PLAY_THEME_STORAGE_KEY);
-    const migrated = migrateLegacyPlayThemeId(legacy);
-    if (migrated) return migrated;
-  } catch {
-    /* storage unavailable */
-  }
-  return DEFAULT_SIDE_LOOK_ID;
-}
-
-function migrateLegacySideLookId(value: string | null | undefined): PlayShellThemeId | null {
-  if (!value) return null;
-  if (value === '7') return '7';
-  if (isCompleteLookId(value)) return value;
-  if (value === '5' || value === '6') return '7';
-  return null;
-}
+// readStoredSideLookIdRaw() and migrateLegacySideLookId() were removed 2026-09-14 —
+// coalesceStoredLookState() never consumed their result (every return path hardcoded
+// the side look), so this whole legacy-side-migration path was dead and untested.
+// The board theme is the only thing actually read from storage here; side look is
+// always forced by the current design (DECISIONS: single charcoal side, id '7').
 
 export function readStoredBoardLookId(): BoardLookThemeId {
   return coalesceStoredLookState().boardLookId;

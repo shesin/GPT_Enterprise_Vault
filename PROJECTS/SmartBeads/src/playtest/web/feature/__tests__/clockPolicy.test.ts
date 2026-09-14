@@ -98,9 +98,12 @@ describe('shot clock during AI turn (agent-verified)', () => {
     });
     session.resetTurnClock();
     const before = session.getP1Clock();
+    const blueBefore = session.getP2Clock();
     expect(before).toBeGreaterThan(0);
     for (let i = 0; i < 5; i++) session.timerTick();
     expect(session.getP1Clock()).toBe(before - 5);
+    // Only the side to move loses time — confirm BLUE's clock is untouched.
+    expect(session.getP2Clock()).toBe(blueBefore);
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
   });
 
@@ -116,6 +119,23 @@ describe('shot clock during AI turn (agent-verified)', () => {
     expect(before).toBe(3 * 60);
     for (let i = 0; i < 5; i++) session.timerTick();
     expect(session.getGlobalMatchRemaining()).toBe(before - 5);
+  });
+
+  it('shot clock and tournament timer expiring on the same tick keeps the shot-clock reason (no silent overwrite)', () => {
+    // shotClock '120' and tournamentTimer '2' (120s) both reach 0 on tick 120,
+    // since no move happens to reset the shot clock or change whose turn it is.
+    const session = new FeatureSession('16', {
+      ...base,
+      mode: 'pvp',
+      shotClock: '120',
+      tournamentTimer: '2',
+    });
+    session.resetTurnClock();
+    for (let i = 0; i < 120; i++) session.timerTick();
+    expect(session.isGameOver()).toBe(true);
+    // Without the timerTick() early return, the tournament-timer block below
+    // would run in the same tick and overwrite this with "ran out of time.".
+    expect(session.getDisplayedReason()).toContain('Shot clock');
   });
 
   it('tournament timer flag fall ends game instantly (chess style)', () => {

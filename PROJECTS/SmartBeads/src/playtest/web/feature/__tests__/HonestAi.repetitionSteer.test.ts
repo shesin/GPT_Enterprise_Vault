@@ -1,7 +1,7 @@
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
 import { buildPositionKey, repetitionPenaltyForPosition } from '../../../../core/positionKey';
-import { generateTurnEnds } from '../HonestAi';
-import { honestAiTurnEndsDeadlineMs } from './honestAiTestBudget';
+import { generateTurnEnds, selectAiTurnPath } from '../HonestAi';
+import { honestAiTestOpts, honestAiTurnEndsDeadlineMs } from './honestAiTestBudget';
 
 describe('HonestAi repetition steer', () => {
   it('scores repeating candidate turns higher penalty than non-repeating alternatives', () => {
@@ -53,5 +53,34 @@ describe('HonestAi repetition steer', () => {
     expect(forwardPen).toBeGreaterThan(0);
     expect(backPen).toBe(0);
     expect(forwardPen).toBeGreaterThan(backPen);
+  });
+
+  it('selectAiTurnPath actually avoids the repeating move (integration, not just the raw penalty function)', () => {
+    // Same scenario as above, but through the real move-selection entry point —
+    // proves the penalty is actually consumed by search/eval, not just computed.
+    const engine = new SmartBeadsEngine('6');
+    for (const node of engine.getState().board.intersections) {
+      node.occupant = undefined;
+    }
+    const board = engine.getState().board;
+    const id = (label: string) => board.intersections.find((p) => p.label === label)!.id;
+
+    board.intersections.find((p) => p.label === 'A22')!.occupant = 'RED';
+    board.intersections.find((p) => p.label === 'A23')!.occupant = 'BLUE';
+    engine.getState().currentPlayer = 'BLUE';
+
+    const snap = engine.exportSnapshot();
+    const forward = { from: id('A23'), to: id('A33') };
+
+    const afterForward = new SmartBeadsEngine('6');
+    afterForward.loadSnapshot(snap);
+    afterForward.applyMove(forward);
+    const forwardSnap = afterForward.exportSnapshot();
+    const repeatKey = buildPositionKey(forwardSnap.state, forwardSnap.chainPieceId);
+    snap.positionHistory = { [repeatKey]: 1 };
+
+    const path = selectAiTurnPath('6', 3, snap, 'BLUE', honestAiTestOpts());
+    expect(path).not.toBeNull();
+    expect(path![0].to).not.toBe(forward.to);
   });
 });
