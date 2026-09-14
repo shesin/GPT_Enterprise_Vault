@@ -182,7 +182,7 @@ export function bootstrapPlayHub(
   function setSelectedBoard(boardId: ProductBoardId): void {
     selectedBoardId = boardId;
     boardSelect!.value = boardId;
-    syncBoardTileSelection(boardGrid, boardId);
+    syncBoardTileSelection(boardGrid!, boardId);
   }
 
   function launchHubMode(hubMode: HubModeValue): void {

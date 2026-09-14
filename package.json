@@ -1,5 +1,9 @@
 {
   "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "pretest": "npm run typecheck",
+    "pretest:jest": "npm run typecheck",
+    "pretest:jest:fast": "npm run typecheck",
     "test": "node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs && node PROJECTS/SmartBeads/scripts/m2-2step-npm-gate.mjs",
     "test:jest": "node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs",
     "test:jest:fast": "node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs --skip-slow",

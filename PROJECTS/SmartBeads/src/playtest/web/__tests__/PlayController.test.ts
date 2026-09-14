@@ -8,7 +8,7 @@ import { honestAiTestOpts } from '../feature/__tests__/honestAiTestBudget';
 const off = {
   aiLevel: 2 as const,
   timer: 'off' as const,
-  tournamentTimer: 'off',
+  tournamentTimer: 'off' as const,
   shotClock: 'off' as const,
   centerRule: 'off' as const,
 };
@@ -108,7 +108,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
       mode: 'pve',
       aiLevel: 3,
       timer: 'off',
-  tournamentTimer: 'off',
+  tournamentTimer: 'off' as const,
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -133,7 +133,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
       mode: 'pve',
       aiLevel: 3,
       timer: 'off',
-  tournamentTimer: 'off',
+  tournamentTimer: 'off' as const,
       shotClock: 'off',
       centerRule: 'endgame',
     });

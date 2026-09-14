@@ -41,6 +41,8 @@ export function buildGameSummary(engine: SmartBeadsEngine, startingPlayer: Playe
     startingPlayer,
     winner: state.winner ?? 'DRAW',
     totalPlies: state.moveCount,
+    redCaptures: state.captures.RED,
+    blueCaptures: state.captures.BLUE,
     redRemainingPieces: redPieces,
     blueRemainingPieces: bluePieces,
     terminationReason,
@@ -141,6 +143,7 @@ export function runInteractivePlaytest(): void {
     console.log(`Winner: ${summary.winner}`);
     console.log(`Total Plies: ${summary.totalPlies}`);
     console.log(`Final Pieces -> RED: ${summary.redRemainingPieces} | BLUE: ${summary.blueRemainingPieces}`);
+    console.log(`Captures -> RED: ${summary.redCaptures} | BLUE: ${summary.blueCaptures}`);
     console.log(`Termination Reason: ${summary.terminationReason}`);
 
     const again = await promptUser('\nPlay another game? (y/n) [default n]: ');

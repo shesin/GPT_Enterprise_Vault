@@ -30,8 +30,8 @@ describe('CanvasBoardRenderer board grid lines', () => {
       playHumanBg: '',
       playHumanBorder: '',
       playHumanAccent: '',
-      creamBead: { highlight: '', mid: '', shadow: '', stroke: '' },
-      blackBead: { highlight: '', mid: '', shadow: '', rimStroke: '' },
+      creamBead: { highlight: '', mid: '', shadow: '' },
+      blackBead: { highlight: '', mid: '', shadow: '' },
     });
 
     const strokeStyles: string[] = [];

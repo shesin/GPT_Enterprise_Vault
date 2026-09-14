@@ -234,6 +234,7 @@ describe('HonestAi difficulty contract', () => {
       globalRemainingSec: 150,
       redRemainingSec: 0,
       blueRemainingSec: 0,
+      usePerSideClocks: false,
       mode: 'pve' as const,
     };
     const timerLow = {
@@ -241,6 +242,7 @@ describe('HonestAi difficulty contract', () => {
       globalRemainingSec: 8,
       redRemainingSec: 0,
       blueRemainingSec: 0,
+      usePerSideClocks: false,
       mode: 'pve' as const,
     };
     const scoreHigh = evaluate(state, '6x3x5', 'BLUE', center, timerHigh);

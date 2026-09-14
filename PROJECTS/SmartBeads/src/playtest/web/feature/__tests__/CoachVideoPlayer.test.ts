@@ -1,4 +1,4 @@
-import { CoachVideoPlayer } from '../CoachVideoPlayer';
+import { CoachVideoPlayer, type CoachVideoPlayerCallbacks } from '../CoachVideoPlayer';
 import { COACH_VIDEO, COACH_VIDEO_RESIGN_SEGMENT_START_MS, COACH_VIDEO_WIN_SEGMENT_START_MS, COACH_WIN_CONGRATS_CUE_MS, COACH_WIN_CONGRATS_PHASE_MS, type CoachVideoCue, type CoachVideoHighlight, type CoachVideoKeyframe, type CoachVideoMove, type CoachVideoSegmentBanner, type CoachVideoSpeech } from '../CoachVideoScript';
 
 describe('CoachVideoPlayer', () => {
@@ -43,7 +43,7 @@ describe('CoachVideoPlayer', () => {
 
   it('pauses timeline until a scripted move animation completes', () => {
     const moves: CoachVideoMove[] = [];
-    let finishMove: (() => void) | null = null;
+    let finishMove: () => void = () => {};
     const player = new CoachVideoPlayer(COACH_VIDEO, makeCallbacks({
       onPlayMove: (move, onDone) => {
         moves.push(move);
@@ -56,7 +56,7 @@ describe('CoachVideoPlayer', () => {
     expect(moves).toHaveLength(1);
     expect(moves[0].from).toBe(12);
 
-    finishMove?.();
+    finishMove();
     jest.advanceTimersByTime(200);
     expect(player.getTimeMs()).toBeGreaterThan(6_500);
 
@@ -101,9 +101,10 @@ describe('CoachVideoPlayer', () => {
     }));
 
     player.seek(COACH_WIN_CONGRATS_CUE_MS + 100);
-    expect(cues.at(-1)?.kind).toBe('result');
-    if (cues.at(-1)?.kind === 'result') {
-      expect(cues.at(-1)?.phase).toBe('congrats');
+    const resultCue = cues.at(-1);
+    expect(resultCue?.kind).toBe('result');
+    if (resultCue?.kind === 'result') {
+      expect(resultCue.phase).toBe('congrats');
     }
 
     player.seek(COACH_WIN_CONGRATS_CUE_MS + COACH_WIN_CONGRATS_PHASE_MS + 100);
@@ -130,7 +131,7 @@ describe('CoachVideoPlayer', () => {
   });
 });
 
-function makeCallbacks(overrides: Partial<Parameters<typeof CoachVideoPlayer>[1]> = {}) {
+function makeCallbacks(overrides: Partial<CoachVideoPlayerCallbacks> = {}) {
   return {
     onTimeChange: jest.fn(),
     onApplyKeyframe: jest.fn() as (keyframe: CoachVideoKeyframe) => void,

@@ -90,6 +90,10 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 - **Playwright Browser Gates:** Real canvas mouse-click tests for two-click landing captures across all 7 boards, junction hops, and inert-bead safety (`npm test` chains `m2-2step-npm-gate.mjs` on `index.html?play=1`; board reset via `__SB_TEST__.enterFromHub`). **Automated pass** 2026-09-11.
 - **Production HonestAi Lab:** `scripts/lab-ai-difficulty-eval.mjs` (TypeScript HonestAi — not prototype `.cjs`).
 - **Failure audit:** `GPT_PROJECT_AUDIT_05P.md`; gates in `VISION/CURSOR_PROMPT_01.md`; hooks in `.cursor/rules/smartbeads-core.mdc` + `instruction-fidelity.mdc` § Process.
+- **Type safety (2026-09-14):** `tsc --noEmit` (whole project) found **85 real type errors** invisible to Jest, since Jest transpiles without type-checking. All fixed; `typecheck` now runs automatically before `npm test` / `test:jest` / `test:jest:fast` (npm `pre*` hooks) so this can't silently reaccumulate. Two were live bugs, not just typing noise:
+  - Two `FeatureSession.turnControl.test.ts` tests ("clears all-bead flash... (chain)", "mid-chain: tap another own bead...") built their capture-chain fixture from a field (`Move.over`) that doesn't exist on `getLegalMoves()` results — the chain-finder always came back empty, both tests hit an early return and passed while asserting nothing. Rewritten to read `board.jumpPaths` (which does carry `over`), fixed a related setup bug (only one hop's victim was being placed, so a genuine chain never formed), and added `expect.hasAssertions()` so a future regression of this kind fails loudly instead of passing silently.
+  - `HonestAi.ts`'s per-board think-time table keyed the 7-bead board as `'7x4x5'` instead of the real id `'7'` — Expert AI silently never got its intended 1.05× budget on that board. Fixed.
+  - `HumanVsAiRunner.ts`'s `buildGameSummary()` built a `GameResult` missing `redCaptures`/`blueCaptures` — added, and the CLI summary now prints them.
 
 ---
 

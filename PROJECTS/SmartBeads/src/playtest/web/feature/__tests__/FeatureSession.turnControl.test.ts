@@ -5,7 +5,7 @@ import { firstOpeningSlide } from '../firstMoveInvariants';
 const off = {
   aiLevel: 2 as const,
   timer: 'off' as const,
-  tournamentTimer: 'off',
+  tournamentTimer: 'off' as const,
   shotClock: 'off' as const,
   centerRule: 'off' as const,
 };
@@ -339,9 +339,12 @@ describe('FeatureSession turn start rings', () => {
   });
 
   it('clears all-bead flash after first move on same turn (chain)', () => {
+    expect.hasAssertions();
     const session = new FeatureSession('8x4x6', { ...off, mode: 'pvp' as const });
     const engine = session.getEngine();
-    const paths = engine.getLegalMoves().filter((m) => m.over !== undefined);
+    // getLegalMoves() returns plain {from,to} Move objects with no `over` field —
+    // chain geometry (from/over/to) only exists on board.jumpPaths.
+    const paths = engine.getState().board.jumpPaths ?? [];
     let chain: [typeof paths[0], typeof paths[0]] | null = null;
     for (const p1 of paths) {
       for (const p2 of paths) {
@@ -354,11 +357,13 @@ describe('FeatureSession turn start rings', () => {
     }
     if (!chain) return;
 
-    const [hop1] = chain;
+    // Both hops' victims must be on the board — a single capture with no
+    // follow-up available ends the turn instead of opening a chain.
+    const [hop1, hop2] = chain;
     for (const point of engine.getState().board.intersections) point.occupant = undefined;
     engine.getState().board.intersections[hop1.from].occupant = 'RED';
     engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
-    engine.getState().board.intersections[hop1.to].occupant = undefined;
+    engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
     engine.getState().currentPlayer = 'RED';
 
     expect(session.selectNode(hop1.from)).toBe(true);
@@ -369,9 +374,12 @@ describe('FeatureSession turn start rings', () => {
   });
 
   it('mid-chain: tap another own bead is ignored until Finish capture', () => {
+    expect.hasAssertions();
     const session = new FeatureSession('8x4x6', { ...off, mode: 'pvp' as const });
     const engine = session.getEngine();
-    const paths = engine.getLegalMoves().filter((m) => m.over !== undefined);
+    // getLegalMoves() returns plain {from,to} Move objects with no `over` field —
+    // chain geometry (from/over/to) only exists on board.jumpPaths.
+    const paths = engine.getState().board.jumpPaths ?? [];
     let chain: [typeof paths[0], typeof paths[0]] | null = null;
     for (const p1 of paths) {
       for (const p2 of paths) {
@@ -384,13 +392,15 @@ describe('FeatureSession turn start rings', () => {
     }
     if (!chain) return;
 
-    const [hop1] = chain;
+    // Both hops' victims must be on the board — a single capture with no
+    // follow-up available ends the turn instead of opening a chain.
+    const [hop1, hop2] = chain;
     for (const point of engine.getState().board.intersections) point.occupant = undefined;
     engine.getState().board.intersections[hop1.from].occupant = 'RED';
     engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
-    engine.getState().board.intersections[hop1.to].occupant = undefined;
+    engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
     const otherRed = engine.getState().board.intersections.find(
-      (p) => !new Set([hop1.from, hop1.over, hop1.to]).has(p.id),
+      (p) => !new Set([hop1.from, hop1.over, hop1.to, hop2.over, hop2.to]).has(p.id),
     );
     expect(otherRed).toBeDefined();
     otherRed!.occupant = 'RED';

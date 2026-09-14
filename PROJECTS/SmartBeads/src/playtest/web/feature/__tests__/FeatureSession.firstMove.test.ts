@@ -17,7 +17,7 @@ import { AI_REPLY_DELAY_MS, HUMAN_PLY_OBSERVE_MS, HUMAN_SLIDE_ANIM_MS } from '..
 const off = {
   aiLevel: 2 as const,
   timer: 'off' as const,
-  tournamentTimer: 'off',
+  tournamentTimer: 'off' as const,
   shotClock: 'off' as const,
   centerRule: 'off' as const,
 };

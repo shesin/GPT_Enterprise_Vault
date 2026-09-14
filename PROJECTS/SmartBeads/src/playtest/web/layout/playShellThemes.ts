@@ -478,10 +478,9 @@ export function coalesceStoredLookState(): {
   let sideLookId = readStoredSideLookIdRaw();
 
   if (isLightBoardLookId(boardLookId)) {
+    // Covers boardLookId === '4' too — the older board+side-both-'4' branch this
+    // replaced could never run after this check, so it was removed as dead code.
     return { boardLookId, sideLookId: '7' };
-  }
-  if (boardLookId === '4' && sideLookId === '4') {
-    return { boardLookId: '4', sideLookId: '7' };
   }
   if (isCompleteLookId(boardLookId)) {
     return { boardLookId, sideLookId: '7' };
@@ -572,7 +571,8 @@ function readStoredBoardLookIdRaw(): BoardLookThemeId {
     const sideStored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
     const v2 = localStorage.getItem(PLAY_THEME_STORAGE_KEY);
     // v2 stores board id when side is charcoal-only (7) — recover board if primary key lost
-    if (sideStored === '7' && isBoardLookThemeId(v2) && v2 !== '7') return v2;
+    // isBoardLookThemeId already excludes '7' (a side-only id), so no extra check needed.
+    if (sideStored === '7' && isBoardLookThemeId(v2)) return v2;
     if (isCompleteLookId(v2) && (sideStored === v2 || sideStored === null)) return v2;
     if (v2 === '7') return DEFAULT_LIGHT_BOARD_LOOK_ID;
     if (v2 === '5' || v2 === '6') return DEFAULT_BOARD_LOOK_ID;

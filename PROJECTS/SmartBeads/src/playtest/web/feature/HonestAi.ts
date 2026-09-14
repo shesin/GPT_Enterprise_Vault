@@ -83,7 +83,7 @@ const BOARD_THINK_MULTIPLIER: Partial<Record<BoardVariant, number>> = {
   '12x6x5': 1.3,
   '10x5': 1.15,
   '8x4x6': 1.1,
-  '7x4x5': 1.05,
+  '7': 1.05,
 };
 
 function opponentOf(player: Player): Player {

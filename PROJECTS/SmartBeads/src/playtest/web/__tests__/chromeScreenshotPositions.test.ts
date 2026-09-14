@@ -5,7 +5,7 @@ import { runAiTurn } from '../PlayController';
 const off = {
   aiLevel: 2 as const,
   timer: 'off' as const,
-  tournamentTimer: 'off',
+  tournamentTimer: 'off' as const,
   shotClock: 'off' as const,
   centerRule: 'off' as const,
 };

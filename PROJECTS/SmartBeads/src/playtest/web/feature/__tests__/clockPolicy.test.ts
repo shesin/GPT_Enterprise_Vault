@@ -64,7 +64,7 @@ describe('shot clock during AI turn (agent-verified)', () => {
   it('shot clock to 0 on BLUE awards Ivory (RED) even if AI has not moved', () => {
     const session = new FeatureSession('8x4x6', {
       ...base,
-      shotClock: '10',
+      shotClock: '30',
     });
     const slide = session.getEngine().getLegalMoves().find((m) => {
       const jump = session.getEngine().getState().board.jumpPaths?.some(
@@ -76,7 +76,8 @@ describe('shot clock during AI turn (agent-verified)', () => {
     session.applyMove(slide!);
     expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
     session.resetTurnClock();
-    for (let i = 0; i < 10; i++) {
+    // '30' is the smallest real shot-clock option the product offers.
+    for (let i = 0; i < 30; i++) {
       expect(shellTimerShouldSkip({
         gameOver: session.isGameOver(),
         aiThinking: true,
