@@ -9,11 +9,13 @@ import {
 import { cloneBoardDefinition, findJumpPath, Move, Player } from '../../models/GameState';
 import { isBeadSetId, readBeadSetId, writeBeadSetId } from './layout/beadSetThemes';
 import {
+  applyPlayLookFromRow,
   applyPlayLookFromSwatch,
   applyPlayLookState,
-  isPlayShellThemeId,
+  isLookSwatchId,
   readStoredBoardLookId,
   readStoredSideLookId,
+  type PlayLookRow,
   type PlayShellThemeId,
 } from './layout/playShellThemes';
 import { formatCenterDisplay } from './feature/centerScoring';
@@ -2218,6 +2220,20 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     drawBoard();
   }
 
+  function resolvePlayLookRow(btn: HTMLButtonElement): PlayLookRow | null {
+    if (btn.closest('.play-theme-swatches--dark-charcoal')) return 'dark-charcoal';
+    if (btn.closest('.play-theme-swatches--light-charcoal')) return 'light-charcoal';
+    if (btn.closest('.play-theme-swatches--dark-same')) return 'dark-same';
+    return null;
+  }
+
+  function applyPlayShellThemeFromRow(swatchId: string, row: PlayLookRow): void {
+    if (!playShell) return;
+    const { boardChanged } = applyPlayLookFromRow(swatchId, row);
+    if (boardChanged) drawBoard();
+    updateUI();
+  }
+
   function applyPlayShellTheme(swatchId: PlayShellThemeId): void {
     if (!playShell) return;
     const { boardChanged } = applyPlayLookFromSwatch(swatchId);
@@ -2254,13 +2270,18 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       for (const btn of boardThemeSetting.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
         btn.addEventListener('click', () => {
           const next = btn.dataset.playTheme;
-          if (isPlayShellThemeId(next)) applyPlayShellTheme(next);
+          const row = resolvePlayLookRow(btn);
+          if (row && next) {
+            applyPlayShellThemeFromRow(next, row);
+            return;
+          }
+          if (isLookSwatchId(next)) applyPlayShellTheme(next);
         });
       }
     }
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('playTheme');
-    if (isPlayShellThemeId(fromUrl)) {
+    if (isLookSwatchId(fromUrl)) {
       applyPlayShellTheme(fromUrl);
       return;
     }

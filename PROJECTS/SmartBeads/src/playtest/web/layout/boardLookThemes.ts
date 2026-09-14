@@ -12,9 +12,7 @@ export type { BoardLookThemeId };
 export type { CreamHalfStop, BeadShade } from './playShellThemes';
 export type BoardLookTheme = import('./playShellThemes').PlayShellTheme;
 
-export function isBoardLookThemeId(value: string | null | undefined): value is BoardLookThemeId {
-  return value === '1' || value === '2' || value === '3' || value === '4' || value === '5' || value === '6';
-}
+export { isBoardLookThemeId } from './playShellThemes';
 
 export function getBoardLookTheme(id: BoardLookThemeId): BoardLookTheme {
   return getPlayShellTheme(id);

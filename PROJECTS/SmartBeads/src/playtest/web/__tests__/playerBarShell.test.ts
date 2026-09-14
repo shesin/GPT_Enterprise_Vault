@@ -65,12 +65,23 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).not.toContain('Gold (no fill)');
   });
 
-  it('board settings has look swatches (6 complete + charcoal side) and bead set picker', () => {
+  it('board settings has three look rows plus lovable light compare swatches and bead set picker', () => {
     expect(indexHtml).toContain('id="bead-set-select"');
     expect(indexHtml).toContain('Ivory &amp; Ebony');
     expect(indexHtml).toContain('id="play-theme-setting"');
-    expect(indexHtml).toContain('play-theme-swatches--complete');
-    expect(indexHtml).toContain('data-play-theme="7"');
+    expect(indexHtml).toContain('Dark board — charcol side panel');
+    expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');
+    expect(indexHtml).toContain('Light board — charcoal side panel');
+    expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
+    expect(indexHtml).toContain('Dark board — same side panel');
+    expect(indexHtml).toContain('play-theme-swatches--dark-same');
+    expect(indexHtml).toContain('data-play-theme="4"');
+    expect(indexHtml).toContain('Warm Walnut');
+    expect(indexHtml).not.toContain('Desert Clay');
+    expect(indexHtml).not.toContain('Cream Ivory');
+    expect(indexHtml).not.toContain('Warm Cream');
+    expect(indexHtml).not.toContain('play-theme-swatches--side');
+    expect(indexHtml).not.toContain('data-play-theme="7"');
     expect(indexHtml).not.toContain('id="hub-play-theme-setting"');
     expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-look="1"/);
     expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-side-look="1"/);

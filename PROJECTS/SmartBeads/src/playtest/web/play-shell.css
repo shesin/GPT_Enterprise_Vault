@@ -115,18 +115,29 @@ body.hub-page {
 .play-theme-swatch[data-play-theme="3"] {
   background: linear-gradient(165deg, oklch(0.34 0.07 220), oklch(0.23 0.055 225));
 }
-.play-theme-swatch[data-play-theme="4"] {
-  background: linear-gradient(165deg, oklch(0.72 0.055 84), oklch(0.59 0.065 78));
-}
 .play-theme-swatch[data-play-theme="5"] {
   background: linear-gradient(165deg, oklch(0.25 0.08 145), oklch(0.18 0.055 145));
 }
 .play-theme-swatch[data-play-theme="6"] {
   background: linear-gradient(165deg, oklch(0.25 0.07 310), oklch(0.17 0.055 305));
 }
-.play-theme-swatch[data-play-theme="7"] {
-  background: linear-gradient(165deg, oklch(0.16 0.012 60), oklch(0.11 0.01 60));
-  box-shadow: inset 0 0 0 1px rgba(201, 162, 78, 0.45);
+.play-theme-swatches--dark-charcoal .play-theme-swatch,
+.play-theme-swatches--light-charcoal .play-theme-swatch {
+  box-shadow:
+    inset 0 0 0 1px rgba(201, 162, 78, 0.35),
+    inset 0 -10px 0 0 oklch(0.16 0.012 60);
+}
+.play-theme-swatch[data-play-theme="4"] {
+  background: linear-gradient(165deg, oklch(0.72 0.055 84), oklch(0.59 0.065 78));
+}
+.play-theme-swatch[data-play-theme="9"] {
+  background: linear-gradient(165deg, oklch(0.76 0.04 30), oklch(0.63 0.045 28));
+}
+.play-theme-swatch[data-play-theme="10"] {
+  background: linear-gradient(165deg, oklch(0.74 0.04 145), oklch(0.61 0.045 142));
+}
+.play-theme-swatch[data-play-theme="12"] {
+  background: linear-gradient(165deg, oklch(0.55 0.075 55), oklch(0.42 0.07 52));
 }
 .play-theme-swatch.is-active {
   border-color: var(--gold);

@@ -195,21 +195,32 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('play theme — 6 complete + charcoal side-only', () => {
+  describe('play theme — three look rows (dark-charcoal, light-charcoal, dark-same)', () => {
     it('swatch UI, storage split, unified complete colours', () => {
-      expect(playShellThemesSource).toMatch(/function applyPlayLookFromSwatch/);
+      expect(playShellThemesSource).toMatch(/function applyPlayLookFromRow/);
       expect(playShellThemesSource).toMatch(/function applyPlayLookState/);
-      expect(playShellThemesSource).toMatch(/SIDE_ONLY_LOOK_ID.*'7'/);
+      expect(playShellThemesSource).toMatch(/LOVABLE_LIGHT_BOARD_THEMES/);
+      expect(playShellThemesSource).toMatch(/isLightBoardLookId/);
       expect(playHubSource).toMatch(/applyPlayLookState/);
-      expect(playControllerSource).toMatch(/applyPlayLookFromSwatch/);
+      expect(playControllerSource).toMatch(/applyPlayLookFromRow/);
+      expect(playControllerSource).toMatch(/resolvePlayLookRow/);
       expect(playControllerSource).toMatch(/play-theme-swatch/);
       expect(indexHtml).toContain('id="play-theme-setting"');
-      expect(indexHtml).toContain('play-theme-swatches--complete');
-      expect(indexHtml).toContain('play-theme-swatches--side');
-      expect(indexHtml).toContain('data-play-theme="7"');
+      expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');
+      expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
+      expect(indexHtml).toContain('play-theme-swatches--dark-same');
+      expect(indexHtml).toContain('data-play-theme="4"');
+      expect(indexHtml).toContain('data-play-theme="10"');
+      expect(indexHtml).toContain('data-play-theme="12"');
+      expect(indexHtml).toContain('Warm Walnut');
+      expect(indexHtml).not.toContain('Desert Clay');
+      expect(indexHtml).not.toContain('Cream Ivory');
+      expect(indexHtml).not.toContain('Warm Cream');
+      expect(indexHtml).not.toContain('play-theme-swatches--side');
+      expect(indexHtml).not.toContain('data-play-theme="7"');
       expect(playControllerSource).toMatch(/function syncPlayShellThemeFromStorage/);
       expect(playControllerSource).toMatch(/enterFromHub[\s\S]*syncPlayShellThemeFromStorage\(\)/);
-      expect(playShellThemesSource).toMatch(/frameOuter: t\.surface/);
+      expect(playShellThemesSource).toMatch(/frameOuter: t\.frameOuter/);
       expect(playControllerSource).toMatch(/initBeadSetSetting/);
       expect(indexHtml).toContain('id="bead-set-select"');
       expect(canvasRendererSource).toMatch(/getActiveBoardLookTheme/);

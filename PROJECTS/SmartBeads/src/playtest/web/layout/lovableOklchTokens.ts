@@ -20,7 +20,8 @@ export interface LovableBoardTokens {
   lines: string;
 }
 
-export const LOVABLE_BOARD_THEMES: readonly LovableBoardTokens[] = [
+/** Complete row — matched board + side (5 looks). */
+export const LOVABLE_COMPLETE_BOARD_THEMES: readonly LovableBoardTokens[] = [
   {
     label: 'Classic Green',
     surface: 'oklch(0.30 0.07 157)',
@@ -46,14 +47,6 @@ export const LOVABLE_BOARD_THEMES: readonly LovableBoardTokens[] = [
     lines: 'oklch(0.81 0.055 90)',
   },
   {
-    label: 'Sandy Beige',
-    surface: 'oklch(0.72 0.055 84)',
-    shadow: 'oklch(0.59 0.065 78)',
-    frameOuter: 'oklch(0.43 0.07 65)',
-    frameInner: 'oklch(0.25 0.055 58)',
-    lines: 'oklch(0.39 0.065 62)',
-  },
-  {
     label: 'Forest Green',
     surface: 'oklch(0.25 0.08 145)',
     shadow: 'oklch(0.18 0.055 145)',
@@ -70,6 +63,45 @@ export const LOVABLE_BOARD_THEMES: readonly LovableBoardTokens[] = [
     lines: 'oklch(0.72 0.09 82)',
   },
 ] as const;
+
+/** Light board row — always paired with charcoal side panels. */
+export const LOVABLE_LIGHT_BOARD_THEMES: readonly LovableBoardTokens[] = [
+  {
+    label: 'Sandy Beige',
+    surface: 'oklch(0.72 0.055 84)',
+    shadow: 'oklch(0.59 0.065 78)',
+    frameOuter: 'oklch(0.72 0.055 84)',
+    frameInner: 'oklch(0.59 0.065 78)',
+    lines: 'oklch(0.39 0.065 62)',
+  },
+  {
+    label: 'Soft Blush',
+    surface: 'oklch(0.76 0.04 30)',
+    shadow: 'oklch(0.63 0.045 28)',
+    frameOuter: 'oklch(0.76 0.04 30)',
+    frameInner: 'oklch(0.63 0.045 28)',
+    lines: 'oklch(0.42 0.055 65)',
+  },
+  {
+    label: 'Pale Sage',
+    surface: 'oklch(0.74 0.04 145)',
+    shadow: 'oklch(0.61 0.045 142)',
+    frameOuter: 'oklch(0.74 0.04 145)',
+    frameInner: 'oklch(0.61 0.045 142)',
+    lines: 'oklch(0.40 0.05 130)',
+  },
+  {
+    label: 'Warm Walnut',
+    surface: 'oklch(0.55 0.075 55)',
+    shadow: 'oklch(0.42 0.07 52)',
+    frameOuter: 'oklch(0.32 0.06 50)',
+    frameInner: 'oklch(0.18 0.045 48)',
+    lines: 'oklch(0.76 0.055 80)',
+  },
+] as const;
+
+/** @deprecated Use LOVABLE_COMPLETE_BOARD_THEMES + LOVABLE_LIGHT_BOARD_THEMES. */
+export const LOVABLE_BOARD_THEMES = LOVABLE_COMPLETE_BOARD_THEMES;
 
 export type BeadSetId = 'ivory-ebony' | 'white-black' | 'wooden' | 'pearl' | 'metallic';
 

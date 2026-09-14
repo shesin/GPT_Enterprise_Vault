@@ -1,4 +1,4 @@
-import { LOVABLE_BOARD_THEMES } from '../lovableOklchTokens';
+import { LOVABLE_LIGHT_BOARD_THEMES } from '../lovableOklchTokens';
 import { getActiveBoardLookTheme, getBoardLookTheme } from '../boardLookThemes';
 import { applyPlayLookState } from '../playShellThemes';
 
@@ -45,18 +45,20 @@ describe('boardLookThemes', () => {
     Reflect.deleteProperty(globalThis, 'localStorage');
   });
 
-  it('exposes six board presets from play shell themes', () => {
+  it('exposes complete and light board presets including lovable compare swatches', () => {
     expect(getBoardLookTheme('1').label).toBe('Classic Green');
     expect(getBoardLookTheme('6').label).toBe('Purple Night');
+    expect(getBoardLookTheme('4').label).toBe('Sandy Beige');
+    expect(getBoardLookTheme('10').label).toBe('Pale Sage');
+    expect(getBoardLookTheme('12').label).toBe('Warm Walnut');
   });
 
-  it('active board look follows stored board id, not side-only side id', () => {
-    mockPlayThemeDom('3', '7');
-    applyPlayLookState('3', '7');
+  it('active board look follows light board id when side is charcoal', () => {
+    mockPlayThemeDom('9', '7');
+    applyPlayLookState('9', '7');
     const active = getActiveBoardLookTheme();
-    const ocean = LOVABLE_BOARD_THEMES[2];
-    expect(active.surfaceTop).toBe(ocean.surface);
-    expect(active.frameOuter).toBe(ocean.surface);
-    expect(active.lineColor).toBe(ocean.lines);
+    const softBlush = LOVABLE_LIGHT_BOARD_THEMES[1];
+    expect(active.surfaceTop).toBe(softBlush.surface);
+    expect(active.frameOuter).toBe(softBlush.frameOuter);
   });
 });
