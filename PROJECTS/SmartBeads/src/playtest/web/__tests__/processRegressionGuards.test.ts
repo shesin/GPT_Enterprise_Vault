@@ -204,6 +204,8 @@ describe('process regression guards', () => {
       expect(playHubSource).toMatch(/applyPlayLookState/);
       expect(playControllerSource).toMatch(/applyPlayLookFromRow/);
       expect(playControllerSource).toMatch(/resolvePlayLookRow/);
+      expect(playControllerSource).toMatch(/syncPlayLookFromStorageIfDrifted/);
+      expect(playShellThemesSource).toMatch(/function syncPlayLookFromStorageIfDrifted/);
       expect(playControllerSource).toMatch(/play-theme-swatch/);
       expect(indexHtml).toContain('id="play-theme-setting"');
       expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');

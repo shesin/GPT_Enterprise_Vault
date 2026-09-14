@@ -15,6 +15,7 @@ import {
   isLookSwatchId,
   readStoredBoardLookId,
   readStoredSideLookId,
+  syncPlayLookFromStorageIfDrifted,
   type PlayLookRow,
   type PlayShellThemeId,
 } from './layout/playShellThemes';
@@ -1363,6 +1364,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   function drawBoard(): void {
+    syncPlayLookFromStorageIfDrifted();
     const state = session.getEngine().getState();
     const board = anim ? cloneBoardDefinition(state.board) : state.board;
     if (anim && board.intersections[anim.from]) {
@@ -1392,6 +1394,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   function updateUI(): void {
+    syncPlayLookFromStorageIfDrifted();
     const state = session.getEngine().getState();
     const settings = session.getSettings();
     const redPieces = session.getEngine().countPieces('RED');

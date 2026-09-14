@@ -8,8 +8,10 @@ import {
   PLAY_SHELL_THEMES,
   readBoardLookThemeId,
   readPlayBoardMatchMode,
+  readSideLookThemeId,
   readStoredBoardLookId,
   readStoredSideLookId,
+  syncPlayLookFromStorageIfDrifted,
 } from '../playShellThemes';
 
 function mockPlayThemeDom(
@@ -151,6 +153,23 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
     expect(charcoalSide.sideLookId).toBe('7');
     expect(readPlayBoardMatchMode()).toBe('side-only');
     expect(PLAY_SHELL_THEMES['6'].surfaceTop).toBe(LOVABLE_COMPLETE_BOARD_THEMES[4].surface);
+  });
+
+  it('reads board and side look from storage when DOM drifts back to default 1', () => {
+    mockPlayThemeDom('1', '1', 'matched', {
+      'sb-play-board-look': '12',
+      'sb-play-side-look-v3': '7',
+    });
+    applyPlayLookState('12', '7');
+    const shell = document.getElementById('play-shell') as { setAttribute: (k: string, v: string) => void };
+    shell.setAttribute('data-play-board-look', '1');
+    shell.setAttribute('data-play-side-look', '1');
+    expect(readBoardLookThemeId()).toBe('12');
+    expect(readSideLookThemeId()).toBe('7');
+    expect(readPlayBoardMatchMode()).toBe('side-only');
+    expect(syncPlayLookFromStorageIfDrifted()).toBe(true);
+    expect(document.getElementById('play-shell')?.getAttribute('data-play-board-look')).toBe('12');
+    expect(document.getElementById('play-shell')?.getAttribute('data-play-side-look')).toBe('7');
   });
 
   it('same swatch id differs by row (purple night matched vs charcoal sides)', () => {

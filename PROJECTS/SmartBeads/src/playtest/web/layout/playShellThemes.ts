@@ -592,25 +592,26 @@ export function readStoredPlayThemeId(): PlayShellThemeId {
   return readStoredSideLookId();
 }
 
+/** Storage is source of truth — DOM attrs can drift (hub defaults, HMR, partial updates). */
 export function readBoardLookThemeId(): BoardLookThemeId {
-  const stored = readStoredBoardLookId();
-  if (typeof document === 'undefined') return stored;
-  const shell = document.getElementById('play-shell');
-  const hub = document.getElementById('play-hub');
-  const fromDom =
-    shell?.getAttribute('data-play-board-look') ?? hub?.getAttribute('data-play-board-look');
-  if (!isBoardLookThemeId(fromDom)) return stored;
-  if (isSideOnlyLookId(readSideLookThemeId()) && fromDom !== stored) return stored;
-  return fromDom;
+  return readStoredBoardLookId();
 }
 
 export function readSideLookThemeId(): PlayShellThemeId {
-  if (typeof document === 'undefined') return DEFAULT_SIDE_LOOK_ID;
+  return readStoredSideLookId();
+}
+
+/** Re-apply look when shell/hub attrs drift from localStorage (side panels + CSS vars). */
+export function syncPlayLookFromStorageIfDrifted(): boolean {
+  if (typeof document === 'undefined') return false;
+  const { boardLookId, sideLookId } = coalesceStoredLookState();
   const shell = document.getElementById('play-shell');
-  const hub = document.getElementById('play-hub');
-  const fromDom =
-    shell?.getAttribute('data-play-side-look') ?? hub?.getAttribute('data-play-side-look');
-  return normalizeSideLookId(fromDom);
+  if (!shell) return false;
+  const boardDom = shell.getAttribute('data-play-board-look');
+  const sideDom = shell.getAttribute('data-play-side-look');
+  if (boardDom === boardLookId && sideDom === sideLookId) return false;
+  applyPlayLookState(boardLookId, sideLookId);
+  return true;
 }
 
 export function getPlayShellTheme(id: PlayShellThemeId): PlayShellTheme {
