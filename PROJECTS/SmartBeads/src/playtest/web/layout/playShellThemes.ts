@@ -387,6 +387,9 @@ export function syncThemeSwatchActive(
   sideLookId: PlayShellThemeId,
 ): void {
   if (typeof document === 'undefined') return;
+  for (const stale of document.querySelectorAll('.play-theme-swatch.is-active')) {
+    stale.classList.remove('is-active');
+  }
   const roots = document.querySelectorAll<HTMLElement>('[data-play-look-setting]');
   if (roots.length === 0) return;
   for (const root of roots) {

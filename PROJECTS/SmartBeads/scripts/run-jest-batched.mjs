@@ -103,6 +103,7 @@ const BATCHES = [
       'PROJECTS/SmartBeads/src/playtest/web/layout/__tests__/boardLineGoldThemes.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/layout/__tests__/creamCampTintThemes.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/render/__tests__/CanvasBoardRenderer.moveFeedback.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/render/__tests__/CanvasBoardRenderer.boardLines.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/audio/__tests__/SoundEffects.test.ts',
     ],
   },

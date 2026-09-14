@@ -1,6 +1,10 @@
 import { BoardDefinition, Move, Player } from '../../../models/GameState';
 import { getActiveBeadSet } from '../layout/beadSetThemes';
 import { getActiveBoardLookTheme } from '../layout/boardLookThemes';
+import {
+  CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE,
+  getClassicBoardLineGold,
+} from '../layout/boardLineGoldThemes';
 import { readPlayBoardMatchMode } from '../layout/playShellThemes';
 import { type MoveHintAuraStyle, readMoveHintAuraStyle } from '../layout/moveHintAuraThemes';
 import { getBoardVisualProfile } from '../layout/boardVisualProfile';
@@ -412,7 +416,8 @@ export function drawCanvasBoard(
     : new Set<number>();
   const matchStartFlash = turnIdleHighlight && showTurnStartRings;
 
-  ctx.strokeStyle = look.lineColor;
+  const boardLines = getClassicBoardLineGold();
+  ctx.strokeStyle = boardLines.lineRgba;
   ctx.lineWidth = 2;
   for (const conn of board.connections) {
     const from = board.intersections[conn.from];
@@ -461,10 +466,9 @@ export function drawCanvasBoard(
     const nodeRadius = node.occupant ? 3.5 : 4;
     ctx.beginPath();
     ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
-    ctx.fillStyle = look.lineColor;
-    ctx.globalAlpha = node.occupant ? 0.46 : 0.24;
-    ctx.fill();
+    ctx.fillStyle = node.occupant ? boardLines.nodeRgba : CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE;
     ctx.globalAlpha = 1;
+    ctx.fill();
 
     const selectedOccupant =
       selectedId !== null ? board.intersections[selectedId]?.occupant : undefined;

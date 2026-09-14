@@ -13,6 +13,7 @@ import {
   readStoredBoardLookId,
   readStoredSideLookId,
   syncPlayLookFromStorageIfDrifted,
+  syncThemeSwatchActive,
 } from '../playShellThemes';
 
 function mockPlayThemeDom(
@@ -254,5 +255,64 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
 
     expect(syncPlayLookFromStorageIfDrifted()).toBe(false);
     expect(swatches.find((s) => s.row === 'dark-charcoal')?.active).toBe(true);
+  });
+
+  it('syncThemeSwatchActive clears stale highlights so only one swatch is active globally', () => {
+    type Swatch = { id: string; row: string; active: boolean };
+    const hubSwatches: Swatch[] = [
+      { id: '2', row: 'dark-charcoal', active: true },
+      { id: '9', row: 'light-charcoal', active: true },
+      { id: '12', row: 'light-charcoal', active: false },
+    ];
+    const shellSwatches: Swatch[] = [
+      { id: '2', row: 'dark-charcoal', active: true },
+      { id: '9', row: 'light-charcoal', active: true },
+      { id: '12', row: 'light-charcoal', active: false },
+    ];
+    const makeRoot = (swatches: Swatch[]) => ({
+      querySelectorAll: () => swatches.map((s) => ({
+        dataset: { playTheme: s.id },
+        closest: (sel: string) => (sel.includes(s.row) ? {} : null),
+        classList: {
+          remove: (cls: string) => {
+            if (cls === 'is-active') s.active = false;
+          },
+          toggle: (_: string, on: boolean) => {
+            s.active = on;
+          },
+        },
+      })),
+    });
+    Object.defineProperty(globalThis, 'document', {
+      value: {
+        querySelectorAll: (sel: string) => {
+          if (sel === '.play-theme-swatch.is-active') {
+            return [...hubSwatches, ...shellSwatches]
+              .filter((s) => s.active)
+              .map((s) => ({
+                classList: {
+                  remove: (cls: string) => {
+                    if (cls === 'is-active') s.active = false;
+                  },
+                },
+              }));
+          }
+          if (sel.includes('data-play-look-setting')) {
+            return [makeRoot(hubSwatches), makeRoot(shellSwatches)];
+          }
+          return [];
+        },
+      },
+      configurable: true,
+    });
+
+    syncThemeSwatchActive('12', '7');
+
+    expect(hubSwatches.filter((s) => s.active)).toHaveLength(1);
+    expect(shellSwatches.filter((s) => s.active)).toHaveLength(1);
+    expect(hubSwatches.find((s) => s.id === '12')?.active).toBe(true);
+    expect(shellSwatches.find((s) => s.id === '12')?.active).toBe(true);
+    expect(hubSwatches.find((s) => s.id === '2')?.active).toBe(false);
+    expect(hubSwatches.find((s) => s.id === '9')?.active).toBe(false);
   });
 });

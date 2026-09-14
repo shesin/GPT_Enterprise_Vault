@@ -168,6 +168,14 @@ describe('process regression guards', () => {
     });
   });
 
+  describe('board canvas — locked Classic gold grid lines', () => {
+    it('draws grid from boardLineGoldThemes, not per-theme oklch lineColor', () => {
+      expect(canvasRendererSource).toMatch(/getClassicBoardLineGold/);
+      expect(canvasRendererSource).toMatch(/boardLines\.lineRgba/);
+      expect(canvasRendererSource).not.toMatch(/ctx\.strokeStyle = look\.lineColor/);
+    });
+  });
+
   describe('Watch AI vs AI launch defaults', () => {
     it('locks End-Game, 2 min timer, Expert vs Expert on hub spectate entry', () => {
       expect(playControllerSource).toMatch(/function applySpectateDefaultsToUi/);
