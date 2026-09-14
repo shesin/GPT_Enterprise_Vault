@@ -309,6 +309,9 @@ function drawPieceAt(
   radius: number,
   alpha: number,
 ): void {
+  // Capture fade-out shrinks radius to 0 — nothing left to draw, and the black-bead
+  // rim strokes below (radius - 0.5 / - 0.12) would throw on a negative arc radius.
+  if (radius <= 0) return;
   ctx.save();
   ctx.globalAlpha = alpha;
   const beadSet = getActiveBeadSet();
@@ -351,13 +354,13 @@ function drawPieceAt(
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(x, y, radius - 0.5, 0, Math.PI * 2);
+    ctx.arc(x, y, Math.max(radius - 0.5, 0), 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.50)';
     ctx.lineWidth = 1.4;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(x, y, radius - 0.12, 0, Math.PI * 2);
+    ctx.arc(x, y, Math.max(radius - 0.12, 0), 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
     ctx.lineWidth = 2.1;
     ctx.stroke();
@@ -388,6 +391,13 @@ export function drawCanvasBoard(
     projectIntersectionOnCanvas(node as Parameters<typeof projectIntersectionOnCanvas>[0], w, h, board);
 
   ctx.clearRect(0, 0, w, h);
+  // Undo any alpha/shadow left behind by a draw call that threw mid-frame last time
+  // (e.g. an unmatched ctx.save()) — otherwise corrupted state compounds every frame.
+  ctx.globalAlpha = 1;
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   const look = getActiveBoardLookTheme();
   const boardMatch = readPlayBoardMatchMode();
   const g =

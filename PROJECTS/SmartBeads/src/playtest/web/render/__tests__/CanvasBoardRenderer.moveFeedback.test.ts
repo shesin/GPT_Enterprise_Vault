@@ -743,4 +743,64 @@ describe('CanvasBoardRenderer move feedback', () => {
 
     expect(strokeStyles.some((s) => s.includes('255, 255, 255'))).toBe(true);
   });
+
+  it('does not throw when a captured black bead fully fades out (radius reaches 0)', () => {
+    const gradient = { addColorStop: () => {} };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      // Mirrors the real CanvasRenderingContext2D: a negative radius throws.
+      arc: (_x: number, _y: number, radius: number) => {
+        if (radius < 0) {
+          throw new DOMException(`The radius provided (${radius}) is negative.`, 'IndexSizeError');
+        }
+      },
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('8x4x6');
+    const board = engine.getState().board;
+    const blue = board.intersections.find((n) => n.occupant === 'BLUE');
+    expect(blue).toBeDefined();
+    const canvas = {
+      width: 560,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    // anim.t past ~0.714 clamps the capture fade to 0 — the exact moment that
+    // threw "radius (-0.5) is negative" for a captured black bead in production.
+    expect(() => drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'RED',
+      gameOver: false,
+      selectedId: null,
+      legalTargets: [],
+      chainPieceId: null,
+      anim: {
+        from: blue!.id,
+        to: blue!.id,
+        captured: blue!.id,
+        capturedPlayer: 'BLUE',
+        player: 'RED',
+        t: 0.95,
+        duration: 200,
+      },
+      turnPulse: 0,
+      lastMove: null,
+      capturePulses: [],
+    })).not.toThrow();
+  });
 });
