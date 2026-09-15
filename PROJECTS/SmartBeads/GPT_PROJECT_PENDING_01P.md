@@ -14,16 +14,29 @@ Target: 01P (~2–3 pages, word-friendly)
 
 ---
 
-**If web and mobile needs 2 different solution/approach, then it must be mentioned and put in risk so that while mobile app development it could be closed.
+If web and mobile need 2 different solutions/approaches, that must be mentioned and put under **risk** so it can be closed before mobile app development.
 
+**Difference**
+None currently — same engine/UI drives both web and the planned Capacitor Android wrap; no separate mobile logic exists yet to diverge.
 
-**risk**-	If there is any risk/concern in code, that must be mentioned  here . 
+**risk**
+- Touch precision on the 16-bead board (37 nodes, tight spacing) — not yet verified on a real phone/tablet; §10 below already flags "Touch verification on device — Especially 16-bead" but it wasn't linked from here.
+- Expert AI think time (up to ~45s on large boards, no "thinking…" indicator) may read as a frozen/dead app on mobile more than on desktop — worth a mobile-specific check when Android work starts.
+- Everything fixed by Claude on 2026-09-14/15 (render-crash fix, timer race fix, rewritten chain tests, dead-code removal — full detail in `GPT_PROJECT_AUDIT_05P.md` 5th cycle) is Jest-verified only — no human has watched any of it on a real device or browser yet.
 
 **Open risks (not closed until human sign-off)**
 
 - **Human browser UNCONFIRMED** — turn-colour every-turn flash (`GPT_PROJECT_DECISIONS_05P.md` §7–§8); Jest only.
 - **Coach vs live** — lesson playback may not match what players see in a real game in edge cases.
 - **No Playwright check** — turn-start flash deselect-not-return and Finish capture mid-chain are not in browser gates; regression would not be caught there.
+
+### Testing needed from you (steps)
+
+1. `npx vite` from the repo root, open localhost:5173.
+2. Play vs AI on any board — capture a black bead, confirm no visual glitch (grid lines, board colour) during or after.
+3. Watch AI vs AI on the 16-bead board, Expert vs Expert, let a full match play out (times out around 2 min) — confirm the result modal's winner and reason text agree with each other.
+4. Same Watch AI setup, but let 2-3 matches play back to back via "Play again" — confirms the timer-expiry fix holds under repeated play, not just once.
+5. On any board, get into a multi-jump chain (capture, then another capture available) — confirm "Finish capture" button appears and ends your turn correctly.
 
 *Shipped UI/game choices (turn colour, capture optional, resignation, hub flow, colours, etc.) → **`GPT_PROJECT_DECISIONS_05P.md`**. Verification rows → **`GPT_PROJECT_STATUS_01P.md`**.*
 
@@ -40,11 +53,6 @@ Target: 01P (~2–3 pages, word-friendly)
 - **Tournament:** planned from the start in architecture; **Phase 3** delivery after online rooms work.
 
 ---
-
-## For human to human, tournament timer,	We will keep only one 90 sec enabled shot clock for 16,12,10 and	60 sec shot clock for 8,7,6
-
-
-## first web page must be like chess.com page
 
 ## 2. Two-page UX
 
@@ -95,6 +103,10 @@ Target: 01P (~2–3 pages, word-friendly)
 | Blitz    | 3:00 each   | 45s/turn   |
 
 Board-specific defaults from catalog (16/12/10: longer banks; 8/7/6: shorter) can override Standard — keep one preset list on Page 2 for clarity.
+
+### Board-specific shot clock (human decision, 2026-09)
+
+For HvH, only one shot-clock value per board size — not a per-match dropdown choice: **90s** for 16 / 12 / 10-bead boards, **60s** for 8 / 7 / 6-bead boards. Overrides the general preset table above wherever they'd conflict.
 
 ### Engine / session note
 
