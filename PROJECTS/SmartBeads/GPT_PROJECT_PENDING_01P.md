@@ -14,14 +14,10 @@ Target: 01P (~2–3 pages, word-friendly)
 
 ---
 
-If difference is not suitable for mobile app then it must be put in risk. If web and mobile needs 2 solution
-then it must be mentioned and stayed in risk so that while mobile app development it could be closed.
+**If web and mobile needs 2 different solution/approach, then it must be mentioned and put in risk so that while mobile app development it could be closed.
 
-**Difference**
-No
 
-**risk**
-No
+**risk**-	If there is any risk/concern in code, that must be mentioned  here . 
 
 **Open risks (not closed until human sign-off)**
 
@@ -49,12 +45,6 @@ No
 
 
 ## first web page must be like chess.com page
--Left panel correction
--Centre etc can go longer but right now only in 100% page area
-
-## congratulator message has issue, p2 win etc coming
-
-## check everything
 
 ## 2. Two-page UX
 
@@ -64,7 +54,6 @@ No
 
 - **Chess.com-style hub** — left rail, centre board grid, right rail; fit in 100% viewport (see notes below).
 - **Left panel / settings dedup** — hide duplicate mode chrome; settings only on Page 2 or in-game menu (§8 backlog).
-- **Congratulation message** — fix P2 win copy showing incorrectly (human note).
 - **Human browser pass** — “check everything” on phone/desktop after hub + turn-colour changes.
 
 ### Phase 2 add-ons (Page 1 fields when HvH selected)

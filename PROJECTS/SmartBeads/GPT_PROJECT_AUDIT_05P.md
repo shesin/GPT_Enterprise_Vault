@@ -219,6 +219,47 @@ Agents must run the STOP gate in the **user-visible message** before calling edi
 
 ---
 
+## 5th cycle — Full engineering audit (2026-09-14/15, Claude)
+
+Trigger: human reported board grid lines fading and colour smearing across the board during play — a symptom Cursor had already attempted to fix twice (theme-drift commits) without success. Investigation of that single symptom expanded, on explicit human instruction ("audit everything... complete audit... nothing left out"), into a full multi-pass audit: TypeScript compilation across the whole project, then five parallel deep-dive passes (AI eval, board/capture-chain geometry, timer state machine, a systematic scan for silently-dead tests, and the theme/storage drift code). Every finding below was verified against a real test run or independently traced/reproduced before being reported or fixed — no gap-list-only findings, per Failure class B above.
+
+### Confirmed bugs found and fixed
+
+1. **Board-wide render corruption on captured black bead** (`CanvasBoardRenderer.ts`) — capture fade-out animation shrank a black bead to radius 0; the rim-stroke draw then called canvas `arc()` with a negative radius, throwing `IndexSizeError` mid-frame. Because that draw call never reached its matching `ctx.restore()`, the leaked transparency/shadow state carried into every later frame — this, not a theme/colour bug, was the actual cause of the reported vanishing-lines/colour-smear symptom. Fixed: radius clamped to 0; full alpha/shadow reset added at the top of every board redraw as a safety net. Regression test added and confirmed it reproduces the exact browser error on the old code.
+2. **Two silently-dead tests** (`FeatureSession.turnControl.test.ts`, "clears all-bead flash... (chain)" and "mid-chain: tap another own bead...") — built their capture-chain fixture from `Move.over`, a field that doesn't exist on `getLegalMoves()` results (chain geometry only lives on `board.jumpPaths`). The chain-finder always came back empty, so both tests hit an early `return` before their real assertions and passed while checking nothing. A second bug was found in the same setup while fixing it (only one hop's victim bead was being placed, so a genuine 2-hop chain never formed even with the field fixed). Rewritten correctly; `expect.hasAssertions()` added so this exact failure mode can't recur silently.
+3. **AI config typo** (`HonestAi.ts`) — per-board think-time table keyed the 7-bead board as `'7x4x5'` instead of the real id `'7'` (see `BoardConfig.ts`'s `BoardVariant` type) — Expert AI silently never got its intended 1.05× budget on that board.
+4. **Missing data** (`HumanVsAiRunner.ts`) — `buildGameSummary()` built a `GameResult` missing `redCaptures`/`blueCaptures`.
+5. **85 TypeScript errors, project-wide** — invisible because nothing had ever run `tsc`; Jest transpiles without type-checking. Included one type-utility typo (`Parameters<>` vs `ConstructorParameters<>`) cascading into ~24 errors in one test file, an invalid test fixture value (`shotClock: '10'`, not a real product option — worked only because the parser is permissive), several stale test fixtures out of sync with current types, and two TS-provable dead/unreachable branches. All fixed to match current types without changing test intent.
+6. **Double game-over race** (`FeatureSession.timerTick()`) — shot clock, tournament timer, and shared match timer are independent settings that can be active together; if two expired on the *same tick*, the function ran all applicable blocks unconditionally, and the second `endGameByFeature()` call silently overwrote the first's winner/reason. Confirmed with an exact repro: displayed reason flipped from "Shot clock expired." to "... ran out of time." when both hit 0 together. Fixed with an early return after the shot-clock block ends the game; regression test confirmed it fails on the old code with that exact wrong string.
+7. **Dead code** (`playShellThemes.ts`, `coalesceStoredLookState()`) — computed a legacy side-theme value from storage on every call and never used it on any return path (~25 lines of now-pointless legacy migration removed: `readStoredSideLookIdRaw`, `migrateLegacySideLookId`). Confirmed harmless only because a separate downstream function independently re-forces the same value; zero test coverage existed on the dead path.
+8. **Missing test registration** — `moveHintAuraThemes.test.ts` existed and passed standalone but was never added to `run-jest-batched.mjs`'s file lists, so it silently never ran under `npm run test:jest` / `test:jest:fast`.
+
+### Documented, not changed (judgment call — flagging per Rule - Doubt)
+
+- `HonestAi.ts`'s `usePerSideClocks` eval branch (`timerUrgency`, `timerEvalAdjust`) is confirmed unreachable in the shipped product today (tournament timer is pvp-only; the AI never moves in pvp mode) — kept in place as a plausible seam for a future "AI under tournament rules" mode rather than deleted, since deletion would touch ~8 test fixtures for a purely cosmetic gain. Now documented in-code so it doesn't read as an oversight.
+
+### Weak tests strengthened (passed, but wouldn't have caught a real regression)
+
+- PvP tournament-timer test only asserted the moving side's clock changed — now also asserts the opponent's clock is untouched.
+- `HonestAi.repetitionSteer.test.ts` only called the isolated penalty-scoring function directly — now also calls the real `selectAiTurnPath` entry point and confirms the AI actually avoids the repeated position.
+
+### Checked thoroughly, confirmed clean (no bug found, not just assumed)
+
+AI difficulty-tier gating (Easy/Medium/Hard soft-miss rates), depth-2 (Expert) search completion on all 7 boards, capture-route (`jumpPaths`) geometric consistency on all 7 boards including the 16-bead board's wing-junction hops (traced back to the original reference prototype engine and confirmed intentional via the existing parity test, not a bug), multi-jump chain continuation logic, tournament-timer-forces-centre-off enforcement (both directions), `shellTimerShouldSkip` genuinely ignoring `aiThinking`/`animating`, the theme-drift auto-correction settling in one pass with no flicker loop, and a full re-scan of all 60 test files for more instances of the silently-dead-test pattern (#2 above) — none found beyond the two already known.
+
+### Process note — what made this cycle different
+
+Every finding was verified against actual execution (a Jest run, a live AI-vs-AI browser match, or an independently reproduced trace/script) before being reported as a finding, and every fix shipped with a test proven to fail on the old code and pass on the new — directly following Rule - Human Oracle and Rule - Audit Completeness above, rather than repeating the gap-list pattern in Failure class B.
+
+### Residual risk — carried to PENDING (see report to human, 2026-09-15)
+
+- The known "P2 win" congratulations-modal copy bug (already listed in `GPT_PROJECT_PENDING_01P.md`) was reproduced again during this cycle's browser testing but **not fixed** — out of scope of the audits requested.
+- `tsconfig.json` does not enable `noUnusedLocals`/`noUnusedParameters` — the exact class of dead-code bug found by hand in item 7 above will not be caught automatically by the new `tsc` pretest gate until this is turned on (not enabled here — would likely surface a fresh batch of warnings needing its own triage pass, a human call).
+- Human-browser confirmation is still outstanding for everything fixed in this cycle (render crash fix, timer race fix, rewritten chain tests) — Jest-verified and, where practical, agent-browser-verified, but not yet seen on the human's own screen.
+- This cycle sampled five high-risk areas at depth; it did not exhaustively review every line (e.g. accessibility, mobile/touch handling, BGM/audio edge cases, coach-video script content were not in scope).
+
+---
+
 ## Recommendation
 
 Do not soft-pedal language in future status docs. Prefer failing tests over narrative confidence. When adding a new failure cycle, append a dated section here or create `GPT_PROJECT_AUDIT_06P.md` — do not scatter audits in subfolders.
