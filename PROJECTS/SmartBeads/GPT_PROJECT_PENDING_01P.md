@@ -93,20 +93,17 @@ None currently — same engine/UI drives both web and the planned Capacitor Andr
 
 **Why both:** Match clock rewards overall speed; shot clock stops stalling when someone hoards bank time.
 
-### Presets (Page 2 dropdown — **Human vs Human setup only**)
+### Board-fixed timers (human decision, 2026-09 — DRAFT, needs further discussion)
 
-| Preset   | Match clock | Shot clock |
-|----------|-------------|------------|
-| Casual   | Off         | Off        |
-| Quick    | 3:00 each   | 60s/turn   |
-| Standard | 5:00 each   | 90s/turn   |
-| Blitz    | 3:00 each   | 45s/turn   |
+Replaces the old Casual/Quick/Standard/Blitz dropdown-preset idea above. Principle: **keep it fixed and simple, not a menu of choices** — match clock offers exactly two length options per board-size group, shot clock is a single fixed value per group (not selectable):
 
-Board-specific defaults from catalog (16/12/10: longer banks; 8/7/6: shorter) can override Standard — keep one preset list on Page 2 for clarity.
+| Board group | Match clock options | Shot clock (fixed) |
+|-------------|---------------------|---------------------|
+| 16, 12-bead | 5 min or 8 min      | 120s                |
+| 10, 8-bead  | 3 min or 5 min      | 90s                 |
+| 7, 6-bead   | 2 min or 4 min      | 60s                 |
 
-### Board-specific shot clock (human decision, 2026-09)
-
-For HvH, only one shot-clock value per board size — not a per-match dropdown choice: **90s** for 16 / 12 / 10-bead boards, **60s** for 8 / 7 / 6-bead boards. Overrides the general preset table above wherever they'd conflict.
+**Supersedes** the earlier "90s for 16/12/10, 60s for 8/7/6" note — that split and those numbers no longer apply; this table is current. Still marked **needs further discussion** per human — not locked for implementation yet.
 
 ### Engine / session note
 
@@ -228,7 +225,7 @@ For HvH, only one shot-clock value per board size — not a per-match dropdown c
 
 ## 8. UI polish backlog (remaining)
 
-- **Match timer progress rings (Human vs Human only)** — radial countdown on player panels when match clock is on; low-time pulse (defaults tied to catalog: longer on 16/12/10, shorter on 8/7/6). Shot-clock ring already shipped; this is the **match-bank** ring for online HvH — not PvE timer rework.
+- **Match timer progress rings (Human vs Human only)** — radial countdown on player panels when match clock is on; low-time pulse (defaults tied to catalog, per the board-fixed timer table in §3: longest banks on 16/12, shortest on 7/6). Shot-clock ring already shipped; this is the **match-bank** ring for online HvH — not PvE timer rework.
 - **Session score counter** — track series across rematches (alternating opener already **shipped** — see status).
 - **Left panel / settings dedup** — hide duplicate mode and account chrome on hub; settings only on Page 2 or in-game menu.
 
@@ -284,14 +281,20 @@ AI Coach, match analysis, replay, tactical explanations, pattern recognition, pr
 
 ---
 
-## 13. Open decisions (need human yes/no)
+## 13. Open decisions
 
-1. **Accounts:** guest + room code only for beta, or sign-in from day one?
-2. **Shot breach (HvH):** lose on time only (recommended) or softer penalty?
-3. **Default preset (HvH):** Casual (no clock) or Quick (3:00 + 60s)?
-4. **Rematch path:** Page 2 again or instant rematch with same settings?
-5. **Tournament first board:** 16-bead only, or allow per-event config?
-6. **Host preference:** single VPS vs split (static CDN + Railway API)?
+**Locked (2026-09-15):**
+
+1. **Accounts:** sign-in from day one (not guest + room code only).
+2. **Rematch path:** both offered — Page 2 setup again, or instant rematch with same settings.
+3. **Host preference:** single VPS (not split static + separate API).
+4. **Tournament timer model confirmed:** two independent per-player clocks (chess-clock style), each ticking only during that player's own turn — matches the already-shipped local PvP tournament-timer mechanism in `FeatureSession` (`p1Clock`/`p2Clock`); online work adds server authority over the same model, not a new one.
+
+**Still open (need human yes/no):**
+
+5. **Shot breach (HvH):** lose on time only (leaning yes) — needs further discussion before locking.
+6. **Timers (HvH):** see the board-fixed timer table in §3 above — leaning toward that table, needs further discussion before locking.
+7. **Tournament board scope:** all boards (leaning yes, not 16-bead-only) — needs further discussion before locking.
 
 ---
 
