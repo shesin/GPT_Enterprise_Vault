@@ -93,9 +93,9 @@ None currently — same engine/UI drives both web and the planned Capacitor Andr
 
 **Why both:** Match clock rewards overall speed; shot clock stops stalling when someone hoards bank time.
 
-### Board-fixed timers (human decision, 2026-09 — DRAFT, needs further discussion)
+### Board-fixed timers (LOCKED, 2026-09-18)
 
-Replaces the old Casual/Quick/Standard/Blitz dropdown-preset idea above. Principle: **keep it fixed and simple, not a menu of choices** — match clock offers exactly two length options per board-size group, shot clock is a single fixed value per group (not selectable):
+Replaces the old Casual/Quick/Standard/Blitz dropdown-preset idea above. Principle: **keep it fixed and simple, not a menu of choices** — match clock offers exactly two length options per board-size group, shot clock is a single fixed value per group (not selectable). 120s/90s judged sufficient turn time for tournament play — no softer shot-breach penalty needed, exceeding it is simply a loss on time (same as match-clock flag fall):
 
 | Board group | Match clock options | Shot clock (fixed) |
 |-------------|---------------------|---------------------|
@@ -281,20 +281,17 @@ AI Coach, match analysis, replay, tactical explanations, pattern recognition, pr
 
 ---
 
-## 13. Open decisions
-
-**Locked (2026-09-15):**
+## 13. Open decisions — all LOCKED (2026-09-15/18)
 
 1. **Accounts:** sign-in from day one (not guest + room code only).
 2. **Rematch path:** both offered — Page 2 setup again, or instant rematch with same settings.
 3. **Host preference:** single VPS (not split static + separate API).
-4. **Tournament timer model confirmed:** two independent per-player clocks (chess-clock style), each ticking only during that player's own turn — matches the already-shipped local PvP tournament-timer mechanism in `FeatureSession` (`p1Clock`/`p2Clock`); online work adds server authority over the same model, not a new one.
+4. **Tournament timer model:** two independent per-player clocks (chess-clock style), each ticking only during that player's own turn — matches the already-shipped local PvP tournament-timer mechanism in `FeatureSession` (`p1Clock`/`p2Clock`); online work adds server authority over the same model, not a new one.
+5. **Shot breach (HvH):** lose on time only — same rule a shot clock always meant; no softer penalty. 120s/90s/60s (per §3 board-fixed table) judged long enough that a real breach means genuinely stalling, not a harsh cutoff.
+6. **Timers (HvH):** the board-fixed table in §3 (not a Casual/Quick/Standard/Blitz preset menu).
+7. **Tournament board scope:** all 7 boards for V1 (not 16-bead-only).
 
-**Still open (need human yes/no):**
-
-5. **Shot breach (HvH):** lose on time only (leaning yes) — needs further discussion before locking.
-6. **Timers (HvH):** see the board-fixed timer table in §3 above — leaning toward that table, needs further discussion before locking.
-7. **Tournament board scope:** all boards (leaning yes, not 16-bead-only) — needs further discussion before locking.
+Nothing left open here — online HvH build can proceed on these once ready to start.
 
 ---
 
