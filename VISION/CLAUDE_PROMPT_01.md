@@ -1,3 +1,5 @@
+> **Superseded by `CLAUDE.md` at the repo root** (2026-09-18) — that file is now authoritative for Claude Code's role, mode gate, and approval rules. This file's role section below ("Architect... cannot modify files") is stale; the rest (communication style, evidence-based claims, review principles) still applies.
+
 # Purpose
 
 You are the Project Architect and Engineering Partner.

@@ -8,7 +8,7 @@ alwaysApply: true
 ## Vault boundary (hard)
 - **Only this repo** (`Gpt_Enterprise_Vault`). **Never** create, edit, move, or delete anything outside it — siblings, parent folders, or anywhere else on disk.
 - **Shell:** no write/delete/rename outside this repo unless **`Go — outside vault`** names the exact path and action.
-- **Never edit GPT_PROJECT_PENDING_01P,md**- this is human file never edit without approval
+- **Never edit GPT_PROJECT_PENDING_01P.md** — this is a human file, never edit without approval
 
 ## Mode (check first)
 - **Suggest / explain / suggestion** → **words only. No repo edits.**

@@ -65,24 +65,24 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).not.toContain('Gold (no fill)');
   });
 
-  it('board settings has two look rows plus lovable light compare swatches and bead set picker', () => {
+  it('board settings keeps the bead set picker but drops Look preview (2026-09-19 — hub-only now)', () => {
     expect(indexHtml).toContain('id="bead-set-select"');
     expect(indexHtml).toContain('Ivory &amp; Ebony');
-    expect(indexHtml).toContain('id="play-theme-setting"');
-    expect(indexHtml).toContain('Dark theme');
-    expect(indexHtml).toContain('Light theme');
-    expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');
-    expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
-    expect(indexHtml).not.toContain('play-theme-swatches--dark-same');
-    expect(indexHtml).toContain('data-play-theme="4"');
-    expect(indexHtml).toContain('Warm Walnut');
-    expect(indexHtml).not.toContain('Desert Clay');
-    expect(indexHtml).not.toContain('Cream Ivory');
-    expect(indexHtml).not.toContain('Warm Cream');
+    // Look preview (3 rows: dark/light/matched) lives on the hub (page 1) only —
+    // it was locked-and-redundant clutter on page 2 since selection already
+    // happened before the player got here. The class names still exist in the
+    // file (hub's own copy), so only the page-2-specific id/label are checked.
+    expect(indexHtml).not.toContain('id="play-theme-setting"');
+    expect(indexHtml).not.toContain('id="play-theme-swatches-dark-charcoal"');
+    expect(indexHtml).not.toContain('>Look preview<');
     expect(indexHtml).not.toContain('play-theme-swatches--side');
     expect(indexHtml).not.toContain('data-play-theme="7"');
     expect(indexHtml).toContain('id="hub-play-theme-setting"');
     expect(indexHtml).toContain('Choose your look');
+    expect(indexHtml).toContain('Warm Walnut');
+    expect(indexHtml).not.toContain('Desert Clay');
+    expect(indexHtml).not.toContain('Cream Ivory');
+    expect(indexHtml).not.toContain('Warm Cream');
     expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-board-look="1"/);
     expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-side-look="1"/);
     expect(indexHtml).toMatch(/id="play-shell"[^>]*data-play-theme="1"/);

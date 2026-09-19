@@ -168,10 +168,11 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('board canvas — locked Classic gold grid lines', () => {
-    it('draws grid from boardLineGoldThemes, not per-theme oklch lineColor', () => {
-      expect(canvasRendererSource).toMatch(/getClassicBoardLineGold/);
+  describe('board canvas — per-board grid line colour', () => {
+    it('draws grid (and centre ring) from boardLineGoldThemes, not per-theme oklch lineColor', () => {
+      expect(canvasRendererSource).toMatch(/getActiveBoardLineTheme/);
       expect(canvasRendererSource).toMatch(/boardLines\.lineRgba/);
+      expect(canvasRendererSource).toMatch(/drawCenterRing\(ctx, x, y, boardLines\.lineRgba\)/);
       expect(canvasRendererSource).not.toMatch(/ctx\.strokeStyle = look\.lineColor/);
     });
   });
@@ -203,7 +204,7 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('play theme — two look rows (dark theme, light theme)', () => {
+  describe('play theme — three look rows (dark, light, matched), hub-only on page 2', () => {
     it('swatch UI, storage split, unified complete colours', () => {
       expect(playShellThemesSource).toMatch(/function applyPlayLookFromRow/);
       expect(playShellThemesSource).toMatch(/function applyPlayLookState/);
@@ -222,15 +223,20 @@ describe('process regression guards', () => {
       expect(playControllerSource).toMatch(/play-theme-setting--locked/);
       expect(playShellThemesSource).toMatch(/syncThemeSwatchActive\(boardLookId, sideLookId\)/);
       expect(playControllerSource).toMatch(/play-theme-swatch/);
-      expect(indexHtml).toContain('id="play-theme-setting"');
+      // Look preview lives on the hub only (2026-09-19) — page 2 dropped it as
+      // redundant clutter (locked, and selection already happened on the hub).
+      expect(indexHtml).not.toContain('id="play-theme-setting"');
       expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');
       expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
       expect(indexHtml).toContain('Dark theme');
       expect(indexHtml).toContain('Light theme');
-      expect(indexHtml).not.toContain('play-theme-swatches--dark-same');
+      expect(indexHtml).toContain('play-theme-swatches--dark-same');
+      expect(indexHtml).toContain('Matched (same colour sides)');
       expect(indexHtml).toContain('data-play-theme="4"');
-      expect(indexHtml).toContain('data-play-theme="10"');
-      expect(indexHtml).toContain('data-play-theme="12"');
+      expect(indexHtml).toContain('data-play-theme="15"');
+      expect(indexHtml).toContain('data-play-theme="14"');
+      expect(indexHtml).not.toContain('data-play-theme="9"');
+      expect(indexHtml).not.toContain('data-play-theme="10"');
       expect(indexHtml).toContain('Warm Walnut');
       expect(indexHtml).not.toContain('Desert Clay');
       expect(indexHtml).not.toContain('Cream Ivory');

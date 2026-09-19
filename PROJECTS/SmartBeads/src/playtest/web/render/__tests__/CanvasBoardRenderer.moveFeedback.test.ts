@@ -637,13 +637,10 @@ describe('CanvasBoardRenderer move feedback', () => {
     expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(false);
   });
 
-  it('gold-fill aura uses centre gold glow, not cream or lime', () => {
+  it('gold-fill aura draws a muted-gold ring only — no wash over the bead, not cream or lime', () => {
     const strokeStyles: string[] = [];
-    const gradientStops: Array<[number, string]> = [];
     const gradient = {
-      addColorStop: (pos: number, color: string) => {
-        gradientStops.push([pos, color]);
-      },
+      addColorStop: () => {},
     };
     const ctx = {
       clearRect: () => {},
@@ -688,9 +685,10 @@ describe('CanvasBoardRenderer move feedback', () => {
       moveHintAura: 'gold-fill',
     });
 
-    expect(gradientStops.some(([pos, c]) => pos === 0 && c.includes('255, 220, 120'))).toBe(true);
-    expect(gradientStops.some(([, c]) => c.includes('255, 242, 215'))).toBe(false);
-    expect(strokeStyles.some((s) => s.includes('255, 228, 140'))).toBe(true);
+    // Ring uses Lovable's soft gold (221, 192, 140) — paler than this board's
+    // own center-plate gold, so the two don't collide near center.
+    expect(strokeStyles.some((s) => s.includes('221, 192, 140'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('255, 228, 140'))).toBe(false);
     expect(strokeStyles.some((s) => s.includes('180, 255, 80'))).toBe(false);
     expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(false);
   });

@@ -16,10 +16,6 @@ export interface BoardVisualProfile {
   projection: ProjectionKind;
   canvasWidth: number;
   canvasHeight: number;
-  /** Amber filled squares behind centre nodes (lattice coords). */
-  centerSquares?: LatticePoint[];
-  /** Amber band + line between two lattice points (waist). */
-  centerLine?: [LatticePoint, LatticePoint];
   /** Nodes that receive amber rings / highlight dots (canvas only). */
   centerRingPoints?: LatticePoint[];
   /** Cream half-tint axis: 6×4 vertical (bottom camp); others horizontal (left camp). */

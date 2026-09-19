@@ -5,6 +5,7 @@ import {
   applyPlayLookState,
   COMPLETE_LOOK_IDS,
   LIGHT_BOARD_LOOK_IDS,
+  MATCHED_SIDE_LOOK_IDS,
   PLAY_SHELL_THEMES,
   PLAY_THEME_STORAGE_KEY,
   readBoardLookThemeId,
@@ -12,6 +13,7 @@ import {
   readSideLookThemeId,
   readStoredBoardLookId,
   readStoredSideLookId,
+  resolvePlayLookRowFromButton,
   syncPlayLookFromStorageIfDrifted,
   syncThemeSwatchActive,
 } from '../playShellThemes';
@@ -62,15 +64,15 @@ function mockPlayThemeDom(
   });
 }
 
-describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
+describe('playShellThemes — 5 complete + 5 light (charcoal sides)', () => {
   afterEach(() => {
     Reflect.deleteProperty(globalThis, 'document');
     Reflect.deleteProperty(globalThis, 'localStorage');
   });
 
-  it('defines four complete and four light board presets plus charcoal side shell', () => {
-    expect(COMPLETE_LOOK_IDS).toEqual(['1', '2', '3', '5', '6']);
-    expect(LIGHT_BOARD_LOOK_IDS).toEqual(['4', '9', '10', '12']);
+  it('defines five complete and five light board presets plus charcoal side shell', () => {
+    expect(COMPLETE_LOOK_IDS).toEqual(['1', '2', '3', '6', '14']);
+    expect(LIGHT_BOARD_LOOK_IDS).toEqual(['4', '15', '16', '17', '18']);
     expect(PLAY_SHELL_THEMES['7'].lookGroup).toBe('side-only');
     expect(PLAY_SHELL_THEMES['4'].lookGroup).toBe('light-charcoal');
   });
@@ -87,7 +89,7 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
   });
 
   it('warm walnut uses distinct lovable frame colours on the board', () => {
-    const warmWalnut = PLAY_SHELL_THEMES['12'];
+    const warmWalnut = PLAY_SHELL_THEMES['14'];
     expect(warmWalnut.label).toBe('Warm Walnut');
     expect(warmWalnut.surfaceTop).toBe('oklch(0.55 0.075 55)');
     expect(warmWalnut.frameOuter).toBe('oklch(0.32 0.06 50)');
@@ -122,10 +124,10 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
       'sb-play-board-look': '3',
       'sb-play-side-look-v3': '3',
     });
-    const softBlush = applyPlayLookFromSwatch('9');
-    expect(softBlush.boardLookId).toBe('9');
-    expect(softBlush.sideLookId).toBe('7');
-    expect(readStoredBoardLookId()).toBe('9');
+    const seaglass = applyPlayLookFromSwatch('15');
+    expect(seaglass.boardLookId).toBe('15');
+    expect(seaglass.sideLookId).toBe('7');
+    expect(readStoredBoardLookId()).toBe('15');
   });
 
   it('migrates old complete sandy (board 4 + side 4) to light + charcoal', () => {
@@ -149,42 +151,99 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
     expect(charcoalSide.boardLookId).toBe('6');
     expect(charcoalSide.sideLookId).toBe('7');
     expect(readPlayBoardMatchMode()).toBe('side-only');
-    expect(PLAY_SHELL_THEMES['6'].surfaceTop).toBe(LOVABLE_COMPLETE_BOARD_THEMES[4].surface);
+    expect(PLAY_SHELL_THEMES['6'].surfaceTop).toBe(LOVABLE_COMPLETE_BOARD_THEMES[3].surface);
+  });
+
+  describe('dark-same row — matched side panel colour (2026-09-19)', () => {
+    it('resolvePlayLookRowFromButton recognises the matched row class', () => {
+      const btn = { closest: (sel: string) => (sel === '.play-theme-swatches--dark-same' ? {} : null) } as unknown as HTMLElement;
+      expect(resolvePlayLookRowFromButton(btn)).toBe('dark-same');
+    });
+
+    it.each(MATCHED_SIDE_LOOK_IDS)('applies board colour as the side panel for eligible id %s', (id) => {
+      mockPlayThemeDom('1', '1', 'matched', {
+        'sb-play-board-look': '1',
+        'sb-play-side-look-v3': '1',
+      });
+      const matched = applyPlayLookFromRow(id, 'dark-same');
+      expect(matched.boardLookId).toBe(id);
+      expect(matched.sideLookId).toBe(id);
+      expect(readPlayBoardMatchMode()).toBe('matched');
+      // Side panel reuses the board's own gradient, not the charcoal side theme.
+      expect(PLAY_SHELL_THEMES[id].sideCardBackground).toContain(PLAY_SHELL_THEMES[id].surfaceTop);
+    });
+
+    it('rejects dark-same for boards outside the eligible set (light boards have no matched option)', () => {
+      mockPlayThemeDom('1', '1', 'matched', {
+        'sb-play-board-look': '1',
+        'sb-play-side-look-v3': '1',
+      });
+      const priorBoard = readStoredBoardLookId();
+      const result = applyPlayLookFromRow('4', 'dark-same');
+      expect(result.boardLookId).toBe(priorBoard);
+      expect(result.boardChanged).toBe(false);
+    });
+
+    it('applyPlayLookState refuses to fake a matched pairing for an ineligible (light) board', () => {
+      mockPlayThemeDom('4', '4', 'matched', {
+        'sb-play-board-look': '4',
+        'sb-play-side-look-v3': '4',
+      });
+      applyPlayLookState('4', '4');
+      expect(readStoredSideLookId()).toBe('7');
+      expect(readPlayBoardMatchMode()).toBe('side-only');
+    });
+
+    it('matched selection survives a simulated reload (coalesceStoredLookState), unlike a stray board-only write', () => {
+      mockPlayThemeDom('1', '1', 'matched', {
+        'sb-play-board-look': '1',
+        'sb-play-side-look-v3': '1',
+      });
+      applyPlayLookFromRow('2', 'dark-same');
+      // Re-read exactly like a fresh page load would (this is the code path the
+      // drift-correction safety net also calls) — must NOT collapse to charcoal.
+      expect(readStoredBoardLookId()).toBe('2');
+      expect(readStoredSideLookId()).toBe('2');
+      expect(syncPlayLookFromStorageIfDrifted()).toBe(false);
+    });
   });
 
   it('reads board and side look from storage when DOM drifts back to default 1', () => {
     mockPlayThemeDom('1', '1', 'matched', {
-      'sb-play-board-look': '12',
+      'sb-play-board-look': '14',
       'sb-play-side-look-v3': '7',
     });
-    applyPlayLookState('12', '7');
+    applyPlayLookState('14', '7');
     const shell = document.getElementById('play-shell') as { setAttribute: (k: string, v: string) => void };
     shell.setAttribute('data-play-board-look', '1');
     shell.setAttribute('data-play-side-look', '1');
-    expect(readBoardLookThemeId()).toBe('12');
+    expect(readBoardLookThemeId()).toBe('14');
     expect(readSideLookThemeId()).toBe('7');
     expect(readPlayBoardMatchMode()).toBe('side-only');
     expect(syncPlayLookFromStorageIfDrifted()).toBe(true);
-    expect(document.getElementById('play-shell')?.getAttribute('data-play-board-look')).toBe('12');
+    expect(document.getElementById('play-shell')?.getAttribute('data-play-board-look')).toBe('14');
     expect(document.getElementById('play-shell')?.getAttribute('data-play-side-look')).toBe('7');
   });
 
-  it('migrates old matched dark storage to dark theme with charcoal sides', () => {
+  it('honours stored matched board+side for a matched-eligible id (Purple Night, 2026-09-19)', () => {
+    // Purple Night became matched-eligible when the row grew to all 5 dark
+    // boards, so stored board===side==='6' is now a legitimate Matched
+    // selection, not stale Row-3 leftovers to coerce back to charcoal.
     mockPlayThemeDom('6', '6', 'matched', {
       'sb-play-board-look': '6',
       'sb-play-side-look-v3': '6',
     });
     expect(readStoredBoardLookId()).toBe('6');
-    expect(readStoredSideLookId()).toBe('7');
-    expect(readPlayBoardMatchMode()).toBe('side-only');
+    expect(readStoredSideLookId()).toBe('6');
+    expect(readPlayBoardMatchMode()).toBe('matched');
   });
 
   it('stores board id in v2 when side is charcoal-only (recovery backup)', () => {
     mockPlayThemeDom('1', '1', 'matched');
     applyPlayLookState('6', '7');
     expect(localStorage.getItem(PLAY_THEME_STORAGE_KEY)).toBe('6');
-    applyPlayLookState('12', '7');
-    expect(localStorage.getItem(PLAY_THEME_STORAGE_KEY)).toBe('12');
+    applyPlayLookState('14', '7');
+    expect(localStorage.getItem(PLAY_THEME_STORAGE_KEY)).toBe('14');
     applyPlayLookState('6', '6');
     expect(localStorage.getItem(PLAY_THEME_STORAGE_KEY)).toBe('6');
   });
@@ -261,13 +320,13 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
     type Swatch = { id: string; row: string; active: boolean };
     const hubSwatches: Swatch[] = [
       { id: '2', row: 'dark-charcoal', active: true },
-      { id: '9', row: 'light-charcoal', active: true },
-      { id: '12', row: 'light-charcoal', active: false },
+      { id: '15', row: 'light-charcoal', active: true },
+      { id: '14', row: 'dark-charcoal', active: false },
     ];
     const shellSwatches: Swatch[] = [
       { id: '2', row: 'dark-charcoal', active: true },
-      { id: '9', row: 'light-charcoal', active: true },
-      { id: '12', row: 'light-charcoal', active: false },
+      { id: '15', row: 'light-charcoal', active: true },
+      { id: '14', row: 'dark-charcoal', active: false },
     ];
     const makeRoot = (swatches: Swatch[]) => ({
       querySelectorAll: () => swatches.map((s) => ({
@@ -306,13 +365,13 @@ describe('playShellThemes — 4 complete + 4 light (charcoal sides)', () => {
       configurable: true,
     });
 
-    syncThemeSwatchActive('12', '7');
+    syncThemeSwatchActive('14', '7');
 
     expect(hubSwatches.filter((s) => s.active)).toHaveLength(1);
     expect(shellSwatches.filter((s) => s.active)).toHaveLength(1);
-    expect(hubSwatches.find((s) => s.id === '12')?.active).toBe(true);
-    expect(shellSwatches.find((s) => s.id === '12')?.active).toBe(true);
+    expect(hubSwatches.find((s) => s.id === '14')?.active).toBe(true);
+    expect(shellSwatches.find((s) => s.id === '14')?.active).toBe(true);
     expect(hubSwatches.find((s) => s.id === '2')?.active).toBe(false);
-    expect(hubSwatches.find((s) => s.id === '9')?.active).toBe(false);
+    expect(hubSwatches.find((s) => s.id === '15')?.active).toBe(false);
   });
 });

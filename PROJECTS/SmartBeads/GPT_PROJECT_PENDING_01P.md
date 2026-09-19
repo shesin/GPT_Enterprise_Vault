@@ -63,6 +63,7 @@ None currently — same engine/UI drives both web and the planned Capacitor Andr
 - **Chess.com-style hub** — left rail, centre board grid, right rail; fit in 100% viewport (see notes below).
 - **Left panel / settings dedup** — hide duplicate mode chrome; settings only on Page 2 or in-game menu (§8 backlog).
 - **Human browser pass** — “check everything” on phone/desktop after hub + turn-colour changes.
+- **Left rail — account section (2026-09-19)** — Sign Up / Log In / Help & Support / Player Profile (chess.com has this row of 4 at the bottom of its left rail; ours needs the same slot once accounts exist — see §13.1, now a hard launch blocker per human, not optional online-only scope). Plus a **Review** entry just above Player Profile — clicking it opens a same-width slide-out panel (as the left rail) showing player reviews. All of this needs the account/auth system (§4, §13.1) to actually back it — no local-only stub.
 
 ### Phase 2 add-ons (Page 1 fields when HvH selected)
 
@@ -231,6 +232,12 @@ Replaces the old Casual/Quick/Standard/Blitz dropdown-preset idea above. Princip
 
 ---
 
+## 8a. Engineering hygiene backlog
+
+- **Dead-code / doc-mismatch sweep (rest of `src/`)** — this session found and removed several unreachable code paths (center-square/center-line rendering, an unused grid-line theme picker, a leftover color-token export) and matching stale doc claims in STATUS/DECISIONS, in the rendering/layout/theme files touched. Extend the same method to the rest of the codebase: grep every reference to a suspect export across `src/` (not just the file it's in), confirm the call path is actually unreachable — trace whether any board/config/setting could ever hit it, not just "grep came back short" — then `tsc --noEmit` clean and the real test suite green after removal, plus a live browser check. **Do not remove anything without that full chain of evidence** — a thin grep result is a lead, not proof by itself.
+
+---
+
 ## 9. Launch checklist (web)
 
 | Task | Owner | Notes |
@@ -283,7 +290,7 @@ AI Coach, match analysis, replay, tactical explanations, pattern recognition, pr
 
 ## 13. Open decisions — all LOCKED (2026-09-15/18)
 
-1. **Accounts:** sign-in from day one (not guest + room code only).
+1. **Accounts:** sign-in from day one (not guest + room code only). **Hard launch blocker (2026-09-19, human):** will not go to market without the full account system (signup/login/profile) — not optional, not deferrable to a later phase.
 2. **Rematch path:** both offered — Page 2 setup again, or instant rematch with same settings.
 3. **Host preference:** single VPS (not split static + separate API).
 4. **Tournament timer model:** two independent per-player clocks (chess-clock style), each ticking only during that player's own turn — matches the already-shipped local PvP tournament-timer mechanism in `FeatureSession` (`p1Clock`/`p2Clock`); online work adds server authority over the same model, not a new one.

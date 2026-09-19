@@ -100,25 +100,6 @@
   --hub-brand: oklch(0.72 0.105 78);
 }
 
-/* 5 — Forest Green */
-.play-hub[data-play-theme="5"] {
-  --hub-page-bg: oklch(0.13 0.025 158);
-  --hub-rail-bg: oklch(0.18 0.055 145);
-  --hub-centre-bg: oklch(0.25 0.08 145);
-  --hub-card-bg: oklch(0.18 0.045 130);
-  --hub-card-hover: oklch(0.25 0.08 145);
-  --hub-border: oklch(0.45 0.055 95 / 35%);
-  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
-  --hub-text: oklch(0.93 0.025 82);
-  --hub-muted: oklch(0.70 0.025 145);
-  --hub-centre-text: oklch(0.93 0.025 82);
-  --hub-centre-muted: oklch(0.70 0.025 145);
-  --hub-accent: oklch(0.72 0.105 78);
-  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
-  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
-  --hub-brand: oklch(0.72 0.105 78);
-}
-
 /* 6 — Purple Night */
 .play-hub[data-play-theme="6"] {
   --hub-page-bg: oklch(0.13 0.025 158);
@@ -162,7 +143,6 @@
 .play-hub[data-play-theme="2"],
 .play-hub[data-play-theme="3"],
 .play-hub[data-play-theme="4"],
-.play-hub[data-play-theme="5"],
 .play-hub[data-play-theme="6"],
 .play-hub[data-play-theme="7"] {
   --hub-ad-bg: #ececec;
@@ -173,7 +153,6 @@ body.hub-page:has(.play-hub[data-play-theme="1"]) { background: oklch(0.13 0.025
 body.hub-page:has(.play-hub[data-play-theme="2"]) { background: oklch(0.13 0.025 158); }
 body.hub-page:has(.play-hub[data-play-theme="3"]) { background: oklch(0.13 0.025 158); }
 body.hub-page:has(.play-hub[data-play-theme="4"]) { background: oklch(0.13 0.025 158); }
-body.hub-page:has(.play-hub[data-play-theme="5"]) { background: oklch(0.13 0.025 158); }
 body.hub-page:has(.play-hub[data-play-theme="6"]) { background: oklch(0.13 0.025 158); }
 body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025 158); }
 

@@ -1,14 +1,12 @@
 import { BoardDefinition, Move, Player } from '../../../models/GameState';
 import { getActiveBeadSet } from '../layout/beadSetThemes';
 import { getActiveBoardLookTheme } from '../layout/boardLookThemes';
-import {
-  CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE,
-  getClassicBoardLineGold,
-} from '../layout/boardLineGoldThemes';
+import { getActiveBoardLineTheme } from '../layout/boardLineGoldThemes';
 import { readPlayBoardMatchMode } from '../layout/playShellThemes';
+import { LOVABLE_RING_GOLD, LOVABLE_RING_LIGHT_BROWN } from '../layout/signalGoldTheme';
 import { type MoveHintAuraStyle, readMoveHintAuraStyle } from '../layout/moveHintAuraThemes';
 import { getBoardVisualProfile } from '../layout/boardVisualProfile';
-import { projectIntersectionOnCanvas, projectLatticePointOnCanvas } from '../layout/boardProjection';
+import { projectIntersectionOnCanvas } from '../layout/boardProjection';
 
 export interface BoardAnimState {
   from: number;
@@ -87,46 +85,17 @@ export function listTurnHighlightNodeIds(
   return ids;
 }
 
-function drawAmberSquare(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
-  ctx.fillStyle = 'rgba(232,168,60,0.35)';
-  ctx.fillRect(cx - 14, cy - 14, 28, 28);
-  ctx.strokeStyle = 'rgba(232,168,60,0.95)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(cx - 14, cy - 14, 28, 28);
-}
-
-function drawCenterLine(
-  ctx: CanvasRenderingContext2D,
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number,
-): void {
-  const grad = ctx.createLinearGradient(ax, ay - 10, bx, by + 10);
-  grad.addColorStop(0, 'rgba(232,168,60,0.15)');
-  grad.addColorStop(0.5, 'rgba(232,168,60,0.45)');
-  grad.addColorStop(1, 'rgba(232,168,60,0.15)');
-  ctx.fillStyle = grad;
+/**
+ * Center scoring mark — deliberately subtle, same muted tone as the board's own
+ * grid lines rather than a bright "signal" accent. Matches the Lovable reference:
+ * a thin mark that reads as part of the board, not a HUD glow competing with the
+ * gold move-hint ring or the orange/lime turn rings.
+ */
+function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number, lineRgba: string): void {
   ctx.beginPath();
-  ctx.moveTo(ax - 8, ay - 10);
-  ctx.lineTo(bx + 8, by - 10);
-  ctx.lineTo(bx + 8, by + 10);
-  ctx.lineTo(ax - 8, ay + 10);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(ax, ay);
-  ctx.lineTo(bx, by);
-  ctx.strokeStyle = 'rgba(232,168,60,0.95)';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-}
-
-function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.beginPath();
-  ctx.arc(x, y, 22, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(232, 168, 60, 0.7)';
-  ctx.lineWidth = 2;
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
+  ctx.strokeStyle = lineRgba;
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 }
 
@@ -177,35 +146,57 @@ function drawOriginalMoveHintAura(
   );
 }
 
-/** Gold (fill) — Lovable-style snug gold wash + bright rim hugging the bead. */
+/**
+ * Gold (fill) — Lovable's actual "selected-bead ring": a thin gold stroke plus a
+ * drop-shadow glow, sitting outside the bead edge only. Never fills or washes over
+ * the ball itself (that was the old behaviour) — and uses LOVABLE_RING_GOLD, a
+ * duller/more muted gold than the center-scoring markers, so the two don't read
+ * as the same element when a hinted bead sits near the board center.
+ */
 function drawGoldFillMoveHintAura(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   pieceRadius: number,
 ): void {
-  const glowRadius = pieceRadius + 11;
-  const aura = ctx.createRadialGradient(x, y, pieceRadius * 0.78, x, y, glowRadius);
-  aura.addColorStop(0, 'rgba(255, 220, 120, 0.52)');
-  aura.addColorStop(0.42, 'rgba(255, 205, 92, 0.30)');
-  aura.addColorStop(1, 'rgba(255, 180, 50, 0)');
-  ctx.beginPath();
-  ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
-  ctx.fillStyle = aura;
-  ctx.fill();
+  // Three concentric strokes packed tight against the bead edge (no gap) — reads
+  // as one dense band, not a single thin line lost against the board.
+  // Light-brown variant only when the Black & Brown bead set is active — tied
+  // to the bead set, not the board theme, so Ivory/White/Wooden always keep
+  // the same gold aura regardless of which board they're shown on.
+  const gold = getActiveBeadSet().id === 'black-brown' ? LOVABLE_RING_LIGHT_BROWN : LOVABLE_RING_GOLD;
 
-  const innerRadius = pieceRadius + 0.55;
+  ctx.save();
+  ctx.shadowColor = gold.core;
+  ctx.shadowBlur = 6;
   ctx.beginPath();
-  ctx.arc(x, y, innerRadius, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255, 228, 140, 0.98)';
-  ctx.lineWidth = 2.35;
+  ctx.arc(x, y, pieceRadius + 0.6, 0, Math.PI * 2);
+  ctx.strokeStyle = gold.core;
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.arc(x, y, pieceRadius + 2.1, 0, Math.PI * 2);
+  ctx.strokeStyle = gold.core;
+  ctx.lineWidth = 1.6;
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(x, y, pieceRadius + 3.2, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255, 205, 92, 0.38)';
-  ctx.lineWidth = 1.35;
+  ctx.arc(x, y, pieceRadius + 3.4, 0, Math.PI * 2);
+  ctx.strokeStyle = gold.soft;
+  ctx.lineWidth = 1.2;
   ctx.stroke();
+
+  // Light-brown variant adds a thin dark edge outside the band — contrast via
+  // an outline works against any of the 4 light board hues, not just one.
+  if ('edge' in gold) {
+    ctx.beginPath();
+    ctx.arc(x, y, pieceRadius + 4.3, 0, Math.PI * 2);
+    ctx.strokeStyle = gold.edge;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
 }
 
 function drawBeadMoveHintAura(
@@ -230,12 +221,12 @@ function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: num
   const radius = 14 + progress * 20;
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(255, 200, 80, ${0.9 * life})`;
+  ctx.strokeStyle = `rgba(255, 205, 92, ${0.95 * life})`;
   ctx.lineWidth = 3;
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(x, y, radius * 0.55, 0, Math.PI * 2);
-  ctx.fillStyle = `rgba(255, 215, 100, ${0.3 * life})`;
+  ctx.fillStyle = `rgba(255, 205, 92, ${0.3 * life})`;
   ctx.fill();
 }
 
@@ -278,29 +269,6 @@ function drawCreamHalfTint(
   ctx.fillRect(0, 0, w, h);
 }
 
-function drawCenterDecorations(
-  ctx: CanvasRenderingContext2D,
-  board: BoardDefinition,
-  w: number,
-  h: number,
-): void {
-  const profile = getBoardVisualProfile(board.name);
-
-  if (profile.centerLine) {
-    const [a, b] = profile.centerLine;
-    const aPt = projectLatticePointOnCanvas(a.x, a.y, w, h, board);
-    const bPt = projectLatticePointOnCanvas(b.x, b.y, w, h, board);
-    drawCenterLine(ctx, aPt.x, aPt.y, bPt.x, bPt.y);
-  }
-
-  if (profile.centerSquares) {
-    for (const sq of profile.centerSquares) {
-      const pt = projectLatticePointOnCanvas(sq.x, sq.y, w, h, board);
-      drawAmberSquare(ctx, pt.x, pt.y);
-    }
-  }
-}
-
 function drawPieceAt(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -337,16 +305,19 @@ function drawPieceAt(
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
 
+    // Tight, high-contrast hotspot (glass-marble shine) instead of a broad soft
+    // wash — narrower radius, brighter core, steeper falloff.
     const spec = ctx.createRadialGradient(
       x - radius * 0.4,
       y - radius * 0.44,
       0,
       x - radius * 0.22,
       y - radius * 0.28,
-      radius * 0.62,
+      radius * 0.42,
     );
-    spec.addColorStop(0, 'rgba(255, 255, 255, 0.82)');
-    spec.addColorStop(0.32, 'rgba(255, 255, 255, 0.24)');
+    spec.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+    spec.addColorStop(0.22, 'rgba(255, 255, 255, 0.55)');
+    spec.addColorStop(0.55, 'rgba(255, 255, 255, 0.12)');
     spec.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -359,11 +330,25 @@ function drawPieceAt(
     ctx.lineWidth = 1.4;
     ctx.stroke();
 
+    // Outer edge tinted per bead set (Lovable "rim stroke") — the inner lamp-lit
+    // highlight above stays a fixed white specular regardless of bead set.
     ctx.beginPath();
     ctx.arc(x, y, Math.max(radius - 0.12, 0), 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+    ctx.strokeStyle = beadSet.blackRimStroke;
+    ctx.globalAlpha = alpha * 0.55;
     ctx.lineWidth = 2.1;
     ctx.stroke();
+    ctx.globalAlpha = alpha;
+  } else {
+    // Cream beads had no edge definition at all — thin per-bead-set rim stroke
+    // (Lovable spec's "stroke" colour) so the set's identity reads at the edge too.
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(radius - 0.6, 0), 0, Math.PI * 2);
+    ctx.strokeStyle = beadSet.creamStroke;
+    ctx.globalAlpha = alpha * 0.6;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.globalAlpha = alpha;
   }
 
   ctx.restore();
@@ -426,7 +411,7 @@ export function drawCanvasBoard(
     : new Set<number>();
   const matchStartFlash = turnIdleHighlight && showTurnStartRings;
 
-  const boardLines = getClassicBoardLineGold();
+  const boardLines = getActiveBoardLineTheme();
   ctx.strokeStyle = boardLines.lineRgba;
   ctx.lineWidth = 2;
   for (const conn of board.connections) {
@@ -441,8 +426,6 @@ export function drawCanvasBoard(
     ctx.stroke();
   }
 
-  drawCenterDecorations(ctx, board, w, h);
-
   // Hide last-move rings on anim endpoints for the whole move, including t=1 frame.
   const hideFrom = anim ? anim.from : -1;
   const hideTo = anim ? anim.to : -1;
@@ -454,7 +437,7 @@ export function drawCanvasBoard(
     const center = isCenterHighlight(node.id, centerHighlight);
 
     if (center) {
-      drawCenterRing(ctx, x, y);
+      drawCenterRing(ctx, x, y, boardLines.lineRgba);
     }
 
     for (const pulse of capturePulses) {
@@ -476,7 +459,7 @@ export function drawCanvasBoard(
     const nodeRadius = node.occupant ? 3.5 : 4;
     ctx.beginPath();
     ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
-    ctx.fillStyle = node.occupant ? boardLines.nodeRgba : CLASSIC_BOARD_LINE_GOLD_EMPTY_NODE;
+    ctx.fillStyle = node.occupant ? boardLines.nodeRgba : boardLines.emptyNodeRgba;
     ctx.globalAlpha = 1;
     ctx.fill();
 

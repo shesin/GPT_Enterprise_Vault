@@ -44,20 +44,6 @@ describe('boardVisualProfile', () => {
     expect(getBoardVisualProfile(Board6x3x5.name).centerRingPoints).toEqual([{ x: 2, y: 4 }]);
   });
 
-  it('does not draw amber center square plates on any V1 board', () => {
-    for (const name of [
-      Board16Sholo.name,
-      Board6.name,
-      Board6x3x5.name,
-      Board10x5.name,
-      Board12x6x5.name,
-      Board8x4x6.name,
-      Board7.name,
-    ]) {
-      expect(getBoardVisualProfile(name).centerSquares).toBeUndefined();
-    }
-  });
-
   it('uses square canvas for non-16 boards', () => {
     for (const name of [
       Board6.name,

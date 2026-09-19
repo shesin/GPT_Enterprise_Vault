@@ -47,14 +47,6 @@ export const LOVABLE_COMPLETE_BOARD_THEMES: readonly LovableBoardTokens[] = [
     lines: 'oklch(0.81 0.055 90)',
   },
   {
-    label: 'Forest Green',
-    surface: 'oklch(0.25 0.08 145)',
-    shadow: 'oklch(0.18 0.055 145)',
-    frameOuter: 'oklch(0.18 0.045 130)',
-    frameInner: 'oklch(0.10 0.028 130)',
-    lines: 'oklch(0.68 0.09 104)',
-  },
-  {
     label: 'Purple Night',
     surface: 'oklch(0.25 0.07 310)',
     shadow: 'oklch(0.17 0.055 305)',
@@ -62,35 +54,10 @@ export const LOVABLE_COMPLETE_BOARD_THEMES: readonly LovableBoardTokens[] = [
     frameInner: 'oklch(0.11 0.035 300)',
     lines: 'oklch(0.72 0.09 82)',
   },
-] as const;
-
-/** Light board row — always paired with charcoal side panels. */
-export const LOVABLE_LIGHT_BOARD_THEMES: readonly LovableBoardTokens[] = [
   {
-    label: 'Sandy Beige',
-    surface: 'oklch(0.72 0.055 84)',
-    shadow: 'oklch(0.59 0.065 78)',
-    frameOuter: 'oklch(0.72 0.055 84)',
-    frameInner: 'oklch(0.59 0.065 78)',
-    lines: 'oklch(0.39 0.065 62)',
-  },
-  {
-    label: 'Soft Blush',
-    surface: 'oklch(0.76 0.04 30)',
-    shadow: 'oklch(0.63 0.045 28)',
-    frameOuter: 'oklch(0.76 0.04 30)',
-    frameInner: 'oklch(0.63 0.045 28)',
-    lines: 'oklch(0.42 0.055 65)',
-  },
-  {
-    label: 'Pale Sage',
-    surface: 'oklch(0.74 0.04 145)',
-    shadow: 'oklch(0.61 0.045 142)',
-    frameOuter: 'oklch(0.74 0.04 145)',
-    frameInner: 'oklch(0.61 0.045 142)',
-    lines: 'oklch(0.40 0.05 130)',
-  },
-  {
+    // Moved from the light-board row (2026-09-18) — its lightness (0.55) and
+    // distinct frame colours already set it apart from the pale pastel light
+    // boards; reads better grouped with the other matched dark/medium boards.
     label: 'Warm Walnut',
     surface: 'oklch(0.55 0.075 55)',
     shadow: 'oklch(0.42 0.07 52)',
@@ -100,10 +67,54 @@ export const LOVABLE_LIGHT_BOARD_THEMES: readonly LovableBoardTokens[] = [
   },
 ] as const;
 
+/** Light board row — always paired with charcoal side panels. */
+export const LOVABLE_LIGHT_BOARD_THEMES: readonly LovableBoardTokens[] = [
+  {
+    label: 'Sandy Beige',
+    surface: 'oklch(0.72 0.055 84)',
+    shadow: 'oklch(0.59 0.065 78)',
+    frameOuter: 'oklch(0.43 0.07 65)',
+    frameInner: 'oklch(0.25 0.055 58)',
+    lines: 'oklch(0.39 0.065 62)',
+  },
+  {
+    label: 'Seaglass',
+    surface: 'oklch(0.80 0.045 195)',
+    shadow: 'oklch(0.68 0.05 198)',
+    frameOuter: 'oklch(0.44 0.05 200)',
+    frameInner: 'oklch(0.26 0.04 202)',
+    lines: 'oklch(0.36 0.05 205)',
+  },
+  {
+    label: 'Powder Lilac',
+    surface: 'oklch(0.82 0.04 305)',
+    shadow: 'oklch(0.70 0.045 305)',
+    frameOuter: 'oklch(0.46 0.06 300)',
+    frameInner: 'oklch(0.28 0.045 298)',
+    lines: 'oklch(0.40 0.06 305)',
+  },
+  {
+    label: 'Celadon Jade',
+    surface: 'oklch(0.82 0.05 170)',
+    shadow: 'oklch(0.70 0.055 172)',
+    frameOuter: 'oklch(0.44 0.055 175)',
+    frameInner: 'oklch(0.26 0.04 178)',
+    lines: 'oklch(0.36 0.055 178)',
+  },
+  {
+    label: 'Alabaster Pearl',
+    surface: 'oklch(0.88 0.018 85)',
+    shadow: 'oklch(0.78 0.025 82)',
+    frameOuter: 'oklch(0.55 0.055 72)',
+    frameInner: 'oklch(0.33 0.045 65)',
+    lines: 'oklch(0.44 0.06 68)',
+  },
+] as const;
+
 /** @deprecated Use LOVABLE_COMPLETE_BOARD_THEMES + LOVABLE_LIGHT_BOARD_THEMES. */
 export const LOVABLE_BOARD_THEMES = LOVABLE_COMPLETE_BOARD_THEMES;
 
-export type BeadSetId = 'ivory-ebony' | 'white-black' | 'wooden' | 'pearl' | 'metallic';
+export type BeadSetId = 'ivory-ebony' | 'white-black' | 'wooden' | 'black-brown';
 
 export interface LovableBeadSetTokens {
   id: BeadSetId;
@@ -146,38 +157,32 @@ export const LOVABLE_BEAD_SETS: readonly LovableBeadSetTokens[] = [
   {
     id: 'wooden',
     label: 'Wooden',
-    creamHighlight: 'oklch(0.68 0.08 68)',
-    creamMid: 'oklch(0.60 0.075 68)',
-    creamShadow: 'oklch(0.50 0.07 67)',
-    creamStroke: 'oklch(0.79 0.07 78)',
+    // Cream side was a medium brown too (too close to the dark side) — replaced
+    // with a clean, faintly warm white so the pairing is Brown + White, not
+    // brown vs. duller brown.
+    creamHighlight: 'oklch(0.97 0.006 70)',
+    creamMid: 'oklch(0.90 0.006 70)',
+    creamShadow: 'oklch(0.80 0.008 70)',
+    creamStroke: 'oklch(0.86 0.01 70)',
     blackHighlight: 'oklch(0.60 0.09 62)',
     blackMid: 'oklch(0.40 0.08 57)',
     blackShadow: 'oklch(0.24 0.06 52)',
     blackRimStroke: 'oklch(0.66 0.085 68)',
   },
   {
-    id: 'pearl',
-    label: 'Pearl',
-    creamHighlight: 'oklch(0.92 0.035 250)',
-    creamMid: 'oklch(0.84 0.032 248)',
-    creamShadow: 'oklch(0.74 0.030 246)',
-    creamStroke: 'oklch(0.80 0.04 240)',
-    blackHighlight: 'oklch(0.66 0.055 255)',
-    blackMid: 'oklch(0.44 0.05 253)',
-    blackShadow: 'oklch(0.27 0.04 252)',
-    blackRimStroke: 'oklch(0.72 0.05 250)',
-  },
-  {
-    id: 'metallic',
-    label: 'Metallic',
-    creamHighlight: 'oklch(0.78 0.01 250)',
-    creamMid: 'oklch(0.70 0.01 250)',
-    creamShadow: 'oklch(0.58 0.01 250)',
-    creamStroke: 'oklch(0.90 0.01 250)',
-    blackHighlight: 'oklch(0.68 0.015 250)',
-    blackMid: 'oklch(0.40 0.012 250)',
-    blackShadow: 'oklch(0.22 0.01 250)',
-    blackRimStroke: 'oklch(0.74 0.015 250)',
+    id: 'black-brown',
+    label: 'Black & Brown',
+    // Reuses Wooden's dark-wood brown (creamBead slot) and White & Black's true
+    // black (blackBead slot) — both already-approved gradients, not new colours.
+    // Soft default for light board themes (see beadSetThemes.ts).
+    creamHighlight: 'oklch(0.60 0.09 62)',
+    creamMid: 'oklch(0.40 0.08 57)',
+    creamShadow: 'oklch(0.24 0.06 52)',
+    creamStroke: 'oklch(0.66 0.085 68)',
+    blackHighlight: 'oklch(0.48 0 0)',
+    blackMid: 'oklch(0.22 0 0)',
+    blackShadow: 'oklch(0.06 0 0)',
+    blackRimStroke: 'oklch(0.55 0 0)',
   },
 ] as const;
 

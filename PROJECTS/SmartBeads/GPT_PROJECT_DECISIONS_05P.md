@@ -124,7 +124,7 @@ Coach, Watch AI, resign demo, win glow: use **`previewScriptedSelection`** — s
 
 All beads draw at **radius 16** (no selected size bump). Opponent beads **inert** — not clickable.
 
-Center nodes: amber square plates under center scoring nodes (all 7 boards).
+Center nodes: thin ring, same muted gold as the board's grid lines, under center scoring nodes (all 7 boards) — deliberately subtle, not a bright accent.
 
 ---
 

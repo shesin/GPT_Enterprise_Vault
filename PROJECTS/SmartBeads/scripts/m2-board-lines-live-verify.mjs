@@ -51,7 +51,7 @@ async function main() {
 
   // Simulate dual-click bug: dark wood then light blush before match (user screenshot pattern)
   await page.locator('#play-theme-setting .play-theme-swatches--dark-charcoal .play-theme-swatch[data-play-theme="2"]').click();
-  await page.locator('#play-theme-setting .play-theme-swatches--light-charcoal .play-theme-swatch[data-play-theme="9"]').click();
+  await page.locator('#play-theme-setting .play-theme-swatches--light-charcoal .play-theme-swatch[data-play-theme="15"]').click();
   await page.waitForTimeout(200);
 
   await page.evaluate(() => {
@@ -67,7 +67,7 @@ async function main() {
     const pixels = await sampleLinePixels(page);
     const analyzed = pixels?.map((p) => lineContrast([p.r, p.g, p.b])) ?? [];
     const anyGold = analyzed.some((p) => p.goldish);
-    const ok = state.storedBoard === '9' && state.activeCount === 1 && state.activeIds[0] === '9' && anyGold;
+    const ok = state.storedBoard === '15' && state.activeCount === 1 && state.activeIds[0] === '15' && anyGold;
     console.log(`sample ${i + 1}`, { state, pixels, anyGold, ok: ok ? 'OK' : 'FAIL' });
     if (!ok) failures.push({ i, state, pixels, anyGold });
   }

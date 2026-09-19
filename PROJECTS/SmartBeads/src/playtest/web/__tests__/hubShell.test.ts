@@ -14,12 +14,12 @@ describe('two-page play flow (index.html)', () => {
     expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-side-look="1"/);
     expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-theme="1"/);
     expect(indexHtml).toMatch(/id="play-hub"[^>]*data-play-board-match="matched"/);
-    expect(indexHtml).toContain('id="play-theme-setting"');
+    expect(indexHtml).not.toContain('id="play-theme-setting"');
     expect(indexHtml).toContain('Dark theme');
     expect(indexHtml).toContain('Light theme');
     expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');
     expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
-    expect(indexHtml).not.toContain('play-theme-swatches--dark-same');
+    expect(indexHtml).toContain('play-theme-swatches--dark-same');
     expect(indexHtml).toContain('data-play-theme="4"');
     expect(indexHtml).not.toContain('play-theme-swatches--side');
     expect(indexHtml).not.toContain('data-play-theme="7"');

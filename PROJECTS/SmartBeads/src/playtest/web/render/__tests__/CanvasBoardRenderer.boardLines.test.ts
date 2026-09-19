@@ -1,18 +1,32 @@
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
 import * as boardLookThemes from '../../layout/boardLookThemes';
-import { CLASSIC_BOARD_LINE_GOLD } from '../../layout/boardLineGoldThemes';
+import { PLAY_BOARD_LOOK_STORAGE_KEY } from '../../layout/playShellThemes';
 import { drawCanvasBoard } from '../CanvasBoardRenderer';
 
 describe('CanvasBoardRenderer board grid lines', () => {
   afterEach(() => {
     jest.restoreAllMocks();
+    Reflect.deleteProperty(globalThis, 'localStorage');
   });
 
-  it('uses locked Classic gold rgba for grid lines, not per-theme oklch lineColor', () => {
+  it("uses the board look's own mapped rgba for grid lines, not its raw oklch lineColor", () => {
+    // Every board look (including Warm Walnut, '14') now has its own line-colour
+    // entry in OWN_COLOUR_LINE_THEMES — see boardLineGoldThemes.ts.
+    const store = new Map<string, string>([[PLAY_BOARD_LOOK_STORAGE_KEY, '14']]);
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: (key: string) => store.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          store.set(key, value);
+        },
+      },
+      configurable: true,
+    });
+
     jest.spyOn(boardLookThemes, 'getActiveBoardLookTheme').mockReturnValue({
-      id: '12',
+      id: '14',
       label: 'Warm Walnut',
-      lookGroup: 'light-charcoal',
+      lookGroup: 'complete',
       surfaceTop: 'oklch(0.55 0.075 55)',
       surfaceBottom: 'oklch(0.42 0.07 52)',
       frameOuter: 'oklch(0.32 0.06 50)',
@@ -79,9 +93,12 @@ describe('CanvasBoardRenderer board grid lines', () => {
       turnPulse: 0,
     });
 
-    expect(strokeStyles).toContain(CLASSIC_BOARD_LINE_GOLD.lineRgba);
-    expect(strokeStyles.filter((s) => s.includes('255, 205, 92')).length).toBeGreaterThanOrEqual(1);
-    expect(fillStyles.some((s) => typeof s === 'string' && s.includes('255, 205, 92'))).toBe(true);
+    // Warm Walnut's own mapped colour — oklch(0.76 0.055 80) -> rgb(196, 174, 138).
+    // (The centre scoring ring separately still draws in Classic gold by design —
+    // see drawCenterRing()/GPT_PROJECT_DECISIONS_05P.md §Center nodes — so this
+    // only asserts the grid-line colour itself, not every strokeStyle call.)
+    expect(strokeStyles.filter((s) => s.includes('196, 174, 138')).length).toBeGreaterThanOrEqual(1);
+    expect(fillStyles.some((s) => typeof s === 'string' && s.includes('196, 174, 138'))).toBe(true);
     expect(strokeStyles).not.toContain('oklch(0.76 0.055 80)');
   });
 });

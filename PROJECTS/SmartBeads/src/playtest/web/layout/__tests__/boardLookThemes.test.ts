@@ -49,16 +49,16 @@ describe('boardLookThemes', () => {
     expect(getBoardLookTheme('1').label).toBe('Classic Green');
     expect(getBoardLookTheme('6').label).toBe('Purple Night');
     expect(getBoardLookTheme('4').label).toBe('Sandy Beige');
-    expect(getBoardLookTheme('10').label).toBe('Pale Sage');
-    expect(getBoardLookTheme('12').label).toBe('Warm Walnut');
+    expect(getBoardLookTheme('15').label).toBe('Seaglass');
+    expect(getBoardLookTheme('14').label).toBe('Warm Walnut');
   });
 
   it('active board look follows light board id when side is charcoal', () => {
-    mockPlayThemeDom('9', '7');
-    applyPlayLookState('9', '7');
+    mockPlayThemeDom('15', '7');
+    applyPlayLookState('15', '7');
     const active = getActiveBoardLookTheme();
-    const softBlush = LOVABLE_LIGHT_BOARD_THEMES[1];
-    expect(active.surfaceTop).toBe(softBlush.surface);
-    expect(active.frameOuter).toBe(softBlush.frameOuter);
+    const seaglass = LOVABLE_LIGHT_BOARD_THEMES[1];
+    expect(active.surfaceTop).toBe(seaglass.surface);
+    expect(active.frameOuter).toBe(seaglass.frameOuter);
   });
 });

@@ -1,4 +1,4 @@
-/** Board canvas — driven by stored board look (complete 1–6); side-only never changes board. */
+/** Board canvas — driven by stored board look (complete 1,2,3,6,14); side-only never changes board. */
 
 import { getActiveBeadSet } from './beadSetThemes';
 import {
