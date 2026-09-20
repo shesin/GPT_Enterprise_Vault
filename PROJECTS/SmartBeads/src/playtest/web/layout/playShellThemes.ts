@@ -47,6 +47,13 @@ const LIGHT_TOKEN_INDEX: Record<LightBoardLookId, number> = {
 // earlier '8'/'11'/'13' removals so old stored values migrate away cleanly.
 const REMOVED_LIGHT_BOARD_LOOK_IDS = new Set(['8', '9', '10', '11', '13']);
 
+// '19' (Pearl Gold), '20' (Jade Matched), '21' (Pale Sage), '22' (Sky Blue)
+// added and removed within this same session (2026-09-20) — a browser with
+// one of these ids already in storage would otherwise crash on load, since
+// getPlayShellTheme() has nothing to return for an id no longer in
+// PLAY_SHELL_THEMES. Same migration pattern as REMOVED_LIGHT_BOARD_LOOK_IDS.
+const REMOVED_COMPLETE_LOOK_IDS = new Set(['19', '20', '21', '22']);
+
 export type CreamHalfStop = readonly [position: number, color: string];
 
 export interface BeadShade {
@@ -608,6 +615,7 @@ function readStoredBoardLookIdRaw(): BoardLookThemeId {
     // same colours, new group, so migrate rather than falling back to default.
     if (stored === '12') return '14';
     if (stored && REMOVED_LIGHT_BOARD_LOOK_IDS.has(stored)) return DEFAULT_LIGHT_BOARD_LOOK_ID;
+    if (stored && REMOVED_COMPLETE_LOOK_IDS.has(stored)) return DEFAULT_BOARD_LOOK_ID;
     if (isBoardLookThemeId(stored)) return stored;
     const sideStored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
     const v2 = localStorage.getItem(PLAY_THEME_STORAGE_KEY);

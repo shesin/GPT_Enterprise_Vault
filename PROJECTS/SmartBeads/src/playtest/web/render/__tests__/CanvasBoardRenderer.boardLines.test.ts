@@ -1,4 +1,5 @@
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
+import { CLASSIC_BOARD_LINE_GOLD } from '../../layout/boardLineGoldThemes';
 import * as boardLookThemes from '../../layout/boardLookThemes';
 import { PLAY_BOARD_LOOK_STORAGE_KEY } from '../../layout/playShellThemes';
 import { drawCanvasBoard } from '../CanvasBoardRenderer';
@@ -9,9 +10,9 @@ describe('CanvasBoardRenderer board grid lines', () => {
     Reflect.deleteProperty(globalThis, 'localStorage');
   });
 
-  it("uses the board look's own mapped rgba for grid lines, not its raw oklch lineColor", () => {
-    // Every board look (including Warm Walnut, '14') now has its own line-colour
-    // entry in OWN_COLOUR_LINE_THEMES — see boardLineGoldThemes.ts.
+  it("uses the board look's own lineColor with alpha for grid lines, not the classic gold fallback", () => {
+    // Every board look (including Warm Walnut, '14') derives its own line
+    // colour directly from theme.lineColor — see boardLineGoldThemes.ts.
     const store = new Map<string, string>([[PLAY_BOARD_LOOK_STORAGE_KEY, '14']]);
     Object.defineProperty(globalThis, 'localStorage', {
       value: {
@@ -93,12 +94,14 @@ describe('CanvasBoardRenderer board grid lines', () => {
       turnPulse: 0,
     });
 
-    // Warm Walnut's own mapped colour — oklch(0.76 0.055 80) -> rgb(196, 174, 138).
+    // Warm Walnut's own lineColor, alpha-85 — oklch(0.76 0.055 80 / 85%).
     // (The centre scoring ring separately still draws in Classic gold by design —
     // see drawCenterRing()/GPT_PROJECT_DECISIONS_05P.md §Center nodes — so this
     // only asserts the grid-line colour itself, not every strokeStyle call.)
-    expect(strokeStyles.filter((s) => s.includes('196, 174, 138')).length).toBeGreaterThanOrEqual(1);
-    expect(fillStyles.some((s) => typeof s === 'string' && s.includes('196, 174, 138'))).toBe(true);
+    const expectedLine = 'oklch(0.76 0.055 80 / 85%)';
+    expect(strokeStyles.filter((s) => s.includes(expectedLine)).length).toBeGreaterThanOrEqual(1);
+    expect(fillStyles.some((s) => typeof s === 'string' && s.includes('oklch(0.76 0.055 80 / 55%)'))).toBe(true);
     expect(strokeStyles).not.toContain('oklch(0.76 0.055 80)');
+    expect(strokeStyles).not.toContain(CLASSIC_BOARD_LINE_GOLD.lineRgba);
   });
 });

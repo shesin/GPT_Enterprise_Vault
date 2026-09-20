@@ -11,6 +11,7 @@ import {
   readStoredSideLookId,
   wirePlayLookPreviewSetting,
 } from './layout/playShellThemes';
+import { applyHubLookId, readStoredHubLookId, type HubLookId } from './layout/hubLookThemes';
 
 export type HubLaunchAction = 'play' | 'coach' | 'spectate';
 
@@ -165,6 +166,30 @@ function wireHubThemePicker(): void {
   wirePlayLookPreviewSetting(hubLook);
 }
 
+function wireHubLookPicker(): void {
+  const target = document.getElementById('play-hub');
+  const swatches = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.hub-look-swatch[data-hub-look-option]'),
+  );
+  if (!target || swatches.length === 0) return;
+
+  function setHubLook(id: HubLookId): void {
+    applyHubLookId(id, target!);
+    for (const btn of swatches) {
+      btn.setAttribute('aria-pressed', String(btn.dataset.hubLookOption === id));
+    }
+  }
+
+  setHubLook(readStoredHubLookId());
+  for (const btn of swatches) {
+    btn.addEventListener('click', () => {
+      const option = btn.dataset.hubLookOption as HubLookId | undefined;
+      if (!option) return;
+      setHubLook(readStoredHubLookId() === option ? 'default' : option);
+    });
+  }
+}
+
 export function bootstrapPlayHub(
   enterPlay: (boardId: ProductBoardId, mode: GameFeatureSettings['mode'], action: HubLaunchAction) => void,
 ): void {
@@ -207,6 +232,7 @@ export function bootstrapPlayHub(
 
   wireHubRailNotice();
   wireHubThemePicker();
+  wireHubLookPicker();
 
   const coachParam = new URLSearchParams(window.location.search).get('coach');
   if (coachParam === '1' || coachParam === 'start') {

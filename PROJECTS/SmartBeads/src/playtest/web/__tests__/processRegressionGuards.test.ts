@@ -204,7 +204,7 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('play theme — three look rows (dark, light, matched), hub-only on page 2', () => {
+  describe('play theme — two look rows (light, dark/matched), hub-only on page 2', () => {
     it('swatch UI, storage split, unified complete colours', () => {
       expect(playShellThemesSource).toMatch(/function applyPlayLookFromRow/);
       expect(playShellThemesSource).toMatch(/function applyPlayLookState/);
@@ -226,12 +226,16 @@ describe('process regression guards', () => {
       // Look preview lives on the hub only (2026-09-19) — page 2 dropped it as
       // redundant clutter (locked, and selection already happened on the hub).
       expect(indexHtml).not.toContain('id="play-theme-setting"');
-      expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');
+      // Charcoal-side "Dark theme" row removed (2026-09-20) — the matched-side
+      // row (same 5 boards, matched-colour sides) took over the "Dark theme"
+      // label since it's now the only dark-board option; charcoal side panel
+      // was judged unnecessary alongside it.
+      expect(indexHtml).not.toContain('play-theme-swatches--dark-charcoal');
       expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
       expect(indexHtml).toContain('Dark theme');
       expect(indexHtml).toContain('Light theme');
       expect(indexHtml).toContain('play-theme-swatches--dark-same');
-      expect(indexHtml).toContain('Matched (same colour sides)');
+      expect(indexHtml).not.toContain('Matched (same colour sides)');
       expect(indexHtml).toContain('data-play-theme="4"');
       expect(indexHtml).toContain('data-play-theme="15"');
       expect(indexHtml).toContain('data-play-theme="14"');

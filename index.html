@@ -13,6 +13,7 @@
 <body>
   <div id="play-hub" class="play-hub" data-play-board-look="1" data-play-side-look="1" data-play-theme="1" data-play-board-match="matched">
     <aside class="hub-rail hub-rail--left" aria-label="Hub navigation">
+      <input type="checkbox" id="hub-review-toggle" class="hub-review-toggle-input" aria-hidden="true">
       <div class="hub-brand-block">
         <div class="hub-logo-mark" aria-hidden="true"></div>
         <p class="hub-brand-tagline"><em>Simple play. Superior strategy. Sharper brain.</em></p>
@@ -21,10 +22,21 @@
       <nav class="hub-sidebar-nav">
         <button type="button" class="hub-sidebar-link hub-sidebar-link--active" aria-current="page" disabled>Play</button>
         <button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="community">Community</button>
-        <button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="tournaments">Tournaments</button>
+        <button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="tournaments">Tournament</button>
+        <label for="hub-review-toggle" class="hub-sidebar-link hub-sidebar-link--soon hub-review-trigger" role="button" tabindex="0">Review</label>
       </nav>
+      <div class="hub-review-panel" id="hub-review-panel">
+        <div class="hub-review-panel-head">
+          <span class="hub-rail-title">Player reviews</span>
+          <label for="hub-review-toggle" class="hub-review-panel-close" aria-label="Close player reviews">×</label>
+        </div>
+        <p class="hub-coming-soon">Player reviews coming soon.</p>
+      </div>
       <div class="hub-rail-foot">
-        <span class="hub-player-name">Player</span>
+        <button type="button" id="hub-look-seaglass-swatch" class="hub-look-swatch" data-hub-look-option="seaglass" aria-pressed="false" title="Seaglass hub look" aria-label="Seaglass hub look"></button>
+        <button type="button" id="hub-look-jade-swatch" class="hub-look-swatch" data-hub-look-option="jade" aria-pressed="false" title="Jade hub look" aria-label="Jade hub look"></button>
+        <button type="button" class="hub-rail-foot-link" disabled title="Coming soon">Help &amp; Support</button>
+        <button type="button" class="hub-rail-foot-link" disabled title="Coming soon">Player Profile</button>
       </div>
     </aside>
 
@@ -40,42 +52,6 @@
         </header>
 
         <div class="hub-sections">
-          <section class="hub-section" id="hub-section-board" aria-labelledby="hub-board-heading">
-            <h2 class="hub-section-title" id="hub-board-heading">Choose your board</h2>
-            <div id="hub-board-grid" class="hub-board-tile-grid" role="listbox" aria-labelledby="hub-board-heading"></div>
-            <select id="hub-board-select" hidden aria-hidden="true" tabindex="-1"></select>
-          </section>
-
-          <section class="hub-section" id="hub-section-look" aria-labelledby="hub-look-heading">
-            <h2 class="hub-section-title" id="hub-look-heading">Choose your look</h2>
-            <div class="hub-play-theme-setting play-theme-setting" id="hub-play-theme-setting" data-play-look-setting>
-              <p class="play-theme-group-label">Dark theme</p>
-              <div class="play-theme-swatches play-theme-swatches--dark-charcoal" role="radiogroup" aria-label="Dark theme">
-                <button type="button" class="play-theme-swatch" data-play-theme="1" title="Classic Green" aria-label="Classic Green"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="2" title="Wood Classic" aria-label="Wood Classic"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="3" title="Ocean Blue" aria-label="Ocean Blue"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="6" title="Purple Night" aria-label="Purple Night"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="14" title="Warm Walnut" aria-label="Warm Walnut"></button>
-              </div>
-              <p class="play-theme-group-label">Light theme</p>
-              <div class="play-theme-swatches play-theme-swatches--light-charcoal" role="radiogroup" aria-label="Light theme">
-                <button type="button" class="play-theme-swatch" data-play-theme="4" title="Sandy Beige" aria-label="Sandy Beige"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="15" title="Seaglass" aria-label="Seaglass"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="16" title="Powder Lilac" aria-label="Powder Lilac"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="17" title="Celadon Jade" aria-label="Celadon Jade"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="18" title="Alabaster Pearl" aria-label="Alabaster Pearl"></button>
-              </div>
-              <p class="play-theme-group-label">Matched (same colour sides)</p>
-              <div class="play-theme-swatches play-theme-swatches--dark-same" role="radiogroup" aria-label="Matched">
-                <button type="button" class="play-theme-swatch" data-play-theme="1" title="Classic Green" aria-label="Classic Green matched"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="2" title="Wood Classic" aria-label="Wood Classic matched"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="3" title="Ocean Blue" aria-label="Ocean Blue matched"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="6" title="Purple Night" aria-label="Purple Night matched"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="14" title="Warm Walnut" aria-label="Warm Walnut matched"></button>
-              </div>
-            </div>
-          </section>
-
           <section class="hub-section" id="hub-section-lesson" aria-labelledby="hub-lesson-heading">
             <h2 class="hub-section-title" id="hub-lesson-heading">How to play</h2>
             <div class="hub-lesson-grid">
@@ -84,9 +60,37 @@
             </div>
           </section>
 
+          <section class="hub-section" id="hub-section-look" aria-labelledby="hub-look-heading">
+            <h2 class="hub-section-title" id="hub-look-heading">Choose your look</h2>
+            <div class="hub-play-theme-setting play-theme-setting" id="hub-play-theme-setting" data-play-look-setting>
+              <p class="play-theme-group-label">Light theme</p>
+              <div class="play-theme-swatches play-theme-swatches--light-charcoal" role="radiogroup" aria-label="Light theme">
+                <button type="button" class="play-theme-swatch" data-play-theme="4" title="Sandy Beige" aria-label="Sandy Beige"></button>
+                <button type="button" class="play-theme-swatch" data-play-theme="15" title="Seaglass" aria-label="Seaglass"></button>
+                <button type="button" class="play-theme-swatch" data-play-theme="16" title="Powder Lilac" aria-label="Powder Lilac"></button>
+                <button type="button" class="play-theme-swatch" data-play-theme="17" title="Celadon Jade" aria-label="Celadon Jade"></button>
+                <button type="button" class="play-theme-swatch" data-play-theme="18" title="Alabaster Pearl" aria-label="Alabaster Pearl"></button>
+              </div>
+              <p class="play-theme-group-label">Dark theme</p>
+              <div class="play-theme-swatches play-theme-swatches--dark-same" role="radiogroup" aria-label="Dark theme">
+                <button type="button" class="play-theme-swatch" data-play-theme="1" title="Classic Green" aria-label="Classic Green"></button>
+                <button type="button" class="play-theme-swatch" data-play-theme="2" title="Wood Classic" aria-label="Wood Classic"></button>
+                <button type="button" class="play-theme-swatch" data-play-theme="3" title="Ocean Blue" aria-label="Ocean Blue"></button>
+                <button type="button" class="play-theme-swatch" data-play-theme="6" title="Purple Night" aria-label="Purple Night"></button>
+                <button type="button" class="play-theme-swatch" data-play-theme="14" title="Warm Walnut" aria-label="Warm Walnut"></button>
+              </div>
+            </div>
+          </section>
+
+          <section class="hub-section" id="hub-section-board" aria-labelledby="hub-board-heading">
+            <h2 class="hub-section-title" id="hub-board-heading">Choose your board</h2>
+            <div id="hub-board-grid" class="hub-board-tile-grid" role="listbox" aria-labelledby="hub-board-heading"></div>
+            <select id="hub-board-select" hidden aria-hidden="true" tabindex="-1"></select>
+          </section>
+
           <section class="hub-section" id="hub-section-mode" aria-labelledby="hub-mode-heading">
             <div class="hub-section-head">
-              <h2 class="hub-section-title" id="hub-mode-heading">Who's playing</h2>
+              <h2 class="hub-section-title" id="hub-mode-heading">Play with</h2>
               <button type="button" class="setting-help-btn" id="hub-mode-help-btn" aria-label="Who is playing help" aria-expanded="false" aria-controls="hub-mode-help-text">?</button>
             </div>
             <p class="setting-help-text hub-mode-help-text" id="hub-mode-help-text" hidden>Play vs AI — You vs the computer. Pick board and difficulty on the board page.
@@ -113,11 +117,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
       </footer>
     </div>
 
-    <aside class="hub-rail hub-rail--right" aria-label="Reviews and promotions">
-      <div class="hub-reviews">
-        <h2 class="hub-rail-title">Review by users</h2>
-        <p class="hub-coming-soon">Player reviews coming soon.</p>
-      </div>
+    <aside class="hub-rail hub-rail--right" aria-label="Advertisement">
       <div class="hub-ad-side" aria-label="Side advertisement">
         <span class="ad-label">Sponsored</span>
         <div class="ad-placeholder">Advertisement</div>

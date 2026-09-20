@@ -174,7 +174,21 @@ Central 5×5 matches 10-bead width prominence (~70% vertical play height). Wing 
 
 ---
 
-## 13. Changing a decision
+## 13. Hub layout & chrome palette (Page 1)
+
+**Locked 2026-09-19, shipped 2026-09-20.** Chess.com-style layout — density/card-layout/left-rail style only; content and features stay ours, not a clone.
+
+**Left rail:** brand block → Play (current page) → Community → Tournament → Review (opens a same-width slide-out panel, "coming soon" placeholder) → spacer → Help & Support, Player Profile (disabled placeholders — no backend yet, see §13.1 in `GPT_PROJECT_PENDING_01P.md`).
+
+**Centre order:** How to play (compact single row) → Choose your look → Choose your board (row 1 smaller: 6-bead·3×5, 6-bead·4×4, 7-bead, 8-bead; row 2: 10-bead, 12-bead, 16-bead Classic) → Play with (2×2: Play vs AI + Friend same device top; Friend online + Watch AI vs AI bottom). **No Start Game button** — mode tiles keep launching directly (§9 above still governs).
+
+**Right rail + footer:** pure ad space, no functional content.
+
+**Palette — "Pearl Deep + Gold", one single fixed palette (not per-board, not a choice of three):** background `#F3E9D6`, panel `#EAD9B8`, border `#D8C08C`, gold accent `#C9A24A` / soft `#E6CE94` / ink `#241A0C`. Applies to hub chrome only. Unrelated to the page 2 board-look picker ("Choose your look" dark/light/matched swatch rows, 10 board colours) — that picker is untouched and still selects the actual game board's look on page 2.
+
+---
+
+## 14. Changing a decision
 
 1. Human approves wording here first (**Go — DECISIONS** + section).
 2. Implement in `src/` + Jest/WHEN tests must match the **WHEN** sentence.

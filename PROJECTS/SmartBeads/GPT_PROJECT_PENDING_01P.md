@@ -60,10 +60,11 @@ None currently — same engine/UI drives both web and the planned Capacitor Andr
 
 ### Still pending / polish
 
-- **Chess.com-style hub** — left rail, centre board grid, right rail; fit in 100% viewport (see notes below).
+- **Chess.com-style hub — SHIPPED 2026-09-20.** See `GPT_PROJECT_DECISIONS_05P.md` §13 (locked spec: palette, left rail, centre order, right rail) and `GPT_PROJECT_STATUS_01P.md` Integrity table (Jest + agent browser check). **UNCONFIRMED** — not yet watched on Shekhar's own screen (see Testing needed list above).
 - **Left panel / settings dedup** — hide duplicate mode chrome; settings only on Page 2 or in-game menu (§8 backlog).
 - **Human browser pass** — “check everything” on phone/desktop after hub + turn-colour changes.
-- **Left rail — account section (2026-09-19)** — Sign Up / Log In / Help & Support / Player Profile (chess.com has this row of 4 at the bottom of its left rail; ours needs the same slot once accounts exist — see §13.1, now a hard launch blocker per human, not optional online-only scope). Plus a **Review** entry just above Player Profile — clicking it opens a same-width slide-out panel (as the left rail) showing player reviews. All of this needs the account/auth system (§4, §13.1) to actually back it — no local-only stub.
+- **Left rail — account section (2026-09-19)** — Sign Up / Log In / Help & Support / Player Profile (chess.com has this row of 4 at the bottom of its left rail; ours needs the same slot once accounts exist — see §13.1, now a hard launch blocker per human, not optional online-only scope). **Visual placeholders shipped** (2026-09-20, part of the hub above): Review slide-out panel + Help & Support / Player Profile as disabled rail buttons, all "coming soon" — no backend behind any of them yet. Still needs the account/auth system (§4, §13.1) to actually back them before they can go live.
+- **Light board side panels — same-hue instead of charcoal (parked 2026-09-19).** Explored replacing charcoal side panels with a colour derived from each light board's own hue (Celadon Jade tried first). Several attempts didn't land: a gradient into the board's darkest tone read as charcoal once the dark end dominated a tall panel; a flat medium tone (`#5FAE87`, picked off a mockup swatch) also didn't match what the human wanted when seen live. Reverted — `playShellThemes.ts` is back to its pre-experiment state, no code changes retained. Needs a fresh approach before resuming, not just another shade of what's been tried. Scope, if resumed: Jade first, then the other 4 light boards once Jade is confirmed live.
 
 ### Phase 2 add-ons (Page 1 fields when HvH selected)
 

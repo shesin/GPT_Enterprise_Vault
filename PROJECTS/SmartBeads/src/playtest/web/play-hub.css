@@ -20,141 +20,82 @@
 }
 
 /*
- * Lovable OKLCH hub themes — JS applyHubThemeCssVars overrides at runtime.
- * Static fallbacks below match lovableOklchTokens.ts.
+ * Fixed hub chrome palette — "Pearl Deep + Gold" (locked, PENDING §2, 2026-09-19).
+ * One palette for the hub regardless of the selected board/look — not per-board.
+ * !important beats the per-board inline vars playShellThemes.ts still sets on
+ * #play-hub at runtime (that engine drives page 2's board looks, out of scope here).
  */
-
-/* 1 — Classic Green */
-.play-hub[data-play-theme="1"] {
-  --hub-page-bg: oklch(0.13 0.025 158);
-  --hub-rail-bg: oklch(0.22 0.055 157);
-  --hub-centre-bg: oklch(0.30 0.07 157);
-  --hub-card-bg: oklch(0.25 0.055 66);
-  --hub-card-hover: oklch(0.30 0.07 157);
-  --hub-border: oklch(0.45 0.055 95 / 35%);
-  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
-  --hub-text: oklch(0.93 0.025 82);
-  --hub-muted: oklch(0.70 0.025 145);
-  --hub-centre-text: oklch(0.93 0.025 82);
-  --hub-centre-muted: oklch(0.70 0.025 145);
-  --hub-accent: oklch(0.72 0.105 78);
-  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
-  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
-  --hub-brand: oklch(0.72 0.105 78);
+.play-hub {
+  --hub-page-bg: #F3E9D6 !important;
+  --hub-rail-bg: #EAD9B8 !important;
+  --hub-centre-bg: #F3E9D6 !important;
+  --hub-card-bg: #EAD9B8 !important;
+  --hub-card-hover: #E6CE94 !important;
+  --hub-border: #D8C08C !important;
+  --hub-border-soft: #D8C08C !important;
+  --hub-text: #241A0C !important;
+  --hub-muted: #6B5A3E !important;
+  --hub-centre-text: #241A0C !important;
+  --hub-centre-muted: #6B5A3E !important;
+  --hub-accent: #C9A24A !important;
+  --hub-accent-soft: #E6CE94 !important;
+  --hub-accent-ring: #C9A24A73 !important;
+  --hub-brand: #C9A24A !important;
+  --hub-ad-bg: #ececec !important;
+  --hub-ad-border: #d4d4d4 !important;
 }
 
-/* 2 — Wood Classic */
-.play-hub[data-play-theme="2"] {
-  --hub-page-bg: oklch(0.13 0.025 158);
-  --hub-rail-bg: oklch(0.29 0.07 57);
-  --hub-centre-bg: oklch(0.39 0.075 63);
-  --hub-card-bg: oklch(0.27 0.07 55);
-  --hub-card-hover: oklch(0.39 0.075 63);
-  --hub-border: oklch(0.45 0.055 95 / 35%);
-  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
-  --hub-text: oklch(0.93 0.025 82);
-  --hub-muted: oklch(0.70 0.025 145);
-  --hub-centre-text: oklch(0.93 0.025 82);
-  --hub-centre-muted: oklch(0.70 0.025 145);
-  --hub-accent: oklch(0.72 0.105 78);
-  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
-  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
-  --hub-brand: oklch(0.72 0.105 78);
+body.hub-page {
+  background: #F3E9D6;
 }
 
-/* 3 — Ocean Blue */
-.play-hub[data-play-theme="3"] {
-  --hub-page-bg: oklch(0.13 0.025 158);
-  --hub-rail-bg: oklch(0.23 0.055 225);
-  --hub-centre-bg: oklch(0.34 0.07 220);
-  --hub-card-bg: oklch(0.22 0.045 225);
-  --hub-card-hover: oklch(0.34 0.07 220);
-  --hub-border: oklch(0.45 0.055 95 / 35%);
-  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
-  --hub-text: oklch(0.93 0.025 82);
-  --hub-muted: oklch(0.70 0.025 145);
-  --hub-centre-text: oklch(0.93 0.025 82);
-  --hub-centre-muted: oklch(0.70 0.025 145);
-  --hub-accent: oklch(0.72 0.105 78);
-  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
-  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
-  --hub-brand: oklch(0.72 0.105 78);
+/*
+ * Optional Page 1 look, added 2026-09-20 per human request — additive to the
+ * locked default above, selected via a swatch (see .hub-look-swatch below)
+ * and persisted through hubLookThemes.ts. Overrides the same custom
+ * properties with equal specificity (.play-hub[attr] vs .play-hub) and
+ * later source order, so it wins over the default block while it's absent.
+ * Rail stays dark (needs light --hub-text/--hub-muted); centre stays on the
+ * light Seaglass tones (dark --hub-centre-text/--hub-centre-muted, unchanged
+ * pattern from the default).
+ */
+.play-hub[data-hub-look="seaglass"] {
+  --hub-page-bg: linear-gradient(180deg, oklch(0.80 0.045 195), oklch(0.68 0.05 198) 220%) !important;
+  --hub-rail-bg: linear-gradient(165deg, oklch(0.50 0.06 195), oklch(0.38 0.065 198)) !important;
+  --hub-centre-bg: oklch(0.80 0.045 195) !important;
+  --hub-card-bg: oklch(0.72 0.04 195 / 55%) !important;
+  --hub-card-hover: oklch(0.78 0.04 195 / 70%) !important;
+  --hub-border: oklch(0.55 0.05 197 / 45%) !important;
+  --hub-border-soft: oklch(0.55 0.05 197 / 45%) !important;
+  --hub-text: #eaf5f2 !important;
+  --hub-muted: oklch(0.85 0.02 195 / 75%) !important;
+  --hub-centre-text: #14231f !important;
+  --hub-centre-muted: #3a534d !important;
+  --hub-accent: #c9a24a !important;
+  --hub-accent-soft: #e6ce94 !important;
+  --hub-accent-ring: #c9a24a73 !important;
+  --hub-brand: #eaf5f2 !important;
 }
 
-/* 4 — Sandy Beige */
-.play-hub[data-play-theme="4"] {
-  --hub-page-bg: oklch(0.13 0.025 158);
-  --hub-rail-bg: oklch(0.59 0.065 78);
-  --hub-centre-bg: oklch(0.72 0.055 84);
-  --hub-card-bg: oklch(0.43 0.07 65);
-  --hub-card-hover: oklch(0.72 0.055 84);
-  --hub-border: oklch(0.45 0.055 95 / 35%);
-  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
-  --hub-text: oklch(0.93 0.025 82);
-  --hub-muted: oklch(0.70 0.025 145);
-  --hub-centre-text: oklch(0.93 0.025 82);
-  --hub-centre-muted: oklch(0.70 0.025 145);
-  --hub-accent: oklch(0.72 0.105 78);
-  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
-  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
-  --hub-brand: oklch(0.72 0.105 78);
+/* Same pattern as the Seaglass look above — centre stays on current shipped
+ * Celadon Jade tones, rail uses the "Deep" (option 3) darker step. */
+.play-hub[data-hub-look="jade"] {
+  --hub-page-bg: linear-gradient(180deg, oklch(0.82 0.05 170), oklch(0.70 0.055 172) 220%) !important;
+  --hub-rail-bg: linear-gradient(165deg, oklch(0.52 0.065 170), oklch(0.40 0.07 172)) !important;
+  --hub-centre-bg: oklch(0.82 0.05 170) !important;
+  --hub-card-bg: oklch(0.74 0.045 170 / 55%) !important;
+  --hub-card-hover: oklch(0.80 0.045 170 / 70%) !important;
+  --hub-border: oklch(0.56 0.055 171 / 45%) !important;
+  --hub-border-soft: oklch(0.56 0.055 171 / 45%) !important;
+  --hub-text: #eaf5ef !important;
+  --hub-muted: oklch(0.86 0.02 170 / 75%) !important;
+  --hub-centre-text: #16241d !important;
+  --hub-centre-muted: #3c5347 !important;
+  --hub-accent: #c9a24a !important;
+  --hub-accent-soft: #e6ce94 !important;
+  --hub-accent-ring: #c9a24a73 !important;
+  --hub-brand: #eaf5ef !important;
 }
-
-/* 6 — Purple Night */
-.play-hub[data-play-theme="6"] {
-  --hub-page-bg: oklch(0.13 0.025 158);
-  --hub-rail-bg: oklch(0.17 0.055 305);
-  --hub-centre-bg: oklch(0.25 0.07 310);
-  --hub-card-bg: oklch(0.20 0.055 300);
-  --hub-card-hover: oklch(0.25 0.07 310);
-  --hub-border: oklch(0.45 0.055 95 / 35%);
-  --hub-border-soft: oklch(0.72 0.105 78 / 12%);
-  --hub-text: oklch(0.93 0.025 82);
-  --hub-muted: oklch(0.70 0.025 145);
-  --hub-centre-text: oklch(0.93 0.025 82);
-  --hub-centre-muted: oklch(0.70 0.025 145);
-  --hub-accent: oklch(0.72 0.105 78);
-  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
-  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
-  --hub-brand: oklch(0.72 0.105 78);
-}
-
-/* 7 — Charcoal + gold (side panels only; centre stays Classic Green via JS) */
-.play-hub[data-play-theme="7"] {
-  --hub-page-bg: oklch(0.13 0.025 158);
-  --hub-rail-bg: oklch(0.10 0.02 157 / 94%);
-  --hub-centre-bg: oklch(0.30 0.07 157);
-  --hub-card-bg: oklch(0.25 0.055 66);
-  --hub-card-hover: oklch(0.30 0.07 157);
-  --hub-border: oklch(0.45 0.055 95 / 35%);
-  --hub-border-soft: oklch(0.72 0.105 78 / 14%);
-  --hub-text: oklch(0.93 0.025 82);
-  --hub-muted: oklch(0.70 0.025 145);
-  --hub-centre-text: oklch(0.93 0.025 82);
-  --hub-centre-muted: oklch(0.70 0.025 145);
-  --hub-accent: oklch(0.72 0.105 78);
-  --hub-accent-soft: oklch(0.72 0.105 78 / 14%);
-  --hub-accent-ring: oklch(0.72 0.105 78 / 42%);
-  --hub-brand: oklch(0.72 0.105 78);
-}
-
-.play-hub,
-.play-hub[data-play-theme="1"],
-.play-hub[data-play-theme="2"],
-.play-hub[data-play-theme="3"],
-.play-hub[data-play-theme="4"],
-.play-hub[data-play-theme="6"],
-.play-hub[data-play-theme="7"] {
-  --hub-ad-bg: #ececec;
-  --hub-ad-border: #d4d4d4;
-}
-
-body.hub-page:has(.play-hub[data-play-theme="1"]) { background: oklch(0.13 0.025 158); }
-body.hub-page:has(.play-hub[data-play-theme="2"]) { background: oklch(0.13 0.025 158); }
-body.hub-page:has(.play-hub[data-play-theme="3"]) { background: oklch(0.13 0.025 158); }
-body.hub-page:has(.play-hub[data-play-theme="4"]) { background: oklch(0.13 0.025 158); }
-body.hub-page:has(.play-hub[data-play-theme="6"]) { background: oklch(0.13 0.025 158); }
-body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025 158); }
 
 .play-hub.is-hidden {
   display: none;
@@ -174,7 +115,61 @@ body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025
 }
 
 .hub-rail--left {
+  position: relative;
   padding: 16px 10px 14px;
+  overflow: hidden;
+}
+
+.hub-review-toggle-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.hub-review-trigger {
+  display: block;
+}
+
+.hub-review-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 12px 14px;
+  background: var(--hub-card-bg);
+  border-right: 1px solid var(--hub-border-soft);
+  transform: translateX(-100%);
+  transition: transform 0.2s ease;
+}
+
+.hub-rail--left:has(.hub-review-toggle-input:checked) .hub-review-panel {
+  transform: translateX(0);
+}
+
+.hub-review-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hub-review-panel-head .hub-rail-title {
+  margin: 0;
+}
+
+.hub-review-panel-close {
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--hub-muted);
+}
+
+.hub-review-panel-close:hover {
+  color: var(--hub-text);
 }
 
 .hub-rail--right {
@@ -317,14 +312,43 @@ body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025
   accent-color: var(--hub-accent);
 }
 
-.hub-player-name {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--hub-muted);
-  text-align: center;
+.hub-look-swatch {
+  width: 100%;
+  border: 1px solid var(--hub-border);
+  border-radius: 6px;
+  padding: 0;
+  height: 28px;
+  cursor: pointer;
+  overflow: hidden;
+  margin-bottom: 6px;
 }
 
-.hub-settings-link {
+.hub-look-swatch[data-hub-look-option="seaglass"] {
+  background: linear-gradient(
+    90deg,
+    oklch(0.50 0.06 195) 0%,
+    oklch(0.38 0.065 198) 50%,
+    oklch(0.80 0.045 195) 50%,
+    oklch(0.68 0.05 198) 100%
+  );
+}
+
+.hub-look-swatch[data-hub-look-option="jade"] {
+  background: linear-gradient(
+    90deg,
+    oklch(0.52 0.065 170) 0%,
+    oklch(0.40 0.07 172) 50%,
+    oklch(0.82 0.05 170) 50%,
+    oklch(0.70 0.055 172) 100%
+  );
+}
+
+.hub-look-swatch[aria-pressed="true"] {
+  outline: 2px solid var(--hub-accent);
+  outline-offset: 1px;
+}
+
+.hub-rail-foot-link {
   border: 1px solid var(--hub-border);
   border-radius: 6px;
   background: var(--hub-card-bg);
@@ -506,19 +530,60 @@ body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025
   line-height: 1.2;
 }
 
+/* Board tile order (locked spec, PENDING §2): row 1 smaller — 6·3x5, 6·4x5,
+   7-bead, 8-bead; row 2 — 10, 12, 16 "Classic". 4-col grid wraps 7 tiles into
+   4 + 3 automatically once visual order matches this split. */
+.hub-board-tile[data-board-id="6x3x5"] { order: 1; }
+.hub-board-tile[data-board-id="6x4"] { order: 2; }
+.hub-board-tile[data-board-id="7x4x5"] { order: 3; }
+.hub-board-tile[data-board-id="8x4x6"] { order: 4; }
+.hub-board-tile[data-board-id="10x5"] { order: 5; }
+.hub-board-tile[data-board-id="12x6x5"] { order: 6; }
+.hub-board-tile[data-board-id="16"] { order: 7; }
+
+.hub-board-tile[data-board-id="6x3x5"],
+.hub-board-tile[data-board-id="6x4"],
+.hub-board-tile[data-board-id="7x4x5"],
+.hub-board-tile[data-board-id="8x4x6"] {
+  padding: 7px 4px;
+}
+
+.hub-board-tile[data-board-id="6x3x5"] .hub-board-tile-icon,
+.hub-board-tile[data-board-id="6x4"] .hub-board-tile-icon,
+.hub-board-tile[data-board-id="7x4x5"] .hub-board-tile-icon,
+.hub-board-tile[data-board-id="8x4x6"] .hub-board-tile-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.hub-board-tile[data-board-id="6x3x5"] .hub-board-tile-label,
+.hub-board-tile[data-board-id="6x4"] .hub-board-tile-label,
+.hub-board-tile[data-board-id="7x4x5"] .hub-board-tile-label,
+.hub-board-tile[data-board-id="8x4x6"] .hub-board-tile-label {
+  font-size: 0.66rem;
+}
+
+.hub-board-tile[data-board-id="6x3x5"] .hub-board-tile-sub,
+.hub-board-tile[data-board-id="6x4"] .hub-board-tile-sub,
+.hub-board-tile[data-board-id="7x4x5"] .hub-board-tile-sub,
+.hub-board-tile[data-board-id="8x4x6"] .hub-board-tile-sub {
+  font-size: 0.58rem;
+}
+
 .hub-lesson-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
 }
 
 .hub-lesson-btn {
-  padding: 12px 14px;
-  border-radius: 6px;
+  flex: 1;
+  padding: 7px 12px;
+  border-radius: 999px;
   border: 1px solid var(--hub-border);
   background: var(--hub-card-bg);
   color: var(--hub-centre-text, var(--hub-text));
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
@@ -580,6 +645,13 @@ body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025
   border: 1px solid var(--hub-border);
   background: var(--hub-page-bg);
 }
+
+/* Play-with order (locked spec, PENDING §2): top row Play vs AI + Friend same
+   device; bottom row Friend online + Watch AI vs AI. */
+.hub-mode-tile[data-hub-mode="pve"] { order: 1; }
+.hub-mode-tile[data-hub-mode="pvp"] { order: 2; }
+.hub-mode-tile[data-hub-mode="pvp-online"] { order: 3; }
+.hub-mode-tile[data-hub-mode="spectate"] { order: 4; }
 
 .hub-ad-bottom {
   flex-shrink: 0;
@@ -658,12 +730,6 @@ body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025
   text-align: center;
 }
 
-.hub-reviews {
-  flex: 0 0 auto;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--hub-border-soft);
-}
-
 .hub-rail--right {
   display: flex;
   flex-direction: column;
@@ -720,11 +786,6 @@ body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025
     gap: 10px;
   }
 
-  .hub-reviews {
-    border-bottom: none;
-    flex: 1;
-  }
-
   .hub-ad-side {
     flex: 1;
     min-height: 100px;
@@ -736,9 +797,12 @@ body.hub-page:has(.play-hub[data-play-theme="7"]) { background: oklch(0.13 0.025
 }
 
 @media (max-width: 480px) {
-  .hub-mode-tile-grid,
-  .hub-lesson-grid {
+  .hub-mode-tile-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hub-lesson-grid {
+    flex-direction: column;
   }
 
   .hub-content {

@@ -17,7 +17,7 @@ describe('two-page play flow (index.html)', () => {
     expect(indexHtml).not.toContain('id="play-theme-setting"');
     expect(indexHtml).toContain('Dark theme');
     expect(indexHtml).toContain('Light theme');
-    expect(indexHtml).toContain('play-theme-swatches--dark-charcoal');
+    expect(indexHtml).not.toContain('play-theme-swatches--dark-charcoal');
     expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
     expect(indexHtml).toContain('play-theme-swatches--dark-same');
     expect(indexHtml).toContain('data-play-theme="4"');

@@ -30,3 +30,17 @@ You are the primary implementer for this repository.
 ## Always
 - **Say = do** — only claim outcomes you actually verified (tests run, browser observed). Mark **UNCONFIRMED** otherwise.
 - `git commit` / `git push` only when explicitly asked.
+- **Do only what is explicitly asked.** Never take proactive side-actions (writing memory files, extra docs, cleanup, anything not requested) without asking first. If something seems urgently needed, ask permission — don't just do it.
+- **Testing scope:** after a change, run only the test file(s) relevant to it by default — not the full suite. Run the full suite only when explicitly asked, *except* when there's real doubt the change could affect other parts of the codebase (e.g. it touches a shared token/type other boards or modules also read) — then run the full suite anyway without waiting to be asked.
+
+## Handoff / new-chat prompts
+- When asked to write a prompt for a new chat session (handoff summary, context dump, etc.), it must end with an explicit, actionable task line — never just background/context and nothing else.
+- It must always state the repository path (`D:\Business Idea\Gpt_Enterprise_Vault`) up front — never assume a new session already knows which folder/repo this is about.
+- A fresh session has no memory of this conversation, and per Mode above it will not act on context alone — it will just ask "what would you like me to do with this?" A handoff that stops at information, with no stated next task, causes exactly that dead-end.
+- State the actual next task plainly at the end of the handoff (e.g. "Task: implement X" / "Task: review Y and report back"), even if the task is just "confirm this context is correct before proceeding."
+
+## Ongoing audit duty
+- No duplicate, contradictory, or dead code/doc lines are acceptable as "known issues" — if found, they get flagged and fixed, not just documented as a gotcha to work around.
+- Before implementing anything non-trivial, check whether the change touches a place where two sources of truth might exist (e.g. a value defined in more than one file) — don't assume a single edit covers the real behaviour.
+- If something is duplicated, wrong, low-quality, or an existing approach could be meaningfully better — say so and propose a fix, but wait for explicit approval before editing, same as any other change under Mode above.
+- Roughly every 1-2 days of active work (not literally calendar-daily if idle), review test coverage and source quality in the area just touched: are tests actually exercising the real behaviour (not a duplicated/stale table), is anything unreachable, is anything under-tested. Report findings; don't silently fix without approval.

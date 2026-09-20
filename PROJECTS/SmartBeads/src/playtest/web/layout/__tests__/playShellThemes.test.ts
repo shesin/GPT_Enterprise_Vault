@@ -169,8 +169,12 @@ describe('playShellThemes — 5 complete + 5 light (charcoal sides)', () => {
       expect(matched.boardLookId).toBe(id);
       expect(matched.sideLookId).toBe(id);
       expect(readPlayBoardMatchMode()).toBe('matched');
-      // Side panel reuses the board's own gradient, not the charcoal side theme.
-      expect(PLAY_SHELL_THEMES[id].sideCardBackground).toContain(PLAY_SHELL_THEMES[id].surfaceTop);
+      // Side panel reuses the board's own `surface` token, not the charcoal
+      // side theme — and not necessarily `surfaceTop`, since a board may
+      // override its canvas-only lightness (e.g. Classic Green's palest
+      // variant) while keeping the panel on the original token.
+      const tokens = LOVABLE_COMPLETE_BOARD_THEMES.find((t) => t.label === PLAY_SHELL_THEMES[id].label);
+      expect(PLAY_SHELL_THEMES[id].sideCardBackground).toContain(tokens!.surface);
     });
 
     it('rejects dark-same for boards outside the eligible set (light boards have no matched option)', () => {
