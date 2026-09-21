@@ -1,31 +1,29 @@
-/** Play look — 5 complete + 5 light boards (charcoal sides) + side shell (7). Lovable OKLCH. */
+/** Play look — 9 complete boards (5 base + 4 light-canvas "Matched") + side shell (7). Lovable OKLCH. */
 
-import { BEAD_SET_THEMES, DEFAULT_BEAD_SET_ID } from './beadSetThemes';
+import { BEAD_SET_THEMES, DEFAULT_BEAD_SET_ID, forceDefaultBeadSetId, readBeadSetId } from './beadSetThemes';
 import {
   LOVABLE_COMPLETE_BOARD_THEMES,
-  LOVABLE_LIGHT_BOARD_THEMES,
   LOVABLE_SHELL,
   type LovableBoardTokens,
 } from './lovableOklchTokens';
+import { forceDefaultMoveHintAuraStyle, readMoveHintAuraStyle } from './moveHintAuraThemes';
 
-export type CompleteLookId = '1' | '2' | '3' | '6' | '14';
-export type LightBoardLookId = '4' | '15' | '16' | '17' | '18';
-export type BoardLookThemeId = CompleteLookId | LightBoardLookId;
+export type CompleteLookId = '1' | '2' | '3' | '6' | '14' | '23' | '24' | '25' | '26';
+export type BoardLookThemeId = CompleteLookId;
 export type PlayShellThemeId = BoardLookThemeId | '7';
-export type PlayLookGroup = 'complete' | 'light-charcoal' | 'side-only';
+export type PlayLookGroup = 'complete' | 'side-only';
 export type PlayBoardMatchMode = 'matched' | 'side-only';
 
 /** Which Look preview row was clicked (same swatch id can mean different pairings). */
-export type PlayLookRow = 'dark-charcoal' | 'light-charcoal' | 'dark-same';
+export type PlayLookRow = 'dark-charcoal' | 'dark-same';
 
 /** Complete boards that also appear in the "Matched" (same-colour-sides) row
- * (2026-09-19) — all 5 complete boards, kept as its own type in case a future
+ * (2026-09-19) — all complete boards, kept as its own type in case a future
  * board is complete-only and not matched-eligible. */
 export type MatchedSideLookId = CompleteLookId;
 
-export const COMPLETE_LOOK_IDS: readonly CompleteLookId[] = ['1', '2', '3', '6', '14'];
-export const LIGHT_BOARD_LOOK_IDS: readonly LightBoardLookId[] = ['4', '15', '16', '17', '18'];
-export const MATCHED_SIDE_LOOK_IDS: readonly MatchedSideLookId[] = ['1', '2', '3', '6', '14'];
+export const COMPLETE_LOOK_IDS: readonly CompleteLookId[] = ['1', '2', '3', '6', '14', '23', '24', '25', '26'];
+export const MATCHED_SIDE_LOOK_IDS: readonly MatchedSideLookId[] = ['1', '2', '3', '6', '14', '23', '24', '25', '26'];
 
 const COMPLETE_TOKEN_INDEX: Record<CompleteLookId, number> = {
   '1': 0,
@@ -33,19 +31,19 @@ const COMPLETE_TOKEN_INDEX: Record<CompleteLookId, number> = {
   '3': 2,
   '6': 3,
   '14': 4,
+  '23': 5,
+  '24': 6,
+  '25': 7,
+  '26': 8,
 };
 
-const LIGHT_TOKEN_INDEX: Record<LightBoardLookId, number> = {
-  '4': 0,
-  '15': 1,
-  '16': 2,
-  '17': 3,
-  '18': 4,
-};
-
-// '9' (Soft Blush) and '10' (Pale Sage) removed 2026-09-19 — kept alongside the
-// earlier '8'/'11'/'13' removals so old stored values migrate away cleanly.
-const REMOVED_LIGHT_BOARD_LOOK_IDS = new Set(['8', '9', '10', '11', '13']);
+// '4' (Sandy Beige), '15' (Seaglass), '16' (Powder Lilac), '17' (Celadon
+// Jade), '18' (Alabaster Pearl) — the charcoal-paired "Light theme" row
+// removed 2026-09-21, per human request, once every one of those boards had
+// a light-canvas "Matched" replacement (23/24/25/26 above, Sandy Beige
+// pending). Kept alongside the earlier removals so old stored values
+// migrate away cleanly instead of crashing getPlayShellTheme().
+const REMOVED_LIGHT_BOARD_LOOK_IDS = new Set(['4', '8', '9', '10', '11', '13', '15', '16', '17', '18']);
 
 // '19' (Pearl Gold), '20' (Jade Matched), '21' (Pale Sage), '22' (Sky Blue)
 // added and removed within this same session (2026-09-20) — a browser with
@@ -128,8 +126,8 @@ function buildBoardThemeFromTokens(
     id,
     label: t.label,
     lookGroup,
-    surfaceTop: t.surface,
-    surfaceBottom: t.shadow,
+    surfaceTop: t.boardSurface ?? t.surface,
+    surfaceBottom: t.boardShadow ?? t.shadow,
     frameOuter: t.frameOuter,
     frameInner: t.frameInner,
     lineColor: t.lines,
@@ -155,14 +153,6 @@ function buildCompleteTheme(id: CompleteLookId): PlayShellTheme {
     id,
     LOVABLE_COMPLETE_BOARD_THEMES[COMPLETE_TOKEN_INDEX[id]],
     'complete',
-  );
-}
-
-function buildLightBoardTheme(id: LightBoardLookId): PlayShellTheme {
-  return buildBoardThemeFromTokens(
-    id,
-    LOVABLE_LIGHT_BOARD_THEMES[LIGHT_TOKEN_INDEX[id]],
-    'light-charcoal',
   );
 }
 
@@ -197,20 +187,18 @@ export const DEFAULT_BOARD_LOOK_ID: BoardLookThemeId = '1';
 export const DEFAULT_SIDE_LOOK_ID: PlayShellThemeId = '1';
 export const DEFAULT_PLAY_SHELL_THEME_ID: PlayShellThemeId = DEFAULT_SIDE_LOOK_ID;
 export const SIDE_ONLY_LOOK_ID: PlayShellThemeId = '7';
-export const DEFAULT_LIGHT_BOARD_LOOK_ID: LightBoardLookId = '4';
 
 export const PLAY_SHELL_THEMES: Record<PlayShellThemeId, PlayShellTheme> = {
   '1': buildCompleteTheme('1'),
   '2': buildCompleteTheme('2'),
   '3': buildCompleteTheme('3'),
-  '4': buildLightBoardTheme('4'),
   '6': buildCompleteTheme('6'),
   '7': buildCharcoalSideTheme(),
   '14': buildCompleteTheme('14'),
-  '15': buildLightBoardTheme('15'),
-  '16': buildLightBoardTheme('16'),
-  '17': buildLightBoardTheme('17'),
-  '18': buildLightBoardTheme('18'),
+  '23': buildCompleteTheme('23'),
+  '24': buildCompleteTheme('24'),
+  '25': buildCompleteTheme('25'),
+  '26': buildCompleteTheme('26'),
 };
 
 export interface HubRailPalette {
@@ -266,27 +254,25 @@ export const HUB_RAIL_PALETTES: Record<PlayShellThemeId, HubRailPalette> = {
   '1': buildHubRailPalette('1'),
   '2': buildHubRailPalette('2'),
   '3': buildHubRailPalette('3'),
-  '4': buildHubRailPalette('4'),
   '6': buildHubRailPalette('6'),
   '7': buildHubRailPalette('7'),
   '14': buildHubRailPalette('14'),
-  '15': buildHubRailPalette('15'),
-  '16': buildHubRailPalette('16'),
-  '17': buildHubRailPalette('17'),
-  '18': buildHubRailPalette('18'),
+  '23': buildHubRailPalette('23'),
+  '24': buildHubRailPalette('24'),
+  '25': buildHubRailPalette('25'),
+  '26': buildHubRailPalette('26'),
 };
 
 export const HUB_CENTRE_PALETTES: Record<BoardLookThemeId, HubCentrePalette> = {
   '1': buildHubCentrePalette('1'),
   '2': buildHubCentrePalette('2'),
   '3': buildHubCentrePalette('3'),
-  '4': buildHubCentrePalette('4'),
   '6': buildHubCentrePalette('6'),
   '14': buildHubCentrePalette('14'),
-  '15': buildHubCentrePalette('15'),
-  '16': buildHubCentrePalette('16'),
-  '17': buildHubCentrePalette('17'),
-  '18': buildHubCentrePalette('18'),
+  '23': buildHubCentrePalette('23'),
+  '24': buildHubCentrePalette('24'),
+  '25': buildHubCentrePalette('25'),
+  '26': buildHubCentrePalette('26'),
 };
 
 export const PLAY_THEME_STORAGE_KEY = 'sb-play-theme-v2';
@@ -300,19 +286,15 @@ export function isPlayBoardMatchMode(value: string | null | undefined): value is
 }
 
 export function isCompleteLookId(value: string | null | undefined): value is CompleteLookId {
-  return value === '1' || value === '2' || value === '3' || value === '6' || value === '14';
+  return value === '1' || value === '2' || value === '3' || value === '6' || value === '14' || value === '23' || value === '24' || value === '25' || value === '26';
 }
 
 export function isMatchedSideLookId(value: string | null | undefined): value is MatchedSideLookId {
   return isCompleteLookId(value);
 }
 
-export function isLightBoardLookId(value: string | null | undefined): value is LightBoardLookId {
-  return value === '4' || value === '15' || value === '16' || value === '17' || value === '18';
-}
-
 export function isBoardLookThemeId(value: string | null | undefined): value is BoardLookThemeId {
-  return isCompleteLookId(value) || isLightBoardLookId(value);
+  return isCompleteLookId(value);
 }
 
 export function isSideOnlyLookId(value: string | null | undefined): value is '7' {
@@ -324,7 +306,7 @@ export function isPlayShellThemeId(value: string | null | undefined): value is P
 }
 
 export function isLookSwatchId(value: string | null | undefined): value is PlayShellThemeId {
-  return isCompleteLookId(value) || isLightBoardLookId(value) || value === '7';
+  return isCompleteLookId(value) || value === '7';
 }
 
 export function normalizeSideLookId(value: string | null | undefined): PlayShellThemeId {
@@ -401,7 +383,6 @@ export function resolvePlayShellPresentation(
 
 export function resolvePlayLookRowFromButton(btn: HTMLElement): PlayLookRow | null {
   if (btn.closest('.play-theme-swatches--dark-charcoal')) return 'dark-charcoal';
-  if (btn.closest('.play-theme-swatches--light-charcoal')) return 'light-charcoal';
   if (btn.closest('.play-theme-swatches--dark-same')) return 'dark-same';
   return null;
 }
@@ -420,17 +401,12 @@ export function syncThemeSwatchActive(
   for (const swatch of root.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
     const id = swatch.dataset.playTheme;
     const inDarkCharcoal = swatch.closest('.play-theme-swatches--dark-charcoal') !== null;
-    const inLightCharcoal = swatch.closest('.play-theme-swatches--light-charcoal') !== null;
     const inDarkSame = swatch.closest('.play-theme-swatches--dark-same') !== null;
     const active =
       (inDarkCharcoal
         && id === boardLookId
         && sideLookId === '7'
         && isCompleteLookId(boardLookId))
-      || (inLightCharcoal
-        && id === boardLookId
-        && sideLookId === '7'
-        && isLightBoardLookId(boardLookId))
       || (inDarkSame
         && id === boardLookId
         && sideLookId === boardLookId
@@ -445,7 +421,37 @@ export type PlayLookPreviewWireOptions = {
   onApplied?: () => void;
 };
 
-/** Wire row-aware swatch clicks on hub (page 1) or board settings (page 2). */
+/** Re-sync the bead set / move hint aura selects (wherever they live in the
+ * DOM — hub page, page-2 shell settings, or both) to display the current
+ * soft default / explicit choice for the now-active board.
+ * readBeadSetId()/readMoveHintAuraStyle() return the player's explicit
+ * choice when one exists, so this is a passive display refresh — it never
+ * writes anything to storage. Used after the hub-to-play transition
+ * (syncPlayShellThemeFromStorage), so page 2's dropdowns reflect whatever
+ * board-switch on page 1 already decided. */
+export function syncSoftDefaultSelects(): void {
+  if (typeof document === 'undefined') return;
+  const beadSelect = document.getElementById('bead-set-select') as HTMLSelectElement | null;
+  if (beadSelect) beadSelect.value = readBeadSetId();
+  const auraSelect = document.getElementById('move-hint-aura-select') as HTMLSelectElement | null;
+  if (auraSelect) auraSelect.value = readMoveHintAuraStyle();
+}
+
+/** Forces bead set + move hint aura to the now-active board's soft default,
+ * overriding any prior explicit choice, then refreshes the selects'
+ * displayed value to match. Page-1 hub board picker only (2026-09-21, per
+ * human request) — picking a board on page 1 always resets both to that
+ * board's default; picking a board on page 2 (via wirePlayLookPreviewSetting
+ * without this passed as onApplied) must never touch them. */
+export function forceBoardDefaultSelects(): void {
+  forceDefaultBeadSetId();
+  forceDefaultMoveHintAuraStyle();
+  syncSoftDefaultSelects();
+}
+
+/** Wire row-aware swatch clicks on hub (page 1) or board settings (page 2).
+ * Pass `onApplied: forceBoardDefaultSelects` only for the page-1 hub picker —
+ * page 2's own picker must leave bead set / aura untouched. */
 export function wirePlayLookPreviewSetting(
   root: HTMLElement | null,
   options: PlayLookPreviewWireOptions = {},
@@ -516,11 +522,6 @@ export function coalesceStoredLookState(): {
     // else (including a missing/stale side key) falls back to charcoal.
     return { boardLookId, sideLookId: sideStored === boardLookId ? boardLookId : '7' };
   }
-  if (isLightBoardLookId(boardLookId)) {
-    // Covers boardLookId === '4' too — the older board+side-both-'4' branch this
-    // replaced could never run after this check, so it was removed as dead code.
-    return { boardLookId, sideLookId: '7' };
-  }
   if (isCompleteLookId(boardLookId)) {
     return { boardLookId, sideLookId: '7' };
   }
@@ -539,12 +540,8 @@ export function applyPlayLookState(
   // only when the caller actually asked for board === side — everything else
   // (including those 3 boards paired with any other side) still forces charcoal.
   const isMatchedSelection = isMatchedSideLookId(board) && side === board;
-  if (!isMatchedSelection) {
-    if (isLightBoardLookId(board)) {
-      side = '7';
-    } else if (isCompleteLookId(board)) {
-      side = '7';
-    }
+  if (!isMatchedSelection && isCompleteLookId(board)) {
+    side = '7';
   }
 
   const boardMatch = resolveHubBoardMatchForSideLook(side);
@@ -589,10 +586,6 @@ export function applySharedPlayTheme(themeId: PlayShellThemeId): void {
     applyPlayLookState(themeId, themeId);
     return;
   }
-  if (isLightBoardLookId(themeId)) {
-    applyPlayLookState(themeId, '7');
-    return;
-  }
   applyPlayLookState(readStoredBoardLookId(), themeId);
 }
 
@@ -614,7 +607,7 @@ function readStoredBoardLookIdRaw(): BoardLookThemeId {
     // Warm Walnut moved from light id '12' to complete id '14' (2026-09-18) —
     // same colours, new group, so migrate rather than falling back to default.
     if (stored === '12') return '14';
-    if (stored && REMOVED_LIGHT_BOARD_LOOK_IDS.has(stored)) return DEFAULT_LIGHT_BOARD_LOOK_ID;
+    if (stored && REMOVED_LIGHT_BOARD_LOOK_IDS.has(stored)) return DEFAULT_BOARD_LOOK_ID;
     if (stored && REMOVED_COMPLETE_LOOK_IDS.has(stored)) return DEFAULT_BOARD_LOOK_ID;
     if (isBoardLookThemeId(stored)) return stored;
     const sideStored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
@@ -623,12 +616,12 @@ function readStoredBoardLookIdRaw(): BoardLookThemeId {
     // isBoardLookThemeId already excludes '7' (a side-only id), so no extra check needed.
     if (sideStored === '7' && isBoardLookThemeId(v2)) return v2;
     if (isCompleteLookId(v2) && (sideStored === v2 || sideStored === null)) return v2;
-    if (v2 === '7') return DEFAULT_LIGHT_BOARD_LOOK_ID;
+    if (v2 === '7') return DEFAULT_BOARD_LOOK_ID;
     if (v2 === '5' || v2 === '6') return DEFAULT_BOARD_LOOK_ID;
     const legacy = localStorage.getItem(LEGACY_PLAY_THEME_STORAGE_KEY);
     const migrated = migrateLegacyPlayThemeId(legacy);
     if (isBoardLookThemeId(migrated)) return migrated;
-    if (migrated === '7') return DEFAULT_LIGHT_BOARD_LOOK_ID;
+    if (migrated === '7') return DEFAULT_BOARD_LOOK_ID;
   } catch {
     /* storage unavailable */
   }
@@ -702,10 +695,6 @@ export function applyPlayLookFromRow(
     applyPlayLookState(swatchId, '7');
     return { boardLookId: swatchId, sideLookId: '7', boardChanged: priorBoard !== swatchId };
   }
-  if (row === 'light-charcoal' && isLightBoardLookId(swatchId)) {
-    applyPlayLookState(swatchId, '7');
-    return { boardLookId: swatchId, sideLookId: '7', boardChanged: priorBoard !== swatchId };
-  }
   return { boardLookId: priorBoard, sideLookId: readStoredSideLookId(), boardChanged: false };
 }
 
@@ -716,7 +705,6 @@ export function applyPlayLookFromSwatch(swatchId: PlayShellThemeId): {
   boardChanged: boolean;
 } {
   if (isCompleteLookId(swatchId)) return applyPlayLookFromRow(swatchId, 'dark-charcoal');
-  if (isLightBoardLookId(swatchId)) return applyPlayLookFromRow(swatchId, 'light-charcoal');
   if (isSideOnlyLookId(swatchId)) {
     const boardLookId = readStoredBoardLookId();
     applyPlayLookState(boardLookId, '7');

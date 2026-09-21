@@ -10,15 +10,16 @@ export const LOVABLE_RING_GOLD = {
 } as const;
 
 /**
- * Move-hint aura for the Black & Brown bead set. The first attempt (pale
- * rgb(214,174,147)) was checked only against the dark board and turned out
- * near-invisible on the Soft Blush light theme — too close in both lightness
- * and hue to a pastel pink board. This is a more saturated caramel-brown
- * (contrast via chroma, not just lightness) plus a small dark edge shadow for
- * definition against any of the 4 light boards, not just one.
+ * "Black Gold" move-hint aura (2026-09-21, shade picked after
+ * comparing the real canvas render, not a CSS approximation) — a mid-tone
+ * gold (oklch(0.63 0.08 80), converted to rgb) for boards where the paler
+ * LOVABLE_RING_GOLD doesn't have enough contrast — e.g. it sits almost at
+ * the same lightness as a light board like Seaglass (oklch(0.80 ...)).
+ * Started darker (oklch(0.45 0.09 75)) but that read as dull/brown rather
+ * than gold at the real ~15px bead scale; this is lighter for contrast
+ * while still reading as a shade of gold, not a plain dark ring.
  */
-export const LOVABLE_RING_LIGHT_BROWN = {
-  core: 'rgba(196, 130, 74, 0.95)',
-  soft: 'rgba(196, 130, 74, 0.55)',
-  edge: 'rgba(90, 58, 32, 0.55)',
+export const LOVABLE_RING_BLACK_GOLD = {
+  core: 'rgba(163, 132, 79, 0.95)',
+  soft: 'rgba(163, 132, 79, 0.55)',
 } as const;

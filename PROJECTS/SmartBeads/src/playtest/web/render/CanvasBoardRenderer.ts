@@ -3,7 +3,7 @@ import { getActiveBeadSet } from '../layout/beadSetThemes';
 import { getActiveBoardLookTheme } from '../layout/boardLookThemes';
 import { getActiveBoardLineTheme } from '../layout/boardLineGoldThemes';
 import { readPlayBoardMatchMode } from '../layout/playShellThemes';
-import { LOVABLE_RING_GOLD, LOVABLE_RING_LIGHT_BROWN } from '../layout/signalGoldTheme';
+import { LOVABLE_RING_BLACK_GOLD, LOVABLE_RING_GOLD } from '../layout/signalGoldTheme';
 import { type MoveHintAuraStyle, readMoveHintAuraStyle } from '../layout/moveHintAuraThemes';
 import { getBoardVisualProfile } from '../layout/boardVisualProfile';
 import { projectIntersectionOnCanvas } from '../layout/boardProjection';
@@ -147,7 +147,7 @@ function drawOriginalMoveHintAura(
 }
 
 /**
- * Gold (fill) — Lovable's actual "selected-bead ring": a thin gold stroke plus a
+ * Gold — Lovable's actual "selected-bead ring": a thin gold stroke plus a
  * drop-shadow glow, sitting outside the bead edge only. Never fills or washes over
  * the ball itself (that was the old behaviour) — and uses LOVABLE_RING_GOLD, a
  * duller/more muted gold than the center-scoring markers, so the two don't read
@@ -158,14 +158,15 @@ function drawGoldFillMoveHintAura(
   x: number,
   y: number,
   pieceRadius: number,
+  gold: { core: string; soft: string },
 ): void {
   // Three concentric strokes packed tight against the bead edge (no gap) — reads
-  // as one dense band, not a single thin line lost against the board.
-  // Light-brown variant only when the Black & Brown bead set is active — tied
-  // to the bead set, not the board theme, so Ivory/White/Wooden always keep
-  // the same gold aura regardless of which board they're shown on.
-  const gold = getActiveBeadSet().id === 'black-brown' ? LOVABLE_RING_LIGHT_BROWN : LOVABLE_RING_GOLD;
-
+  // as one dense band, not a single thin line lost against the board. Same
+  // LOVABLE_RING_GOLD for every bead set (2026-09-21) — Black & Wooden briefly
+  // had its own light-brown variant, removed per human request in favour of
+  // the same gold every other set (including White & Black) already uses.
+  // "Black Gold" (2026-09-21) reuses this exact same draw routine with
+  // LOVABLE_RING_BLACK_GOLD instead — only the colour differs.
   ctx.save();
   ctx.shadowColor = gold.core;
   ctx.shadowBlur = 6;
@@ -187,16 +188,6 @@ function drawGoldFillMoveHintAura(
   ctx.strokeStyle = gold.soft;
   ctx.lineWidth = 1.2;
   ctx.stroke();
-
-  // Light-brown variant adds a thin dark edge outside the band — contrast via
-  // an outline works against any of the 4 light board hues, not just one.
-  if ('edge' in gold) {
-    ctx.beginPath();
-    ctx.arc(x, y, pieceRadius + 4.3, 0, Math.PI * 2);
-    ctx.strokeStyle = gold.edge;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
 }
 
 function drawBeadMoveHintAura(
@@ -209,7 +200,11 @@ function drawBeadMoveHintAura(
 ): void {
   if (style === 'off') return;
   if (style === 'gold-fill') {
-    drawGoldFillMoveHintAura(ctx, x, y, pieceRadius);
+    drawGoldFillMoveHintAura(ctx, x, y, pieceRadius, LOVABLE_RING_GOLD);
+    return;
+  }
+  if (style === 'black-gold-fill') {
+    drawGoldFillMoveHintAura(ctx, x, y, pieceRadius, LOVABLE_RING_BLACK_GOLD);
     return;
   }
   drawOriginalMoveHintAura(ctx, x, y, pieceRadius, side);
@@ -285,14 +280,20 @@ function drawPieceAt(
   const beadSet = getActiveBeadSet();
   const bead = player === 'RED' ? beadSet.creamBead : beadSet.blackBead;
   const isBlack = player === 'BLUE';
-  ctx.shadowColor = isBlack ? 'rgba(0, 0, 0, 0.55)' : 'rgba(0, 0, 0, 0.28)';
-  ctx.shadowBlur = isBlack ? 8 : 5;
+  // The "Black & Wooden" set's cream-slot bead is the same wood-brown as the
+  // Wooden set's own glossy bead (2026-09-21) — it needs the same glossy
+  // (specular-hotspot) treatment as the black-slot bead, not the flat cream
+  // treatment every other set's cream bead gets. Scoped to this one set by
+  // id so Black & White / Wooden & White's cream sides are untouched.
+  const glossy = isBlack || beadSet.id === 'black-wooden';
+  ctx.shadowColor = glossy ? 'rgba(0, 0, 0, 0.55)' : 'rgba(0, 0, 0, 0.28)';
+  ctx.shadowBlur = glossy ? 8 : 5;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 2;
 
   const lightX = x - radius * 0.28;
   const lightY = y - radius * 0.32;
-  const grd = ctx.createRadialGradient(lightX, lightY, isBlack ? radius * 0.1 : 2, x + radius * 0.04, y + radius * 0.06, radius);
+  const grd = ctx.createRadialGradient(lightX, lightY, glossy ? radius * 0.1 : 2, x + radius * 0.04, y + radius * 0.06, radius);
   grd.addColorStop(0, bead.highlight);
   grd.addColorStop(0.55, bead.mid);
   grd.addColorStop(1, bead.shadow);
@@ -301,7 +302,7 @@ function drawPieceAt(
   ctx.fillStyle = grd;
   ctx.fill();
 
-  if (isBlack) {
+  if (glossy) {
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
 
@@ -334,7 +335,7 @@ function drawPieceAt(
     // highlight above stays a fixed white specular regardless of bead set.
     ctx.beginPath();
     ctx.arc(x, y, Math.max(radius - 0.12, 0), 0, Math.PI * 2);
-    ctx.strokeStyle = beadSet.blackRimStroke;
+    ctx.strokeStyle = isBlack ? beadSet.blackRimStroke : beadSet.creamStroke;
     ctx.globalAlpha = alpha * 0.55;
     ctx.lineWidth = 2.1;
     ctx.stroke();

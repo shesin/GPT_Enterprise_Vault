@@ -121,26 +121,26 @@ body.hub-page {
 .play-theme-swatch[data-play-theme="14"] {
   background: linear-gradient(165deg, oklch(0.55 0.075 55), oklch(0.42 0.07 52));
 }
-.play-theme-swatches--dark-charcoal .play-theme-swatch,
-.play-theme-swatches--light-charcoal .play-theme-swatch {
+.play-theme-swatch[data-play-theme="23"] {
+  /* Shows the board's own light canvas colours (boardSurface/boardShadow),
+     not surface/shadow — those are the dark matched-panel tokens, which
+     would make this chip read as a dark board rather than the light one
+     it actually renders. Same reasoning applies to 24/25/26 below. */
+  background: linear-gradient(165deg, oklch(0.80 0.045 195), oklch(0.68 0.05 198));
+}
+.play-theme-swatch[data-play-theme="24"] {
+  background: linear-gradient(165deg, oklch(0.82 0.04 305), oklch(0.70 0.045 305));
+}
+.play-theme-swatch[data-play-theme="25"] {
+  background: linear-gradient(165deg, oklch(0.82 0.05 170), oklch(0.70 0.055 172));
+}
+.play-theme-swatch[data-play-theme="26"] {
+  background: linear-gradient(165deg, oklch(0.88 0.018 85), oklch(0.78 0.025 82));
+}
+.play-theme-swatches--dark-charcoal .play-theme-swatch {
   box-shadow:
     inset 0 0 0 1px rgba(201, 162, 78, 0.35),
     inset 0 -10px 0 0 oklch(0.16 0.012 60);
-}
-.play-theme-swatch[data-play-theme="4"] {
-  background: linear-gradient(165deg, oklch(0.72 0.055 84), oklch(0.59 0.065 78));
-}
-.play-theme-swatch[data-play-theme="15"] {
-  background: linear-gradient(165deg, oklch(0.80 0.045 195), oklch(0.68 0.05 198));
-}
-.play-theme-swatch[data-play-theme="16"] {
-  background: linear-gradient(165deg, oklch(0.82 0.04 305), oklch(0.70 0.045 305));
-}
-.play-theme-swatch[data-play-theme="17"] {
-  background: linear-gradient(165deg, oklch(0.82 0.05 170), oklch(0.70 0.055 172));
-}
-.play-theme-swatch[data-play-theme="18"] {
-  background: linear-gradient(165deg, oklch(0.88 0.018 85), oklch(0.78 0.025 82));
 }
 .play-theme-swatch.is-active {
   border-color: var(--gold);

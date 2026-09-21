@@ -184,7 +184,7 @@ Central 5×5 matches 10-bead width prominence (~70% vertical play height). Wing 
 
 **Right rail + footer:** pure ad space, no functional content.
 
-**Palette — "Pearl Deep + Gold", one single fixed palette (not per-board, not a choice of three):** background `#F3E9D6`, panel `#EAD9B8`, border `#D8C08C`, gold accent `#C9A24A` / soft `#E6CE94` / ink `#241A0C`. Applies to hub chrome only. Unrelated to the page 2 board-look picker ("Choose your look" dark/light/matched swatch rows, 10 board colours) — that picker is untouched and still selects the actual game board's look on page 2.
+**Palette — "Seaglass", one single fixed palette (not per-board, not a choice of several):** rail `linear-gradient(165deg, oklch(0.40 0.065 195), oklch(0.28 0.07 198))` ("Darkest" shade, 2026-09-21 — started at a lighter "Deep" shade, darkened same day, kept in sync with the matching page 2 Seaglass Matched board's side panel) with light text (`#eaf5f2`), centre `oklch(0.80 0.045 195)` with dark text (`#14231f`), gold accent `#c9a24a` / soft `#e6ce94`. Applies to hub chrome only. Unrelated to the page 2 board-look picker ("Choose your look" dark/light/matched swatch rows) — that picker is untouched and still selects the actual game board's look on page 2. Replaces the original "Pearl Deep + Gold" flat palette (locked 2026-09-19) — briefly a swatch-picked optional look (added 2026-09-20 alongside a Jade option, both additive), then locked as the sole permanent hub palette 2026-09-21 per human request; the picker and the Jade option were both removed, not just hidden.
 
 ---
 

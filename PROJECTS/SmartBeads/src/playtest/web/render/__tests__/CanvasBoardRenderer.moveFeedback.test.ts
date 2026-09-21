@@ -693,6 +693,60 @@ describe('CanvasBoardRenderer move feedback', () => {
     expect(strokeStyles.some((s) => s.includes('255, 95, 25'))).toBe(false);
   });
 
+  it('black-gold-fill aura draws the deep bronze-gold ring, not the paler gold-fill colour', () => {
+    const strokeStyles: string[] = [];
+    const gradient = {
+      addColorStop: () => {},
+    };
+    const ctx = {
+      clearRect: () => {},
+      fillRect: () => {},
+      strokeRect: () => {},
+      closePath: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      arc: () => {},
+      stroke: () => {},
+      fill: () => {},
+      save: () => {},
+      restore: () => {},
+      setLineDash: () => {},
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
+      set strokeStyle(v: string) { strokeStyles.push(v); },
+    } as unknown as CanvasRenderingContext2D;
+
+    const engine = new SmartBeadsEngine('8x4x6');
+    const board = engine.getState().board;
+    const canvas = {
+      width: 560,
+      height: 560,
+      getContext: () => ctx,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 560, height: 560 }),
+    } as unknown as HTMLCanvasElement;
+
+    drawCanvasBoard(canvas, {
+      board,
+      currentPlayer: 'BLUE',
+      gameOver: false,
+      selectedId: null,
+      legalTargets: [],
+      chainPieceId: null,
+      anim: null,
+      turnPulse: 0,
+      lastMove: null,
+      capturePulses: [],
+      moveHintAura: 'black-gold-fill',
+    });
+
+    // Mid-tone gold (163, 132, 79) — darker than the plain gold-fill ring so
+    // it stays visible on light boards where the paler gold nearly disappears.
+    expect(strokeStyles.some((s) => s.includes('163, 132, 79'))).toBe(true);
+    expect(strokeStyles.some((s) => s.includes('221, 192, 140'))).toBe(false);
+  });
+
   it('black beads get lamp-lit rim highlight on dark boards', () => {
     const strokeStyles: string[] = [];
     const gradient = { addColorStop: () => {} };

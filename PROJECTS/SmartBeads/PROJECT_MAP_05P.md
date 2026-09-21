@@ -143,8 +143,8 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`PlayHub.ts`** — hub navigation; applies stored look via `applyPlayLookState` on bootstrap; **Coach** sidebar + top card launches teaching video on **7-bead · 4×5** (`?coach=1` picker, `?coach=start` auto-launch).
 - **`layout/lovableOklchTokens.ts`** — Lovable OKLCH source of truth (4 complete + 4 light board palettes, shell chrome, 5 bead sets).
 - **`layout/playShellThemes.ts`** — two Look preview rows (**Dark theme** · **Light theme**); hub `#hub-play-theme-setting` + board `#play-theme-setting`; `wirePlayLookPreviewSetting`; storage-backed reads; `syncPlayLookFromStorageIfDrifted`; charcoal side (`7`).
-- **`layout/beadSetThemes.ts`** — bead set picker (`ivory-ebony` … `metallic`); localStorage `sb-bead-set`.
-- **`layout/moveHintAuraThemes.ts`** — move hint aura preset (`off` | `original` | `gold-fill`); localStorage `sb-move-hint-aura`.
+- **`layout/beadSetThemes.ts`** — bead set picker (`white-black` | `wooden` | `black-wooden`); localStorage `sb-bead-set`.
+- **`layout/moveHintAuraThemes.ts`** — move hint aura preset (`off` | `original` | `gold-fill` | `black-gold-fill`); localStorage `sb-move-hint-aura`.
 - **`feature/CoachVideoScript.ts`** — Video 1 on **7-bead** (~**1:53**): basics + **WIN** / **RESIGN** / **DRAW** appendix; amber/lime highlights; scripted cues and TTS speeches.
 - **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.
 - **`feature/CoachVoice.ts`** — browser TTS; mute and replay per segment.

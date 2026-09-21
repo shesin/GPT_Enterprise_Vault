@@ -195,6 +195,7 @@ describe('process regression guards', () => {
       expect(indexHtml).toContain('value="off"');
       expect(indexHtml).toContain('value="original"');
       expect(indexHtml).toContain('value="gold-fill"');
+      expect(indexHtml).toContain('value="black-gold-fill"');
       expect(indexHtml).not.toContain('value="white-gold"');
       expect(indexHtml).not.toContain('value="gold-no-fill"');
       expect(playControllerSource).toMatch(/initMoveHintAuraSetting/);
@@ -204,12 +205,10 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('play theme — two look rows (light, dark/matched), hub-only on page 2', () => {
+  describe('play theme — one look row (dark/matched, incl. light-canvas Matched boards), hub-only on page 2', () => {
     it('swatch UI, storage split, unified complete colours', () => {
       expect(playShellThemesSource).toMatch(/function applyPlayLookFromRow/);
       expect(playShellThemesSource).toMatch(/function applyPlayLookState/);
-      expect(playShellThemesSource).toMatch(/LOVABLE_LIGHT_BOARD_THEMES/);
-      expect(playShellThemesSource).toMatch(/isLightBoardLookId/);
       expect(playHubSource).toMatch(/applyPlayLookState/);
       expect(playHubSource).toMatch(/wirePlayLookPreviewSetting/);
       expect(playControllerSource).toMatch(/wirePlayLookPreviewSetting/);
@@ -227,17 +226,21 @@ describe('process regression guards', () => {
       // redundant clutter (locked, and selection already happened on the hub).
       expect(indexHtml).not.toContain('id="play-theme-setting"');
       // Charcoal-side "Dark theme" row removed (2026-09-20) — the matched-side
-      // row (same 5 boards, matched-colour sides) took over the "Dark theme"
+      // row (same boards, matched-colour sides) took over the "Dark theme"
       // label since it's now the only dark-board option; charcoal side panel
-      // was judged unnecessary alongside it.
+      // was judged unnecessary alongside it. Split into "Light theme" (the 4
+      // light-canvas Matched boards) and "Dark theme" (the 5 base complete
+      // boards) rows (2026-09-21) — both still use the same
+      // play-theme-swatches--dark-same class (matched behaviour), the split
+      // is presentational only so each row's own bead/aura defaults are clear.
       expect(indexHtml).not.toContain('play-theme-swatches--dark-charcoal');
-      expect(indexHtml).toContain('play-theme-swatches--light-charcoal');
+      expect(indexHtml).not.toContain('play-theme-swatches--light-charcoal');
       expect(indexHtml).toContain('Dark theme');
       expect(indexHtml).toContain('Light theme');
       expect(indexHtml).toContain('play-theme-swatches--dark-same');
       expect(indexHtml).not.toContain('Matched (same colour sides)');
-      expect(indexHtml).toContain('data-play-theme="4"');
-      expect(indexHtml).toContain('data-play-theme="15"');
+      expect(indexHtml).toContain('data-play-theme="25"');
+      expect(indexHtml).toContain('data-play-theme="26"');
       expect(indexHtml).toContain('data-play-theme="14"');
       expect(indexHtml).not.toContain('data-play-theme="9"');
       expect(indexHtml).not.toContain('data-play-theme="10"');

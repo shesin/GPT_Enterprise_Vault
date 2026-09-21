@@ -20,48 +20,18 @@
 }
 
 /*
- * Fixed hub chrome palette — "Pearl Deep + Gold" (locked, PENDING §2, 2026-09-19).
- * One palette for the hub regardless of the selected board/look — not per-board.
+ * Fixed hub chrome palette — Seaglass (locked 2026-09-21, replacing the
+ * earlier "Pearl Deep + Gold" default). One palette for the hub regardless
+ * of the selected board/look — not per-board. Was briefly a swatch-picked
+ * optional look (added 2026-09-20 alongside a Jade option); both the picker
+ * and the Jade option were removed per human request — Seaglass is now the
+ * only, permanent hub look, not one of several choices.
  * !important beats the per-board inline vars playShellThemes.ts still sets on
  * #play-hub at runtime (that engine drives page 2's board looks, out of scope here).
  */
 .play-hub {
-  --hub-page-bg: #F3E9D6 !important;
-  --hub-rail-bg: #EAD9B8 !important;
-  --hub-centre-bg: #F3E9D6 !important;
-  --hub-card-bg: #EAD9B8 !important;
-  --hub-card-hover: #E6CE94 !important;
-  --hub-border: #D8C08C !important;
-  --hub-border-soft: #D8C08C !important;
-  --hub-text: #241A0C !important;
-  --hub-muted: #6B5A3E !important;
-  --hub-centre-text: #241A0C !important;
-  --hub-centre-muted: #6B5A3E !important;
-  --hub-accent: #C9A24A !important;
-  --hub-accent-soft: #E6CE94 !important;
-  --hub-accent-ring: #C9A24A73 !important;
-  --hub-brand: #C9A24A !important;
-  --hub-ad-bg: #ececec !important;
-  --hub-ad-border: #d4d4d4 !important;
-}
-
-body.hub-page {
-  background: #F3E9D6;
-}
-
-/*
- * Optional Page 1 look, added 2026-09-20 per human request — additive to the
- * locked default above, selected via a swatch (see .hub-look-swatch below)
- * and persisted through hubLookThemes.ts. Overrides the same custom
- * properties with equal specificity (.play-hub[attr] vs .play-hub) and
- * later source order, so it wins over the default block while it's absent.
- * Rail stays dark (needs light --hub-text/--hub-muted); centre stays on the
- * light Seaglass tones (dark --hub-centre-text/--hub-centre-muted, unchanged
- * pattern from the default).
- */
-.play-hub[data-hub-look="seaglass"] {
   --hub-page-bg: linear-gradient(180deg, oklch(0.80 0.045 195), oklch(0.68 0.05 198) 220%) !important;
-  --hub-rail-bg: linear-gradient(165deg, oklch(0.50 0.06 195), oklch(0.38 0.065 198)) !important;
+  --hub-rail-bg: linear-gradient(165deg, oklch(0.40 0.065 195), oklch(0.28 0.07 198)) !important;
   --hub-centre-bg: oklch(0.80 0.045 195) !important;
   --hub-card-bg: oklch(0.72 0.04 195 / 55%) !important;
   --hub-card-hover: oklch(0.78 0.04 195 / 70%) !important;
@@ -75,26 +45,12 @@ body.hub-page {
   --hub-accent-soft: #e6ce94 !important;
   --hub-accent-ring: #c9a24a73 !important;
   --hub-brand: #eaf5f2 !important;
+  --hub-ad-bg: #ececec !important;
+  --hub-ad-border: #d4d4d4 !important;
 }
 
-/* Same pattern as the Seaglass look above — centre stays on current shipped
- * Celadon Jade tones, rail uses the "Deep" (option 3) darker step. */
-.play-hub[data-hub-look="jade"] {
-  --hub-page-bg: linear-gradient(180deg, oklch(0.82 0.05 170), oklch(0.70 0.055 172) 220%) !important;
-  --hub-rail-bg: linear-gradient(165deg, oklch(0.52 0.065 170), oklch(0.40 0.07 172)) !important;
-  --hub-centre-bg: oklch(0.82 0.05 170) !important;
-  --hub-card-bg: oklch(0.74 0.045 170 / 55%) !important;
-  --hub-card-hover: oklch(0.80 0.045 170 / 70%) !important;
-  --hub-border: oklch(0.56 0.055 171 / 45%) !important;
-  --hub-border-soft: oklch(0.56 0.055 171 / 45%) !important;
-  --hub-text: #eaf5ef !important;
-  --hub-muted: oklch(0.86 0.02 170 / 75%) !important;
-  --hub-centre-text: #16241d !important;
-  --hub-centre-muted: #3c5347 !important;
-  --hub-accent: #c9a24a !important;
-  --hub-accent-soft: #e6ce94 !important;
-  --hub-accent-ring: #c9a24a73 !important;
-  --hub-brand: #eaf5ef !important;
+body.hub-page {
+  background: oklch(0.80 0.045 195);
 }
 
 .play-hub.is-hidden {
@@ -310,42 +266,6 @@ body.hub-page {
 
 .hub-rail-foot .hub-play-theme-setting .play-theme-mode-opt input {
   accent-color: var(--hub-accent);
-}
-
-.hub-look-swatch {
-  width: 100%;
-  border: 1px solid var(--hub-border);
-  border-radius: 6px;
-  padding: 0;
-  height: 28px;
-  cursor: pointer;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.hub-look-swatch[data-hub-look-option="seaglass"] {
-  background: linear-gradient(
-    90deg,
-    oklch(0.50 0.06 195) 0%,
-    oklch(0.38 0.065 198) 50%,
-    oklch(0.80 0.045 195) 50%,
-    oklch(0.68 0.05 198) 100%
-  );
-}
-
-.hub-look-swatch[data-hub-look-option="jade"] {
-  background: linear-gradient(
-    90deg,
-    oklch(0.52 0.065 170) 0%,
-    oklch(0.40 0.07 172) 50%,
-    oklch(0.82 0.05 170) 50%,
-    oklch(0.70 0.055 172) 100%
-  );
-}
-
-.hub-look-swatch[aria-pressed="true"] {
-  outline: 2px solid var(--hub-accent);
-  outline-offset: 1px;
 }
 
 .hub-rail-foot-link {

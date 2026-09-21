@@ -1,4 +1,4 @@
-import { LOVABLE_LIGHT_BOARD_THEMES } from '../lovableOklchTokens';
+import { LOVABLE_COMPLETE_BOARD_THEMES } from '../lovableOklchTokens';
 import { getActiveBoardLookTheme, getBoardLookTheme } from '../boardLookThemes';
 import { applyPlayLookState } from '../playShellThemes';
 
@@ -45,20 +45,19 @@ describe('boardLookThemes', () => {
     Reflect.deleteProperty(globalThis, 'localStorage');
   });
 
-  it('exposes complete and light board presets including lovable compare swatches', () => {
+  it('exposes complete board presets including the light-canvas Matched swatches', () => {
     expect(getBoardLookTheme('1').label).toBe('Classic Green');
     expect(getBoardLookTheme('6').label).toBe('Purple Night');
-    expect(getBoardLookTheme('4').label).toBe('Sandy Beige');
-    expect(getBoardLookTheme('15').label).toBe('Seaglass');
     expect(getBoardLookTheme('14').label).toBe('Warm Walnut');
+    expect(getBoardLookTheme('25').label).toBe('Celadon Jade Matched');
   });
 
-  it('active board look follows light board id when side is charcoal', () => {
-    mockPlayThemeDom('15', '7');
-    applyPlayLookState('15', '7');
+  it('active board look follows a light-canvas Matched board id when side is charcoal', () => {
+    mockPlayThemeDom('25', '7');
+    applyPlayLookState('25', '7');
     const active = getActiveBoardLookTheme();
-    const seaglass = LOVABLE_LIGHT_BOARD_THEMES[1];
-    expect(active.surfaceTop).toBe(seaglass.surface);
-    expect(active.frameOuter).toBe(seaglass.frameOuter);
+    const jadeMatched = LOVABLE_COMPLETE_BOARD_THEMES[7];
+    expect(active.surfaceTop).toBe(jadeMatched.boardSurface);
+    expect(active.frameOuter).toBe(jadeMatched.frameOuter);
   });
 });

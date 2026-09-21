@@ -28,7 +28,7 @@ You are the primary implementer for this repository.
 - Paths only → `PROJECT_MAP_05P.md`
 
 ## Always
-- **Say = do** — only claim outcomes you actually verified (tests run, browser observed). Mark **UNCONFIRMED** otherwise.
+- **Say = do** — check the actual code first whenever there's the slightest doubt, and only report an outcome after it's been tested/confirmed (tests run, browser observed, or code read). Mark **UNCONFIRMED** otherwise.
 - `git commit` / `git push` only when explicitly asked.
 - **Do only what is explicitly asked.** Never take proactive side-actions (writing memory files, extra docs, cleanup, anything not requested) without asking first. If something seems urgently needed, ask permission — don't just do it.
 - **Testing scope:** after a change, run only the test file(s) relevant to it by default — not the full suite. Run the full suite only when explicitly asked, *except* when there's real doubt the change could affect other parts of the codebase (e.g. it touches a shared token/type other boards or modules also read) — then run the full suite anyway without waiting to be asked.

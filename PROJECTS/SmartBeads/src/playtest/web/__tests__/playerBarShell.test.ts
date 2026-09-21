@@ -60,14 +60,16 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).toContain('id="move-hint-aura-select"');
     expect(indexHtml).toContain('value="off"');
     expect(indexHtml).toContain('Original (orange / lime)');
-    expect(indexHtml).toContain('Gold (fill)');
+    expect(indexHtml).toContain('value="gold-fill">Gold<');
+    expect(indexHtml).toContain('value="black-gold-fill">Black Gold<');
     expect(indexHtml).not.toContain('White / gold (fill)');
     expect(indexHtml).not.toContain('Gold (no fill)');
   });
 
   it('board settings keeps the bead set picker but drops Look preview (2026-09-19 — hub-only now)', () => {
     expect(indexHtml).toContain('id="bead-set-select"');
-    expect(indexHtml).toContain('Ivory &amp; Ebony');
+    expect(indexHtml).toContain('Black &amp; White');
+    expect(indexHtml).not.toContain('Ivory &amp; Ebony');
     // Look preview (3 rows: dark/light/matched) lives on the hub (page 1) only —
     // it was locked-and-redundant clutter on page 2 since selection already
     // happened before the player got here. The class names still exist in the

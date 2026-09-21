@@ -15,6 +15,7 @@ import {
   readStoredBoardLookId,
   readStoredSideLookId,
   syncPlayLookFromStorageIfDrifted,
+  syncSoftDefaultSelects,
   wirePlayLookPreviewSetting,
   type PlayShellThemeId,
 } from './layout/playShellThemes';
@@ -2220,6 +2221,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function syncPlayShellThemeFromStorage(): void {
     if (!playShell) return;
     applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
+    syncSoftDefaultSelects();
     drawBoard();
   }
 
@@ -2244,6 +2246,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function applyPlayShellTheme(swatchId: PlayShellThemeId): void {
     if (!playShell || isLookPreviewLocked()) return;
     applyPlayLookFromSwatch(swatchId);
+    syncSoftDefaultSelects();
     drawBoard();
     updateUI();
   }

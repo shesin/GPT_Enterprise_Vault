@@ -6,7 +6,6 @@ import {
 import {
   COMPLETE_LOOK_IDS,
   getPlayShellTheme,
-  LIGHT_BOARD_LOOK_IDS,
   PLAY_BOARD_LOOK_STORAGE_KEY,
 } from '../playShellThemes';
 
@@ -46,7 +45,7 @@ describe('boardLineGoldThemes', () => {
   // so this can't happen again — this test proves that derivation for every
   // board id, not just the two that broke.
   it('every non-charcoal board look derives its own line colour from theme.lineColor (no silent gold fallback)', () => {
-    const boardIds = [...COMPLETE_LOOK_IDS, ...LIGHT_BOARD_LOOK_IDS];
+    const boardIds = [...COMPLETE_LOOK_IDS];
     for (const id of boardIds) {
       mockStoredBoardLook(id);
       const expectedLine = getPlayShellTheme(id).lineColor;

@@ -43,25 +43,27 @@ export const BEAD_SET_THEMES: Record<BeadSetId, BeadSetTheme> = Object.fromEntri
   LOVABLE_BEAD_SETS.map((t) => [t.id, toBeadSetTheme(t)]),
 ) as Record<BeadSetId, BeadSetTheme>;
 
-export const DEFAULT_BEAD_SET_ID: BeadSetId = 'ivory-ebony';
-export const LIGHT_BOARD_DEFAULT_BEAD_SET_ID: BeadSetId = 'black-brown';
+// Dark/complete boards default to Black & White; light boards default to
+// Black & Wooden (2026-09-21, per human request — Ivory & Ebony removed).
+export const DEFAULT_BEAD_SET_ID: BeadSetId = 'white-black';
+export const LIGHT_BOARD_DEFAULT_BEAD_SET_ID: BeadSetId = 'black-wooden';
 
 export function isBeadSetId(value: string | null | undefined): value is BeadSetId {
-  return value === 'ivory-ebony'
-    || value === 'white-black'
+  return value === 'white-black'
     || value === 'wooden'
-    || value === 'black-brown';
+    || value === 'black-wooden';
 }
 
 // Duplicated from playShellThemes.ts (not imported) to avoid a circular
 // dependency — playShellThemes.ts already imports BEAD_SET_THEMES from this
 // file at runtime, so importing back from it here would create a cycle.
 const PLAY_BOARD_LOOK_STORAGE_KEY = 'sb-play-board-look';
-// '12' (Warm Walnut) moved to the dark/complete board group (2026-09-18).
-// '15'-'18' are the 4 new light boards added the same day (Seaglass, Powder
-// Lilac, Celadon Jade, Alabaster Pearl). '9' (Soft Blush) and '10' (Pale Sage)
-// were removed (2026-09-19).
-const LIGHT_BOARD_LOOK_IDS = new Set(['4', '15', '16', '17', '18']);
+// Boards with a light canvas need the light-appropriate bead default even
+// though they're "complete" boards, not the old charcoal-paired light row
+// (removed 2026-09-21) — Seaglass/Powder Lilac/Celadon Jade/Alabaster Pearl
+// "Matched" (23/24/25/26) all render the same light boardSurface tones the
+// removed row used to.
+const LIGHT_BOARD_LOOK_IDS = new Set(['23', '24', '25', '26']);
 
 function isStoredBoardLookLight(): boolean {
   if (typeof localStorage === 'undefined') return false;
@@ -84,6 +86,17 @@ export function readBeadSetId(): BeadSetId {
 export function writeBeadSetId(id: BeadSetId): void {
   if (typeof localStorage === 'undefined') return;
   localStorage.setItem(BEAD_SET_STORAGE_KEY, id);
+}
+
+/**
+ * Forces the bead set to the current board's soft default, overriding any
+ * prior explicit choice — unlike readBeadSetId(), which never does that.
+ * Called only from the page-1 hub board picker (2026-09-21, per human
+ * request): picking a board on page 1 should always reset bead set to that
+ * board's default; picking a board on page 2 must not touch it.
+ */
+export function forceDefaultBeadSetId(): void {
+  writeBeadSetId(isStoredBoardLookLight() ? LIGHT_BOARD_DEFAULT_BEAD_SET_ID : DEFAULT_BEAD_SET_ID);
 }
 
 export function getBeadSetTheme(id: BeadSetId = readBeadSetId()): BeadSetTheme {
