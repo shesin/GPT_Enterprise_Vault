@@ -19,7 +19,6 @@ import {
 } from './layout/playShellThemes';
 import { formatCenterDisplay } from './feature/centerScoring';
 import {
-  AiLevel,
   aiLevelForActingPlayer,
   BGM_TRACKS,
   COACH_MAX_AI_LEVEL,
@@ -53,8 +52,6 @@ import {
   COACH_VIDEO_BOARD_ID,
   COACH_VIDEO_DURATION_MS,
   COACH_FINISH_CAPTURE_SPEECH_TEXT,
-  COACH_FINISH_CAPTURE_DEMO_MS,
-  COACH_FINISH_CAPTURE_DEMO_DURATION_MS,
   isCoachFinishCaptureDemoActive,
   coachPanelPointIndexAtTime,
   coachSegmentBannerUntilMs,
@@ -98,16 +95,14 @@ import { soundEffects } from './audio/SoundEffects';
 
 function fmtClock(sec: number): string {
   const clamped = sec < 0 ? 0 : sec;
-  const m = Math.floor(clamped / 60).toString().padStart(2, '0');
+  const m = Math.floor(clamped / 60)
+    .toString()
+    .padStart(2, '0');
   const s = (clamped % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
 
-function updatePlayerTimerMmss(
-  el: HTMLElement | null,
-  displaySec: number,
-  limitSec: number,
-): void {
+function updatePlayerTimerMmss(el: HTMLElement | null, displaySec: number, limitSec: number): void {
   if (!el) return;
   if (limitSec <= 0) {
     el.textContent = 'OFF';
@@ -214,13 +209,15 @@ export function planAiTurnPath(session: FeatureSession, actingPlayer?: Player): 
 export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopRecord[] {
   const settings = session.getSettings();
   const aiPlayer = session.getAiPlayer();
-  if (session.isGameOver() || !isHumanVsAiMode(settings.mode) || session.getEngine().getState().currentPlayer !== aiPlayer) {
+  if (
+    session.isGameOver() ||
+    !isHumanVsAiMode(settings.mode) ||
+    session.getEngine().getState().currentPlayer !== aiPlayer
+  ) {
     throw new Error('stale hop: AI turn is not live');
   }
 
-  const planned = path === undefined
-    ? planAiTurnPath(session)
-    : path;
+  const planned = path === undefined ? planAiTurnPath(session) : path;
 
   if (!planned?.length) {
     if (path === undefined) {
@@ -311,22 +308,33 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const resignDeclineBtn = document.getElementById('resign-decline-btn') as HTMLButtonElement;
   const resultTitle = document.getElementById('result-title') as HTMLHeadingElement;
   const resultDesc = document.getElementById('result-desc') as HTMLParagraphElement;
-  const startScreenOverlay = document.getElementById('start-screen-overlay') as HTMLDivElement | null;
+  const startScreenOverlay = document.getElementById(
+    'start-screen-overlay',
+  ) as HTMLDivElement | null;
   const startGameBtn = document.getElementById('start-game-btn') as HTMLButtonElement | null;
   const startCoachBtn = document.getElementById('start-coach-btn') as HTMLButtonElement | null;
-  const startBoardSelect = document.getElementById('start-board-select') as HTMLSelectElement | null;
+  const startBoardSelect = document.getElementById(
+    'start-board-select',
+  ) as HTMLSelectElement | null;
   const hubModeSelect = document.getElementById('hub-mode-select') as HTMLSelectElement | null;
   const celebrationFx = document.getElementById('board-celebration-fx') as HTMLDivElement | null;
-  const celebrationParticles = document.getElementById('celebration-particles') as HTMLDivElement | null;
-  const modalCelebrationParticles = document.getElementById('modal-celebration-particles') as HTMLDivElement | null;
-  const modalCelebrationHalo = document.getElementById('modal-celebration-halo') as HTMLDivElement | null;
+  const celebrationParticles = document.getElementById(
+    'celebration-particles',
+  ) as HTMLDivElement | null;
+  const modalCelebrationParticles = document.getElementById(
+    'modal-celebration-particles',
+  ) as HTMLDivElement | null;
   const startBanner = document.getElementById('start-banner') as HTMLDivElement | null;
   const startBannerTitle = document.getElementById('start-banner-title') as HTMLDivElement | null;
-  const startBannerSubtitle = document.getElementById('start-banner-subtitle') as HTMLDivElement | null;
+  const startBannerSubtitle = document.getElementById(
+    'start-banner-subtitle',
+  ) as HTMLDivElement | null;
   let bannerTimer: number | null = null;
   let bannerPhase2Timer: number | null = null;
 
-  function emitCelebrationSparkles(targetContainer: HTMLElement | null = celebrationParticles): void {
+  function emitCelebrationSparkles(
+    targetContainer: HTMLElement | null = celebrationParticles,
+  ): void {
     if (!targetContainer) return;
     targetContainer.innerHTML = '';
 
@@ -403,7 +411,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
   function dismissStartBanner(): void {
     if (celebrationFx) celebrationFx.classList.remove('animate', 'coach-segment-top');
-    if (startBanner) startBanner.classList.remove('animate', 'coach-segment-banner', 'coach-segment-banner-move');
+    if (startBanner)
+      startBanner.classList.remove('animate', 'coach-segment-banner', 'coach-segment-banner-move');
     if (startBannerSubtitle) startBannerSubtitle.style.display = '';
     if (celebrationParticles) celebrationParticles.innerHTML = '';
     if (bannerTimer !== null) {
@@ -446,12 +455,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
 
     const nowMs = atTimeMs ?? coachVideoPlayer?.getTimeMs() ?? banner.atMs;
-    const untilMs = holdMsOverride != null
-      ? nowMs + holdMsOverride
-      : coachSegmentBannerUntilMs(banner);
+    const untilMs =
+      holdMsOverride != null ? nowMs + holdMsOverride : coachSegmentBannerUntilMs(banner);
     const remainingMs = Math.max(400, untilMs - nowMs);
     const isMoveBanner = banner.atMs === 0 && banner.title === 'MOVE';
-    const isCaptureBanner = banner.title.includes('CAPTURE');
 
     celebrationFx.classList.add('coach-segment-top');
     celebrationFx.classList.remove('animate');
@@ -473,19 +480,37 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const boardSelect = document.getElementById('board-select') as HTMLSelectElement;
   const aiLevelSelect = document.getElementById('ai-level-select') as HTMLSelectElement;
   const aiLevelSetting = document.getElementById('ai-level-setting') as HTMLDivElement | null;
-  const coachLevelSelect = document.getElementById('coach-level-select') as HTMLSelectElement | null;
+  const coachLevelSelect = document.getElementById(
+    'coach-level-select',
+  ) as HTMLSelectElement | null;
   const coachLevelSetting = document.getElementById('coach-level-setting') as HTMLDivElement | null;
   const timerSelect = document.getElementById('timer-select') as HTMLSelectElement;
-  const tournamentTimerSelect = document.getElementById('tournament-timer-select') as HTMLSelectElement;
-  const tournamentTimerSetting = document.getElementById('tournament-timer-setting') as HTMLDivElement | null;
+  const tournamentTimerSelect = document.getElementById(
+    'tournament-timer-select',
+  ) as HTMLSelectElement;
+  const tournamentTimerSetting = document.getElementById(
+    'tournament-timer-setting',
+  ) as HTMLDivElement | null;
   const timerHelpBtn = document.getElementById('timer-help-btn') as HTMLButtonElement | null;
   const timerHelpText = document.getElementById('timer-help-text') as HTMLParagraphElement | null;
-  const tournamentTimerHelpBtn = document.getElementById('tournament-timer-help-btn') as HTMLButtonElement | null;
-  const tournamentTimerHelpText = document.getElementById('tournament-timer-help-text') as HTMLParagraphElement | null;
-  const shotClockHelpBtn = document.getElementById('shot-clock-help-btn') as HTMLButtonElement | null;
-  const shotClockHelpText = document.getElementById('shot-clock-help-text') as HTMLParagraphElement | null;
-  const centerRuleHelpBtn = document.getElementById('center-rule-help-btn') as HTMLButtonElement | null;
-  const centerRuleHelpText = document.getElementById('center-rule-help-text') as HTMLParagraphElement | null;
+  const tournamentTimerHelpBtn = document.getElementById(
+    'tournament-timer-help-btn',
+  ) as HTMLButtonElement | null;
+  const tournamentTimerHelpText = document.getElementById(
+    'tournament-timer-help-text',
+  ) as HTMLParagraphElement | null;
+  const shotClockHelpBtn = document.getElementById(
+    'shot-clock-help-btn',
+  ) as HTMLButtonElement | null;
+  const shotClockHelpText = document.getElementById(
+    'shot-clock-help-text',
+  ) as HTMLParagraphElement | null;
+  const centerRuleHelpBtn = document.getElementById(
+    'center-rule-help-btn',
+  ) as HTMLButtonElement | null;
+  const centerRuleHelpText = document.getElementById(
+    'center-rule-help-text',
+  ) as HTMLParagraphElement | null;
   const shotClockSelect = document.getElementById('shot-clock-select') as HTMLSelectElement;
   const centerRuleSelect = document.getElementById('center-rule-select') as HTMLSelectElement;
   const coachPanel = document.getElementById('coach-panel') as HTMLDivElement | null;
@@ -495,7 +520,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const coachPlayBtn = document.getElementById('coach-play-btn') as HTMLButtonElement | null;
   const coachPauseBtn = document.getElementById('coach-pause-btn') as HTMLButtonElement | null;
   const coachScrub = document.getElementById('coach-scrub') as HTMLInputElement | null;
-  const coachVoiceReplayBtn = document.getElementById('coach-voice-replay') as HTMLButtonElement | null;
+  const coachVoiceReplayBtn = document.getElementById(
+    'coach-voice-replay',
+  ) as HTMLButtonElement | null;
   const coachVoiceMuteBtn = document.getElementById('coach-voice-mute') as HTMLButtonElement | null;
   const coachSpeakingLabel = document.getElementById('coach-speaking-label') as HTMLElement | null;
   const coachVoice = new CoachVoice();
@@ -610,7 +637,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
     const winner = cue.winner;
     const phase = cue.phase;
-    let scoreLine = '';
+    let scoreLine: string;
     if (winner === 'DRAW') {
       if (phase === 'resignAgreedStatement') {
         resultTitle.textContent = 'RESIGNATION AGREED — DRAW';
@@ -634,9 +661,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       } else {
         resultTitle.textContent = `CONGRATULATIONS! ${creamName.toUpperCase()} WON!`;
         const diff = redCaps - blueCaps;
-        scoreLine = diff > 0
-          ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${redCaps} vs ${blueCaps})`
-          : `${creamName} won (${redCaps} vs ${blueCaps} beads)`;
+        scoreLine =
+          diff > 0
+            ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${redCaps} vs ${blueCaps})`
+            : `${creamName} won (${redCaps} vs ${blueCaps} beads)`;
         resultTitle.classList.add('victory');
       }
     } else {
@@ -647,9 +675,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       } else {
         resultTitle.textContent = `CONGRATULATIONS! ${blackName.toUpperCase()} WON!`;
         const diff = blueCaps - redCaps;
-        scoreLine = diff > 0
-          ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${blueCaps} vs ${redCaps})`
-          : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
+        scoreLine =
+          diff > 0
+            ? `Won by ${diff} bead capture${diff === 1 ? '' : 's'} (${blueCaps} vs ${redCaps})`
+            : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
       }
       resultTitle.classList.add('victory');
     }
@@ -715,7 +744,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         syncCoachVideoCue(cue);
       },
       onApplySegmentBanner: (banner) => {
-        if (banner && (banner.title === 'WIN' || banner.title === 'RESIGN' || banner.title === 'DRAW')) {
+        if (
+          banner &&
+          (banner.title === 'WIN' || banner.title === 'RESIGN' || banner.title === 'DRAW')
+        ) {
           const ms = coachVideoPlayer?.getTimeMs() ?? banner.atMs;
           clearMoveFeedback();
           applyCoachVideoKeyframe(
@@ -743,7 +775,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         syncCoachVideoControls(coachVideoPlayer?.getTimeMs() ?? 0, playing);
         if (playing && coachVideoPlayer) {
           triggerCoachSegmentBanner(
-            findCoachSegmentBannerAtTime(coachVideoPlayer.getTimeMs(), COACH_VIDEO.segmentBanners ?? []),
+            findCoachSegmentBannerAtTime(
+              coachVideoPlayer.getTimeMs(),
+              COACH_VIDEO.segmentBanners ?? [],
+            ),
           );
         } else if (!playing) {
           stopCoachVoice();
@@ -884,7 +919,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     };
   }
 
-  const settingHelpPairs: Array<{ btn: HTMLButtonElement | null; text: HTMLParagraphElement | null }> = [
+  const settingHelpPairs: Array<{
+    btn: HTMLButtonElement | null;
+    text: HTMLParagraphElement | null;
+  }> = [
     { btn: timerHelpBtn, text: timerHelpText },
     { btn: tournamentTimerHelpBtn, text: tournamentTimerHelpText },
     { btn: shotClockHelpBtn, text: shotClockHelpText },
@@ -925,17 +963,17 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   function readCoachWatchSettings(): GameFeatureSettings {
-    const coachLevel = coachLevelSelect
-      ? clampUiAiLevel(parseInt(coachLevelSelect.value, 10))
-      : 3;
+    const coachLevel = coachLevelSelect ? clampUiAiLevel(parseInt(coachLevelSelect.value, 10)) : 3;
     const aiLevel = clampUiAiLevel(parseInt(aiLevelSelect.value, 10));
-    return normalizeTimerSettings(buildCoachWatchSettings({
-      coachRedLevel: coachLevel,
-      coachBlueLevel: aiLevel,
-      timer: timerSelect.value as GameFeatureSettings['timer'],
-      shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
-      centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
-    }));
+    return normalizeTimerSettings(
+      buildCoachWatchSettings({
+        coachRedLevel: coachLevel,
+        coachBlueLevel: aiLevel,
+        timer: timerSelect.value as GameFeatureSettings['timer'],
+        shotClock: shotClockSelect.value as GameFeatureSettings['shotClock'],
+        centerRule: centerRuleSelect.value as GameFeatureSettings['centerRule'],
+      }),
+    );
   }
 
   /** Mode from page-1 hub `#hub-mode-select` (not duplicated in Settings). */
@@ -982,9 +1020,17 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       ? SPECTATE_WATCH_DEFAULTS.timer
       : play.defaultSettings.timer;
     tournamentTimerSelect.value = 'off';
-    populateAiLevelSelect(aiLevelSelect, HUMAN_PVE_MAX_AI_LEVEL, SPECTATE_WATCH_DEFAULTS.coachBlueLevel);
+    populateAiLevelSelect(
+      aiLevelSelect,
+      HUMAN_PVE_MAX_AI_LEVEL,
+      SPECTATE_WATCH_DEFAULTS.coachBlueLevel,
+    );
     if (coachLevelSelect) {
-      populateAiLevelSelect(coachLevelSelect, COACH_MAX_AI_LEVEL, SPECTATE_WATCH_DEFAULTS.coachRedLevel);
+      populateAiLevelSelect(
+        coachLevelSelect,
+        COACH_MAX_AI_LEVEL,
+        SPECTATE_WATCH_DEFAULTS.coachRedLevel,
+      );
     }
     syncTimerSettingLocks();
   }
@@ -1258,12 +1304,15 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   function canOfferResignation(): boolean {
-    if (session.getSettings().mode === 'spectate' || session.getSettings().mode === 'coach') return false;
+    if (session.getSettings().mode === 'spectate' || session.getSettings().mode === 'coach')
+      return false;
     if (session.isGameOver() || animating || aiThinking) return false;
     if (pendingResignPlayer !== null) return false;
     // Only the side to move may resign (PvE: human only on cream's turn).
-    if (session.getSettings().mode === 'pve'
-      && session.getEngine().getState().currentPlayer !== 'RED') {
+    if (
+      session.getSettings().mode === 'pve' &&
+      session.getEngine().getState().currentPlayer !== 'RED'
+    ) {
       return false;
     }
     return true;
@@ -1314,8 +1363,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
 
     pendingResignPlayer = resigning;
-    resignOfferDesc.textContent =
-      `${sideDisplayName(resigning)} offers resignation. Agree to a draw?`;
+    resignOfferDesc.textContent = `${sideDisplayName(resigning)} offers resignation. Agree to a draw?`;
     resignOfferModal.style.display = 'flex';
   }
 
@@ -1369,9 +1417,15 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   // (perf, 2026-09-22 audit). Keyed on `anim` object identity: playAnimated()
   // creates a fresh object per move and mutates `.t` in place on it, so a
   // reference match means "same move, later frame".
-  let animBoardCache: { anim: BoardAnimState; board: ReturnType<typeof cloneBoardDefinition> } | null = null;
+  let animBoardCache: {
+    anim: BoardAnimState;
+    board: ReturnType<typeof cloneBoardDefinition>;
+  } | null = null;
 
-  function boardForAnim(activeAnim: BoardAnimState, liveBoard: ReturnType<typeof cloneBoardDefinition>) {
+  function boardForAnim(
+    activeAnim: BoardAnimState,
+    liveBoard: ReturnType<typeof cloneBoardDefinition>,
+  ) {
     if (animBoardCache?.anim !== activeAnim) {
       const cloned = cloneBoardDefinition(liveBoard);
       if (cloned.intersections[activeAnim.from]) {
@@ -1410,7 +1464,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
   function readMoveHintAuraFromUi(): ReturnType<typeof resolveMoveHintAuraStyle> {
     const select = document.getElementById('move-hint-aura-select') as HTMLSelectElement | null;
-    const toggle = select && isMoveHintAuraToggle(select.value) ? select.value : readMoveHintAuraToggle();
+    const toggle =
+      select && isMoveHintAuraToggle(select.value) ? select.value : readMoveHintAuraToggle();
     return resolveMoveHintAuraStyle(toggle);
   }
 
@@ -1425,12 +1480,20 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     (document.getElementById('black-panel-name') as HTMLElement).textContent = blackPlayerLabel();
     (document.getElementById('cream-panel-name') as HTMLElement).textContent = creamPlayerLabel();
     (document.getElementById('black-panel-role') as HTMLElement).textContent =
-      settings.mode === 'spectate' ? '(AI)' : settings.mode === 'pve' || settings.mode === 'coach' ? '(AI)' : '(Human)';
+      settings.mode === 'spectate'
+        ? '(AI)'
+        : settings.mode === 'pve' || settings.mode === 'coach'
+          ? '(AI)'
+          : '(Human)';
     (document.getElementById('cream-panel-role') as HTMLElement).textContent =
       settings.mode === 'spectate' ? '(AI)' : settings.mode === 'coach' ? '(Lesson)' : '(Human)';
 
-    (document.getElementById('top-p1-capture') as HTMLElement).textContent = String(state.captures.RED);
-    (document.getElementById('top-p2-capture') as HTMLElement).textContent = String(state.captures.BLUE);
+    (document.getElementById('top-p1-capture') as HTMLElement).textContent = String(
+      state.captures.RED,
+    );
+    (document.getElementById('top-p2-capture') as HTMLElement).textContent = String(
+      state.captures.BLUE,
+    );
     (document.getElementById('top-p1-centre') as HTMLElement).textContent = formatCenterDisplay(
       settings.centerRule,
       centerScores.red,
@@ -1449,7 +1512,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       flashCaptureTick('black');
     }
     prevCaptures = { RED: state.captures.RED, BLUE: state.captures.BLUE };
-    (document.getElementById('turn-count') as HTMLElement).textContent = String(session.getMoveCount());
+    (document.getElementById('turn-count') as HTMLElement).textContent = String(
+      session.getMoveCount(),
+    );
 
     // Screen-reader-only live summary — the canvas itself has no accessible
     // state (2026-09-22 audit). Only write when the text actually changes;
@@ -1458,31 +1523,26 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     // would spam repeat announcements.
     const boardStatusText = session.isGameOver()
       ? `Game over. Cream captures ${state.captures.RED}, Black captures ${state.captures.BLUE}.`
-      : `${state.currentPlayer === 'RED' ? 'Cream' : 'Black'}'s turn. `
-        + `Captures: Cream ${state.captures.RED}, Black ${state.captures.BLUE}. `
-        + `Beads left: Cream ${redPieces}, Black ${bluePieces}.`;
+      : `${state.currentPlayer === 'RED' ? 'Cream' : 'Black'}'s turn. ` +
+        `Captures: Cream ${state.captures.RED}, Black ${state.captures.BLUE}. ` +
+        `Beads left: Cream ${redPieces}, Black ${bluePieces}.`;
     if (boardStatusText !== lastBoardStatusText) {
       lastBoardStatusText = boardStatusText;
       const statusEl = document.getElementById('board-status');
       if (statusEl) statusEl.textContent = boardStatusText;
     }
 
-    const uiState = session.getUiState();
-    undoBtn.disabled = undoStack.length === 0 || animating || aiThinking || settings.mode === 'spectate';
+    undoBtn.disabled =
+      undoStack.length === 0 || animating || aiThinking || settings.mode === 'spectate';
     resignBtn.disabled = !canOfferResignation();
 
     syncModeUi();
 
     const coachFinishDemo =
-      coachVideoPlayer !== null
-      && isCoachFinishCaptureDemoActive(coachVideoPlayer.getTimeMs());
+      coachVideoPlayer !== null && isCoachFinishCaptureDemoActive(coachVideoPlayer.getTimeMs());
     const chainOpen = session.getEngine().getChainPieceId() !== null;
     const showFinishCapture =
-      coachFinishDemo
-      || (chainOpen
-        && session.canHumanAct()
-        && !animating
-        && !aiThinking);
+      coachFinishDemo || (chainOpen && session.canHumanAct() && !animating && !aiThinking);
     if (finishBtn) {
       finishBtn.hidden = !showFinishCapture;
       finishBtn.classList.toggle('visible', showFinishCapture);
@@ -1546,29 +1606,33 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         const diff = redCaps - blueCaps;
         if (isHumanVsAiMode(settings.mode)) {
           resultTitle.textContent = 'CONGRATULATIONS! YOU WON!';
-          scoreLine = diff > 0
-            ? `You won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})`
-            : `You won (${redCaps} vs ${blueCaps} beads)`;
+          scoreLine =
+            diff > 0
+              ? `You won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})`
+              : `You won (${redCaps} vs ${blueCaps} beads)`;
         } else {
           resultTitle.textContent = `CONGRATULATIONS! ${creamName.toUpperCase()} WON!`;
-          scoreLine = diff > 0
-            ? `${creamName} won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})`
-            : `${creamName} won (${redCaps} vs ${blueCaps} beads)`;
+          scoreLine =
+            diff > 0
+              ? `${creamName} won by ${diff} bead${diff > 1 ? 's' : ''} (${redCaps} vs ${blueCaps})`
+              : `${creamName} won (${redCaps} vs ${blueCaps} beads)`;
         }
         resultTitle.classList.add('victory');
       } else if (winner === 'BLUE') {
         const diff = blueCaps - redCaps;
         if (isHumanVsAiMode(settings.mode)) {
           resultTitle.textContent = 'WELL PLAYED! BETTER LUCK NEXT TIME';
-          scoreLine = diff > 0
-            ? `${blackName} won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})`
-            : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
+          scoreLine =
+            diff > 0
+              ? `${blackName} won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})`
+              : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
           resultTitle.classList.add('defeat');
         } else {
           resultTitle.textContent = `CONGRATULATIONS! ${blackName.toUpperCase()} WON!`;
-          scoreLine = diff > 0
-            ? `${blackName} won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})`
-            : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
+          scoreLine =
+            diff > 0
+              ? `${blackName} won by ${diff} bead${diff > 1 ? 's' : ''} (${blueCaps} vs ${redCaps})`
+              : `${blackName} won (${blueCaps} vs ${redCaps} beads)`;
           resultTitle.classList.add('victory');
         }
       }
@@ -1614,11 +1678,14 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function startTimers(): void {
     if (timerId) clearInterval(timerId);
     timerId = setInterval(() => {
-      if (shellTimerShouldSkip({
-        gameOver: session.isGameOver(),
-        aiThinking,
-        animating,
-      })) return;
+      if (
+        shellTimerShouldSkip({
+          gameOver: session.isGameOver(),
+          aiThinking,
+          animating,
+        })
+      )
+        return;
       // Clocks must keep running during AI think and piece animation.
       // Freezing on aiThinking made Ebony immune to shot clock in PvE.
       session.timerTick();
@@ -1627,18 +1694,20 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       const shotLimit = session.getShotLimit();
       const settingsNow = session.getSettings();
       const timerLimit = parseTimerSeconds(
-        isTournamentTimerActive(settingsNow)
-          ? settingsNow.tournamentTimer
-          : settingsNow.timer,
+        isTournamentTimerActive(settingsNow) ? settingsNow.tournamentTimer : settingsNow.timer,
       );
       const tournamentActive = isTournamentTimerActive(settingsNow);
       const currentPlayer = session.getEngine().getState().currentPlayer;
       const lowTimerRem = tournamentActive
-        ? (currentPlayer === 'RED' ? session.getP1Clock() : session.getP2Clock())
+        ? currentPlayer === 'RED'
+          ? session.getP1Clock()
+          : session.getP2Clock()
         : timerRem;
-      if ((shotLimit > 0 && shotRem <= 3 && shotRem > 0)
-        || (timerLimit > 0 && !tournamentActive && timerRem <= 5 && timerRem > 0)
-        || (timerLimit > 0 && tournamentActive && lowTimerRem <= 5 && lowTimerRem > 0)) {
+      if (
+        (shotLimit > 0 && shotRem <= 3 && shotRem > 0) ||
+        (timerLimit > 0 && !tournamentActive && timerRem <= 5 && timerRem > 0) ||
+        (timerLimit > 0 && tournamentActive && lowTimerRem <= 5 && lowTimerRem > 0)
+      ) {
         soundEffects.playTimerWarning();
       }
       updateUI();
@@ -1708,7 +1777,11 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
   function captureHumanPlySnapForGate(player: Player): void {
     if (player !== 'RED') return;
-    const api = (window as unknown as { __SB_TEST__?: { lastHumanPlySnap?: ReturnType<typeof buildLiveSnap> | null } }).__SB_TEST__;
+    const api = (
+      window as unknown as {
+        __SB_TEST__?: { lastHumanPlySnap?: ReturnType<typeof buildLiveSnap> | null };
+      }
+    ).__SB_TEST__;
     if (api) api.lastHumanPlySnap = buildLiveSnap();
   }
 
@@ -1722,9 +1795,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     const state = session.getEngine().getState();
     const jump = findJumpPath(state.board, move.from, move.to);
     const captured = jump?.over;
-    const capturedPlayer = captured !== undefined
-      ? state.board.intersections[captured].occupant
-      : undefined;
+    const capturedPlayer =
+      captured !== undefined ? state.board.intersections[captured].occupant : undefined;
 
     if (jump) {
       soundEffects.playCapture(turnCaptures);
@@ -1769,7 +1841,11 @@ export function bootstrapPlayShell(onReady?: () => void): void {
           captureHumanPlySnapForGate(player);
         } catch {
           completeAiTurnIfChainOpen(session);
-          if (player === 'BLUE' && !session.isGameOver() && session.getEngine().getState().currentPlayer === 'BLUE') {
+          if (
+            player === 'BLUE' &&
+            !session.isGameOver() &&
+            session.getEngine().getState().currentPlayer === 'BLUE'
+          ) {
             const fallback = session.getEngine().getLegalMoves()[0];
             if (fallback) {
               try {
@@ -1837,10 +1913,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
     let path: Move[] | null = null;
     try {
-      path = planAiTurnPath(
-        session,
-        settings.mode === 'spectate' ? actingPlayer : undefined,
-      );
+      path = planAiTurnPath(session, settings.mode === 'spectate' ? actingPlayer : undefined);
     } catch {
       path = session.getEngine().getLegalMoves().slice(0, 1);
     }
@@ -1920,7 +1993,12 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (session.isGameOver() || aiThinking || animating) return;
     if (!session.canHumanAct()) return;
 
-    const nodeId = hitTestNode(canvas, session.getEngine().getState().board, ev.clientX, ev.clientY);
+    const nodeId = hitTestNode(
+      canvas,
+      session.getEngine().getState().board,
+      ev.clientX,
+      ev.clientY,
+    );
     if (nodeId < 0) return;
 
     const state = session.getEngine().getState();
@@ -1948,7 +2026,12 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     const settings = session.getSettings();
     const uiState = session.getUiState();
 
-    if (isHumanVsAiMode(settings.mode) && undoStack.length >= 2 && session.getEngine().getState().currentPlayer === 'RED' && uiState !== 'chain') {
+    if (
+      isHumanVsAiMode(settings.mode) &&
+      undoStack.length >= 2 &&
+      session.getEngine().getState().currentPlayer === 'RED' &&
+      uiState !== 'chain'
+    ) {
       undoStack.pop();
       session.loadSnapshot(undoStack.pop()!);
     } else {
@@ -1975,7 +2058,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     turnCaptures = 0;
     clearMoveFeedback();
     prevCaptures = { RED: 0, BLUE: 0 };
-    const testApi = (window as unknown as { __SB_TEST__?: { lastHumanPlySnap?: null } }).__SB_TEST__;
+    const testApi = (window as unknown as { __SB_TEST__?: { lastHumanPlySnap?: null } })
+      .__SB_TEST__;
     if (testApi) testApi.lastHumanPlySnap = null;
 
     const wasCoach = session.getSettings().mode === 'coach';
@@ -2329,7 +2413,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   if (playShell) {
-    let savedPremium = false;
+    let savedPremium: boolean;
     try {
       savedPremium = localStorage.getItem('sb-premium') === '1';
     } catch {
@@ -2345,7 +2429,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   updateSfxButton();
   resetGame();
 
-  (window as unknown as { __SB_TEST__?: any }).__SB_TEST__ = {
+  (window as unknown as { __SB_TEST__?: unknown }).__SB_TEST__ = {
     // switchBoard/resetGame rebind `session`; a captured value would hand browser
     // gates a dead session while snapshot() reported the live one.
     get session() {
@@ -2393,4 +2477,3 @@ function populateBgmSelect(select: HTMLSelectElement): void {
     select.appendChild(opt);
   }
 }
-

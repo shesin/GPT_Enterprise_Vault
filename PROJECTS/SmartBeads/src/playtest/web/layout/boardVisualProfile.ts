@@ -1,11 +1,6 @@
 /** Canvas layout + centre decoration — ported from prototype/board4 SHOLO_GUTI_*_WITH_FEATURE.html. */
 
-export type ProjectionKind =
-  | 'sholo16'
-  | 'square5'
-  | 'grid-stretch'
-  | 'square-fit'
-  | 'portrait45';
+export type ProjectionKind = 'sholo16' | 'square5' | 'grid-stretch' | 'square-fit' | 'portrait45';
 
 export interface LatticePoint {
   x: number;
@@ -88,4 +83,3 @@ export function getBoardCanvasSize(boardName: string): { width: number; height: 
   const profile = getBoardVisualProfile(boardName);
   return { width: profile.canvasWidth, height: profile.canvasHeight };
 }
-

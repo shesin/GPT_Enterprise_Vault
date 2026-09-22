@@ -52,26 +52,29 @@ describe('first-ply occupancy (app session — no DOM)', () => {
     expect(session.getMoveCount()).toBe(0);
   });
 
-  it.each(productBoards)('$id PvE: every legal opening move is an isolated Ivory ply; Ebony does not move', (entry) => {
-    const variant = resolveEngineVariant(entry.id);
-    const probe = new FeatureSession(variant, { mode: 'pve', ...off });
-    const openingMoves = probe.getEngine().getLegalMoves();
-    expect(openingMoves.length).toBeGreaterThan(0);
+  it.each(productBoards)(
+    '$id PvE: every legal opening move is an isolated Ivory ply; Ebony does not move',
+    (entry) => {
+      const variant = resolveEngineVariant(entry.id);
+      const probe = new FeatureSession(variant, { mode: 'pve', ...off });
+      const openingMoves = probe.getEngine().getLegalMoves();
+      expect(openingMoves.length).toBeGreaterThan(0);
 
-    for (const move of openingMoves) {
-      const session = new FeatureSession(variant, { mode: 'pve', ...off });
-      const engine = session.getEngine();
-      const before = engineOccupancy(engine);
-      const over = findJumpPath(engine.getState().board, move.from, move.to)?.over;
-      session.applyMove(move);
-      const after = engineOccupancy(engine);
-      const result = isolatedPly(before, after, move, 'RED', over);
-      expect(result.ok).toBe(true);
-      expect(engine.getState().currentPlayer).toBe('BLUE');
-      expect(session.canHumanAct()).toBe(false);
-      expect(session.getMoveCount()).toBe(1);
-    }
-  });
+      for (const move of openingMoves) {
+        const session = new FeatureSession(variant, { mode: 'pve', ...off });
+        const engine = session.getEngine();
+        const before = engineOccupancy(engine);
+        const over = findJumpPath(engine.getState().board, move.from, move.to)?.over;
+        session.applyMove(move);
+        const after = engineOccupancy(engine);
+        const result = isolatedPly(before, after, move, 'RED', over);
+        expect(result.ok).toBe(true);
+        expect(engine.getState().currentPlayer).toBe('BLUE');
+        expect(session.canHumanAct()).toBe(false);
+        expect(session.getMoveCount()).toBe(1);
+      }
+    },
+  );
 
   it('setStartingPlayer switches turn order without moving pieces', () => {
     const session = new FeatureSession('8x4x6', { mode: 'pvp', ...off });
@@ -85,42 +88,54 @@ describe('first-ply occupancy (app session — no DOM)', () => {
     expect(session.getUiState()).toBe('idle');
   });
 
-  it.each(productBoards)('$id PvP: first slide changes exactly two nodes and passes the turn', (entry) => {
-    const variant = resolveEngineVariant(entry.id);
-    const session = new FeatureSession(variant, { mode: 'pvp', ...off });
-    const engine = session.getEngine();
-    const slide = firstOpeningSlide(engine);
-    const before = engineOccupancy(engine);
-    session.applyMove(slide);
-    const result = isolatedPly(before, engineOccupancy(engine), slide, 'RED');
-    expect(result.ok).toBe(true);
-    expect(engine.getState().currentPlayer).toBe('BLUE');
-    expect(session.canHumanAct()).toBe(true);
-    expect(session.getMoveCount()).toBe(1);
-  });
+  it.each(productBoards)(
+    '$id PvP: first slide changes exactly two nodes and passes the turn',
+    (entry) => {
+      const variant = resolveEngineVariant(entry.id);
+      const session = new FeatureSession(variant, { mode: 'pvp', ...off });
+      const engine = session.getEngine();
+      const slide = firstOpeningSlide(engine);
+      const before = engineOccupancy(engine);
+      session.applyMove(slide);
+      const result = isolatedPly(before, engineOccupancy(engine), slide, 'RED');
+      expect(result.ok).toBe(true);
+      expect(engine.getState().currentPlayer).toBe('BLUE');
+      expect(session.canHumanAct()).toBe(true);
+      expect(session.getMoveCount()).toBe(1);
+    },
+  );
 
-  it.each(productBoards)('$id PvE: FeatureSession never applies the AI; Medium AI is a second ply', (entry) => {
-    const variant = resolveEngineVariant(entry.id);
-    const session = new FeatureSession(variant, { mode: 'pve', ...off });
-    const engine = session.getEngine();
-    const slide = firstOpeningSlide(engine);
-    const start = engineOccupancy(engine);
-    session.applyMove(slide);
-    const afterHuman = engineOccupancy(engine);
-    expect(isolatedPly(start, afterHuman, slide, 'RED').ok).toBe(true);
+  it.each(productBoards)(
+    '$id PvE: FeatureSession never applies the AI; Medium AI is a second ply',
+    (entry) => {
+      const variant = resolveEngineVariant(entry.id);
+      const session = new FeatureSession(variant, { mode: 'pve', ...off });
+      const engine = session.getEngine();
+      const slide = firstOpeningSlide(engine);
+      const start = engineOccupancy(engine);
+      session.applyMove(slide);
+      const afterHuman = engineOccupancy(engine);
+      expect(isolatedPly(start, afterHuman, slide, 'RED').ok).toBe(true);
 
-    const path = selectAiTurnPath(variant, 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
-    expect(path?.length).toBeGreaterThan(0);
-    const hops = applyAiHops(session, path!, 'BLUE');
-    expectBoundedAiHops(hops, 'BLUE');
-    if (session.getUiState() === 'chain') session.finishChain();
+      const path = selectAiTurnPath(
+        variant,
+        2,
+        session.getEngine().exportSnapshot(),
+        'BLUE',
+        honestAiTestOpts(),
+      );
+      expect(path?.length).toBeGreaterThan(0);
+      const hops = applyAiHops(session, path!, 'BLUE');
+      expectBoundedAiHops(hops, 'BLUE');
+      if (session.getUiState() === 'chain') session.finishChain();
 
-    const afterAi = engineOccupancy(engine);
-    expect(session.getMoveCount()).toBeGreaterThanOrEqual(2);
-    expect(occupancyDiff(afterHuman, afterAi).length).toBeGreaterThan(0);
-    expect(isolatedPly(start, afterAi, slide, 'RED').ok).toBe(false);
-    expect(engine.getState().currentPlayer).toBe('RED');
-  });
+      const afterAi = engineOccupancy(engine);
+      expect(session.getMoveCount()).toBeGreaterThanOrEqual(2);
+      expect(occupancyDiff(afterHuman, afterAi).length).toBeGreaterThan(0);
+      expect(isolatedPly(start, afterAi, slide, 'RED').ok).toBe(false);
+      expect(engine.getState().currentPlayer).toBe('RED');
+    },
+  );
 
   it('16-bead hanging edge A41→A42 (the two-click a person points at) is one Ivory slide; Medium AI capture is a later ply', () => {
     const session = new FeatureSession('16', { mode: 'pve', ...off });
@@ -130,10 +145,18 @@ describe('first-ply occupancy (app session — no DOM)', () => {
     session.applyMove(hang);
     const afterHuman = engineOccupancy(engine);
     expect(isolatedPly(start, afterHuman, hang, 'RED').ok).toBe(true);
-    expect(engine.getState().board.intersections.find((n) => n.label === 'A42')?.occupant).toBe('RED');
+    expect(engine.getState().board.intersections.find((n) => n.label === 'A42')?.occupant).toBe(
+      'RED',
+    );
     expect(session.canHumanAct()).toBe(false);
 
-    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
+    const path = selectAiTurnPath(
+      '16',
+      2,
+      session.getEngine().exportSnapshot(),
+      'BLUE',
+      honestAiTestOpts(),
+    );
     expect(path?.length).toBeGreaterThan(0);
     const hops = applyAiHops(session, path!, 'BLUE');
     expectBoundedAiHops(hops, 'BLUE');

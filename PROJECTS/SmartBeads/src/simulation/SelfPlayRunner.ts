@@ -70,7 +70,9 @@ export function executeAiRandomMove(engine: SmartBeadsEngine): boolean {
     engine.applyMove(chosenMove);
     return true;
   } catch (err) {
-    throw new Error(`Unexpected engine exception applying move: ${(err as Error).message}`);
+    throw new Error(`Unexpected engine exception applying move: ${(err as Error).message}`, {
+      cause: err,
+    });
   }
 }
 

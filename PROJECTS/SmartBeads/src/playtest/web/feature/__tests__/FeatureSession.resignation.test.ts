@@ -7,7 +7,7 @@ describe('FeatureSession resignation', () => {
       mode: 'pvp',
       aiLevel: 2,
       timer: 'off',
-  tournamentTimer: 'off',
+      tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -22,7 +22,7 @@ describe('FeatureSession resignation', () => {
       mode: 'pvp',
       aiLevel: 2,
       timer: 'off',
-  tournamentTimer: 'off',
+      tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -36,7 +36,7 @@ describe('FeatureSession resignation', () => {
       mode: 'pvp',
       aiLevel: 2,
       timer: 'off',
-  tournamentTimer: 'off',
+      tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -51,15 +51,11 @@ describe('shouldAcceptResignationDraw', () => {
       mode: 'pve',
       aiLevel: 2,
       timer: 'off',
-  tournamentTimer: 'off',
+      tournamentTimer: 'off',
       shotClock: 'off',
       centerRule: 'off',
     });
-    const accept = shouldAcceptResignationDraw(
-      '16',
-      session.getEngine().exportSnapshot(),
-      'BLUE',
-    );
+    const accept = shouldAcceptResignationDraw('16', session.getEngine().exportSnapshot(), 'BLUE');
     expect(accept).toBe(true);
   });
 });

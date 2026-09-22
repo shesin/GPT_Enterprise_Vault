@@ -56,7 +56,14 @@ describe('moveHintAuraThemes', () => {
   });
 
   it('migrates any pre-2026-09-21 stored value (original, gold-fill, retired styles) to on', () => {
-    for (const legacy of ['original', 'gold-fill', 'black-gold-fill', 'white-gold', 'gold-no-fill', 'ring-only']) {
+    for (const legacy of [
+      'original',
+      'gold-fill',
+      'black-gold-fill',
+      'white-gold',
+      'gold-no-fill',
+      'ring-only',
+    ]) {
       localStorage.setItem(MOVE_HINT_AURA_STORAGE_KEY, legacy);
       // Assert the toggle itself, not just the style it happens to resolve
       // to on a dark board — a bug that returned 'off' but still resolved

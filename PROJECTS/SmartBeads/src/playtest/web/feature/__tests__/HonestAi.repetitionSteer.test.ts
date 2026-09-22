@@ -27,13 +27,7 @@ describe('HonestAi repetition steer', () => {
     const repeatKey = buildPositionKey(forwardSnap.state, forwardSnap.chainPieceId);
     snap.positionHistory = { [repeatKey]: 1 };
 
-    const ends = generateTurnEnds(
-      '6',
-      snap,
-      'BLUE',
-      32,
-      honestAiTurnEndsDeadlineMs(5_000),
-    );
+    const ends = generateTurnEnds('6', snap, 'BLUE', 32, honestAiTurnEndsDeadlineMs(5_000));
     const forwardEnd = ends.find((e) => e.path.length === 1 && e.path[0].to === forward.to);
     const backEnd = ends.find((e) => e.path.length === 1 && e.path[0].to === back.to);
     expect(forwardEnd).toBeDefined();

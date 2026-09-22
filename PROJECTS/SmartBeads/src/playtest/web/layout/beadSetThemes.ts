@@ -1,10 +1,6 @@
 /** Bead set presets — Lovable Table collection (OKLCH). */
 
-import {
-  LOVABLE_BEAD_SETS,
-  type BeadSetId,
-  type LovableBeadSetTokens,
-} from './lovableOklchTokens';
+import { LOVABLE_BEAD_SETS, type BeadSetId, type LovableBeadSetTokens } from './lovableOklchTokens';
 import type { BeadShade } from './playShellThemes';
 
 export type { BeadSetId };

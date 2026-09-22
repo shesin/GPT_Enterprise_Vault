@@ -13,7 +13,8 @@ export function renderBoard4(board: BoardDefinition): string {
     for (let col = 0; col < 4; col++) {
       const id = row * 4 + col;
       const intersection = board.intersections.find((p) => p.id === id);
-      const symbol = intersection?.occupant === 'RED' ? 'R' : intersection?.occupant === 'BLUE' ? 'B' : '.';
+      const symbol =
+        intersection?.occupant === 'RED' ? 'R' : intersection?.occupant === 'BLUE' ? 'B' : '.';
       rowCells.push(`${id.toString().padStart(2, ' ')}:${symbol}`);
     }
     lines.push(rowCells.join(' | '));
@@ -66,7 +67,9 @@ export function runInteractivePlaytest(): void {
     console.log('   Smart Bead Chess Board4 Playtest CLI');
     console.log('======================================');
 
-    const playerChoice = await promptUser('Choose your color (R for RED / B for BLUE) [default R]: ');
+    const playerChoice = await promptUser(
+      'Choose your color (R for RED / B for BLUE) [default R]: ',
+    );
     const humanColor: Player = playerChoice.trim().toUpperCase() === 'B' ? 'BLUE' : 'RED';
     const aiColor: Player = humanColor === 'RED' ? 'BLUE' : 'RED';
 
@@ -81,7 +84,9 @@ export function runInteractivePlaytest(): void {
       console.log(renderBoard4(state.board));
       console.log(`Turn ${state.moveCount + 1}: Current player is ${current}`);
       console.log(`Captures -> RED: ${state.captures.RED} | BLUE: ${state.captures.BLUE}`);
-      console.log(`Pieces -> RED: ${engine.countPieces('RED')} | BLUE: ${engine.countPieces('BLUE')}`);
+      console.log(
+        `Pieces -> RED: ${engine.countPieces('RED')} | BLUE: ${engine.countPieces('BLUE')}`,
+      );
 
       if (current === humanColor) {
         const legalMoves = engine.getLegalMoves();
@@ -142,7 +147,9 @@ export function runInteractivePlaytest(): void {
     console.log('======================================');
     console.log(`Winner: ${summary.winner}`);
     console.log(`Total Plies: ${summary.totalPlies}`);
-    console.log(`Final Pieces -> RED: ${summary.redRemainingPieces} | BLUE: ${summary.blueRemainingPieces}`);
+    console.log(
+      `Final Pieces -> RED: ${summary.redRemainingPieces} | BLUE: ${summary.blueRemainingPieces}`,
+    );
     console.log(`Captures -> RED: ${summary.redCaptures} | BLUE: ${summary.blueCaptures}`);
     console.log(`Termination Reason: ${summary.terminationReason}`);
 
@@ -168,4 +175,3 @@ export function runInteractivePlaytest(): void {
 if (typeof require !== 'undefined' && require.main === module) {
   runInteractivePlaytest();
 }
-

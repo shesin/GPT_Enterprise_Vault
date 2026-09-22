@@ -253,11 +253,14 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
         }
         engine.applyMove({ from: path.from, to: path.to });
         const state = engine.getState();
-        if (requireIntersection(state.board, path.over).occupant !== undefined) failures.push(`${tag} victim survived`);
-        if (requireIntersection(state.board, path.to).occupant !== 'RED') failures.push(`${tag} landing empty`);
+        if (requireIntersection(state.board, path.over).occupant !== undefined)
+          failures.push(`${tag} victim survived`);
+        if (requireIntersection(state.board, path.to).occupant !== 'RED')
+          failures.push(`${tag} landing empty`);
         if (state.captures.RED !== 1) failures.push(`${tag} capture not scored`);
         if (engine.getChainPieceId() !== null) failures.push(`${tag} chain left open`);
-        if (!state.gameOver && state.currentPlayer !== 'BLUE') failures.push(`${tag} turn not handed over`);
+        if (!state.gameOver && state.currentPlayer !== 'BLUE')
+          failures.push(`${tag} turn not handed over`);
       }
       expect(failures).toEqual([]);
     });
@@ -271,7 +274,8 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
         requireIntersection(blocked.getState().board, path.from).occupant = 'RED';
         requireIntersection(blocked.getState().board, path.over).occupant = 'BLUE';
         requireIntersection(blocked.getState().board, path.to).occupant = 'RED';
-        if (offers(blocked, path.from, path.to)) failures.push(`${tag} jumped onto an occupied landing`);
+        if (offers(blocked, path.from, path.to))
+          failures.push(`${tag} jumped onto an occupied landing`);
 
         const friendly = blankEngine(variant);
         requireIntersection(friendly.getState().board, path.from).occupant = 'RED';
@@ -288,7 +292,10 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
     it('every drawn line is a legal slide in both directions and ends the turn', () => {
       const failures: string[] = [];
       for (const conn of reference.connections) {
-        for (const [from, to] of [[conn.from, conn.to], [conn.to, conn.from]]) {
+        for (const [from, to] of [
+          [conn.from, conn.to],
+          [conn.to, conn.from],
+        ]) {
           const engine = blankEngine(variant);
           requireIntersection(engine.getState().board, from).occupant = 'RED';
           placeSpareEnemy(engine, [from, to]);
@@ -299,9 +306,11 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
           }
           engine.applyMove({ from, to });
           const state = engine.getState();
-          if (requireIntersection(state.board, to).occupant !== 'RED') failures.push(`${tag} did not land`);
+          if (requireIntersection(state.board, to).occupant !== 'RED')
+            failures.push(`${tag} did not land`);
           if (engine.getChainPieceId() !== null) failures.push(`${tag} opened a chain`);
-          if (!state.gameOver && state.currentPlayer !== 'BLUE') failures.push(`${tag} kept the turn`);
+          if (!state.gameOver && state.currentPlayer !== 'BLUE')
+            failures.push(`${tag} kept the turn`);
         }
       }
       expect(failures).toEqual([]);
@@ -328,7 +337,10 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
             }
             engine.applyMove({ from, to });
             const state = engine.getState();
-            if (requireIntersection(state.board, mid.id).occupant !== 'BLUE' || state.captures.RED !== 0) {
+            if (
+              requireIntersection(state.board, mid.id).occupant !== 'BLUE' ||
+              state.captures.RED !== 0
+            ) {
               failures.push(`${tag} captured on a bent path`);
             }
           }
@@ -343,12 +355,19 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       const [first, second] = pair!;
 
       const session = new FeatureSession(variant, { mode: 'pvp', ...off });
-      for (const point of session.getEngine().getState().board.intersections) point.occupant = undefined;
+      for (const point of session.getEngine().getState().board.intersections)
+        point.occupant = undefined;
       const board = session.getEngine().getState().board;
       requireIntersection(board, first.from).occupant = 'RED';
       requireIntersection(board, first.over).occupant = 'BLUE';
       requireIntersection(board, second.over).occupant = 'BLUE';
-      placeSpareEnemy(session.getEngine(), [first.from, first.over, first.to, second.over, second.to]);
+      placeSpareEnemy(session.getEngine(), [
+        first.from,
+        first.over,
+        first.to,
+        second.over,
+        second.to,
+      ]);
       session.getEngine().getState().currentPlayer = 'RED';
 
       session.applyMove({ from: first.from, to: first.to });
@@ -374,12 +393,19 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       const [first, second] = pair!;
 
       const session = new FeatureSession(variant, { mode: 'pvp', ...off });
-      for (const point of session.getEngine().getState().board.intersections) point.occupant = undefined;
+      for (const point of session.getEngine().getState().board.intersections)
+        point.occupant = undefined;
       const board = session.getEngine().getState().board;
       requireIntersection(board, first.from).occupant = 'RED';
       requireIntersection(board, first.over).occupant = 'BLUE';
       requireIntersection(board, second.over).occupant = 'BLUE';
-      placeSpareEnemy(session.getEngine(), [first.from, first.over, first.to, second.over, second.to]);
+      placeSpareEnemy(session.getEngine(), [
+        first.from,
+        first.over,
+        first.to,
+        second.over,
+        second.to,
+      ]);
       session.getEngine().getState().currentPlayer = 'RED';
 
       session.applyMove({ from: first.from, to: first.to });
@@ -398,7 +424,8 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       const failures: string[] = [];
       for (const path of jumpPaths) {
         const session = new FeatureSession(variant, { mode: 'pvp', ...off });
-        for (const point of session.getEngine().getState().board.intersections) point.occupant = undefined;
+        for (const point of session.getEngine().getState().board.intersections)
+          point.occupant = undefined;
         const board = session.getEngine().getState().board;
         requireIntersection(board, path.from).occupant = 'RED';
         requireIntersection(board, path.over).occupant = 'BLUE';
@@ -410,10 +437,14 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
         const expected: Move = { from: path.from, to: path.to };
         const onLanding = session.interpretClick(path.to);
         const onVictim = session.interpretClick(path.over);
-        if (onLanding.kind !== 'move' || onLanding.move.to !== expected.to) failures.push(`${tag} landing click refused`);
-        if (onVictim.kind !== 'ignore') failures.push(`${tag} victim click was not ignored (inert rule violated)`);
-        if (!session.getLegalTargetIds().includes(path.to)) failures.push(`${tag} landing not highlighted`);
-        if (session.getLegalTargetIds().includes(path.over)) failures.push(`${tag} victim should not be highlighted`);
+        if (onLanding.kind !== 'move' || onLanding.move.to !== expected.to)
+          failures.push(`${tag} landing click refused`);
+        if (onVictim.kind !== 'ignore')
+          failures.push(`${tag} victim click was not ignored (inert rule violated)`);
+        if (!session.getLegalTargetIds().includes(path.to))
+          failures.push(`${tag} landing not highlighted`);
+        if (session.getLegalTargetIds().includes(path.over))
+          failures.push(`${tag} victim should not be highlighted`);
       }
       expect(failures).toEqual([]);
     });
@@ -435,13 +466,20 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
         if (neighbours.some((id) => [opener.from, opener.over, opener.to].includes(id))) continue;
         if (neighbours.some((id) => board.intersections[id].occupant)) continue;
         point.occupant = 'RED';
-        neighbours.forEach((id) => { board.intersections[id].occupant = 'RED'; });
+        neighbours.forEach((id) => {
+          board.intersections[id].occupant = 'RED';
+        });
         immobile = point.id;
         break;
       }
       expect(immobile).toBeGreaterThanOrEqual(0);
       session.getEngine().getState().currentPlayer = 'RED';
-      expect(session.getEngine().getLegalMoves().some((m) => m.from === immobile)).toBe(false);
+      expect(
+        session
+          .getEngine()
+          .getLegalMoves()
+          .some((m) => m.from === immobile),
+      ).toBe(false);
 
       expect(session.selectNode(opener.from)).toBe(true);
       expect(session.getSelectedId()).toBe(opener.from);
@@ -474,11 +512,18 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       const drawn = (canvas as unknown as { __segments: Segment[] }).__segments;
       const round = (n: number) => Math.round(n * 100) / 100;
       const drawnKeys = drawn
-        .map((s) => [`${round(s.ax)},${round(s.ay)}`, `${round(s.bx)},${round(s.by)}`].sort().join('|'))
+        .map((s) =>
+          [`${round(s.ax)},${round(s.ay)}`, `${round(s.bx)},${round(s.by)}`].sort().join('|'),
+        )
         .sort();
       const expectedKeys = board.connections
         .map((conn) => {
-          const a = projectIntersectionOnCanvas(board.intersections[conn.from], width, height, board);
+          const a = projectIntersectionOnCanvas(
+            board.intersections[conn.from],
+            width,
+            height,
+            board,
+          );
           const b = projectIntersectionOnCanvas(board.intersections[conn.to], width, height, board);
           return [`${round(a.x)},${round(a.y)}`, `${round(b.x)},${round(b.y)}`].sort().join('|');
         })
@@ -564,7 +609,10 @@ describe('16-bead triangle-to-rectangle junction', () => {
       [`${wing}M`, `${wing}IM`],
       [`${wing}B`, `${wing}IB`],
     ]) {
-      for (const [from, over, to] of [[outer, inner, apex], [apex, inner, outer]]) {
+      for (const [from, over, to] of [
+        [outer, inner, apex],
+        [apex, inner, outer],
+      ]) {
         const engine = blankEngine('16');
         const board = engine.getState().board;
         requireIntersection(board, idOf(board, from)).occupant = 'RED';
@@ -580,36 +628,39 @@ describe('16-bead triangle-to-rectangle junction', () => {
     }
   });
 
-  it.each(wings)('$wing wing: multi-jump chains through the apex in both directions', ({ wing, apex, inner }) => {
-    const chains: Array<[string, string, string, string, string]> = [
-      [`${wing}T`, `${wing}IT`, apex, inner, 'A22'],
-      [`${wing}M`, `${wing}IM`, apex, inner, 'A22'],
-      [`${wing}B`, `${wing}IB`, apex, inner, 'A22'],
-      ['A22', inner, apex, `${wing}IT`, `${wing}T`],
-      ['A22', inner, apex, `${wing}IM`, `${wing}M`],
-      ['A22', inner, apex, `${wing}IB`, `${wing}B`],
-    ];
+  it.each(wings)(
+    '$wing wing: multi-jump chains through the apex in both directions',
+    ({ wing, apex, inner }) => {
+      const chains: Array<[string, string, string, string, string]> = [
+        [`${wing}T`, `${wing}IT`, apex, inner, 'A22'],
+        [`${wing}M`, `${wing}IM`, apex, inner, 'A22'],
+        [`${wing}B`, `${wing}IB`, apex, inner, 'A22'],
+        ['A22', inner, apex, `${wing}IT`, `${wing}T`],
+        ['A22', inner, apex, `${wing}IM`, `${wing}M`],
+        ['A22', inner, apex, `${wing}IB`, `${wing}B`],
+      ];
 
-    for (const [start, victim1, middle, victim2, end] of chains) {
-      const engine = blankEngine('16');
-      const board = engine.getState().board;
-      requireIntersection(board, idOf(board, start)).occupant = 'RED';
-      requireIntersection(board, idOf(board, victim1)).occupant = 'BLUE';
-      requireIntersection(board, idOf(board, victim2)).occupant = 'BLUE';
-      requireIntersection(board, idOf(board, 'A44')).occupant = 'BLUE';
+      for (const [start, victim1, middle, victim2, end] of chains) {
+        const engine = blankEngine('16');
+        const board = engine.getState().board;
+        requireIntersection(board, idOf(board, start)).occupant = 'RED';
+        requireIntersection(board, idOf(board, victim1)).occupant = 'BLUE';
+        requireIntersection(board, idOf(board, victim2)).occupant = 'BLUE';
+        requireIntersection(board, idOf(board, 'A44')).occupant = 'BLUE';
 
-      const tag = `${start}x${victim1}->${middle}x${victim2}->${end}`;
-      expect([tag, offers(engine, idOf(board, start), idOf(board, middle))]).toEqual([tag, true]);
-      engine.applyMove({ from: idOf(board, start), to: idOf(board, middle) });
-      expect([tag, engine.getChainPieceId()]).toEqual([tag, idOf(board, middle)]);
-      expect([tag, offers(engine, idOf(board, middle), idOf(board, end))]).toEqual([tag, true]);
-      engine.applyMove({ from: idOf(board, middle), to: idOf(board, end) });
+        const tag = `${start}x${victim1}->${middle}x${victim2}->${end}`;
+        expect([tag, offers(engine, idOf(board, start), idOf(board, middle))]).toEqual([tag, true]);
+        engine.applyMove({ from: idOf(board, start), to: idOf(board, middle) });
+        expect([tag, engine.getChainPieceId()]).toEqual([tag, idOf(board, middle)]);
+        expect([tag, offers(engine, idOf(board, middle), idOf(board, end))]).toEqual([tag, true]);
+        engine.applyMove({ from: idOf(board, middle), to: idOf(board, end) });
 
-      expect([tag, engine.getState().captures.RED]).toEqual([tag, 2]);
-      expect([tag, engine.getChainPieceId()]).toEqual([tag, null]);
-      expect([tag, engine.getState().currentPlayer]).toEqual([tag, 'BLUE']);
-    }
-  });
+        expect([tag, engine.getState().captures.RED]).toEqual([tag, 2]);
+        expect([tag, engine.getChainPieceId()]).toEqual([tag, null]);
+        expect([tag, engine.getState().currentPlayer]).toEqual([tag, 'BLUE']);
+      }
+    },
+  );
 
   it('the wing inner points continue collinear diagonal and horizontal hops across the apex into the grid', () => {
     const board = new SmartBeadsEngine('16').getState().board;
@@ -650,7 +701,10 @@ describe('16-bead triangle-to-rectangle junction', () => {
 
   it('the middle wing line continues through the apex into the grid', () => {
     const board = new SmartBeadsEngine('16').getState().board;
-    for (const [wing, apex, inner] of [['L', 'A20', 'A21'], ['R', 'A24', 'A23']] as const) {
+    for (const [wing, apex, inner] of [
+      ['L', 'A20', 'A21'],
+      ['R', 'A24', 'A23'],
+    ] as const) {
       expect(board.jumpPaths).toEqual(
         expect.arrayContaining([
           { from: idOf(board, `${wing}IM`), over: idOf(board, apex), to: idOf(board, inner) },

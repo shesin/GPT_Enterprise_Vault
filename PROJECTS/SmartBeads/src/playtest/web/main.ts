@@ -15,24 +15,28 @@ function showPlayShell(): void {
   document.body.classList.remove('hub-page');
 }
 
-function testApi(): {
-  enterFromHub?: (
-    boardId: ProductBoardId,
-    mode: GameFeatureSettings['mode'],
-    action: HubLaunchAction,
-  ) => void;
-  launchCoachLesson?: () => void;
-} | undefined {
-  return (window as unknown as {
-    __SB_TEST__?: {
+function testApi():
+  | {
       enterFromHub?: (
         boardId: ProductBoardId,
         mode: GameFeatureSettings['mode'],
         action: HubLaunchAction,
       ) => void;
       launchCoachLesson?: () => void;
-    };
-  }).__SB_TEST__;
+    }
+  | undefined {
+  return (
+    window as unknown as {
+      __SB_TEST__?: {
+        enterFromHub?: (
+          boardId: ProductBoardId,
+          mode: GameFeatureSettings['mode'],
+          action: HubLaunchAction,
+        ) => void;
+        launchCoachLesson?: () => void;
+      };
+    }
+  ).__SB_TEST__;
 }
 
 function boot(): void {
@@ -56,7 +60,9 @@ function boot(): void {
       testApi()?.enterFromHub?.(boardId, mode, action);
     });
     if (coachParam === 'start' || coachParam === '1') {
-      document.getElementById('hub-section-lesson')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      document
+        .getElementById('hub-section-lesson')
+        ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   });
 }

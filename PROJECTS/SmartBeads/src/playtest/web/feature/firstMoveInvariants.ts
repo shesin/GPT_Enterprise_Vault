@@ -99,8 +99,10 @@ export function isolatedPly(
   const oppAfter = countSide(after, opponent);
 
   const problems: string[] = [];
-  if (beforeFrom !== mover) problems.push(`from ${move.from} was ${occupantToken(beforeFrom)}, not ${mover}`);
-  if (afterFrom !== null) problems.push(`from ${move.from} still occupied (${occupantToken(afterFrom)})`);
+  if (beforeFrom !== mover)
+    problems.push(`from ${move.from} was ${occupantToken(beforeFrom)}, not ${mover}`);
+  if (afterFrom !== null)
+    problems.push(`from ${move.from} still occupied (${occupantToken(afterFrom)})`);
   if (beforeTo !== null) problems.push(`to ${move.to} was not empty`);
   if (afterTo !== mover) problems.push(`to ${move.to} is ${occupantToken(afterTo)}, not ${mover}`);
   if (moverBefore !== moverAfter) problems.push(`${mover} count ${moverBefore}->${moverAfter}`);
@@ -123,6 +125,8 @@ export function isolatedPly(
   return {
     ok: problems.length === 0,
     changes,
-    detail: problems.length ? problems.join('; ') : changes.map((c) => `${c.id}:${c.from}->${c.to}`).join(', '),
+    detail: problems.length
+      ? problems.join('; ')
+      : changes.map((c) => `${c.id}:${c.from}->${c.to}`).join(', '),
   };
 }

@@ -1,9 +1,5 @@
 import { SmartBeadsEngine } from '../../core/SmartBeadsEngine';
-import {
-  BOARD16_EDGE_COUNT,
-  BOARD16_NODE_COUNT,
-  Board16Sholo,
-} from '../Board16Sholo';
+import { BOARD16_EDGE_COUNT, BOARD16_NODE_COUNT, Board16Sholo } from '../Board16Sholo';
 
 describe('Board16Sholo', () => {
   it('matches reference geometry counts (37 nodes, 92 edges)', () => {
@@ -42,12 +38,13 @@ describe('Board16Sholo', () => {
   it('gives RED 13 opening legal slides and no captures (reference parity)', () => {
     const engine = new SmartBeadsEngine('16');
     const moves = engine.getLegalMoves();
-    const slides = moves.filter((move) => !Board16Sholo.jumpPaths?.some(
-      (path) => path.from === move.from && path.to === move.to,
-    ));
-    const captures = moves.filter((move) => Board16Sholo.jumpPaths?.some(
-      (path) => path.from === move.from && path.to === move.to,
-    ));
+    const slides = moves.filter(
+      (move) =>
+        !Board16Sholo.jumpPaths?.some((path) => path.from === move.from && path.to === move.to),
+    );
+    const captures = moves.filter((move) =>
+      Board16Sholo.jumpPaths?.some((path) => path.from === move.from && path.to === move.to),
+    );
 
     expect(moves).toHaveLength(13);
     expect(slides).toHaveLength(13);

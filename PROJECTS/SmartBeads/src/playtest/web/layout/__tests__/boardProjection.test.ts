@@ -108,4 +108,3 @@ describe('boardProjection per-board parity', () => {
     expect(gridHeight).toBeCloseTo(472, 0);
   });
 });
-

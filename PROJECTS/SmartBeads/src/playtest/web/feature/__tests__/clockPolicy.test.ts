@@ -14,19 +14,23 @@ const base: GameFeatureSettings = {
 
 describe('shell clock policy (AI think must not freeze timers)', () => {
   it('does not skip ticks while aiThinking or animating', () => {
-    expect(shellTimerShouldSkip({
-      gameOver: false,
-      aiThinking: true,
-      animating: true,
-    })).toBe(false);
+    expect(
+      shellTimerShouldSkip({
+        gameOver: false,
+        aiThinking: true,
+        animating: true,
+      }),
+    ).toBe(false);
   });
 
   it('skips only when the game is over', () => {
-    expect(shellTimerShouldSkip({
-      gameOver: true,
-      aiThinking: true,
-      animating: false,
-    })).toBe(true);
+    expect(
+      shellTimerShouldSkip({
+        gameOver: true,
+        aiThinking: true,
+        animating: false,
+      }),
+    ).toBe(true);
   });
 });
 
@@ -36,12 +40,16 @@ describe('shot clock during AI turn (agent-verified)', () => {
       ...base,
       shotClock: '30',
     });
-    const slide = session.getEngine().getLegalMoves().find((m) => {
-      const jump = session.getEngine().getState().board.jumpPaths?.some(
-        (j) => j.from === m.from && j.to === m.to,
-      );
-      return !jump;
-    });
+    const slide = session
+      .getEngine()
+      .getLegalMoves()
+      .find((m) => {
+        const jump = session
+          .getEngine()
+          .getState()
+          .board.jumpPaths?.some((j) => j.from === m.from && j.to === m.to);
+        return !jump;
+      });
     expect(slide).toBeDefined();
     session.applyMove(slide!);
     expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
@@ -50,11 +58,14 @@ describe('shot clock during AI turn (agent-verified)', () => {
 
     // Simulate shell interval while AI is "thinking" (no move applied yet).
     for (let i = 0; i < 5; i++) {
-      if (shellTimerShouldSkip({
-        gameOver: session.isGameOver(),
-        aiThinking: true,
-        animating: false,
-      })) break;
+      if (
+        shellTimerShouldSkip({
+          gameOver: session.isGameOver(),
+          aiThinking: true,
+          animating: false,
+        })
+      )
+        break;
       session.timerTick();
     }
     expect(session.getShotRemaining()).toBe(25);
@@ -66,23 +77,29 @@ describe('shot clock during AI turn (agent-verified)', () => {
       ...base,
       shotClock: '30',
     });
-    const slide = session.getEngine().getLegalMoves().find((m) => {
-      const jump = session.getEngine().getState().board.jumpPaths?.some(
-        (j) => j.from === m.from && j.to === m.to,
-      );
-      return !jump;
-    });
+    const slide = session
+      .getEngine()
+      .getLegalMoves()
+      .find((m) => {
+        const jump = session
+          .getEngine()
+          .getState()
+          .board.jumpPaths?.some((j) => j.from === m.from && j.to === m.to);
+        return !jump;
+      });
     expect(slide).toBeDefined();
     session.applyMove(slide!);
     expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
     session.resetTurnClock();
     // '30' is the smallest real shot-clock option the product offers.
     for (let i = 0; i < 30; i++) {
-      expect(shellTimerShouldSkip({
-        gameOver: session.isGameOver(),
-        aiThinking: true,
-        animating: false,
-      })).toBe(false);
+      expect(
+        shellTimerShouldSkip({
+          gameOver: session.isGameOver(),
+          aiThinking: true,
+          animating: false,
+        }),
+      ).toBe(false);
       session.timerTick();
     }
     expect(session.isGameOver()).toBe(true);
@@ -157,12 +174,16 @@ describe('AI turn completes under shot clock pressure', () => {
       ...base,
       shotClock: '30',
     });
-    const slide = session.getEngine().getLegalMoves().find((m) => {
-      const jump = session.getEngine().getState().board.jumpPaths?.some(
-        (j) => j.from === m.from && j.to === m.to,
-      );
-      return !jump;
-    });
+    const slide = session
+      .getEngine()
+      .getLegalMoves()
+      .find((m) => {
+        const jump = session
+          .getEngine()
+          .getState()
+          .board.jumpPaths?.some((j) => j.from === m.from && j.to === m.to);
+        return !jump;
+      });
     session.applyMove(slide!);
     session.resetTurnClock();
     for (let i = 0; i < 3; i++) session.timerTick();

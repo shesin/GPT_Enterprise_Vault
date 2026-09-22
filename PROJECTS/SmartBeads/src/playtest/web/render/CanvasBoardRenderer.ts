@@ -1,4 +1,4 @@
-import { BoardDefinition, Move, Player } from '../../../models/GameState';
+import { BoardDefinition, Player } from '../../../models/GameState';
 import { getActiveBeadSet } from '../layout/beadSetThemes';
 import { getActiveBoardLookTheme } from '../layout/boardLookThemes';
 import { getActiveBoardLineTheme } from '../layout/boardLineGoldThemes';
@@ -100,7 +100,12 @@ export function listTurnHighlightNodeIds(
  * a thin mark that reads as part of the board, not a HUD glow competing with the
  * gold move-hint ring or the orange/lime turn rings.
  */
-function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number, lineRgba: string): void {
+function drawCenterRing(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  lineRgba: string,
+): void {
   ctx.beginPath();
   ctx.arc(x, y, 20, 0, Math.PI * 2);
   ctx.strokeStyle = lineRgba;
@@ -164,7 +169,12 @@ function drawBeadMoveHintAura(
   drawGoldFillMoveHintAura(ctx, x, y, pieceRadius, gold);
 }
 
-function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: number, progress: number): void {
+function drawGoldenCapturePulse(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  progress: number,
+): void {
   const life = 1 - progress;
   if (life <= 0) return;
   const radius = 14 + progress * 20;
@@ -247,7 +257,14 @@ function drawPieceAt(
 
   const lightX = x - radius * 0.28;
   const lightY = y - radius * 0.32;
-  const grd = ctx.createRadialGradient(lightX, lightY, glossy ? radius * 0.1 : 2, x + radius * 0.04, y + radius * 0.06, radius);
+  const grd = ctx.createRadialGradient(
+    lightX,
+    lightY,
+    glossy ? radius * 0.1 : 2,
+    x + radius * 0.04,
+    y + radius * 0.06,
+    radius,
+  );
   grd.addColorStop(0, bead.highlight);
   grd.addColorStop(0.55, bead.mid);
   grd.addColorStop(1, bead.shadow);
@@ -309,16 +326,22 @@ function drawPieceAt(
   ctx.restore();
 }
 
-export function drawCanvasBoard(
-  canvas: HTMLCanvasElement,
-  view: CanvasBoardView,
-): void {
+export function drawCanvasBoard(canvas: HTMLCanvasElement, view: CanvasBoardView): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
   const w = canvas.width;
   const h = canvas.height;
-  const { board, currentPlayer, gameOver, selectedId, legalTargets, chainPieceId, anim, turnPulse } = view;
+  const {
+    board,
+    currentPlayer,
+    gameOver,
+    selectedId,
+    legalTargets,
+    chainPieceId,
+    anim,
+    turnPulse,
+  } = view;
   const showTurnStartRings = view.showTurnStartRings ?? true;
   const lastMove = view.lastMove ?? null;
   const capturePulses = view.capturePulses ?? [];
@@ -330,7 +353,12 @@ export function drawCanvasBoard(
   const visualProfile = getBoardVisualProfile(board.name);
   const centerHighlight = resolveCenterHighlight(board);
   const project = (node: { x?: number; y?: number; id: number }) =>
-    projectIntersectionOnCanvas(node as Parameters<typeof projectIntersectionOnCanvas>[0], w, h, board);
+    projectIntersectionOnCanvas(
+      node as Parameters<typeof projectIntersectionOnCanvas>[0],
+      w,
+      h,
+      board,
+    );
 
   ctx.clearRect(0, 0, w, h);
   // Undo any alpha/shadow left behind by a draw call that threw mid-frame last time
@@ -358,11 +386,11 @@ export function drawCanvasBoard(
 
   const animating = anim !== null && anim.t < 1;
   const turnIdleHighlight =
-    !gameOver
-    && !animating
-    && selectedId === null
-    && legalTargets.length === 0
-    && showTurnStartRings;
+    !gameOver &&
+    !animating &&
+    selectedId === null &&
+    legalTargets.length === 0 &&
+    showTurnStartRings;
   const turnHighlightSet = turnIdleHighlight
     ? new Set(listTurnHighlightNodeIds(board, currentPlayer, chainPieceId))
     : new Set<number>();
@@ -374,7 +402,8 @@ export function drawCanvasBoard(
   for (const conn of board.connections) {
     const from = board.intersections[conn.from];
     const to = board.intersections[conn.to];
-    if (from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined) continue;
+    if (from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined)
+      continue;
     const fromPt = project(from);
     const toPt = project(to);
     ctx.beginPath();
@@ -429,8 +458,7 @@ export function drawCanvasBoard(
       const isCoachGlow = coachGlowSet.has(node.id);
       const isMatchStartRing = turnHighlightSet.has(node.id);
       const pulse = isMatchStartRing ? 1 + 0.08 * Math.sin(turnPulse) : 1;
-      const dimOpp =
-        matchStartFlash && !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
+      const dimOpp = matchStartFlash && !gameOver && node.occupant !== currentPlayer ? 0.72 : 1;
       const r = BEAD_RADIUS * pulse;
       const showOccupiedAura =
         isSelected || turnHighlightSet.has(node.id) || (isCoachGlow && node.occupant === 'RED');
@@ -460,10 +488,15 @@ export function drawCanvasBoard(
 
     const fromNode = board.intersections[anim.from];
     const toNode = board.intersections[anim.to];
-    if (fromNode.x !== undefined && fromNode.y !== undefined && toNode.x !== undefined && toNode.y !== undefined) {
+    if (
+      fromNode.x !== undefined &&
+      fromNode.y !== undefined &&
+      toNode.x !== undefined &&
+      toNode.y !== undefined
+    ) {
       const fromPt = project(fromNode);
       const toPt = project(toNode);
-      const ease = anim.t < 0.5 ? 2 * anim.t * anim.t : 1 - ((-2 * anim.t + 2) ** 2) / 2;
+      const ease = anim.t < 0.5 ? 2 * anim.t * anim.t : 1 - (-2 * anim.t + 2) ** 2 / 2;
       const mx = fromPt.x + (toPt.x - fromPt.x) * ease;
       const my = fromPt.y + (toPt.y - fromPt.y) * ease;
       drawPieceAt(ctx, mx, my, anim.player, 17, 1, beadSet);

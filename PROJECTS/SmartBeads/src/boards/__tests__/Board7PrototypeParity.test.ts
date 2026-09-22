@@ -1,12 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { SmartBeadsEngine } from '../../core/SmartBeadsEngine';
-import {
-  BOARD7_EDGE_COUNT,
-  BOARD7_JUMP_COUNT,
-  BOARD7_NODE_COUNT,
-  Board7,
-} from '../Board7';
+import { BOARD7_EDGE_COUNT, BOARD7_JUMP_COUNT, BOARD7_NODE_COUNT, Board7 } from '../Board7';
 
 const requireRef = createRequire(path.join(__dirname, 'Board7PrototypeParity.test.ts'));
 const refEngine = requireRef(
@@ -57,9 +52,7 @@ describe('Board7 prototype parity', () => {
     const refLand = refEngine.continueCollinear(from, over);
 
     expect(refLand).toBe(to);
-    expect(Board7.jumpPaths).toEqual(
-      expect.arrayContaining([{ from, over, to }]),
-    );
+    expect(Board7.jumpPaths).toEqual(expect.arrayContaining([{ from, over, to }]));
   });
 });
 

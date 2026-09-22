@@ -57,57 +57,72 @@ describe('V1 production sanity (SmartBeadsEngine + FeatureSession + HonestAi + r
       if (click.kind !== 'move') continue;
       expect(click.move).toEqual({ from: path.from, to: path.to });
       session.applyMove(click.move);
-      expect(requireIntersection(session.getEngine().getState().board, path.over).occupant).toBeUndefined();
-      expect(requireIntersection(session.getEngine().getState().board, path.to).occupant).toBe('RED');
+      expect(
+        requireIntersection(session.getEngine().getState().board, path.over).occupant,
+      ).toBeUndefined();
+      expect(requireIntersection(session.getEngine().getState().board, path.to).occupant).toBe(
+        'RED',
+      );
       expect(session.getEngine().getState().captures.RED).toBe(1);
     }
   });
 
-  it.each(productBoards)('$id opponent beads are inert: idle click on an enemy bead is ignored', (entry) => {
-    const variant = resolveEngineVariant(entry.id);
-    const session = new FeatureSession(variant, { mode: 'pve', ...off });
-    const path = session.getEngine().getState().board.jumpPaths![0];
-    isolateJump(session, path);
-    expect(session.getSelectedId()).toBeNull();
-    const click = session.interpretClick(path.over);
-    expect(click.kind).toBe('ignore');
-    expect(session.getSelectedId()).toBeNull();
-    expect(requireIntersection(session.getEngine().getState().board, path.over).occupant).toBe('BLUE');
-  });
+  it.each(productBoards)(
+    '$id opponent beads are inert: idle click on an enemy bead is ignored',
+    (entry) => {
+      const variant = resolveEngineVariant(entry.id);
+      const session = new FeatureSession(variant, { mode: 'pve', ...off });
+      const path = session.getEngine().getState().board.jumpPaths![0];
+      isolateJump(session, path);
+      expect(session.getSelectedId()).toBeNull();
+      const click = session.interpretClick(path.over);
+      expect(click.kind).toBe('ignore');
+      expect(session.getSelectedId()).toBeNull();
+      expect(requireIntersection(session.getEngine().getState().board, path.over).occupant).toBe(
+        'BLUE',
+      );
+    },
+  );
 
-  it.each(productBoards)('$id optional-stop AI hop closes the chain so PvE cannot stick thinking', (entry) => {
-    const variant = resolveEngineVariant(entry.id);
-    const session = new FeatureSession(variant, { mode: 'pve', ...off });
-    const paths = session.getEngine().getState().board.jumpPaths ?? [];
-    const hop = paths[0];
-    clearBoard(session);
-    const board = session.getEngine().getState().board;
-    requireIntersection(board, hop.from).occupant = 'BLUE';
-    requireIntersection(board, hop.over).occupant = 'RED';
-    session.getEngine().getState().currentPlayer = 'BLUE';
+  it.each(productBoards)(
+    '$id optional-stop AI hop closes the chain so PvE cannot stick thinking',
+    (entry) => {
+      const variant = resolveEngineVariant(entry.id);
+      const session = new FeatureSession(variant, { mode: 'pve', ...off });
+      const paths = session.getEngine().getState().board.jumpPaths ?? [];
+      const hop = paths[0];
+      clearBoard(session);
+      const board = session.getEngine().getState().board;
+      requireIntersection(board, hop.from).occupant = 'BLUE';
+      requireIntersection(board, hop.over).occupant = 'RED';
+      session.getEngine().getState().currentPlayer = 'BLUE';
 
-    const hops = runAiTurn(session, [{ from: hop.from, to: hop.to }]);
-    expect(hops.length).toBeGreaterThan(0);
-    expect(session.getEngine().getChainPieceId()).toBeNull();
-    if (!session.isGameOver()) {
-      expect(session.getEngine().getState().currentPlayer).toBe('RED');
-      expect(session.getUiState()).not.toBe('chain');
-    }
-  });
+      const hops = runAiTurn(session, [{ from: hop.from, to: hop.to }]);
+      expect(hops.length).toBeGreaterThan(0);
+      expect(session.getEngine().getChainPieceId()).toBeNull();
+      if (!session.isGameOver()) {
+        expect(session.getEngine().getState().currentPlayer).toBe('RED');
+        expect(session.getUiState()).not.toBe('chain');
+      }
+    },
+  );
 
-  it.each(productBoards)('$id Easy production PvE: opening slide then AI finishes and returns the turn', (entry) => {
-    const variant = resolveEngineVariant(entry.id);
-    const session = new FeatureSession(variant, { mode: 'pve', ...off });
-    session.applyMove(firstOpeningSlide(session.getEngine()));
-    expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
-    const hops = runAiTurn(session);
-    expect(hops.length).toBeGreaterThan(0);
-    expect(session.getEngine().getChainPieceId()).toBeNull();
-    if (!session.isGameOver()) {
-      expect(session.getEngine().getState().currentPlayer).toBe('RED');
-      expect(session.canHumanAct()).toBe(true);
-    }
-  });
+  it.each(productBoards)(
+    '$id Easy production PvE: opening slide then AI finishes and returns the turn',
+    (entry) => {
+      const variant = resolveEngineVariant(entry.id);
+      const session = new FeatureSession(variant, { mode: 'pve', ...off });
+      session.applyMove(firstOpeningSlide(session.getEngine()));
+      expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
+      const hops = runAiTurn(session);
+      expect(hops.length).toBeGreaterThan(0);
+      expect(session.getEngine().getChainPieceId()).toBeNull();
+      if (!session.isGameOver()) {
+        expect(session.getEngine().getState().currentPlayer).toBe('RED');
+        expect(session.canHumanAct()).toBe(true);
+      }
+    },
+  );
 
   it.each(productBoards)(
     `$id completes ${PVE_GAMES} Easy production games without leaving AI mid-chain`,

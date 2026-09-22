@@ -34,8 +34,14 @@ describe('CanvasBoardRenderer board grid lines', () => {
       frameInner: 'oklch(0.18 0.045 48)',
       lineColor: 'oklch(0.76 0.055 80)',
       edgeGlowRgba: 'rgba(0,0,0,0)',
-      creamHorizontalStops: [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,0)']],
-      creamVerticalStops: [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,0)']],
+      creamHorizontalStops: [
+        [0, 'rgba(0,0,0,0)'],
+        [1, 'rgba(0,0,0,0)'],
+      ],
+      creamVerticalStops: [
+        [0, 'rgba(0,0,0,0)'],
+        [1, 'rgba(0,0,0,0)'],
+      ],
       bodyBackground: 'oklch(0.42 0.07 52)',
       sideCardBackground: '',
       sideCardBorder: '',
@@ -69,10 +75,18 @@ describe('CanvasBoardRenderer board grid lines', () => {
       createLinearGradient: () => gradient,
       createRadialGradient: () => gradient,
       globalAlpha: 1,
-      get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
-      set strokeStyle(v: string) { strokeStyles.push(v); },
-      get fillStyle() { return fillStyles[fillStyles.length - 1] ?? ''; },
-      set fillStyle(v: unknown) { fillStyles.push(v); },
+      get strokeStyle() {
+        return strokeStyles[strokeStyles.length - 1] ?? '';
+      },
+      set strokeStyle(v: string) {
+        strokeStyles.push(v);
+      },
+      get fillStyle() {
+        return fillStyles[fillStyles.length - 1] ?? '';
+      },
+      set fillStyle(v: unknown) {
+        fillStyles.push(v);
+      },
     } as unknown as CanvasRenderingContext2D;
 
     const engine = new SmartBeadsEngine('6x3x5');
@@ -100,7 +114,9 @@ describe('CanvasBoardRenderer board grid lines', () => {
     // only asserts the grid-line colour itself, not every strokeStyle call.)
     const expectedLine = 'oklch(0.76 0.055 80 / 85%)';
     expect(strokeStyles.filter((s) => s.includes(expectedLine)).length).toBeGreaterThanOrEqual(1);
-    expect(fillStyles.some((s) => typeof s === 'string' && s.includes('oklch(0.76 0.055 80 / 55%)'))).toBe(true);
+    expect(
+      fillStyles.some((s) => typeof s === 'string' && s.includes('oklch(0.76 0.055 80 / 55%)')),
+    ).toBe(true);
     expect(strokeStyles).not.toContain('oklch(0.76 0.055 80)');
     expect(strokeStyles).not.toContain(CLASSIC_BOARD_LINE_GOLD.lineRgba);
   });

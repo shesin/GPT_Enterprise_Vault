@@ -1,5 +1,4 @@
 import { SmartBeadsEngine } from '../SmartBeadsEngine';
-import { Board16Sholo } from '../../boards/Board16Sholo';
 import { requireIntersection } from '../../models/GameState';
 
 function clearBoard(engine: SmartBeadsEngine): void {
@@ -139,10 +138,16 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     boardA.intersections.find((point) => point.label === 'LT')!.occupant = 'RED';
     boardA.intersections.find((point) => point.label === 'LM')!.occupant = 'BLUE';
     engineA.getState().currentPlayer = 'RED';
-    expect(engineA.getLegalMoves().some((m) => m.from === idA('LT') && m.to === idA('LB'))).toBe(true);
+    expect(engineA.getLegalMoves().some((m) => m.from === idA('LT') && m.to === idA('LB'))).toBe(
+      true,
+    );
     engineA.applyMove({ from: idA('LT'), to: idA('LB') });
-    expect(engineA.getState().board.intersections.find((p) => p.label === 'LB')?.occupant).toBe('RED');
-    expect(engineA.getState().board.intersections.find((p) => p.label === 'LM')?.occupant).toBeUndefined();
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'LB')?.occupant).toBe(
+      'RED',
+    );
+    expect(
+      engineA.getState().board.intersections.find((p) => p.label === 'LM')?.occupant,
+    ).toBeUndefined();
     expect(engineA.getState().captures.RED).toBe(1);
 
     const engineB = new SmartBeadsEngine('16');
@@ -152,10 +157,16 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     boardB.intersections.find((point) => point.label === 'LT')!.occupant = 'RED';
     boardB.intersections.find((point) => point.label === 'LIT')!.occupant = 'BLUE';
     engineB.getState().currentPlayer = 'RED';
-    expect(engineB.getLegalMoves().some((m) => m.from === idB('LT') && m.to === idB('A20'))).toBe(true);
+    expect(engineB.getLegalMoves().some((m) => m.from === idB('LT') && m.to === idB('A20'))).toBe(
+      true,
+    );
     engineB.applyMove({ from: idB('LT'), to: idB('A20') });
-    expect(engineB.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe('RED');
-    expect(engineB.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant).toBeUndefined();
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe(
+      'RED',
+    );
+    expect(
+      engineB.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant,
+    ).toBeUndefined();
   });
 
   it('allows collinear captures on the right triangular wing (RT→RB over RM, RT→A24 over RIT)', () => {
@@ -166,10 +177,16 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     boardA.intersections.find((point) => point.label === 'RT')!.occupant = 'RED';
     boardA.intersections.find((point) => point.label === 'RM')!.occupant = 'BLUE';
     engineA.getState().currentPlayer = 'RED';
-    expect(engineA.getLegalMoves().some((m) => m.from === idA('RT') && m.to === idA('RB'))).toBe(true);
+    expect(engineA.getLegalMoves().some((m) => m.from === idA('RT') && m.to === idA('RB'))).toBe(
+      true,
+    );
     engineA.applyMove({ from: idA('RT'), to: idA('RB') });
-    expect(engineA.getState().board.intersections.find((p) => p.label === 'RB')?.occupant).toBe('RED');
-    expect(engineA.getState().board.intersections.find((p) => p.label === 'RM')?.occupant).toBeUndefined();
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'RB')?.occupant).toBe(
+      'RED',
+    );
+    expect(
+      engineA.getState().board.intersections.find((p) => p.label === 'RM')?.occupant,
+    ).toBeUndefined();
     expect(engineA.getState().captures.RED).toBe(1);
 
     const engineB = new SmartBeadsEngine('16');
@@ -179,10 +196,16 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     boardB.intersections.find((point) => point.label === 'RT')!.occupant = 'RED';
     boardB.intersections.find((point) => point.label === 'RIT')!.occupant = 'BLUE';
     engineB.getState().currentPlayer = 'RED';
-    expect(engineB.getLegalMoves().some((m) => m.from === idB('RT') && m.to === idB('A24'))).toBe(true);
+    expect(engineB.getLegalMoves().some((m) => m.from === idB('RT') && m.to === idB('A24'))).toBe(
+      true,
+    );
     engineB.applyMove({ from: idB('RT'), to: idB('A24') });
-    expect(engineB.getState().board.intersections.find((p) => p.label === 'A24')?.occupant).toBe('RED');
-    expect(engineB.getState().board.intersections.find((p) => p.label === 'RIT')?.occupant).toBeUndefined();
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'A24')?.occupant).toBe(
+      'RED',
+    );
+    expect(
+      engineB.getState().board.intersections.find((p) => p.label === 'RIT')?.occupant,
+    ).toBeUndefined();
   });
 
   it('allows collinear captures from the grid into the wings across the junction (A20→LT over LIT, A20→LB over LIB)', () => {
@@ -193,10 +216,16 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     boardA.intersections.find((point) => point.label === 'A20')!.occupant = 'RED';
     boardA.intersections.find((point) => point.label === 'LIT')!.occupant = 'BLUE';
     engineA.getState().currentPlayer = 'RED';
-    expect(engineA.getLegalMoves().some((m) => m.from === idA('A20') && m.to === idA('LT'))).toBe(true);
+    expect(engineA.getLegalMoves().some((m) => m.from === idA('A20') && m.to === idA('LT'))).toBe(
+      true,
+    );
     engineA.applyMove({ from: idA('A20'), to: idA('LT') });
-    expect(engineA.getState().board.intersections.find((p) => p.label === 'LT')?.occupant).toBe('RED');
-    expect(engineA.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant).toBeUndefined();
+    expect(engineA.getState().board.intersections.find((p) => p.label === 'LT')?.occupant).toBe(
+      'RED',
+    );
+    expect(
+      engineA.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant,
+    ).toBeUndefined();
 
     const engineB = new SmartBeadsEngine('16');
     clearBoard(engineB);
@@ -205,10 +234,16 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     boardB.intersections.find((point) => point.label === 'A20')!.occupant = 'RED';
     boardB.intersections.find((point) => point.label === 'LIB')!.occupant = 'BLUE';
     engineB.getState().currentPlayer = 'RED';
-    expect(engineB.getLegalMoves().some((m) => m.from === idB('A20') && m.to === idB('LB'))).toBe(true);
+    expect(engineB.getLegalMoves().some((m) => m.from === idB('A20') && m.to === idB('LB'))).toBe(
+      true,
+    );
     engineB.applyMove({ from: idB('A20'), to: idB('LB') });
-    expect(engineB.getState().board.intersections.find((p) => p.label === 'LB')?.occupant).toBe('RED');
-    expect(engineB.getState().board.intersections.find((p) => p.label === 'LIB')?.occupant).toBeUndefined();
+    expect(engineB.getState().board.intersections.find((p) => p.label === 'LB')?.occupant).toBe(
+      'RED',
+    );
+    expect(
+      engineB.getState().board.intersections.find((p) => p.label === 'LIB')?.occupant,
+    ).toBeUndefined();
   });
 
   it('allows multi-jump capture sequences crossing the triangle-to-rectangle junction (LT→A20 over LIT, then A20→LM over LIM)', () => {
@@ -226,7 +261,9 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     engine.getState().currentPlayer = 'RED';
 
     // Step 1: Jump from LT to A20 over LIT
-    expect(engine.getLegalMoves().some((m) => m.from === id('LT') && m.to === id('A20'))).toBe(true);
+    expect(engine.getLegalMoves().some((m) => m.from === id('LT') && m.to === id('A20'))).toBe(
+      true,
+    );
     engine.applyMove({ from: id('LT'), to: id('A20') });
 
     // Sits in chain on A20
@@ -271,7 +308,9 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     boardA.intersections.find((p) => p.label === 'A44')!.occupant = 'BLUE';
     engineA.getState().currentPlayer = 'RED';
 
-    expect(engineA.getLegalMoves().some((m) => m.from === idA('LIB') && m.to === idA('A11'))).toBe(true);
+    expect(engineA.getLegalMoves().some((m) => m.from === idA('LIB') && m.to === idA('A11'))).toBe(
+      true,
+    );
     engineA.applyMove({ from: idA('LIB'), to: idA('A11') });
     expect(boardA.intersections.find((p) => p.label === 'A11')?.occupant).toBe('RED');
     expect(boardA.intersections.find((p) => p.label === 'A20')?.occupant).toBeUndefined();
@@ -287,7 +326,9 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     boardB.intersections.find((p) => p.label === 'A44')!.occupant = 'BLUE';
     engineB.getState().currentPlayer = 'RED';
 
-    expect(engineB.getLegalMoves().some((m) => m.from === idB('A11') && m.to === idB('LIB'))).toBe(true);
+    expect(engineB.getLegalMoves().some((m) => m.from === idB('A11') && m.to === idB('LIB'))).toBe(
+      true,
+    );
     engineB.applyMove({ from: idB('A11'), to: idB('LIB') });
     expect(boardB.intersections.find((p) => p.label === 'LIB')?.occupant).toBe('RED');
     expect(boardB.intersections.find((p) => p.label === 'A20')?.occupant).toBeUndefined();
@@ -307,12 +348,16 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
     engine.getState().currentPlayer = 'RED';
 
     // Hop 1: LB -> A20 over LIB
-    expect(engine.getLegalMoves().some((m) => m.from === id('LB') && m.to === id('A20'))).toBe(true);
+    expect(engine.getLegalMoves().some((m) => m.from === id('LB') && m.to === id('A20'))).toBe(
+      true,
+    );
     engine.applyMove({ from: id('LB'), to: id('A20') });
     expect(engine.getChainPieceId()).toBe(id('A20'));
 
     // Hop 2: A20 -> A02 over A11
-    expect(engine.getLegalMoves().some((m) => m.from === id('A20') && m.to === id('A02'))).toBe(true);
+    expect(engine.getLegalMoves().some((m) => m.from === id('A20') && m.to === id('A02'))).toBe(
+      true,
+    );
     engine.applyMove({ from: id('A20'), to: id('A02') });
 
     expect(engine.getState().captures.RED).toBe(2);

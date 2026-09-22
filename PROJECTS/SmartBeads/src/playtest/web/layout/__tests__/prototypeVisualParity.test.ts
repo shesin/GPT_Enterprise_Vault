@@ -17,10 +17,7 @@ import {
 } from '../prototypeProjectionOracle';
 import { listTurnHighlightNodeIds } from '../../render/CanvasBoardRenderer';
 
-function dist(
-  a: { x: number; y: number },
-  b: { x: number; y: number },
-): number {
+function dist(a: { x: number; y: number }, b: { x: number; y: number }): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
@@ -106,7 +103,7 @@ describe('natural play geometry (prototype hit radius 22)', () => {
       return { node, pt };
     });
 
-    for (const { node, pt } of pts) {
+    for (const { pt } of pts) {
       expect(pt.x).toBeGreaterThanOrEqual(0);
       expect(pt.y).toBeGreaterThanOrEqual(0);
       expect(pt.x).toBeLessThanOrEqual(width);

@@ -94,7 +94,9 @@ export class CoachVideoPlayer {
       this.winSegmentReleased = true;
     }
     this.syncFiredSets();
-    this.callbacks.onApplyKeyframe(findCoachKeyframeAt(this.timeMs, this.script.keyframes, this.script.moves));
+    this.callbacks.onApplyKeyframe(
+      findCoachKeyframeAt(this.timeMs, this.script.keyframes, this.script.moves),
+    );
     this.applyHighlightAtSeek(this.timeMs);
     this.applyCueAtSeek(this.timeMs);
     this.applySegmentBannerAtSeek(this.timeMs);
@@ -146,7 +148,11 @@ export class CoachVideoPlayer {
 
   private fireHighlights(prev: number, next: number): void {
     for (const highlight of this.script.highlights) {
-      if (highlight.atMs > prev && highlight.atMs <= next && !this.firedHighlights.has(highlight.atMs)) {
+      if (
+        highlight.atMs > prev &&
+        highlight.atMs <= next &&
+        !this.firedHighlights.has(highlight.atMs)
+      ) {
         this.firedHighlights.add(highlight.atMs);
         this.callbacks.onApplyHighlight(highlight);
       }
@@ -158,16 +164,16 @@ export class CoachVideoPlayer {
       if (move.atMs > prev && move.atMs <= next && !this.firedMoves.has(move.atMs)) {
         this.firedMoves.add(move.atMs);
         this.animHold = true;
-        this.callbacks.onApplyKeyframe(findCoachSetupKeyframeForMove(move, this.script.keyframes, this.script.moves));
+        this.callbacks.onApplyKeyframe(
+          findCoachSetupKeyframeForMove(move, this.script.keyframes, this.script.moves),
+        );
         if (move.speech && !this.firedSpeeches.has(move.atMs)) {
           this.firedSpeeches.add(move.atMs);
           this.callbacks.onSpeak({ atMs: move.atMs, text: move.speech });
         }
         this.callbacks.onPlayMove(move, () => {
           this.animHold = false;
-          this.callbacks.onApplyKeyframe(
-            findCoachKeyframeAfterMove(move, this.script.keyframes),
-          );
+          this.callbacks.onApplyKeyframe(findCoachKeyframeAfterMove(move, this.script.keyframes));
         });
         return;
       }
@@ -204,7 +210,9 @@ export class CoachVideoPlayer {
   }
 
   private applySegmentBannerAtSeek(ms: number): void {
-    this.callbacks.onApplySegmentBanner(findCoachSegmentBannerAtTime(ms, this.script.segmentBanners ?? []));
+    this.callbacks.onApplySegmentBanner(
+      findCoachSegmentBannerAtTime(ms, this.script.segmentBanners ?? []),
+    );
   }
 
   private applyHighlightAtSeek(ms: number): void {
@@ -234,9 +242,9 @@ export class CoachVideoPlayer {
       this.script.highlights.filter((h) => h.atMs <= this.timeMs).map((h) => h.atMs),
     );
     this.firedCues = new Set(
-      (this.script.cues ?? []).map((c, index) => index).filter(
-        (index) => (this.script.cues ?? [])[index].atMs <= this.timeMs,
-      ),
+      (this.script.cues ?? [])
+        .map((c, index) => index)
+        .filter((index) => (this.script.cues ?? [])[index].atMs <= this.timeMs),
     );
     this.firedSegmentBanners = new Set(
       (this.script.segmentBanners ?? []).filter((b) => b.atMs <= this.timeMs).map((b) => b.atMs),
@@ -247,4 +255,3 @@ export class CoachVideoPlayer {
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
-

@@ -31,7 +31,9 @@ export function projectLatticeIntersection(
 ): { x: number; y: number } {
   return {
     x: params.padX + (y / params.latticeYSpan) * (viewWidth - params.widthInset),
-    y: params.padY + ((params.latticeXBase - x) / params.latticeXSpan) * (viewHeight - params.heightInset),
+    y:
+      params.padY +
+      ((params.latticeXBase - x) / params.latticeXSpan) * (viewHeight - params.heightInset),
   };
 }
 
@@ -102,7 +104,14 @@ export function projectIntersectionOnCanvas(
   }
   const profile = getBoardVisualProfile(board.name);
   const bounds = getLatticeBounds(board);
-  return projectWithKind(intersection.x, intersection.y, canvasWidth, canvasHeight, profile.projection, bounds);
+  return projectWithKind(
+    intersection.x,
+    intersection.y,
+    canvasWidth,
+    canvasHeight,
+    profile.projection,
+    bounds,
+  );
 }
 
 /** Project a raw lattice coordinate (for centre overlays). */

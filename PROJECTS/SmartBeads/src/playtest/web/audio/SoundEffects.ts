@@ -26,7 +26,7 @@ export interface SoundEvent {
 export class SoundEffects {
   private ctx: AudioContext | null = null;
   private muted: boolean = true;
-  private masterVolume: number = 0.90;
+  private masterVolume: number = 0.9;
 
   private selectBuffer: AudioBuffer | null = null;
   private slideBuffer: AudioBuffer | null = null;
@@ -44,7 +44,10 @@ export class SoundEffects {
 
   constructor() {
     try {
-      const g = typeof globalThis !== 'undefined' ? (globalThis as unknown as { localStorage?: Storage }) : null;
+      const g =
+        typeof globalThis !== 'undefined'
+          ? (globalThis as unknown as { localStorage?: Storage })
+          : null;
       if (g?.localStorage) {
         const saved = g.localStorage.getItem('smartbeads_sfx_muted');
         if (saved !== null) {
@@ -86,9 +89,13 @@ export class SoundEffects {
       return this.ctx;
     }
     try {
-      const g = typeof globalThis !== 'undefined'
-        ? (globalThis as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
-        : null;
+      const g =
+        typeof globalThis !== 'undefined'
+          ? (globalThis as unknown as {
+              AudioContext?: typeof AudioContext;
+              webkitAudioContext?: typeof AudioContext;
+            })
+          : null;
       const AudioCtx = g?.AudioContext || g?.webkitAudioContext;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
@@ -130,19 +137,21 @@ export class SoundEffects {
       decodeUrl(SFX_URLS.victory),
       decodeUrl(SFX_URLS.defeat),
       decodeUrl(SFX_URLS.draw),
-    ]).then(([select, slide, capture, flourish, start, victory, defeat, draw]) => {
-      this.selectBuffer = select;
-      this.slideBuffer = slide;
-      this.captureBuffer = capture;
-      this.flourishBuffer = flourish;
-      this.startBuffer = start;
-      this.victoryBuffer = victory;
-      this.defeatBuffer = defeat;
-      this.drawBuffer = draw;
-      this.isDecoding = false;
-    }).catch(() => {
-      this.isDecoding = false;
-    });
+    ])
+      .then(([select, slide, capture, flourish, start, victory, defeat, draw]) => {
+        this.selectBuffer = select;
+        this.slideBuffer = slide;
+        this.captureBuffer = capture;
+        this.flourishBuffer = flourish;
+        this.startBuffer = start;
+        this.victoryBuffer = victory;
+        this.defeatBuffer = defeat;
+        this.drawBuffer = draw;
+        this.isDecoding = false;
+      })
+      .catch(() => {
+        this.isDecoding = false;
+      });
   }
 
   public isMuted(): boolean {
@@ -152,7 +161,10 @@ export class SoundEffects {
   public setMuted(muted: boolean): void {
     this.muted = muted;
     try {
-      const g = typeof globalThis !== 'undefined' ? (globalThis as unknown as { localStorage?: Storage }) : null;
+      const g =
+        typeof globalThis !== 'undefined'
+          ? (globalThis as unknown as { localStorage?: Storage })
+          : null;
       if (g?.localStorage) {
         g.localStorage.setItem('smartbeads_sfx_muted', String(muted));
       }
@@ -173,7 +185,10 @@ export class SoundEffects {
   public setVolume(vol: number): void {
     this.masterVolume = Math.max(0, Math.min(1, vol));
     try {
-      const g = typeof globalThis !== 'undefined' ? (globalThis as unknown as { localStorage?: Storage }) : null;
+      const g =
+        typeof globalThis !== 'undefined'
+          ? (globalThis as unknown as { localStorage?: Storage })
+          : null;
       if (g?.localStorage) {
         g.localStorage.setItem('smartbeads_sfx_vol', String(this.masterVolume));
       }
@@ -239,9 +254,12 @@ export class SoundEffects {
     };
 
     if (ctx.state === 'suspended') {
-      ctx.resume().then(() => {
-        execute(buffer);
-      }).catch(() => {});
+      ctx
+        .resume()
+        .then(() => {
+          execute(buffer);
+        })
+        .catch(() => {});
     } else {
       if (!buffer) {
         this.preloadAudioBuffers();
@@ -301,7 +319,7 @@ export class SoundEffects {
 
   public playSelect(): void {
     this.dispatch('select');
-    this.playBuffer(this.selectBuffer, 1.0, 0.90);
+    this.playBuffer(this.selectBuffer, 1.0, 0.9);
   }
 
   public playButtonTap(): void {
@@ -311,7 +329,7 @@ export class SoundEffects {
 
   public playTimerWarning(): void {
     this.dispatch('timerWarning');
-    this.playBuffer(this.slideBuffer, 1.4, 0.70);
+    this.playBuffer(this.slideBuffer, 1.4, 0.7);
   }
 }
 

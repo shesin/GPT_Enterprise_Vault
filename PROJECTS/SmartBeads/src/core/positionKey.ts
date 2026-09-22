@@ -1,13 +1,8 @@
 import { GameState } from '../models/GameState';
 
 /** Position identity for 3-fold repetition (occupancies + side to move + open chain). */
-export function buildPositionKey(
-  state: GameState,
-  chainPieceId: number | null,
-): string {
-  const occ = state.board.intersections
-    .map((node) => node.occupant ?? '.')
-    .join('');
+export function buildPositionKey(state: GameState, chainPieceId: number | null): string {
+  const occ = state.board.intersections.map((node) => node.occupant ?? '.').join('');
   return `${occ}|${state.currentPlayer}|${chainPieceId ?? 'none'}`;
 }
 

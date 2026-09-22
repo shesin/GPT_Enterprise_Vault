@@ -11,7 +11,10 @@ const off = {
 };
 
 function idOf(session: FeatureSession, label: string): number {
-  return session.getEngine().getState().board.intersections.find((p) => p.label === label)!.id;
+  return session
+    .getEngine()
+    .getState()
+    .board.intersections.find((p) => p.label === label)!.id;
 }
 
 function loadOccupancy(session: FeatureSession, red: string[], blue: string[]): void {
@@ -44,14 +47,78 @@ function applyClick(session: FeatureSession, nodeId: number): void {
  * Chrome screenshot: P1 13, P2 16, 0 Ivory captures. Red arrow on the ivory
  * at the triangle/grid join. Black on A20.
  */
-const CAPTURE_RED = ['LT', 'LM', 'LB', 'LIT', 'LIB', 'A00', 'A01', 'A02', 'A10', 'A11', 'A30', 'A40', 'A41'];
-const CAPTURE_BLUE = ['RT', 'RM', 'RB', 'RIT', 'RIM', 'RIB', 'A04', 'A14', 'A24', 'A44', 'A03', 'A13', 'A33', 'A43', 'A22', 'A20'];
+const CAPTURE_RED = [
+  'LT',
+  'LM',
+  'LB',
+  'LIT',
+  'LIB',
+  'A00',
+  'A01',
+  'A02',
+  'A10',
+  'A11',
+  'A30',
+  'A40',
+  'A41',
+];
+const CAPTURE_BLUE = [
+  'RT',
+  'RM',
+  'RB',
+  'RIT',
+  'RIM',
+  'RIB',
+  'A04',
+  'A14',
+  'A24',
+  'A44',
+  'A03',
+  'A13',
+  'A33',
+  'A43',
+  'A22',
+  'A20',
+];
 
 /**
  * Chrome screenshot: AI is thinking, P1 15, P2 16, 1 Ebony capture.
  */
-const STALL_RED = ['LT', 'LM', 'LB', 'LIT', 'LIM', 'A00', 'A01', 'A10', 'A21', 'A30', 'A31', 'A32', 'A40', 'A41', 'A42'];
-const STALL_BLUE = ['RT', 'RM', 'RB', 'RIT', 'RIM', 'RIB', 'A03', 'A04', 'A14', 'A20', 'A23', 'A24', 'A33', 'A34', 'A43', 'A44'];
+const STALL_RED = [
+  'LT',
+  'LM',
+  'LB',
+  'LIT',
+  'LIM',
+  'A00',
+  'A01',
+  'A10',
+  'A21',
+  'A30',
+  'A31',
+  'A32',
+  'A40',
+  'A41',
+  'A42',
+];
+const STALL_BLUE = [
+  'RT',
+  'RM',
+  'RB',
+  'RIT',
+  'RIM',
+  'RIB',
+  'A03',
+  'A04',
+  'A14',
+  'A20',
+  'A23',
+  'A24',
+  'A33',
+  'A34',
+  'A43',
+  'A44',
+];
 
 describe('Chrome 16-bead screenshot positions (human oracle)', () => {
   it('two-click capture of the black bead: select jumper then click the empty landing (enemy bead is inert)', () => {
@@ -73,9 +140,15 @@ describe('Chrome 16-bead screenshot positions (human oracle)', () => {
     expect(session.interpretClick(idOf(session, 'A20')).kind).toBe('ignore');
 
     applyClick(session, idOf(session, 'A30'));
-    expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBeUndefined();
-    expect(engine.getState().board.intersections.find((p) => p.label === 'A10')?.occupant).toBeUndefined();
-    expect(engine.getState().board.intersections.find((p) => p.label === 'A30')?.occupant).toBe('RED');
+    expect(
+      engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant,
+    ).toBeUndefined();
+    expect(
+      engine.getState().board.intersections.find((p) => p.label === 'A10')?.occupant,
+    ).toBeUndefined();
+    expect(engine.getState().board.intersections.find((p) => p.label === 'A30')?.occupant).toBe(
+      'RED',
+    );
     expect(engine.getState().captures.RED).toBe(1);
   });
 
@@ -90,7 +163,9 @@ describe('Chrome 16-bead screenshot positions (human oracle)', () => {
     applyClick(session, idOf(session, 'A10'));
     expect(session.interpretClick(idOf(session, 'A20')).kind).toBe('ignore');
     expect(session.getLegalTargetIds()).not.toContain(idOf(session, 'A30'));
-    expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe('BLUE');
+    expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe(
+      'BLUE',
+    );
   });
 
   it('LIT has collinear diagonal landing A31 over A20, but not non-collinear horizontal A21', () => {
@@ -101,9 +176,21 @@ describe('Chrome 16-bead screenshot positions (human oracle)', () => {
     // Enemy bead itself is inert
     expect(session.interpretClick(idOf(session, 'A20')).kind).toBe('ignore');
     // Horizontal bend is illegal
-    expect(findJumpPath(session.getEngine().getState().board, idOf(session, 'LIT'), idOf(session, 'A21'))).toBeUndefined();
+    expect(
+      findJumpPath(
+        session.getEngine().getState().board,
+        idOf(session, 'LIT'),
+        idOf(session, 'A21'),
+      ),
+    ).toBeUndefined();
     // Diagonal continuation into grid is legal
-    expect(findJumpPath(session.getEngine().getState().board, idOf(session, 'LIT'), idOf(session, 'A31'))).toBeDefined();
+    expect(
+      findJumpPath(
+        session.getEngine().getState().board,
+        idOf(session, 'LIT'),
+        idOf(session, 'A31'),
+      ),
+    ).toBeDefined();
   });
 
   it('LIB can capture black bead on A20 landing on empty A11 (the exact screenshot scenario)', () => {
@@ -127,9 +214,15 @@ describe('Chrome 16-bead screenshot positions (human oracle)', () => {
 
     // Clicking landing square executes the capture
     applyClick(session, idOf(session, 'A11'));
-    expect(engine.getState().board.intersections.find((p) => p.label === 'LIB')?.occupant).toBeUndefined();
-    expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBeUndefined();
-    expect(engine.getState().board.intersections.find((p) => p.label === 'A11')?.occupant).toBe('RED');
+    expect(
+      engine.getState().board.intersections.find((p) => p.label === 'LIB')?.occupant,
+    ).toBeUndefined();
+    expect(
+      engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant,
+    ).toBeUndefined();
+    expect(engine.getState().board.intersections.find((p) => p.label === 'A11')?.occupant).toBe(
+      'RED',
+    );
     expect(engine.getState().captures.RED).toBe(1);
   });
 

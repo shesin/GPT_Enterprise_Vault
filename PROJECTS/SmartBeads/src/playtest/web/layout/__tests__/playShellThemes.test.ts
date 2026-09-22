@@ -131,7 +131,9 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
         'sb-play-board-look': removedId,
         'sb-play-side-look-v3': removedId,
       });
-      expect(() => applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId())).not.toThrow();
+      expect(() =>
+        applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId()),
+      ).not.toThrow();
       expect(readBoardLookThemeId()).toBe('1');
       expect(readPlayBoardMatchMode()).toBe('side-only');
     },
@@ -163,26 +165,33 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
 
   describe('dark-same row — matched side panel colour (2026-09-19)', () => {
     it('resolvePlayLookRowFromButton recognises the matched row class', () => {
-      const btn = { closest: (sel: string) => (sel === '.play-theme-swatches--dark-same' ? {} : null) } as unknown as HTMLElement;
+      const btn = {
+        closest: (sel: string) => (sel === '.play-theme-swatches--dark-same' ? {} : null),
+      } as unknown as HTMLElement;
       expect(resolvePlayLookRowFromButton(btn)).toBe('dark-same');
     });
 
-    it.each(MATCHED_SIDE_LOOK_IDS)('applies board colour as the side panel for eligible id %s', (id) => {
-      mockPlayThemeDom('1', '1', 'matched', {
-        'sb-play-board-look': '1',
-        'sb-play-side-look-v3': '1',
-      });
-      const matched = applyPlayLookFromRow(id, 'dark-same');
-      expect(matched.boardLookId).toBe(id);
-      expect(matched.sideLookId).toBe(id);
-      expect(readPlayBoardMatchMode()).toBe('matched');
-      // Side panel reuses the board's own `surface` token, not the charcoal
-      // side theme — and not necessarily `surfaceTop`, since a board may
-      // override its canvas-only lightness (e.g. Classic Green's palest
-      // variant) while keeping the panel on the original token.
-      const tokens = LOVABLE_COMPLETE_BOARD_THEMES.find((t) => t.label === PLAY_SHELL_THEMES[id].label);
-      expect(PLAY_SHELL_THEMES[id].sideCardBackground).toContain(tokens!.surface);
-    });
+    it.each(MATCHED_SIDE_LOOK_IDS)(
+      'applies board colour as the side panel for eligible id %s',
+      (id) => {
+        mockPlayThemeDom('1', '1', 'matched', {
+          'sb-play-board-look': '1',
+          'sb-play-side-look-v3': '1',
+        });
+        const matched = applyPlayLookFromRow(id, 'dark-same');
+        expect(matched.boardLookId).toBe(id);
+        expect(matched.sideLookId).toBe(id);
+        expect(readPlayBoardMatchMode()).toBe('matched');
+        // Side panel reuses the board's own `surface` token, not the charcoal
+        // side theme — and not necessarily `surfaceTop`, since a board may
+        // override its canvas-only lightness (e.g. Classic Green's palest
+        // variant) while keeping the panel on the original token.
+        const tokens = LOVABLE_COMPLETE_BOARD_THEMES.find(
+          (t) => t.label === PLAY_SHELL_THEMES[id].label,
+        );
+        expect(PLAY_SHELL_THEMES[id].sideCardBackground).toContain(tokens!.surface);
+      },
+    );
 
     it('rejects dark-same for an unknown/removed board id (e.g. old Sandy Beige, id 4)', () => {
       mockPlayThemeDom('1', '1', 'matched', {
@@ -215,7 +224,9 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
       'sb-play-side-look-v3': '7',
     });
     applyPlayLookState('14', '7');
-    const shell = document.getElementById('play-shell') as { setAttribute: (k: string, v: string) => void };
+    const shell = document.getElementById('play-shell') as {
+      setAttribute: (k: string, v: string) => void;
+    };
     shell.setAttribute('data-play-board-look', '1');
     shell.setAttribute('data-play-side-look', '1');
     expect(readBoardLookThemeId()).toBe('14');
@@ -276,10 +287,12 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
       },
       style: { setProperty: jest.fn() },
     };
-    const store = new Map(Object.entries({
-      'sb-play-board-look': '6',
-      'sb-play-side-look-v3': '7',
-    }));
+    const store = new Map(
+      Object.entries({
+        'sb-play-board-look': '6',
+        'sb-play-side-look-v3': '7',
+      }),
+    );
     Object.defineProperty(globalThis, 'localStorage', {
       value: {
         getItem: (key: string) => store.get(key) ?? null,
@@ -297,14 +310,21 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
         getElementById: (id: string) => (id === 'play-shell' ? shell : null),
         querySelectorAll: (sel: string) => {
           if (!sel.includes('data-play-look-setting')) return [];
-          return [{
-            querySelectorAll: () => swatches.map((s) => ({
-              dataset: { playTheme: s.id },
-              closest: (sel: string) => (sel.includes(s.row) ? {} : null),
-              classList: { toggle: (_: string, on: boolean) => { s.active = on; } },
-              setAttribute: jest.fn(),
-            })),
-          }];
+          return [
+            {
+              querySelectorAll: () =>
+                swatches.map((s) => ({
+                  dataset: { playTheme: s.id },
+                  closest: (sel: string) => (sel.includes(s.row) ? {} : null),
+                  classList: {
+                    toggle: (_: string, on: boolean) => {
+                      s.active = on;
+                    },
+                  },
+                  setAttribute: jest.fn(),
+                })),
+            },
+          ];
         },
         body: {
           setAttribute: jest.fn(),
@@ -331,19 +351,20 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
       { id: '14', row: 'dark-charcoal', active: false },
     ];
     const makeRoot = (swatches: Swatch[]) => ({
-      querySelectorAll: () => swatches.map((s) => ({
-        dataset: { playTheme: s.id },
-        closest: (sel: string) => (sel.includes(s.row) ? {} : null),
-        classList: {
-          remove: (cls: string) => {
-            if (cls === 'is-active') s.active = false;
+      querySelectorAll: () =>
+        swatches.map((s) => ({
+          dataset: { playTheme: s.id },
+          closest: (sel: string) => (sel.includes(s.row) ? {} : null),
+          classList: {
+            remove: (cls: string) => {
+              if (cls === 'is-active') s.active = false;
+            },
+            toggle: (_: string, on: boolean) => {
+              s.active = on;
+            },
           },
-          toggle: (_: string, on: boolean) => {
-            s.active = on;
-          },
-        },
-        setAttribute: jest.fn(),
-      })),
+          setAttribute: jest.fn(),
+        })),
     });
     Object.defineProperty(globalThis, 'document', {
       value: {

@@ -11,7 +11,17 @@ import { Board7 } from '../../boards/Board7';
 
 describe('SmartBeadsEngine', () => {
   it('lists the configured board variants', () => {
-    expect(listBoardVariants()).toEqual(['4', '5', '6', '7', '16', '6x3x5', '10x5', '12x6x5', '8x4x6']);
+    expect(listBoardVariants()).toEqual([
+      '4',
+      '5',
+      '6',
+      '7',
+      '16',
+      '6x3x5',
+      '10x5',
+      '12x6x5',
+      '8x4x6',
+    ]);
   });
 
   it('defines Board7 as a 7-bead 4×5 with sholo_guti rules', () => {
@@ -161,8 +171,12 @@ describe('SmartBeadsEngine', () => {
     engineA.getState().board.intersections.find((point) => point.id === emptyId)!.occupant = 'RED';
 
     expect(template.intersections.find((point) => point.id === emptyId)!.occupant).toBeUndefined();
-    expect(engineB.getState().board.intersections.find((point) => point.id === emptyId)!.occupant).toBeUndefined();
-    expect(engineA.getState().board.intersections.find((point) => point.id === emptyId)!.occupant).toBe('RED');
+    expect(
+      engineB.getState().board.intersections.find((point) => point.id === emptyId)!.occupant,
+    ).toBeUndefined();
+    expect(
+      engineA.getState().board.intersections.find((point) => point.id === emptyId)!.occupant,
+    ).toBe('RED');
   });
 
   it('generates legal orthogonal slides for RED from the opening', () => {

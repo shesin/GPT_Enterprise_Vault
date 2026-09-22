@@ -1,11 +1,6 @@
 import { PRODUCT_BOARD_ORDER, resolveEngineVariant } from '../../../../config/BoardCatalog';
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
-import {
-  aiOpponentReplyPlies,
-  probeSearchCompletion,
-  selectAiTurnPath,
-  thinkBudgetForLevel,
-} from '../HonestAi';
+import { probeSearchCompletion, selectAiTurnPath, thinkBudgetForLevel } from '../HonestAi';
 
 describe('HonestAi depth-2 search completion', () => {
   jest.setTimeout(120_000);

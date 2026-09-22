@@ -16,7 +16,10 @@ export function fitCanvasToFrame(canvas: HTMLCanvasElement): void {
   canvas.style.height = '100%';
 }
 
-export function installCanvasResizeObserver(canvas: HTMLCanvasElement, onResize: () => void): () => void {
+export function installCanvasResizeObserver(
+  canvas: HTMLCanvasElement,
+  onResize: () => void,
+): () => void {
   window.addEventListener('resize', onResize);
   return () => window.removeEventListener('resize', onResize);
 }

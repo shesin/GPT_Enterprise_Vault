@@ -58,7 +58,7 @@ describe('GameFeatureSettings coach watch', () => {
       coachRedLevel: 2,
       coachBlueLevel: 5,
       timer: '10',
-  tournamentTimer: 'off',
+      tournamentTimer: 'off',
       shotClock: '60',
       centerRule: 'endgame',
     });

@@ -1,14 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const indexHtml = fs.readFileSync(
-  path.resolve(__dirname, '../../../../../../index.html'),
-  'utf8',
-);
-const playShellCss = fs.readFileSync(
-  path.resolve(__dirname, '../play-shell.css'),
-  'utf8',
-);
+const indexHtml = fs.readFileSync(path.resolve(__dirname, '../../../../../../index.html'), 'utf8');
+const playShellCss = fs.readFileSync(path.resolve(__dirname, '../play-shell.css'), 'utf8');
 const playControllerSource = fs.readFileSync(
   path.resolve(__dirname, '../PlayController.ts'),
   'utf8',
@@ -45,8 +39,12 @@ describe('production left play panel shell (index.html)', () => {
   });
 
   it('left panels stay fixed: upper black side, lower cream/green side (no turn swap)', () => {
-    expect(indexHtml).toMatch(/id="play-block-p2"[^>]*play-block-ai|play-block-ai[^>]*id="play-block-p2"/);
-    expect(indexHtml).toMatch(/id="play-block-p1"[^>]*play-block-human|play-block-human[^>]*id="play-block-p1"/);
+    expect(indexHtml).toMatch(
+      /id="play-block-p2"[^>]*play-block-ai|play-block-ai[^>]*id="play-block-p2"/,
+    );
+    expect(indexHtml).toMatch(
+      /id="play-block-p1"[^>]*play-block-human|play-block-human[^>]*id="play-block-p1"/,
+    );
     expect(playShellCss).toMatch(/\.play-block-ai[\s\S]*--black-bead|var\(--black-bead\)/);
     expect(playShellCss).toMatch(/\.play-block-human[\s\S]*var\(--play-human-accent\)/);
     expect(playShellCss).toMatch(/--play-human-accent:\s*var\(--gold\)/);

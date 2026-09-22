@@ -17,6 +17,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run format:check
+      # Not blocking yet: 25 pre-existing errors (no-explicit-any,
+      # no-useless-assignment, etc.) need fixing before this can gate CI.
+      - run: npm run lint
+        continue-on-error: true
       # Fast Jest batches only (--skip-slow) — the full suite also includes a
       # ~5min AI-difficulty-tier batch and a separate Playwright browser gate
       # (npm test) that launches a real headless browser against a live dev

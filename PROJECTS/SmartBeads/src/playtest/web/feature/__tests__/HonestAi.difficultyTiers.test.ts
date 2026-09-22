@@ -307,11 +307,7 @@ describe('HonestAi difficulty contract', () => {
 });
 
 describe('HonestAi production strength gates (6x3x5)', () => {
-  function playMatch(
-    blueLevel: 1 | 2 | 3,
-    seed: number,
-    maxPlies = 50,
-  ): 'RED' | 'BLUE' | 'DRAW' {
+  function playMatch(blueLevel: 1 | 2 | 3, seed: number, maxPlies = 50): 'RED' | 'BLUE' | 'DRAW' {
     const engine = new SmartBeadsEngine('6x3x5');
     let ply = 0;
     let rngState = seed + 1;

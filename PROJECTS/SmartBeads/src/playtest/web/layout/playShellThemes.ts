@@ -21,8 +21,28 @@ export type PlayLookRow = 'dark-charcoal' | 'dark-same';
  * board is complete-only and not matched-eligible. */
 export type MatchedSideLookId = CompleteLookId;
 
-export const COMPLETE_LOOK_IDS: readonly CompleteLookId[] = ['1', '2', '3', '6', '14', '23', '24', '25', '26'];
-export const MATCHED_SIDE_LOOK_IDS: readonly MatchedSideLookId[] = ['1', '2', '3', '6', '14', '23', '24', '25', '26'];
+export const COMPLETE_LOOK_IDS: readonly CompleteLookId[] = [
+  '1',
+  '2',
+  '3',
+  '6',
+  '14',
+  '23',
+  '24',
+  '25',
+  '26',
+];
+export const MATCHED_SIDE_LOOK_IDS: readonly MatchedSideLookId[] = [
+  '1',
+  '2',
+  '3',
+  '6',
+  '14',
+  '23',
+  '24',
+  '25',
+  '26',
+];
 
 const COMPLETE_TOKEN_INDEX: Record<CompleteLookId, number> = {
   '1': 0,
@@ -42,7 +62,18 @@ const COMPLETE_TOKEN_INDEX: Record<CompleteLookId, number> = {
 // a light-canvas "Matched" replacement (23/24/25/26 above, Sandy Beige
 // pending). Kept alongside the earlier removals so old stored values
 // migrate away cleanly instead of crashing getPlayShellTheme().
-const REMOVED_LIGHT_BOARD_LOOK_IDS = new Set(['4', '8', '9', '10', '11', '13', '15', '16', '17', '18']);
+const REMOVED_LIGHT_BOARD_LOOK_IDS = new Set([
+  '4',
+  '8',
+  '9',
+  '10',
+  '11',
+  '13',
+  '15',
+  '16',
+  '17',
+  '18',
+]);
 
 // '19' (Pearl Gold), '20' (Jade Matched), '21' (Pale Sage), '22' (Sky Blue)
 // added and removed within this same session (2026-09-20) — a browser with
@@ -277,11 +308,20 @@ export const HUB_CENTRE_PALETTES: Record<BoardLookThemeId, HubCentrePalette> = {
 export const PLAY_THEME_STORAGE_KEY = 'sb-play-theme-v2';
 export const PLAY_BOARD_LOOK_STORAGE_KEY = 'sb-play-board-look';
 export const PLAY_SIDE_LOOK_STORAGE_KEY = 'sb-play-side-look-v3';
-const LEGACY_SIDE_LOOK_STORAGE_KEY = 'sb-play-side-look';
 const LEGACY_PLAY_THEME_STORAGE_KEY = 'sb-play-theme';
 
 export function isCompleteLookId(value: string | null | undefined): value is CompleteLookId {
-  return value === '1' || value === '2' || value === '3' || value === '6' || value === '14' || value === '23' || value === '24' || value === '25' || value === '26';
+  return (
+    value === '1' ||
+    value === '2' ||
+    value === '3' ||
+    value === '6' ||
+    value === '14' ||
+    value === '23' ||
+    value === '24' ||
+    value === '25' ||
+    value === '26'
+  );
 }
 
 export function isMatchedSideLookId(value: string | null | undefined): value is MatchedSideLookId {
@@ -384,25 +424,25 @@ export function syncThemeSwatchActive(
   const roots = document.querySelectorAll<HTMLElement>('[data-play-look-setting]');
   if (roots.length === 0) return;
   for (const root of roots) {
-  for (const swatch of root.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
-    const id = swatch.dataset.playTheme;
-    const inDarkCharcoal = swatch.closest('.play-theme-swatches--dark-charcoal') !== null;
-    const inDarkSame = swatch.closest('.play-theme-swatches--dark-same') !== null;
-    const active =
-      (inDarkCharcoal
-        && id === boardLookId
-        && sideLookId === '7'
-        && isCompleteLookId(boardLookId))
-      || (inDarkSame
-        && id === boardLookId
-        && sideLookId === boardLookId
-        && isMatchedSideLookId(boardLookId));
-    swatch.classList.toggle('is-active', Boolean(active));
-    // Swatches sit in role="radiogroup" containers as role="radio" buttons —
-    // selection was CSS-only (.is-active), invisible to assistive tech
-    // (2026-09-22 audit).
-    swatch.setAttribute('aria-checked', String(Boolean(active)));
-  }
+    for (const swatch of root.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
+      const id = swatch.dataset.playTheme;
+      const inDarkCharcoal = swatch.closest('.play-theme-swatches--dark-charcoal') !== null;
+      const inDarkSame = swatch.closest('.play-theme-swatches--dark-same') !== null;
+      const active =
+        (inDarkCharcoal &&
+          id === boardLookId &&
+          sideLookId === '7' &&
+          isCompleteLookId(boardLookId)) ||
+        (inDarkSame &&
+          id === boardLookId &&
+          sideLookId === boardLookId &&
+          isMatchedSideLookId(boardLookId));
+      swatch.classList.toggle('is-active', Boolean(active));
+      // Swatches sit in role="radiogroup" containers as role="radio" buttons —
+      // selection was CSS-only (.is-active), invisible to assistive tech
+      // (2026-09-22 audit).
+      swatch.setAttribute('aria-checked', String(Boolean(active)));
+    }
   }
 }
 
@@ -456,7 +496,10 @@ function applyShellThemeVars(
   target.style.setProperty('--play-human-bg', sideTheme.playHumanBg);
   target.style.setProperty('--play-human-border', sideTheme.playHumanBorder);
   target.style.setProperty('--play-human-accent', sideTheme.playHumanAccent);
-  target.style.setProperty('--panel', isSideOnlyLookId(sideLookId) ? sideTheme.playAiBg : boardTheme.bodyBackground);
+  target.style.setProperty(
+    '--panel',
+    isSideOnlyLookId(sideLookId) ? sideTheme.playAiBg : boardTheme.bodyBackground,
+  );
   target.style.setProperty(
     '--panel-2',
     isSideOnlyLookId(sideLookId) ? sideTheme.playAiBg : boardTheme.playAiBg,
@@ -494,7 +537,7 @@ export function applyPlayLookState(
 ): void {
   if (typeof document === 'undefined') return;
 
-  let board = boardLookId;
+  const board = boardLookId;
   let side = sideLookId;
   // Matched (same-colour-sides) is only allowed for the 3 eligible boards, and
   // only when the caller actually asked for board === side — everything else
@@ -532,7 +575,9 @@ export function applyPlayLookState(
   }
 }
 
-export function migrateLegacyPlayThemeId(value: string | null | undefined): PlayShellThemeId | null {
+export function migrateLegacyPlayThemeId(
+  value: string | null | undefined,
+): PlayShellThemeId | null {
   if (!value) return null;
   if (value === '5' || value === '6') return '7';
   if (isPlayShellThemeId(value)) return value;

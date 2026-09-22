@@ -34,9 +34,7 @@ describe('Board16Sholo prototype parity', () => {
     const refLand = refEngine.continueCollinear(from, over);
 
     expect(refLand).toBe(to);
-    expect(Board16Sholo.jumpPaths).toEqual(
-      expect.arrayContaining([{ from, over, to }]),
-    );
+    expect(Board16Sholo.jumpPaths).toEqual(expect.arrayContaining([{ from, over, to }]));
   });
 
   it('matches every prototype collinear jump including both triangular wings', () => {
@@ -52,9 +50,7 @@ describe('Board16Sholo prototype parity', () => {
     const prod = [...(Board16Sholo.jumpPaths ?? [])].sort(
       (a, b) => a.from - b.from || a.over - b.over || a.to - b.to,
     );
-    const expected = refJumps.sort(
-      (a, b) => a.from - b.from || a.over - b.over || a.to - b.to,
-    );
+    const expected = refJumps.sort((a, b) => a.from - b.from || a.over - b.over || a.to - b.to);
     expect(prod).toEqual(expected);
   });
 });

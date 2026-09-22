@@ -9,7 +9,9 @@ export type MoveHintAuraToggle = 'off' | 'on';
 
 export const MOVE_HINT_AURA_STORAGE_KEY = 'sb-move-hint-aura';
 
-export function isMoveHintAuraToggle(value: string | null | undefined): value is MoveHintAuraToggle {
+export function isMoveHintAuraToggle(
+  value: string | null | undefined,
+): value is MoveHintAuraToggle {
   return value === 'off' || value === 'on';
 }
 

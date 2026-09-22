@@ -7,16 +7,17 @@ describe('CoachVoice', () => {
   beforeEach(() => {
     speak.mockClear();
     cancel.mockClear();
-    (globalThis as unknown as { SpeechSynthesisUtterance: typeof SpeechSynthesisUtterance }).SpeechSynthesisUtterance =
-      class {
-        rate = 1;
-        pitch = 1;
-        voice: SpeechSynthesisVoice | null = null;
-        onstart: (() => void) | null = null;
-        onend: (() => void) | null = null;
-        onerror: (() => void) | null = null;
-        constructor(public text: string) {}
-      } as unknown as typeof SpeechSynthesisUtterance;
+    (
+      globalThis as unknown as { SpeechSynthesisUtterance: typeof SpeechSynthesisUtterance }
+    ).SpeechSynthesisUtterance = class {
+      rate = 1;
+      pitch = 1;
+      voice: SpeechSynthesisVoice | null = null;
+      onstart: (() => void) | null = null;
+      onend: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      constructor(public text: string) {}
+    } as unknown as typeof SpeechSynthesisUtterance;
     (globalThis as unknown as { window: Window }).window = {
       speechSynthesis: {
         speak,

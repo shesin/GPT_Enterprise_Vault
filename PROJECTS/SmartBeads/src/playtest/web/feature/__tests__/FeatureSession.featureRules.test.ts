@@ -18,7 +18,10 @@ function clearOccupants(session: FeatureSession): void {
 }
 
 function setOcc(session: FeatureSession, label: string, player: 'RED' | 'BLUE'): void {
-  const p = session.getEngine().getState().board.intersections.find((n) => n.label === label);
+  const p = session
+    .getEngine()
+    .getState()
+    .board.intersections.find((n) => n.label === label);
   if (!p) throw new Error(label);
   p.occupant = player;
 }
@@ -60,8 +63,14 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     clearOccupants(session);
     setOcc(session, 'A11', 'RED');
     setOcc(session, 'A40', 'BLUE');
-    const from = session.getEngine().getState().board.intersections.find((p) => p.label === 'A11')!.id;
-    const to = session.getEngine().getState().board.intersections.find((p) => p.label === 'A21')!.id;
+    const from = session
+      .getEngine()
+      .getState()
+      .board.intersections.find((p) => p.label === 'A11')!.id;
+    const to = session
+      .getEngine()
+      .getState()
+      .board.intersections.find((p) => p.label === 'A21')!.id;
     session.getEngine().getState().currentPlayer = 'RED';
     session.selectNode(from);
     const move = session.resolveClickMove(to);
@@ -70,7 +79,10 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     const afterRed = session.getCenterDisplayScores();
     expect(afterRed.red).toBe(1);
 
-    const blueFrom = session.getEngine().getState().board.intersections.find((p) => p.label === 'A40')!.id;
+    const blueFrom = session
+      .getEngine()
+      .getState()
+      .board.intersections.find((p) => p.label === 'A40')!.id;
     session.selectNode(blueFrom);
     const blueTargets = session.getLegalTargetIds();
     expect(blueTargets.length).toBeGreaterThan(0);
@@ -110,12 +122,16 @@ describe('FeatureSession center / timer (runtime rules)', () => {
       ...base,
       shotClock: '30',
     });
-    const slide = session.getEngine().getLegalMoves().find((m) => {
-      const jump = session.getEngine().getState().board.jumpPaths?.some(
-        (j) => j.from === m.from && j.to === m.to,
-      );
-      return !jump;
-    });
+    const slide = session
+      .getEngine()
+      .getLegalMoves()
+      .find((m) => {
+        const jump = session
+          .getEngine()
+          .getState()
+          .board.jumpPaths?.some((j) => j.from === m.from && j.to === m.to);
+        return !jump;
+      });
     expect(slide).toBeDefined();
     session.applyMove(slide!);
     expect(session.getEngine().getState().currentPlayer).toBe('BLUE');

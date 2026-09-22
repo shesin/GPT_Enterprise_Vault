@@ -30,9 +30,11 @@ describe('FeatureSession spectate watch mode', () => {
   it('8x4x6 coach preview arms selection and legal targets without human act', () => {
     const session = new FeatureSession('8x4x6', buildCoachWatchSettings());
     const engine = session.getEngine();
-    const red = engine.getState().board.intersections.find(
-      (n) => n.occupant === 'RED' && engine.getLegalMoves().some((m) => m.from === n.id),
-    );
+    const red = engine
+      .getState()
+      .board.intersections.find(
+        (n) => n.occupant === 'RED' && engine.getLegalMoves().some((m) => m.from === n.id),
+      );
     expect(red).toBeDefined();
     expect(session.canHumanAct()).toBe(false);
     expect(session.selectNode(red!.id)).toBe(false);
@@ -46,9 +48,11 @@ describe('FeatureSession spectate watch mode', () => {
     const session = new FeatureSession('8x4x6', buildCoachWatchSettings());
     const engine = session.getEngine();
     expect(session.shouldShowTurnStartRings()).toBe(true);
-    const red = engine.getState().board.intersections.find(
-      (n) => n.occupant === 'RED' && engine.getLegalMoves().some((m) => m.from === n.id),
-    );
+    const red = engine
+      .getState()
+      .board.intersections.find(
+        (n) => n.occupant === 'RED' && engine.getLegalMoves().some((m) => m.from === n.id),
+      );
     expect(red).toBeDefined();
     expect(session.previewScriptedSelection(red!.id)).toBe(true);
     expect(session.shouldShowTurnStartRings()).toBe(false);
@@ -86,8 +90,16 @@ describe('FeatureSession natural turn taking (all V1 boards)', () => {
     expect(engine.getState().currentPlayer).toBe('BLUE');
     expect(session.canHumanAct()).toBe(true);
 
-    const red = engine.getState().board.intersections.find((n) => n.occupant === 'RED' && engine.getLegalMoves().some((m) => m.from === n.id));
-    const blue = engine.getState().board.intersections.find((n) => n.occupant === 'BLUE' && engine.getLegalMoves().some((m) => m.from === n.id));
+    const red = engine
+      .getState()
+      .board.intersections.find(
+        (n) => n.occupant === 'RED' && engine.getLegalMoves().some((m) => m.from === n.id),
+      );
+    const blue = engine
+      .getState()
+      .board.intersections.find(
+        (n) => n.occupant === 'BLUE' && engine.getLegalMoves().some((m) => m.from === n.id),
+      );
     expect(blue).toBeDefined();
     if (red) {
       expect(session.selectNode(red.id)).toBe(false);
@@ -118,7 +130,8 @@ describe('FeatureSession 16-bead triangular two-click path', () => {
     for (const point of engine.getState().board.intersections) {
       point.occupant = undefined;
     }
-    const id = (label: string) => engine.getState().board.intersections.find((p) => p.label === label)!.id;
+    const id = (label: string) =>
+      engine.getState().board.intersections.find((p) => p.label === label)!.id;
     engine.getState().board.intersections.find((p) => p.label === 'LT')!.occupant = 'RED';
     engine.getState().board.intersections.find((p) => p.label === 'LIT')!.occupant = 'BLUE';
     engine.getState().currentPlayer = 'RED';
@@ -137,8 +150,12 @@ describe('FeatureSession 16-bead triangular two-click path', () => {
     expect(click.kind).toBe('move');
     if (click.kind !== 'move') return;
     session.applyMove(click.move);
-    expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe('RED');
-    expect(engine.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant).toBeUndefined();
+    expect(engine.getState().board.intersections.find((p) => p.label === 'A20')?.occupant).toBe(
+      'RED',
+    );
+    expect(
+      engine.getState().board.intersections.find((p) => p.label === 'LIT')?.occupant,
+    ).toBeUndefined();
     expect(engine.getState().captures.RED).toBe(1);
   });
 });
@@ -158,7 +175,11 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
     engine.getState().board.intersections[path.from].occupant = 'RED';
     engine.getState().board.intersections[path.over].occupant = 'BLUE';
     // Add a spare enemy far away
-    const spare = engine.getState().board.intersections.find((p) => p.id !== path.from && p.id !== path.over && p.id !== path.to);
+    const spare = engine
+      .getState()
+      .board.intersections.find(
+        (p) => p.id !== path.from && p.id !== path.over && p.id !== path.to,
+      );
     if (spare) spare.occupant = 'BLUE';
     engine.getState().currentPlayer = 'RED';
 
@@ -184,42 +205,49 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
     expect(session.getSelectedId()).toBeNull();
   });
 
-  it.each(variants)('%s clicking victim bead after selecting jumper is ignored; only landing square executes capture', (variant) => {
-    const session = new FeatureSession(variant, { mode: 'pve', ...off });
-    const engine = session.getEngine();
-    const path = (engine.getState().board.jumpPaths ?? [])[0];
+  it.each(variants)(
+    '%s clicking victim bead after selecting jumper is ignored; only landing square executes capture',
+    (variant) => {
+      const session = new FeatureSession(variant, { mode: 'pve', ...off });
+      const engine = session.getEngine();
+      const path = (engine.getState().board.jumpPaths ?? [])[0];
 
-    for (const point of engine.getState().board.intersections) point.occupant = undefined;
-    engine.getState().board.intersections[path.from].occupant = 'RED';
-    engine.getState().board.intersections[path.over].occupant = 'BLUE';
-    const spare = engine.getState().board.intersections.find((p) => p.id !== path.from && p.id !== path.over && p.id !== path.to);
-    if (spare) spare.occupant = 'BLUE';
-    engine.getState().currentPlayer = 'RED';
+      for (const point of engine.getState().board.intersections) point.occupant = undefined;
+      engine.getState().board.intersections[path.from].occupant = 'RED';
+      engine.getState().board.intersections[path.over].occupant = 'BLUE';
+      const spare = engine
+        .getState()
+        .board.intersections.find(
+          (p) => p.id !== path.from && p.id !== path.over && p.id !== path.to,
+        );
+      if (spare) spare.occupant = 'BLUE';
+      engine.getState().currentPlayer = 'RED';
 
-    // Step 1: Select own bead
-    expect(session.selectNode(path.from)).toBe(true);
-    expect(session.getSelectedId()).toBe(path.from);
-    expect(session.getUiState()).toBe('selected');
-    expect(session.getLegalTargetIds()).toContain(path.to);
-    expect(session.getLegalTargetIds()).not.toContain(path.over);
+      // Step 1: Select own bead
+      expect(session.selectNode(path.from)).toBe(true);
+      expect(session.getSelectedId()).toBe(path.from);
+      expect(session.getUiState()).toBe('selected');
+      expect(session.getLegalTargetIds()).toContain(path.to);
+      expect(session.getLegalTargetIds()).not.toContain(path.over);
 
-    // Step 2: Clicking the enemy bead itself while selected is ignored
-    const victimClick = session.interpretClick(path.over);
-    expect(victimClick.kind).toBe('ignore');
-    expect(session.getSelectedId()).toBe(path.from); // Selection unchanged
-    expect(engine.getState().board.intersections[path.over].occupant).toBe('BLUE');
+      // Step 2: Clicking the enemy bead itself while selected is ignored
+      const victimClick = session.interpretClick(path.over);
+      expect(victimClick.kind).toBe('ignore');
+      expect(session.getSelectedId()).toBe(path.from); // Selection unchanged
+      expect(engine.getState().board.intersections[path.over].occupant).toBe('BLUE');
 
-    // Step 3: Clicking the empty landing square executes the capture
-    const landingClick = session.interpretClick(path.to);
-    expect(landingClick.kind).toBe('move');
-    if (landingClick.kind === 'move') {
-      session.applyMove(landingClick.move);
-      expect(engine.getState().board.intersections[path.from].occupant).toBeUndefined();
-      expect(engine.getState().board.intersections[path.over].occupant).toBeUndefined();
-      expect(engine.getState().board.intersections[path.to].occupant).toBe('RED');
-      expect(engine.getState().captures.RED).toBe(1);
-    }
-  });
+      // Step 3: Clicking the empty landing square executes the capture
+      const landingClick = session.interpretClick(path.to);
+      expect(landingClick.kind).toBe('move');
+      if (landingClick.kind === 'move') {
+        session.applyMove(landingClick.move);
+        expect(engine.getState().board.intersections[path.from].occupant).toBeUndefined();
+        expect(engine.getState().board.intersections[path.over].occupant).toBeUndefined();
+        expect(engine.getState().board.intersections[path.to].occupant).toBe('RED');
+        expect(engine.getState().captures.RED).toBe(1);
+      }
+    },
+  );
 
   it.each(variants)('%s mid-chain clicking an opponent bead is ignored', (variant) => {
     const session = new FeatureSession(variant, { mode: 'pve', ...off });
@@ -227,7 +255,7 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
     const paths = engine.getState().board.jumpPaths ?? [];
 
     // Find two chaining jumps: A -> B over V1, then B -> C over V2
-    let chain: [typeof paths[0], typeof paths[0]] | null = null;
+    let chain: [(typeof paths)[0], (typeof paths)[0]] | null = null;
     for (const p1 of paths) {
       for (const p2 of paths) {
         if (p1.to === p2.from && new Set([p1.from, p1.over, p1.to, p2.over, p2.to]).size === 5) {
@@ -244,7 +272,11 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
     engine.getState().board.intersections[hop1.from].occupant = 'RED';
     engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
     engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
-    const spare = engine.getState().board.intersections.find((p) => !new Set([hop1.from, hop1.over, hop1.to, hop2.over, hop2.to]).has(p.id));
+    const spare = engine
+      .getState()
+      .board.intersections.find(
+        (p) => !new Set([hop1.from, hop1.over, hop1.to, hop2.over, hop2.to]).has(p.id),
+      );
     if (spare) spare.occupant = 'BLUE';
     engine.getState().currentPlayer = 'RED';
 
@@ -294,20 +326,26 @@ describe('FeatureSession turn start rings', () => {
     expect(session.selectNode(slide.from)).toBe(true);
     expect(session.shouldShowTurnStartRings()).toBe(false);
 
-    const immobile = engine.getState().board.intersections.find(
-      (n) => n.occupant === 'RED'
-        && n.id !== slide.from
-        && !engine.getLegalMoves().some((m) => m.from === n.id),
-    );
+    const immobile = engine
+      .getState()
+      .board.intersections.find(
+        (n) =>
+          n.occupant === 'RED' &&
+          n.id !== slide.from &&
+          !engine.getLegalMoves().some((m) => m.from === n.id),
+      );
     if (immobile) {
       expect(session.selectNode(immobile.id)).toBe(false);
       expect(session.getSelectedId()).toBeNull();
     } else {
-      const other = engine.getState().board.intersections.find(
-        (n) => n.occupant === 'RED'
-          && n.id !== slide.from
-          && engine.getLegalMoves().some((m) => m.from === n.id),
-      );
+      const other = engine
+        .getState()
+        .board.intersections.find(
+          (n) =>
+            n.occupant === 'RED' &&
+            n.id !== slide.from &&
+            engine.getLegalMoves().some((m) => m.from === n.id),
+        );
       expect(other).toBeDefined();
       expect(session.selectNode(other!.id)).toBe(true);
       expect(session.getSelectedId()).toBe(other!.id);
@@ -319,9 +357,17 @@ describe('FeatureSession turn start rings', () => {
     const session = new FeatureSession('8x4x6', buildCoachWatchSettings());
     session.setStartingPlayer('RED');
     expect(session.shouldShowTurnStartRings()).toBe(true);
-    const red = session.getEngine().getState().board.intersections.find(
-      (n) => n.occupant === 'RED' && session.getEngine().getLegalMoves().some((m) => m.from === n.id),
-    );
+    const red = session
+      .getEngine()
+      .getState()
+      .board.intersections.find(
+        (n) =>
+          n.occupant === 'RED' &&
+          session
+            .getEngine()
+            .getLegalMoves()
+            .some((m) => m.from === n.id),
+      );
     expect(red).toBeDefined();
     expect(session.previewScriptedSelection(red!.id)).toBe(true);
     expect(session.shouldShowTurnStartRings()).toBe(false);
@@ -345,7 +391,7 @@ describe('FeatureSession turn start rings', () => {
     // getLegalMoves() returns plain {from,to} Move objects with no `over` field —
     // chain geometry (from/over/to) only exists on board.jumpPaths.
     const paths = engine.getState().board.jumpPaths ?? [];
-    let chain: [typeof paths[0], typeof paths[0]] | null = null;
+    let chain: [(typeof paths)[0], (typeof paths)[0]] | null = null;
     for (const p1 of paths) {
       for (const p2 of paths) {
         if (p1.to === p2.from && new Set([p1.from, p1.over, p1.to, p2.over, p2.to]).size === 5) {
@@ -380,7 +426,7 @@ describe('FeatureSession turn start rings', () => {
     // getLegalMoves() returns plain {from,to} Move objects with no `over` field —
     // chain geometry (from/over/to) only exists on board.jumpPaths.
     const paths = engine.getState().board.jumpPaths ?? [];
-    let chain: [typeof paths[0], typeof paths[0]] | null = null;
+    let chain: [(typeof paths)[0], (typeof paths)[0]] | null = null;
     for (const p1 of paths) {
       for (const p2 of paths) {
         if (p1.to === p2.from && new Set([p1.from, p1.over, p1.to, p2.over, p2.to]).size === 5) {
@@ -399,9 +445,11 @@ describe('FeatureSession turn start rings', () => {
     engine.getState().board.intersections[hop1.from].occupant = 'RED';
     engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
     engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
-    const otherRed = engine.getState().board.intersections.find(
-      (p) => !new Set([hop1.from, hop1.over, hop1.to, hop2.over, hop2.to]).has(p.id),
-    );
+    const otherRed = engine
+      .getState()
+      .board.intersections.find(
+        (p) => !new Set([hop1.from, hop1.over, hop1.to, hop2.over, hop2.to]).has(p.id),
+      );
     expect(otherRed).toBeDefined();
     otherRed!.occupant = 'RED';
     engine.getState().currentPlayer = 'RED';

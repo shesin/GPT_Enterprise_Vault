@@ -41,7 +41,7 @@ describe('BoardCatalog human-decided settings', () => {
       expect(play.centerRuleOptions).toEqual(['off', 'endgame']);
       expect(play.defaultSettings.centerRule).toBe('off');
       expect(play.defaultSettings.timer).toBe('off');
-    expect(play.defaultSettings.tournamentTimer).toBe('off');
+      expect(play.defaultSettings.tournamentTimer).toBe('off');
       expect(play.defaultSettings.shotClock).toBe('off');
     }
   });
@@ -54,7 +54,7 @@ describe('BoardCatalog human-decided settings', () => {
       expect(play.timerOptions).toEqual(['off', '2', '5', '10']);
       expect(play.timerBest).toBe('5');
       expect(play.defaultSettings.timer).toBe('off');
-    expect(play.defaultSettings.tournamentTimer).toBe('off');
+      expect(play.defaultSettings.tournamentTimer).toBe('off');
       expect(play.shotClockOptions).toEqual(['off', '30', '60']);
       expect(play.shotClockBest).toBe('60');
       expect(play.defaultSettings.shotClock).toBe('off');

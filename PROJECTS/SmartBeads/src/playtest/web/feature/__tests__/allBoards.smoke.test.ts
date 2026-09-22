@@ -34,37 +34,47 @@ describe('All V1 boards — own beads, capture/Finish, New game', () => {
     expect(session.selectNode(movable!)).toBe(true);
   });
 
-  it.each(PRODUCT_BOARD_ORDER)('%s: New game (reset) restores opening and clears game-over', (boardId) => {
-    const variant = resolveEngineVariant(boardId);
-    const session = new FeatureSession(variant, { ...base, shotClock: '30' });
-    const slide = session.getEngine().getLegalMoves()[0];
-    session.applyMove(slide);
-    session.endGameByFeature('RED', 'test end');
-    expect(session.isGameOver()).toBe(true);
-    session.reset();
-    expect(session.isGameOver()).toBe(false);
-    expect(session.getEngine().getState().currentPlayer).toBe('RED');
-    expect(session.getEngine().getState().moveCount).toBe(0);
-    expect(session.getUiState()).toBe('idle');
-  });
+  it.each(PRODUCT_BOARD_ORDER)(
+    '%s: New game (reset) restores opening and clears game-over',
+    (boardId) => {
+      const variant = resolveEngineVariant(boardId);
+      const session = new FeatureSession(variant, { ...base, shotClock: '30' });
+      const slide = session.getEngine().getLegalMoves()[0];
+      session.applyMove(slide);
+      session.endGameByFeature('RED', 'test end');
+      expect(session.isGameOver()).toBe(true);
+      session.reset();
+      expect(session.isGameOver()).toBe(false);
+      expect(session.getEngine().getState().currentPlayer).toBe('RED');
+      expect(session.getEngine().getState().moveCount).toBe(0);
+      expect(session.getUiState()).toBe('idle');
+    },
+  );
 
-  it.each(PRODUCT_BOARD_ORDER)('%s: Medium AI completes at least one reply turn after human slide', (boardId) => {
-    const variant = resolveEngineVariant(boardId);
-    const session = new FeatureSession(variant, base);
-    const slide = session.getEngine().getLegalMoves().find((m) => {
-      const jump = session.getEngine().getState().board.jumpPaths?.some(
-        (j) => j.from === m.from && j.to === m.to,
-      );
-      return !jump;
-    });
-    expect(slide).toBeDefined();
-    session.applyMove(slide!);
-    expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
-    const hops = runAiTurn(session);
-    expect(hops.length).toBeGreaterThan(0);
-    expect(session.getEngine().getState().currentPlayer).toBe('RED');
-    expect(session.isGameOver() || session.getUiState() === 'idle').toBe(true);
-  });
+  it.each(PRODUCT_BOARD_ORDER)(
+    '%s: Medium AI completes at least one reply turn after human slide',
+    (boardId) => {
+      const variant = resolveEngineVariant(boardId);
+      const session = new FeatureSession(variant, base);
+      const slide = session
+        .getEngine()
+        .getLegalMoves()
+        .find((m) => {
+          const jump = session
+            .getEngine()
+            .getState()
+            .board.jumpPaths?.some((j) => j.from === m.from && j.to === m.to);
+          return !jump;
+        });
+      expect(slide).toBeDefined();
+      session.applyMove(slide!);
+      expect(session.getEngine().getState().currentPlayer).toBe('BLUE');
+      const hops = runAiTurn(session);
+      expect(hops.length).toBeGreaterThan(0);
+      expect(session.getEngine().getState().currentPlayer).toBe('RED');
+      expect(session.isGameOver() || session.getUiState() === 'idle').toBe(true);
+    },
+  );
 });
 
 describe('Capture optionality (Finish) — 16 and small board', () => {
@@ -72,7 +82,8 @@ describe('Capture optionality (Finish) — 16 and small board', () => {
     const session = new FeatureSession('16', base);
     const engine = session.getEngine();
     for (const p of engine.getState().board.intersections) p.occupant = undefined;
-    const id = (label: string) => engine.getState().board.intersections.find((p) => p.label === label)!.id;
+    const id = (label: string) =>
+      engine.getState().board.intersections.find((p) => p.label === label)!.id;
     engine.getState().board.intersections.find((p) => p.label === 'A00')!.occupant = 'RED';
     engine.getState().board.intersections.find((p) => p.label === 'A01')!.occupant = 'BLUE';
     engine.getState().board.intersections.find((p) => p.label === 'A03')!.occupant = 'BLUE';
@@ -91,7 +102,7 @@ describe('Capture optionality (Finish) — 16 and small board', () => {
     const session = new FeatureSession('6x3x5', base);
     const engine = session.getEngine();
     const paths = engine.getState().board.jumpPaths ?? [];
-    let chain: [typeof paths[0], typeof paths[0]] | null = null;
+    let chain: [(typeof paths)[0], (typeof paths)[0]] | null = null;
     for (const p1 of paths) {
       for (const p2 of paths) {
         if (p1.to === p2.from && new Set([p1.from, p1.over, p1.to, p2.over, p2.to]).size === 5) {
@@ -108,9 +119,11 @@ describe('Capture optionality (Finish) — 16 and small board', () => {
     engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
     engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
     // Extra BLUE so capture does not wipe the side.
-    const spare = engine.getState().board.intersections.find(
-      (p) => !new Set([hop1.from, hop1.over, hop1.to, hop2.over, hop2.to]).has(p.id),
-    );
+    const spare = engine
+      .getState()
+      .board.intersections.find(
+        (p) => !new Set([hop1.from, hop1.over, hop1.to, hop2.over, hop2.to]).has(p.id),
+      );
     expect(spare).toBeDefined();
     spare!.occupant = 'BLUE';
     engine.getState().currentPlayer = 'RED';

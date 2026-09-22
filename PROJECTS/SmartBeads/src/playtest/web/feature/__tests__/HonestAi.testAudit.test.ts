@@ -15,7 +15,9 @@ function readTestSource(name: string, dir = featureTestsDir): string {
 describe('HonestAi test audit', () => {
   it('HonestAi.test.ts bounds generateTurnEnds on 16-bead', () => {
     const src = fs.readFileSync(honestAiTestPath, 'utf8');
-    expect(src).toMatch(/generateTurnEnds[\s\S]*(Date\.now\(\)\s*\+\s*\d|honestAiTurnEndsDeadlineMs)/);
+    expect(src).toMatch(
+      /generateTurnEnds[\s\S]*(Date\.now\(\)\s*\+\s*\d|honestAiTurnEndsDeadlineMs)/,
+    );
     expect(src).not.toMatch(/selectAiTurnPath\(\s*'16',\s*2/);
     expect(src).toMatch(/selectAiTurnPath\(\s*'6x3x5'/);
   });

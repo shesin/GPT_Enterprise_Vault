@@ -3,7 +3,10 @@ import type { CoachVideoHighlight, CoachVideoKeyframe } from './CoachVideoScript
 import { findCoachKeyframeByTime } from './CoachVideoScript';
 
 /** Snap the live session to a scripted coach-video board state. */
-export function applyCoachVideoKeyframe(session: FeatureSession, keyframe: CoachVideoKeyframe): void {
+export function applyCoachVideoKeyframe(
+  session: FeatureSession,
+  keyframe: CoachVideoKeyframe,
+): void {
   const engine = session.getEngine();
   const snap = engine.exportSnapshot();
   const nodes = snap.state.board.intersections;

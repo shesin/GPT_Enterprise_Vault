@@ -25,7 +25,9 @@ describe('Board8x4x6 (8-bead · 4×6)', () => {
 
     expect(red).toHaveLength(8);
     expect(blue).toHaveLength(8);
-    expect(empty.map((point) => point.id).sort((a, b) => a - b)).toEqual(BOARD8X4X6_EMPTY_WAIST_IDS);
+    expect(empty.map((point) => point.id).sort((a, b) => a - b)).toEqual(
+      BOARD8X4X6_EMPTY_WAIST_IDS,
+    );
   });
 
   it('uses sholo_guti termination with centre nodes 9, 10, 13, 14', () => {

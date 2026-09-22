@@ -2,10 +2,7 @@ import fs from 'fs';
 
 import path from 'path';
 
-const indexHtml = fs.readFileSync(
-  path.resolve(__dirname, '../../../../../../index.html'),
-  'utf8',
-);
+const indexHtml = fs.readFileSync(path.resolve(__dirname, '../../../../../../index.html'), 'utf8');
 
 describe('two-page play flow (index.html)', () => {
   it('page 1 hub has chess.com-style layout; page 2 play shell hidden until launch', () => {

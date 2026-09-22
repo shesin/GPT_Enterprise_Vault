@@ -20,7 +20,10 @@ function clearOccupants(session: FeatureSession): void {
 }
 
 function setOcc(session: FeatureSession, label: string, player: 'RED' | 'BLUE'): void {
-  const node = session.getEngine().getState().board.intersections.find((n) => n.label === label);
+  const node = session
+    .getEngine()
+    .getState()
+    .board.intersections.find((n) => n.label === label);
   if (!node) throw new Error(`missing node ${label}`);
   node.occupant = player;
 }

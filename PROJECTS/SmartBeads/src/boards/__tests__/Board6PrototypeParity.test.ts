@@ -1,12 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { SmartBeadsEngine } from '../../core/SmartBeadsEngine';
-import {
-  BOARD6_EDGE_COUNT,
-  BOARD6_JUMP_COUNT,
-  BOARD6_NODE_COUNT,
-  Board6,
-} from '../Board6';
+import { BOARD6_EDGE_COUNT, BOARD6_JUMP_COUNT, BOARD6_NODE_COUNT, Board6 } from '../Board6';
 
 const requireRef = createRequire(path.join(__dirname, 'Board6PrototypeParity.test.ts'));
 const refEngine = requireRef(
@@ -41,12 +36,8 @@ describe('Board6 prototype parity (fullBoxCross 6-bead 4×4)', () => {
   });
 
   it('matches reference collinear capture routes on sample adjacency', () => {
-    expect(Board6.jumpPaths).toEqual(
-      expect.arrayContaining([{ from: 0, over: 4, to: 8 }]),
-    );
-    expect(Board6.jumpPaths).toEqual(
-      expect.arrayContaining([{ from: 0, over: 1, to: 2 }]),
-    );
+    expect(Board6.jumpPaths).toEqual(expect.arrayContaining([{ from: 0, over: 4, to: 8 }]));
+    expect(Board6.jumpPaths).toEqual(expect.arrayContaining([{ from: 0, over: 1, to: 2 }]));
   });
 });
 
@@ -86,7 +77,11 @@ function buildFullBoxCrossAdjacency(rows: number, cols: number): number[][] {
   return adjacency;
 }
 
-function buildJumps(adjacency: number[][], rows: number, cols: number): Array<{ from: number; over: number; to: number }> {
+function buildJumps(
+  adjacency: number[][],
+  rows: number,
+  cols: number,
+): Array<{ from: number; over: number; to: number }> {
   const jumps: Array<{ from: number; over: number; to: number }> = [];
   for (let from = 0; from < adjacency.length; from++) {
     for (const over of adjacency[from]) {

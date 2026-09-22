@@ -19,7 +19,7 @@ describe('SoundEffects event dispatch and mute/volume', () => {
 
   it('initializes muted off by default with volume 0.90', () => {
     expect(sfx.isMuted()).toBe(true);
-    expect(sfx.getVolume()).toBe(0.90);
+    expect(sfx.getVolume()).toBe(0.9);
   });
 
   it('toggles and sets mute state', () => {

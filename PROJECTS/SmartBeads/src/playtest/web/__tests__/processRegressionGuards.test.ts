@@ -28,18 +28,12 @@ const canvasRendererSource = fs.readFileSync(
   path.resolve(__dirname, '../render/CanvasBoardRenderer.ts'),
   'utf8',
 );
-const playHubSource = fs.readFileSync(
-  path.resolve(__dirname, '../PlayHub.ts'),
-  'utf8',
-);
+const playHubSource = fs.readFileSync(path.resolve(__dirname, '../PlayHub.ts'), 'utf8');
 const playShellThemesSource = fs.readFileSync(
   path.resolve(__dirname, '../layout/playShellThemes.ts'),
   'utf8',
 );
-const playShellCss = fs.readFileSync(
-  path.resolve(__dirname, '../play-shell.css'),
-  'utf8',
-);
+const playShellCss = fs.readFileSync(path.resolve(__dirname, '../play-shell.css'), 'utf8');
 const gameFeatureSettingsSource = fs.readFileSync(
   path.resolve(__dirname, '../feature/GameFeatureSettings.ts'),
   'utf8',
@@ -123,7 +117,9 @@ describe('process regression guards', () => {
     });
 
     it('browser snapshot exposes turnStartRingsPending for live gates', () => {
-      expect(playControllerSource).toMatch(/turnStartRingsPending:\s*session\.shouldShowTurnStartRings\(\)/);
+      expect(playControllerSource).toMatch(
+        /turnStartRingsPending:\s*session\.shouldShowTurnStartRings\(\)/,
+      );
     });
 
     it('captures human ply snap at applyMove before AI (browser gate)', () => {
@@ -134,7 +130,9 @@ describe('process regression guards', () => {
 
   describe('coach vs live — move hints use previewScriptedSelection', () => {
     it('coach video board applies highlights via previewScriptedSelection', () => {
-      expect(coachVideoBoardSource).toMatch(/session\.previewScriptedSelection\(highlight\.selectedId\)/);
+      expect(coachVideoBoardSource).toMatch(
+        /session\.previewScriptedSelection\(highlight\.selectedId\)/,
+      );
       expect(coachVideoBoardSource).not.toMatch(/setCoachBoardFocus/);
     });
 
@@ -181,7 +179,9 @@ describe('process regression guards', () => {
     it('locks End-Game, 2 min timer, Expert vs Expert on hub spectate entry', () => {
       expect(playControllerSource).toMatch(/function applySpectateDefaultsToUi/);
       expect(playControllerSource).toMatch(/SPECTATE_WATCH_DEFAULTS/);
-      expect(playControllerSource).toMatch(/if \(action === 'spectate'\)[\s\S]*applySpectateDefaultsToUi\(boardId\)/);
+      expect(playControllerSource).toMatch(
+        /if \(action === 'spectate'\)[\s\S]*applySpectateDefaultsToUi\(boardId\)/,
+      );
       expect(gameFeatureSettingsSource).toMatch(/SPECTATE_WATCH_DEFAULTS/);
       expect(gameFeatureSettingsSource).toMatch(/centerRule: 'endgame'/);
       expect(gameFeatureSettingsSource).toMatch(/timer: '2'/);
@@ -259,9 +259,10 @@ describe('process regression guards', () => {
   describe('below-board New game — reset not hub', () => {
     it('restart button starts a new match (same as Play again), not returnToHub', () => {
       expect(playControllerSource).toMatch(/restartBtn\.addEventListener\('click'/);
-      const restartHandler = playControllerSource.match(
-        /restartBtn\.addEventListener\('click', \(\) => \{([\s\S]*?)\}\);/,
-      )?.[1] ?? '';
+      const restartHandler =
+        playControllerSource.match(
+          /restartBtn\.addEventListener\('click', \(\) => \{([\s\S]*?)\}\);/,
+        )?.[1] ?? '';
       expect(restartHandler).toMatch(/resetGame\(\)/);
       expect(restartHandler).not.toMatch(/returnToHub\(\)/);
     });

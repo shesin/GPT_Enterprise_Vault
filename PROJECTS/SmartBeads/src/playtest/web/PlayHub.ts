@@ -96,10 +96,7 @@ function syncBoardTileSelection(grid: HTMLElement, boardId: ProductBoardId): voi
   }
 }
 
-function populateHubModeGrid(
-  grid: HTMLElement,
-  onLaunch: (hubMode: HubModeValue) => void,
-): void {
+function populateHubModeGrid(grid: HTMLElement, onLaunch: (hubMode: HubModeValue) => void): void {
   grid.innerHTML = '';
   for (const tile of HUB_MODE_TILES) {
     const btn = document.createElement('button');
@@ -149,7 +146,9 @@ function wireHubRailNotice(): void {
 
   dismiss?.addEventListener('click', hideNotice);
 
-  for (const link of document.querySelectorAll<HTMLButtonElement>('.hub-sidebar-link[data-hub-nav]')) {
+  for (const link of document.querySelectorAll<HTMLButtonElement>(
+    '.hub-sidebar-link[data-hub-nav]',
+  )) {
     link.addEventListener('click', () => {
       const message = HUB_RAIL_NOTICES[link.dataset.hubNav ?? ''];
       if (message) showNotice(message);
@@ -176,7 +175,11 @@ function wireHubThemePicker(): void {
 }
 
 export function bootstrapPlayHub(
-  enterPlay: (boardId: ProductBoardId, mode: GameFeatureSettings['mode'], action: HubLaunchAction) => void,
+  enterPlay: (
+    boardId: ProductBoardId,
+    mode: GameFeatureSettings['mode'],
+    action: HubLaunchAction,
+  ) => void,
 ): void {
   const boardSelect = document.getElementById('hub-board-select') as HTMLSelectElement | null;
   const modeSelect = document.getElementById('hub-mode-select') as HTMLSelectElement | null;
@@ -220,7 +223,9 @@ export function bootstrapPlayHub(
 
   const coachParam = new URLSearchParams(window.location.search).get('coach');
   if (coachParam === '1' || coachParam === 'start') {
-    document.getElementById('hub-section-lesson')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    document
+      .getElementById('hub-section-lesson')
+      ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     lessonBasic?.focus();
   }
 }

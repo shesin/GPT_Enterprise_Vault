@@ -37,17 +37,28 @@ function recordingContext(): CanvasRenderingContext2D {
 
 /** Shared by every test below that asserts on which stroke colours got drawn
  * (2026-09-22 audit — was a ~20-line fake ctx hand-copied in 7 places). */
-function recordingContextWithStrokeStyles(): { ctx: CanvasRenderingContext2D; strokeStyles: string[] } {
+function recordingContextWithStrokeStyles(): {
+  ctx: CanvasRenderingContext2D;
+  strokeStyles: string[];
+} {
   const strokeStyles: string[] = [];
   const ctx = {
     ...baseCtxMethods(),
-    get strokeStyle() { return strokeStyles[strokeStyles.length - 1] ?? ''; },
-    set strokeStyle(v: string) { strokeStyles.push(v); },
+    get strokeStyle() {
+      return strokeStyles[strokeStyles.length - 1] ?? '';
+    },
+    set strokeStyle(v: string) {
+      strokeStyles.push(v);
+    },
   } as unknown as CanvasRenderingContext2D;
   return { ctx, strokeStyles };
 }
 
-function fakeCanvas(width: number, height: number, ctx: CanvasRenderingContext2D = recordingContext()): HTMLCanvasElement {
+function fakeCanvas(
+  width: number,
+  height: number,
+  ctx: CanvasRenderingContext2D = recordingContext(),
+): HTMLCanvasElement {
   return {
     width,
     height,
@@ -62,18 +73,20 @@ describe('CanvasBoardRenderer move feedback', () => {
     const board = engine.getState().board;
     const canvas = fakeCanvas(420, 560);
 
-    expect(() => drawCanvasBoard(canvas, {
-      board,
-      currentPlayer: 'RED',
-      gameOver: false,
-      selectedId: null,
-      legalTargets: [],
-      chainPieceId: null,
-      anim: null,
-      turnPulse: 0,
-      lastMove: { from: 9, to: 6, player: 'BLUE' },
-      capturePulses: [{ nodeId: 12, progress: 0.25 }],
-    })).not.toThrow();
+    expect(() =>
+      drawCanvasBoard(canvas, {
+        board,
+        currentPlayer: 'RED',
+        gameOver: false,
+        selectedId: null,
+        legalTargets: [],
+        chainPieceId: null,
+        anim: null,
+        turnPulse: 0,
+        lastMove: { from: 9, to: 6, player: 'BLUE' },
+        capturePulses: [{ nodeId: 12, progress: 0.25 }],
+      }),
+    ).not.toThrow();
   });
 
   it('does not draw amber ring on idle board when it is not cream turn', () => {
@@ -243,25 +256,27 @@ describe('CanvasBoardRenderer move feedback', () => {
 
     // anim.t past ~0.714 clamps the capture fade to 0 — the exact moment that
     // threw "radius (-0.5) is negative" for a captured black bead in production.
-    expect(() => drawCanvasBoard(canvas, {
-      board,
-      currentPlayer: 'RED',
-      gameOver: false,
-      selectedId: null,
-      legalTargets: [],
-      chainPieceId: null,
-      anim: {
-        from: blue!.id,
-        to: blue!.id,
-        captured: blue!.id,
-        capturedPlayer: 'BLUE',
-        player: 'RED',
-        t: 0.95,
-        duration: 200,
-      },
-      turnPulse: 0,
-      lastMove: null,
-      capturePulses: [],
-    })).not.toThrow();
+    expect(() =>
+      drawCanvasBoard(canvas, {
+        board,
+        currentPlayer: 'RED',
+        gameOver: false,
+        selectedId: null,
+        legalTargets: [],
+        chainPieceId: null,
+        anim: {
+          from: blue!.id,
+          to: blue!.id,
+          captured: blue!.id,
+          capturedPlayer: 'BLUE',
+          player: 'RED',
+          t: 0.95,
+          duration: 200,
+        },
+        turnPulse: 0,
+        lastMove: null,
+        capturePulses: [],
+      }),
+    ).not.toThrow();
   });
 });

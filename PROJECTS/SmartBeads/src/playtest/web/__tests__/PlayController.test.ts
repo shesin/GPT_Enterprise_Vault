@@ -51,7 +51,13 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
 
   it('does not apply a leftover hop still sitting on the selected path after the chain ends', () => {
     const session = hangingSession();
-    const path = selectAiTurnPath('16', 2, session.getEngine().exportSnapshot(), 'BLUE', honestAiTestOpts());
+    const path = selectAiTurnPath(
+      '16',
+      2,
+      session.getEngine().exportSnapshot(),
+      'BLUE',
+      honestAiTestOpts(),
+    );
     expect(path?.length).toBeGreaterThan(0);
 
     const probe = hangingSession();
@@ -87,7 +93,8 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     for (const point of engine.getState().board.intersections) {
       point.occupant = undefined;
     }
-    const id = (label: string) => engine.getState().board.intersections.find((p) => p.label === label)!.id;
+    const id = (label: string) =>
+      engine.getState().board.intersections.find((p) => p.label === label)!.id;
     engine.getState().board.intersections.find((p) => p.label === 'A00')!.occupant = 'BLUE';
     engine.getState().board.intersections.find((p) => p.label === 'A01')!.occupant = 'RED';
     engine.getState().board.intersections.find((p) => p.label === 'A03')!.occupant = 'RED';
@@ -108,7 +115,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
       mode: 'pve',
       aiLevel: 3,
       timer: 'off',
-  tournamentTimer: 'off' as const,
+      tournamentTimer: 'off' as const,
       shotClock: 'off',
       centerRule: 'off',
     });
@@ -133,7 +140,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
       mode: 'pve',
       aiLevel: 3,
       timer: 'off',
-  tournamentTimer: 'off' as const,
+      tournamentTimer: 'off' as const,
       shotClock: 'off',
       centerRule: 'endgame',
     });
@@ -141,7 +148,8 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     for (const point of engine.getState().board.intersections) {
       point.occupant = undefined;
     }
-    const id = (label: string) => engine.getState().board.intersections.find((p) => p.label === label)!.id;
+    const id = (label: string) =>
+      engine.getState().board.intersections.find((p) => p.label === label)!.id;
     engine.getState().board.intersections.find((p) => p.label === 'A11')!.occupant = 'BLUE';
     engine.getState().board.intersections.find((p) => p.label === 'A00')!.occupant = 'RED';
     engine.getState().board.intersections.find((p) => p.label === 'A02')!.occupant = 'RED';
@@ -169,12 +177,14 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
         if (player === 'RED') {
           const moves = session.getEngine().getLegalMoves();
           if (!moves.length) break;
-          const slide = moves.find((m) => {
-            const jump = session.getEngine().getState().board.jumpPaths?.some(
-              (j) => j.from === m.from && j.to === m.to,
-            );
-            return !jump;
-          }) ?? moves[0];
+          const slide =
+            moves.find((m) => {
+              const jump = session
+                .getEngine()
+                .getState()
+                .board.jumpPaths?.some((j) => j.from === m.from && j.to === m.to);
+              return !jump;
+            }) ?? moves[0];
           session.applyMove(slide);
           if (session.getUiState() === 'chain') session.finishChain();
         } else {

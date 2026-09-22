@@ -5,7 +5,12 @@
 
 import type { ProductBoardId } from '../../../config/BoardCatalog';
 import type { Player } from '../../../models/GameState';
-import type { CenterRule, GameFeatureSettings, TimerMinutes, ShotClockSeconds } from './GameFeatureSettings';
+import type {
+  CenterRule,
+  GameFeatureSettings,
+  TimerMinutes,
+  ShotClockSeconds,
+} from './GameFeatureSettings';
 
 export const COACH_VIDEO_BOARD_ID = '7x4x5' as const satisfies ProductBoardId;
 
@@ -23,7 +28,9 @@ export function estimateCoachSpeechMs(text: string, rate = 0.92): number {
   return Math.ceil((words / (2.4 * rate)) * 1000);
 }
 
-export const COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH_VIDEO_TRIPLE_SPEECH_TEXT);
+export const COACH_VIDEO_TRIPLE_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(
+  COACH_VIDEO_TRIPLE_SPEECH_TEXT,
+);
 
 /** Triple voice + post pause — timeline holds here until release (then finish demo, then win). */
 export const COACH_VIDEO_TRIPLE_COMPLETE_MS =
@@ -37,8 +44,9 @@ export const COACH_FINISH_CAPTURE_SPEECH_TEXT =
 /** @deprecated use COACH_FINISH_CAPTURE_SPEECH_TEXT */
 export const COACH_FINISH_CAPTURE_SPEECH_TAIL = COACH_FINISH_CAPTURE_SPEECH_TEXT;
 
-export const COACH_FINISH_CAPTURE_SPEECH_ESTIMATE_MS =
-  estimateCoachSpeechMs(COACH_FINISH_CAPTURE_SPEECH_TEXT);
+export const COACH_FINISH_CAPTURE_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(
+  COACH_FINISH_CAPTURE_SPEECH_TEXT,
+);
 
 /** Finish demo — voice + post pause before win appendix. */
 export const COACH_FINISH_CAPTURE_DEMO_DURATION_MS =
@@ -63,7 +71,8 @@ export const COACH_WIN_CONGRATS_PHASE_MS = 6_000;
 export const COACH_WIN_SEGMENT_DURATION_MS =
   COACH_WIN_BOARD_PHASE_MS + COACH_WIN_CONGRATS_PHASE_MS + 1_000;
 
-export const COACH_WIN_CONGRATS_CUE_MS = COACH_VIDEO_WIN_SEGMENT_START_MS + COACH_WIN_BOARD_PHASE_MS;
+export const COACH_WIN_CONGRATS_CUE_MS =
+  COACH_VIDEO_WIN_SEGMENT_START_MS + COACH_WIN_BOARD_PHASE_MS;
 
 export const COACH_VIDEO_RESIGN_SEGMENT_START_MS =
   COACH_VIDEO_WIN_SEGMENT_START_MS + COACH_WIN_SEGMENT_DURATION_MS;
@@ -86,22 +95,21 @@ export const COACH_RESIGN_CONGRATS_PHASE_MS = Math.max(
 /** Glow below-board when intro says "Resign." */
 export const COACH_RESIGN_UI_START_MS = COACH_VIDEO_RESIGN_SEGMENT_START_MS + 300;
 
-export const COACH_RESIGN_CLOSE_UI_MS =
-  COACH_RESIGN_UI_START_MS + COACH_RESIGN_MODAL_PHASE_MS;
+export const COACH_RESIGN_CLOSE_UI_MS = COACH_RESIGN_UI_START_MS + COACH_RESIGN_MODAL_PHASE_MS;
 
 /** Beat after intro voice before congrats modal. */
 export const COACH_RESIGN_POST_INTRO_MS = 500;
 
 export const COACH_RESIGN_DECLINE_CONGRATS_MS =
-  COACH_VIDEO_RESIGN_SEGMENT_START_MS
-  + COACH_RESIGN_SPEECH_ESTIMATE_MS
-  + COACH_RESIGN_POST_INTRO_MS;
+  COACH_VIDEO_RESIGN_SEGMENT_START_MS +
+  COACH_RESIGN_SPEECH_ESTIMATE_MS +
+  COACH_RESIGN_POST_INTRO_MS;
 
 export const COACH_RESIGN_SEGMENT_DURATION_MS =
-  COACH_RESIGN_SPEECH_ESTIMATE_MS
-  + COACH_RESIGN_POST_INTRO_MS
-  + COACH_RESIGN_CONGRATS_PHASE_MS
-  + 1_000;
+  COACH_RESIGN_SPEECH_ESTIMATE_MS +
+  COACH_RESIGN_POST_INTRO_MS +
+  COACH_RESIGN_CONGRATS_PHASE_MS +
+  1_000;
 
 export const COACH_VIDEO_DRAW_SEGMENT_START_MS =
   COACH_VIDEO_RESIGN_SEGMENT_START_MS + COACH_RESIGN_SEGMENT_DURATION_MS;
@@ -116,22 +124,14 @@ export const COACH_DRAW_POST_INTRO_MS = 500;
 export const COACH_DRAW_MODAL_PHASE_MS = 6_000;
 
 export const COACH_DRAW_RESULT_CUE_MS =
-  COACH_VIDEO_DRAW_SEGMENT_START_MS
-  + COACH_DRAW_SPEECH_ESTIMATE_MS
-  + COACH_DRAW_POST_INTRO_MS;
+  COACH_VIDEO_DRAW_SEGMENT_START_MS + COACH_DRAW_SPEECH_ESTIMATE_MS + COACH_DRAW_POST_INTRO_MS;
 
 export const COACH_DRAW_SEGMENT_DURATION_MS =
-  COACH_DRAW_SPEECH_ESTIMATE_MS
-  + COACH_DRAW_POST_INTRO_MS
-  + COACH_DRAW_MODAL_PHASE_MS
-  + 1_000;
+  COACH_DRAW_SPEECH_ESTIMATE_MS + COACH_DRAW_POST_INTRO_MS + COACH_DRAW_MODAL_PHASE_MS + 1_000;
 
 /** Total timeline length (ending appendix included). */
 export const COACH_VIDEO_DURATION_MS =
   COACH_VIDEO_DRAW_SEGMENT_START_MS + COACH_DRAW_SEGMENT_DURATION_MS + 1_000;
-
-/** @deprecated use COACH_VIDEO_RESIGN_SEGMENT_START_MS */
-const COACH_RESIGN_SEGMENT_START_MS = COACH_VIDEO_RESIGN_SEGMENT_START_MS;
 
 /** Amber highlight appears this long before the scripted move plays. */
 export const COACH_HIGHLIGHT_LEAD_MS = 1_500;
@@ -290,7 +290,10 @@ export const COACH_VIDEO_SEGMENT_BANNERS: CoachVideoSegmentBanner[] = [
   { atMs: COACH_VIDEO_DRAW_SEGMENT_START_MS, title: 'DRAW' },
 ];
 
-const ANCHOR: readonly [number, Player][] = [[15, 'BLUE'], [19, 'BLUE']];
+const ANCHOR: readonly [number, Player][] = [
+  [15, 'BLUE'],
+  [19, 'BLUE'],
+];
 
 export const COACH_VIDEO: CoachVideoScript = {
   boardId: COACH_VIDEO_BOARD_ID,
@@ -312,40 +315,163 @@ export const COACH_VIDEO: CoachVideoScript = {
     kf(11_400, [[12, 'RED'], [17, 'RED'], [18, 'RED'], ...ANCHOR]),
     kf(14_900, [[17, 'RED'], [16, 'RED'], [12, 'RED'], ...ANCHOR]),
     kf(16_100, [[13, 'RED'], [16, 'RED'], [12, 'RED'], ...ANCHOR]),
-    kf(19_100, [[12, 'RED'], [8, 'BLUE'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']]),
-    kf(25_380, [[4, 'RED'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
-    kf(28_000, [[8, 'RED'], [5, 'BLUE'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']]),
-    kf(32_680, [[2, 'RED'], [16, 'RED'], [17, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
-    kf(32_940, [[17, 'RED'], [13, 'BLUE'], [16, 'RED'], [12, 'RED'], [19, 'BLUE']]),
-    kf(34_940, [[9, 'RED'], [16, 'RED'], [12, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }),
-    kf(37_940, [[12, 'RED'], [8, 'BLUE'], [5, 'BLUE'], [16, 'RED'], [19, 'BLUE']]),
-    kf(44_220, [[4, 'RED'], [5, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }, 4),
-    kf(45_100, [[6, 'RED'], [16, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }),
-    kf(48_100, [[12, 'RED'], [8, 'BLUE'], [5, 'BLUE'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']]),
-    kf(54_480, [[4, 'RED'], [5, 'BLUE'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 1, BLUE: 0 }, 4),
-    kf(54_880, [[6, 'RED'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']], { RED: 2, BLUE: 0 }, 6),
-    kf(56_220, [[14, 'RED'], [16, 'RED'], [19, 'BLUE']], { RED: 3, BLUE: 0 }),
+    kf(19_100, [
+      [12, 'RED'],
+      [8, 'BLUE'],
+      [16, 'RED'],
+      [17, 'RED'],
+      [19, 'BLUE'],
+    ]),
+    kf(
+      25_380,
+      [
+        [4, 'RED'],
+        [16, 'RED'],
+        [17, 'RED'],
+        [19, 'BLUE'],
+      ],
+      { RED: 1, BLUE: 0 },
+    ),
+    kf(28_000, [
+      [8, 'RED'],
+      [5, 'BLUE'],
+      [16, 'RED'],
+      [17, 'RED'],
+      [19, 'BLUE'],
+    ]),
+    kf(
+      32_680,
+      [
+        [2, 'RED'],
+        [16, 'RED'],
+        [17, 'RED'],
+        [19, 'BLUE'],
+      ],
+      { RED: 1, BLUE: 0 },
+    ),
+    kf(32_940, [
+      [17, 'RED'],
+      [13, 'BLUE'],
+      [16, 'RED'],
+      [12, 'RED'],
+      [19, 'BLUE'],
+    ]),
+    kf(
+      34_940,
+      [
+        [9, 'RED'],
+        [16, 'RED'],
+        [12, 'RED'],
+        [19, 'BLUE'],
+      ],
+      { RED: 1, BLUE: 0 },
+    ),
+    kf(37_940, [
+      [12, 'RED'],
+      [8, 'BLUE'],
+      [5, 'BLUE'],
+      [16, 'RED'],
+      [19, 'BLUE'],
+    ]),
+    kf(
+      44_220,
+      [
+        [4, 'RED'],
+        [5, 'BLUE'],
+        [16, 'RED'],
+        [19, 'BLUE'],
+      ],
+      { RED: 1, BLUE: 0 },
+      4,
+    ),
+    kf(
+      45_100,
+      [
+        [6, 'RED'],
+        [16, 'RED'],
+        [19, 'BLUE'],
+      ],
+      { RED: 2, BLUE: 0 },
+    ),
+    kf(48_100, [
+      [12, 'RED'],
+      [8, 'BLUE'],
+      [5, 'BLUE'],
+      [10, 'BLUE'],
+      [16, 'RED'],
+      [19, 'BLUE'],
+    ]),
+    kf(
+      54_480,
+      [
+        [4, 'RED'],
+        [5, 'BLUE'],
+        [10, 'BLUE'],
+        [16, 'RED'],
+        [19, 'BLUE'],
+      ],
+      { RED: 1, BLUE: 0 },
+      4,
+    ),
+    kf(
+      54_880,
+      [
+        [6, 'RED'],
+        [10, 'BLUE'],
+        [16, 'RED'],
+        [19, 'BLUE'],
+      ],
+      { RED: 2, BLUE: 0 },
+      6,
+    ),
+    kf(
+      56_220,
+      [
+        [14, 'RED'],
+        [16, 'RED'],
+        [19, 'BLUE'],
+      ],
+      { RED: 3, BLUE: 0 },
+    ),
     kf(
       COACH_FINISH_CAPTURE_DEMO_MS,
-      [[6, 'RED'], [10, 'BLUE'], [16, 'RED'], [19, 'BLUE']],
+      [
+        [6, 'RED'],
+        [10, 'BLUE'],
+        [16, 'RED'],
+        [19, 'BLUE'],
+      ],
       { RED: 2, BLUE: 0 },
       6,
     ),
     kf(
       COACH_VIDEO_WIN_SEGMENT_START_MS,
-      [[4, 'RED'], [8, 'RED']],
+      [
+        [4, 'RED'],
+        [8, 'RED'],
+      ],
       { RED: 2, BLUE: 0 },
       null,
       [4, 8],
     ),
     kf(
       COACH_VIDEO_RESIGN_SEGMENT_START_MS,
-      [[4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE']],
+      [
+        [4, 'RED'],
+        [8, 'RED'],
+        [12, 'BLUE'],
+        [16, 'BLUE'],
+      ],
       { RED: 2, BLUE: 2 },
     ),
     kf(
       COACH_VIDEO_DRAW_SEGMENT_START_MS,
-      [[4, 'RED'], [8, 'RED'], [12, 'BLUE'], [16, 'BLUE']],
+      [
+        [4, 'RED'],
+        [8, 'RED'],
+        [12, 'BLUE'],
+        [16, 'BLUE'],
+      ],
       { RED: 2, BLUE: 2 },
     ),
   ],
@@ -385,7 +511,14 @@ export const COACH_VIDEO: CoachVideoScript = {
     { atMs: 54_780, keyframeAtMs: 54_880, selectedId: 6 },
   ],
   moves: [
-    { atMs: 6_500, setupAtMs: 0, from: 12, to: 8, player: 'RED', speech: 'Move. Slide one step along a line to an empty node.' },
+    {
+      atMs: 6_500,
+      setupAtMs: 0,
+      from: 12,
+      to: 8,
+      player: 'RED',
+      speech: 'Move. Slide one step along a line to an empty node.',
+    },
     { atMs: 11_200, setupAtMs: 10_000, from: 16, to: 12, player: 'RED' },
     { atMs: 15_900, setupAtMs: 14_900, from: 17, to: 13, player: 'RED' },
     {
@@ -476,9 +609,9 @@ export function findCoachKeyframeAt(
     let best = keyframes[0];
     for (const entry of keyframes) {
       if (
-        entry.atMs <= ms
-        && entry.atMs >= COACH_VIDEO_DRAW_SEGMENT_START_MS
-        && entry.atMs >= best.atMs
+        entry.atMs <= ms &&
+        entry.atMs >= COACH_VIDEO_DRAW_SEGMENT_START_MS &&
+        entry.atMs >= best.atMs
       ) {
         best = entry;
       }
@@ -490,9 +623,9 @@ export function findCoachKeyframeAt(
     let best = keyframes[0];
     for (const entry of keyframes) {
       if (
-        entry.atMs <= ms
-        && entry.atMs >= COACH_VIDEO_RESIGN_SEGMENT_START_MS
-        && entry.atMs >= best.atMs
+        entry.atMs <= ms &&
+        entry.atMs >= COACH_VIDEO_RESIGN_SEGMENT_START_MS &&
+        entry.atMs >= best.atMs
       ) {
         best = entry;
       }
@@ -504,9 +637,9 @@ export function findCoachKeyframeAt(
     let best = keyframes[0];
     for (const entry of keyframes) {
       if (
-        entry.atMs <= ms
-        && entry.atMs >= COACH_VIDEO_WIN_SEGMENT_START_MS
-        && entry.atMs >= best.atMs
+        entry.atMs <= ms &&
+        entry.atMs >= COACH_VIDEO_WIN_SEGMENT_START_MS &&
+        entry.atMs >= best.atMs
       ) {
         best = entry;
       }
@@ -563,11 +696,12 @@ export function coachSegmentBannerUntilMs(
   const demoMove = moves.find((m) => m.atMs >= banner.atMs && m.speech);
   if (demoMove) {
     const afterMove = demoMove.atMs + COACH_SEGMENT_BANNER_TAIL_MS;
-    const minHold = banner.title === 'MOVE'
-      ? banner.atMs + COACH_MOVE_BANNER_MIN_MS
-      : banner.title.includes('CAPTURE')
-        ? banner.atMs + COACH_CAPTURE_BANNER_MIN_MS
-        : banner.atMs + COACH_SEGMENT_BANNER_HOLD_MS;
+    const minHold =
+      banner.title === 'MOVE'
+        ? banner.atMs + COACH_MOVE_BANNER_MIN_MS
+        : banner.title.includes('CAPTURE')
+          ? banner.atMs + COACH_CAPTURE_BANNER_MIN_MS
+          : banner.atMs + COACH_SEGMENT_BANNER_HOLD_MS;
     return Math.min(nextCap, Math.max(afterMove, minHold));
   }
   if (banner.title === 'FINISH CAPTURE') {
@@ -577,16 +711,10 @@ export function coachSegmentBannerUntilMs(
     return Math.min(banner.atMs + COACH_WIN_BOARD_PHASE_MS, nextCap);
   }
   if (banner.title === 'RESIGN') {
-    return Math.min(
-      COACH_VIDEO_RESIGN_SEGMENT_START_MS + COACH_RESIGN_SPEECH_ESTIMATE_MS,
-      nextCap,
-    );
+    return Math.min(COACH_VIDEO_RESIGN_SEGMENT_START_MS + COACH_RESIGN_SPEECH_ESTIMATE_MS, nextCap);
   }
   if (banner.title === 'DRAW') {
-    return Math.min(
-      COACH_VIDEO_DRAW_SEGMENT_START_MS + COACH_DRAW_SPEECH_ESTIMATE_MS,
-      nextCap,
-    );
+    return Math.min(COACH_VIDEO_DRAW_SEGMENT_START_MS + COACH_DRAW_SPEECH_ESTIMATE_MS, nextCap);
   }
   const endingSpeech = speeches.find((s) => s.atMs >= banner.atMs);
   if (endingSpeech) return Math.min(endingSpeech.atMs, nextCap);
@@ -609,7 +737,10 @@ export function findCoachSegmentBannerAtTime(
   return active;
 }
 
-export function findCoachCueAtTime(ms: number, cues: readonly CoachVideoCue[] = COACH_VIDEO.cues): CoachVideoCue | null {
+export function findCoachCueAtTime(
+  ms: number,
+  cues: readonly CoachVideoCue[] = COACH_VIDEO.cues,
+): CoachVideoCue | null {
   let latest: CoachVideoCue | null = null;
   for (const cue of cues) {
     if (cue.atMs <= ms) latest = cue;
@@ -633,17 +764,22 @@ export function coachPanelPointIndexAtTime(
   const banner = findCoachSegmentBannerAtTime(ms, banners);
   if (!banner) return null;
   switch (banner.title) {
-    case 'MOVE': return 0;
+    case 'MOVE':
+      return 0;
     case 'SINGLE CAPTURE':
     case 'DOUBLE CAPTURE':
     case 'TRIPLE CAPTURE':
       return 1;
     case 'FINISH CAPTURE':
       return 2;
-    case 'WIN': return 3;
-    case 'RESIGN': return 4;
-    case 'DRAW': return 5;
-    default: return null;
+    case 'WIN':
+      return 3;
+    case 'RESIGN':
+      return 4;
+    case 'DRAW':
+      return 5;
+    default:
+      return null;
   }
 }
 

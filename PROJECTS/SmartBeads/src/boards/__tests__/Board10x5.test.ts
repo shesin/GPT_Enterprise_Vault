@@ -22,8 +22,12 @@ describe('Board10x5 (10-bead · 5×5)', () => {
     const blue = Board10x5.intersections.filter((point) => point.occupant === 'BLUE');
     const empty = Board10x5.intersections.filter((point) => point.occupant === undefined);
 
-    expect(red.map((point) => point.id).sort((a, b) => a - b)).toEqual([0, 1, 5, 6, 10, 11, 15, 16, 20, 21]);
-    expect(blue.map((point) => point.id).sort((a, b) => a - b)).toEqual([3, 4, 8, 9, 13, 14, 18, 19, 23, 24]);
+    expect(red.map((point) => point.id).sort((a, b) => a - b)).toEqual([
+      0, 1, 5, 6, 10, 11, 15, 16, 20, 21,
+    ]);
+    expect(blue.map((point) => point.id).sort((a, b) => a - b)).toEqual([
+      3, 4, 8, 9, 13, 14, 18, 19, 23, 24,
+    ]);
     expect(empty.map((point) => point.id).sort((a, b) => a - b)).toEqual([2, 7, 12, 17, 22]);
   });
 

@@ -75,10 +75,14 @@ function buildJumpPaths(): JumpPath[] {
         const toRow = row + 2 * dRow;
         const toCol = col + 2 * dCol;
         if (
-          overRow < 0 || overRow >= SIZE ||
-          overCol < 0 || overCol >= SIZE ||
-          toRow < 0 || toRow >= SIZE ||
-          toCol < 0 || toCol >= SIZE
+          overRow < 0 ||
+          overRow >= SIZE ||
+          overCol < 0 ||
+          overCol >= SIZE ||
+          toRow < 0 ||
+          toRow >= SIZE ||
+          toCol < 0 ||
+          toCol >= SIZE
         ) {
           continue;
         }
@@ -98,12 +102,7 @@ function buildJumpPaths(): JumpPath[] {
 function centerNodeIdsForEvenGrid(size: number): number[] {
   const lo = size / 2 - 1;
   const hi = size / 2;
-  return [
-    lo * size + lo,
-    lo * size + hi,
-    hi * size + lo,
-    hi * size + hi,
-  ];
+  return [lo * size + lo, lo * size + hi, hi * size + lo, hi * size + hi];
 }
 
 export const Board4: BoardDefinition = {

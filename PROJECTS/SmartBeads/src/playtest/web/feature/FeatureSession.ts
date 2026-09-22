@@ -141,8 +141,8 @@ export class FeatureSession {
     this.settings = { ...snap.settings };
     this.uiState = snap.uiState;
     this.selectedId = snap.selectedId;
-    this.turnStartRingsPending = snap.turnStartRingsPending
-      ?? (snap.selectedId === null && snap.uiState === 'idle');
+    this.turnStartRingsPending =
+      snap.turnStartRingsPending ?? (snap.selectedId === null && snap.uiState === 'idle');
     this.p1Clock = snap.p1Clock;
     this.p2Clock = snap.p2Clock;
     this.globalMatchRemaining = snap.globalMatchRemaining;
@@ -272,10 +272,9 @@ export class FeatureSession {
    * Only current player's beads can be selected; opponent beads are inert.
    * Destination must be an empty legal landing square.
    */
-  interpretClick(nodeId: number):
-    | { kind: 'select'; nodeId: number }
-    | { kind: 'move'; move: Move }
-    | { kind: 'ignore' } {
+  interpretClick(
+    nodeId: number,
+  ): { kind: 'select'; nodeId: number } | { kind: 'move'; move: Move } | { kind: 'ignore' } {
     if (this.isGameOver() || !this.canHumanAct()) return { kind: 'ignore' };
     const state = this.engine.getState();
     const occupant = state.board.intersections[nodeId]?.occupant;
@@ -401,9 +400,6 @@ export class FeatureSession {
   }
 
   applyMove(move: Move): void {
-    const stateBefore = this.engine.getState();
-    const mover = stateBefore.currentPlayer;
-
     this.consumeTurnStartRings();
     this.engine.applyMove(move);
 
@@ -414,18 +410,17 @@ export class FeatureSession {
       return;
     }
 
-    this.afterTurnCompleted(mover);
+    this.afterTurnCompleted();
   }
 
   finishChain(): void {
     if (this.isGameOver()) return;
     if (this.engine.getChainPieceId() === null) return;
-    const mover = this.engine.getState().currentPlayer;
     this.engine.endTurn();
-    this.afterTurnCompleted(mover);
+    this.afterTurnCompleted();
   }
 
-  private afterTurnCompleted(mover: Player): void {
+  private afterTurnCompleted(): void {
     this.selectedId = null;
     this.uiState = 'idle';
 
@@ -457,8 +452,8 @@ export class FeatureSession {
     if (state.winner === 'DRAW') return;
     if (state.captures.RED !== state.captures.BLUE) return;
 
-    let c1 = 0;
-    let c2 = 0;
+    let c1: number;
+    let c2: number;
     if (this.activeCenterRule() === 'cumulative') {
       c1 = this.p1CenterScore;
       c2 = this.p2CenterScore;
@@ -469,11 +464,17 @@ export class FeatureSession {
 
     const prefix = state.endReason ? `${state.endReason} — ` : '';
     if (c1 > c2) {
-      this.endGameByFeature('RED', `${prefix}captures tied — ${beadSideLabel('RED')} won on center.`);
+      this.endGameByFeature(
+        'RED',
+        `${prefix}captures tied — ${beadSideLabel('RED')} won on center.`,
+      );
       return;
     }
     if (c2 > c1) {
-      this.endGameByFeature('BLUE', `${prefix}captures tied — ${beadSideLabel('BLUE')} won on center.`);
+      this.endGameByFeature(
+        'BLUE',
+        `${prefix}captures tied — ${beadSideLabel('BLUE')} won on center.`,
+      );
     }
   }
 
@@ -502,18 +503,24 @@ export class FeatureSession {
     const blueCaps = state.captures.BLUE;
 
     if (redCaps > blueCaps) {
-      this.endGameByFeature('RED', joinEndReason(prefixReason, `${beadSideLabel('RED')} won on captures.`));
+      this.endGameByFeature(
+        'RED',
+        joinEndReason(prefixReason, `${beadSideLabel('RED')} won on captures.`),
+      );
       return;
     }
     if (blueCaps > redCaps) {
-      this.endGameByFeature('BLUE', joinEndReason(prefixReason, `${beadSideLabel('BLUE')} won on captures.`));
+      this.endGameByFeature(
+        'BLUE',
+        joinEndReason(prefixReason, `${beadSideLabel('BLUE')} won on captures.`),
+      );
       return;
     }
 
     const centerRule = this.activeCenterRule();
     if (centerRule !== 'off') {
-      let c1 = 0;
-      let c2 = 0;
+      let c1: number;
+      let c2: number;
       if (centerRule === 'cumulative') {
         c1 = this.p1CenterScore;
         c2 = this.p2CenterScore;
@@ -522,11 +529,17 @@ export class FeatureSession {
         c2 = countCenterOccupancy(state.board, 'BLUE');
       }
       if (c1 > c2) {
-        this.endGameByFeature('RED', joinEndReason(prefixReason, `captures tied — ${beadSideLabel('RED')} won on center.`));
+        this.endGameByFeature(
+          'RED',
+          joinEndReason(prefixReason, `captures tied — ${beadSideLabel('RED')} won on center.`),
+        );
         return;
       }
       if (c2 > c1) {
-        this.endGameByFeature('BLUE', joinEndReason(prefixReason, `captures tied — ${beadSideLabel('BLUE')} won on center.`));
+        this.endGameByFeature(
+          'BLUE',
+          joinEndReason(prefixReason, `captures tied — ${beadSideLabel('BLUE')} won on center.`),
+        );
         return;
       }
     }
@@ -562,8 +575,10 @@ export class FeatureSession {
     if (isTournamentTimerActive(this.settings)) {
       if (this.engine.getState().currentPlayer === 'RED') this.p1Clock -= 1;
       else this.p2Clock -= 1;
-      if (this.p1Clock <= 0) this.endGameByFeature('BLUE', `${beadSideLabel('RED')} ran out of time.`);
-      else if (this.p2Clock <= 0) this.endGameByFeature('RED', `${beadSideLabel('BLUE')} ran out of time.`);
+      if (this.p1Clock <= 0)
+        this.endGameByFeature('BLUE', `${beadSideLabel('RED')} ran out of time.`);
+      else if (this.p2Clock <= 0)
+        this.endGameByFeature('RED', `${beadSideLabel('BLUE')} ran out of time.`);
       return;
     }
 

@@ -1,5 +1,17 @@
 import { CoachVideoPlayer, type CoachVideoPlayerCallbacks } from '../CoachVideoPlayer';
-import { COACH_VIDEO, COACH_VIDEO_RESIGN_SEGMENT_START_MS, COACH_VIDEO_WIN_SEGMENT_START_MS, COACH_WIN_CONGRATS_CUE_MS, COACH_WIN_CONGRATS_PHASE_MS, type CoachVideoCue, type CoachVideoHighlight, type CoachVideoKeyframe, type CoachVideoMove, type CoachVideoSegmentBanner, type CoachVideoSpeech } from '../CoachVideoScript';
+import {
+  COACH_VIDEO,
+  COACH_VIDEO_RESIGN_SEGMENT_START_MS,
+  COACH_VIDEO_WIN_SEGMENT_START_MS,
+  COACH_WIN_CONGRATS_CUE_MS,
+  COACH_WIN_CONGRATS_PHASE_MS,
+  type CoachVideoCue,
+  type CoachVideoHighlight,
+  type CoachVideoKeyframe,
+  type CoachVideoMove,
+  type CoachVideoSegmentBanner,
+  type CoachVideoSpeech,
+} from '../CoachVideoScript';
 
 describe('CoachVideoPlayer', () => {
   beforeEach(() => {
@@ -12,9 +24,12 @@ describe('CoachVideoPlayer', () => {
 
   it('seeks to the nearest keyframe', () => {
     const applied: number[] = [];
-    const player = new CoachVideoPlayer(COACH_VIDEO, makeCallbacks({
-      onApplyKeyframe: (kf) => applied.push(kf.atMs),
-    }));
+    const player = new CoachVideoPlayer(
+      COACH_VIDEO,
+      makeCallbacks({
+        onApplyKeyframe: (kf) => applied.push(kf.atMs),
+      }),
+    );
 
     player.seek(5000);
     expect(applied).toEqual([0]);
@@ -28,10 +43,13 @@ describe('CoachVideoPlayer', () => {
   it('fires speech when a scripted move starts', () => {
     const spoken: string[] = [];
     const highlights: number[] = [];
-    const player = new CoachVideoPlayer(COACH_VIDEO, makeCallbacks({
-      onSpeak: (speech) => spoken.push(speech.text),
-      onApplyHighlight: (h) => highlights.push(h.selectedId),
-    }));
+    const player = new CoachVideoPlayer(
+      COACH_VIDEO,
+      makeCallbacks({
+        onSpeak: (speech) => spoken.push(speech.text),
+        onApplyHighlight: (h) => highlights.push(h.selectedId),
+      }),
+    );
 
     player.play();
     jest.advanceTimersByTime(6_600);
@@ -44,12 +62,15 @@ describe('CoachVideoPlayer', () => {
   it('pauses timeline until a scripted move animation completes', () => {
     const moves: CoachVideoMove[] = [];
     let finishMove: () => void = () => {};
-    const player = new CoachVideoPlayer(COACH_VIDEO, makeCallbacks({
-      onPlayMove: (move, onDone) => {
-        moves.push(move);
-        finishMove = onDone;
-      },
-    }));
+    const player = new CoachVideoPlayer(
+      COACH_VIDEO,
+      makeCallbacks({
+        onPlayMove: (move, onDone) => {
+          moves.push(move);
+          finishMove = onDone;
+        },
+      }),
+    );
 
     player.play();
     jest.advanceTimersByTime(6_550);
@@ -65,9 +86,12 @@ describe('CoachVideoPlayer', () => {
 
   it('shows the move banner when playback starts', () => {
     const banners: Array<CoachVideoSegmentBanner | null> = [];
-    const player = new CoachVideoPlayer(COACH_VIDEO, makeCallbacks({
-      onApplySegmentBanner: (banner) => banners.push(banner),
-    }));
+    const player = new CoachVideoPlayer(
+      COACH_VIDEO,
+      makeCallbacks({
+        onApplySegmentBanner: (banner) => banners.push(banner),
+      }),
+    );
 
     player.seek(0);
     expect(banners.at(-1)?.title).toBe('MOVE');
@@ -96,9 +120,12 @@ describe('CoachVideoPlayer', () => {
 
   it('applies scripted cues when seeking into ending segments', () => {
     const cues: Array<CoachVideoCue | null> = [];
-    const player = new CoachVideoPlayer(COACH_VIDEO, makeCallbacks({
-      onApplyCue: (cue) => cues.push(cue),
-    }));
+    const player = new CoachVideoPlayer(
+      COACH_VIDEO,
+      makeCallbacks({
+        onApplyCue: (cue) => cues.push(cue),
+      }),
+    );
 
     player.seek(COACH_WIN_CONGRATS_CUE_MS + 100);
     const resultCue = cues.at(-1);
@@ -115,9 +142,12 @@ describe('CoachVideoPlayer', () => {
 
   it('fires every cue that shares the same timestamp', () => {
     const cues: CoachVideoCue[] = [];
-    const player = new CoachVideoPlayer(COACH_VIDEO, makeCallbacks({
-      onApplyCue: (cue) => cues.push(cue!),
-    }));
+    const player = new CoachVideoPlayer(
+      COACH_VIDEO,
+      makeCallbacks({
+        onApplyCue: (cue) => cues.push(cue!),
+      }),
+    );
 
     player.seek(COACH_VIDEO_RESIGN_SEGMENT_START_MS);
     player.play();

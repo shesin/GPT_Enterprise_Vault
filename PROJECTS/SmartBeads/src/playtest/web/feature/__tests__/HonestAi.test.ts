@@ -25,8 +25,12 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
       honestAiTurnEndsDeadlineMs(5_000),
     );
     const from = id('A00');
-    const stop = ends.find((e) => e.path.length === 1 && e.path[0].from === from && e.path[0].to === id('A02'));
-    const cont = ends.find((e) => e.path.length === 2 && e.path[0].to === id('A02') && e.path[1].to === id('A04'));
+    const stop = ends.find(
+      (e) => e.path.length === 1 && e.path[0].from === from && e.path[0].to === id('A02'),
+    );
+    const cont = ends.find(
+      (e) => e.path.length === 2 && e.path[0].to === id('A02') && e.path[1].to === id('A04'),
+    );
     expect(stop).toBeDefined();
     expect(cont).toBeDefined();
     expect(stop!.snapshot.chainPieceId).not.toBeNull();

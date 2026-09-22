@@ -88,9 +88,8 @@ export class SmartBeadsEngine {
 
   /** Counts remaining pieces on the board for the specified player. */
   countPieces(playerId: Player): number {
-    return this.currentState.board.intersections.filter(
-      (point) => point.occupant === playerId,
-    ).length;
+    return this.currentState.board.intersections.filter((point) => point.occupant === playerId)
+      .length;
   }
 
   /** Bead id that must continue a multi-jump, if any. */

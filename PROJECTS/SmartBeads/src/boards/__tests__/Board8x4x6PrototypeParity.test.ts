@@ -57,9 +57,7 @@ describe('Board8x4x6 prototype parity', () => {
     const refLand = refEngine.continueCollinear(from, over);
 
     expect(refLand).toBe(to);
-    expect(Board8x4x6.jumpPaths).toEqual(
-      expect.arrayContaining([{ from, over, to }]),
-    );
+    expect(Board8x4x6.jumpPaths).toEqual(expect.arrayContaining([{ from, over, to }]));
   });
 });
 

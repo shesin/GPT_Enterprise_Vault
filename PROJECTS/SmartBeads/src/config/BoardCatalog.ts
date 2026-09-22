@@ -7,14 +7,7 @@ import {
 } from '../playtest/web/feature/GameFeatureSettings';
 
 /** Catalog id for each locked V1 board (VISION_05P.md). */
-export type ProductBoardId =
-  | '16'
-  | '6x4'
-  | '6x3x5'
-  | '10x5'
-  | '12x6x5'
-  | '8x4x6'
-  | '7x4x5';
+export type ProductBoardId = '16' | '6x4' | '6x3x5' | '10x5' | '12x6x5' | '8x4x6' | '7x4x5';
 
 /** Product dropdown order: largest → smallest bead count, 6×4 before 6×3×5. */
 export const PRODUCT_BOARD_ORDER: ProductBoardId[] = [
@@ -77,7 +70,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         ...BASE_SETTINGS,
         centerRule: 'off',
         timer: 'off',
-  tournamentTimer: 'off',
+        tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
@@ -101,7 +94,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         ...BASE_SETTINGS,
         centerRule: 'off',
         timer: 'off',
-  tournamentTimer: 'off',
+        tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
@@ -125,7 +118,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         ...BASE_SETTINGS,
         centerRule: 'off',
         timer: 'off',
-  tournamentTimer: 'off',
+        tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
@@ -149,7 +142,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         ...BASE_SETTINGS,
         centerRule: 'off',
         timer: 'off',
-  tournamentTimer: 'off',
+        tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'endgame'],
@@ -173,7 +166,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         ...BASE_SETTINGS,
         centerRule: 'off',
         timer: 'off',
-  tournamentTimer: 'off',
+        tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
@@ -197,7 +190,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         ...BASE_SETTINGS,
         centerRule: 'off',
         timer: 'off',
-  tournamentTimer: 'off',
+        tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],
@@ -221,7 +214,7 @@ export const BOARD_CATALOG: BoardCatalogEntry[] = [
         ...BASE_SETTINGS,
         centerRule: 'off',
         timer: 'off',
-  tournamentTimer: 'off',
+        tournamentTimer: 'off',
         shotClock: 'off',
       },
       centerRuleOptions: ['off', 'cumulative', 'endgame'],

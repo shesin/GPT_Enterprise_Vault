@@ -15,12 +15,13 @@ function escapeHtml(text: string): string {
 
 export function renderCoachPanelHtml(content: CoachPanelContent): string {
   const intro = escapeHtml(content.intro);
-  const items = content.points.map((p, index) => {
-    const emphasis = content.emphasizedPointIndex === index
-      ? ' class="coach-point-emphasis"'
-      : '';
-    return `<li${emphasis}>${escapeHtml(p)}</li>`;
-  }).join('');
+  const items = content.points
+    .map((p, index) => {
+      const emphasis =
+        content.emphasizedPointIndex === index ? ' class="coach-point-emphasis"' : '';
+      return `<li${emphasis}>${escapeHtml(p)}</li>`;
+    })
+    .join('');
   return `
     <p class="coach-lesson-intro">${intro}</p>
     <ul class="coach-lesson-points">${items}</ul>
