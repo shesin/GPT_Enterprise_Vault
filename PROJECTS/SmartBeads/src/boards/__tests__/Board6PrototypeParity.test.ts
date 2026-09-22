@@ -46,11 +46,11 @@ function buildFullBoxCrossAdjacency(rows: number, cols: number): number[][] {
   const adjacency = Array.from({ length: n }, () => [] as number[]);
 
   const link = (i: number, j: number): void => {
-    if (!adjacency[i].includes(j)) {
-      adjacency[i].push(j);
+    if (!adjacency[i]!.includes(j)) {
+      adjacency[i]!.push(j);
     }
-    if (!adjacency[j].includes(i)) {
-      adjacency[j].push(i);
+    if (!adjacency[j]!.includes(i)) {
+      adjacency[j]!.push(i);
     }
   };
 
@@ -84,7 +84,7 @@ function buildJumps(
 ): Array<{ from: number; over: number; to: number }> {
   const jumps: Array<{ from: number; over: number; to: number }> = [];
   for (let from = 0; from < adjacency.length; from++) {
-    for (const over of adjacency[from]) {
+    for (const over of adjacency[from]!) {
       const r1 = Math.floor(from / cols);
       const c1 = from % cols;
       const r2 = Math.floor(over / cols);
@@ -95,7 +95,7 @@ function buildJumps(
         continue;
       }
       const to = tr * cols + tc;
-      if (adjacency[over].includes(to)) {
+      if (adjacency[over]!.includes(to)) {
         jumps.push({ from, over, to });
       }
     }
@@ -106,7 +106,7 @@ function buildJumps(
 function countEdges(adjacency: number[][]): number {
   let edges = 0;
   for (let i = 0; i < adjacency.length; i++) {
-    for (const j of adjacency[i]) {
+    for (const j of adjacency[i]!) {
       if (i < j) {
         edges++;
       }

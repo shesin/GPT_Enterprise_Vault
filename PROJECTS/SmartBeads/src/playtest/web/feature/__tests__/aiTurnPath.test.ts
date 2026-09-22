@@ -45,12 +45,12 @@ describe('1a A41→A42 AI hop log', () => {
       honestAiTestOpts(),
     );
     expect(path?.length).toBeGreaterThan(0);
-    session.applyMove(path![0]);
+    session.applyMove(path![0]!);
     expect(session.getEngine().getChainPieceId()).toBeNull();
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
 
     const stale = oldFollowUpJumps(session.getEngine().exportSnapshot());
-    const leftover = stale.length > 0 ? stale[0] : session.getEngine().getLegalMoves()[0];
+    const leftover = (stale.length > 0 ? stale[0] : session.getEngine().getLegalMoves()[0])!;
     expect(leftover).toBeDefined();
     const occupant = session.getEngine().getState().board.intersections[leftover.from]?.occupant;
     expect(occupant).not.toBe('BLUE');
@@ -81,22 +81,22 @@ describe('1a A41→A42 AI hop log', () => {
         hops.map((h) => `${h.from}->${h.to}:BLUE`),
       );
       for (let i = 0; i < hops.length; i++) {
-        const hop = hops[i];
+        const hop = hops[i]!;
         expect(hop.player).toBe('BLUE');
         expect(hop.fromOccupant).toBe('BLUE');
         if (hop.chainPieceIdBefore !== null) {
           expect(hop.from).toBe(hop.chainPieceIdBefore);
         }
         if (i > 0) {
-          expect(hop.from).toBe(hops[i - 1].to);
+          expect(hop.from).toBe(hops[i - 1]!.to);
         }
       }
-      const last = hops[hops.length - 1];
+      const last = hops[hops.length - 1]!;
       expect(last.chainPieceIdAfter).toBeNull();
       expect(session.getEngine().getChainPieceId()).toBeNull();
       expect(session.getEngine().getState().currentPlayer).toBe('RED');
 
-      const leftover = session.getEngine().getLegalMoves()[0];
+      const leftover = session.getEngine().getLegalMoves()[0]!;
       expect(leftover).toBeDefined();
       expect(() => applyAiHops(session, [leftover], 'BLUE')).toThrow(/stale hop/);
     }
@@ -113,11 +113,11 @@ describe('1b leftover hop after turn/chain ended', () => {
       'BLUE',
       honestAiTestOpts(),
     );
-    session.applyMove(path![0]);
+    session.applyMove(path![0]!);
     expect(session.getEngine().getChainPieceId()).toBeNull();
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
 
-    const leftover = session.getEngine().getLegalMoves()[0];
+    const leftover = session.getEngine().getLegalMoves()[0]!;
     expect(leftover).toBeDefined();
     expect(session.getEngine().getState().board.intersections[leftover.from]?.occupant).toBe('RED');
     session.applyMove(leftover);
@@ -133,10 +133,10 @@ describe('1b leftover hop after turn/chain ended', () => {
       'BLUE',
       honestAiTestOpts(),
     );
-    applyAiHops(session, [path![0]], 'BLUE');
+    applyAiHops(session, [path![0]!], 'BLUE');
     expect(session.getEngine().getChainPieceId()).toBeNull();
 
-    const leftover = session.getEngine().getLegalMoves()[0];
+    const leftover = session.getEngine().getLegalMoves()[0]!;
     expect(() => applyAiHops(session, [leftover], 'BLUE')).toThrow(/stale hop/);
   });
 });

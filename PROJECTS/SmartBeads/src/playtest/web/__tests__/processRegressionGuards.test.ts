@@ -153,7 +153,7 @@ describe('process regression guards', () => {
 
     it('coach win keyframe uses previewScriptedSelection (not setCoachWinGlow)', () => {
       expect(coachVideoBoardSource).not.toMatch(/setCoachWinGlow/);
-      expect(coachVideoBoardSource).toMatch(/previewScriptedSelection\(glow\[0\]\)/);
+      expect(coachVideoBoardSource).toMatch(/previewScriptedSelection\(glow\[0\]!?\)/);
     });
   });
 

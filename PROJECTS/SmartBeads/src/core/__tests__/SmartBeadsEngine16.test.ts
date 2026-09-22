@@ -22,7 +22,7 @@ describe('SmartBeadsEngine — 16-bead Sholo Guti', () => {
 
   it('applies a slide, increments one ply, and switches to BLUE', () => {
     const engine = new SmartBeadsEngine('16');
-    const opening = engine.getLegalMoves()[0];
+    const opening = engine.getLegalMoves()[0]!;
 
     engine.applyMove(opening);
 

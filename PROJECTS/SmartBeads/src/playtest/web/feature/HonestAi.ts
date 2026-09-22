@@ -564,7 +564,7 @@ function searchLayerAtExactDepth(
         best.push(end);
       }
     }
-    return { best: best.length ? best : [ends[0]], completeCount: ends.length };
+    return { best: best.length ? best : [ends[0]!], completeCount: ends.length };
   }
 
   let best: TurnEnd[] = [];
@@ -651,14 +651,14 @@ function searchBestAtExactDepth(
     timer,
   );
   return {
-    best: layer.best.length ? layer.best : [ends[0]],
+    best: layer.best.length ? layer.best : [ends[0]!],
     achievedReplyPlies: reply,
     completeAtAchievedDepth: layer.completeCount,
   };
 }
 
 function pickRandomEnd(ends: TurnEnd[], rng: () => number): Move[] {
-  return ends[Math.floor(rng() * ends.length)].path;
+  return ends[Math.floor(rng() * ends.length)]!.path;
 }
 
 /**
@@ -675,23 +675,23 @@ function steerCapturePoolByRepetition(
   positionHistory: Record<string, number> | undefined,
 ): TurnEnd[] {
   if (pool.length <= 1 || !positionHistory) return pool;
-  let bestPool = [pool[0]];
+  let bestPool = [pool[0]!];
   let bestPen = repetitionPenaltyForPosition(
-    pool[0].snapshot.state,
-    pool[0].snapshot.chainPieceId,
+    pool[0]!.snapshot.state,
+    pool[0]!.snapshot.chainPieceId,
     positionHistory,
   );
   for (let i = 1; i < pool.length; i += 1) {
     const pen = repetitionPenaltyForPosition(
-      pool[i].snapshot.state,
-      pool[i].snapshot.chainPieceId,
+      pool[i]!.snapshot.state,
+      pool[i]!.snapshot.chainPieceId,
       positionHistory,
     );
     if (pen < bestPen) {
       bestPen = pen;
-      bestPool = [pool[i]];
+      bestPool = [pool[i]!];
     } else if (pen === bestPen) {
-      bestPool.push(pool[i]);
+      bestPool.push(pool[i]!);
     }
   }
   return bestPool;
@@ -749,7 +749,7 @@ export function selectAiTurnPath(
     opts.timer,
   );
 
-  return best[Math.floor(opts.rng() * best.length)].path;
+  return best[Math.floor(opts.rng() * best.length)]!.path;
 }
 
 /** Test/diagnostic: did depth-N search finish cleanly for this position? */

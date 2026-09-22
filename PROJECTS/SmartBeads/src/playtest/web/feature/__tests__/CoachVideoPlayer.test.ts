@@ -75,7 +75,7 @@ describe('CoachVideoPlayer', () => {
     player.play();
     jest.advanceTimersByTime(6_550);
     expect(moves).toHaveLength(1);
-    expect(moves[0].from).toBe(12);
+    expect(moves[0]!.from).toBe(12);
 
     finishMove();
     jest.advanceTimersByTime(200);

@@ -72,7 +72,7 @@ describe('V1 production sanity (SmartBeadsEngine + FeatureSession + HonestAi + r
     (entry) => {
       const variant = resolveEngineVariant(entry.id);
       const session = new FeatureSession(variant, { mode: 'pve', ...off });
-      const path = session.getEngine().getState().board.jumpPaths![0];
+      const path = session.getEngine().getState().board.jumpPaths![0]!;
       isolateJump(session, path);
       expect(session.getSelectedId()).toBeNull();
       const click = session.interpretClick(path.over);
@@ -90,7 +90,7 @@ describe('V1 production sanity (SmartBeadsEngine + FeatureSession + HonestAi + r
       const variant = resolveEngineVariant(entry.id);
       const session = new FeatureSession(variant, { mode: 'pve', ...off });
       const paths = session.getEngine().getState().board.jumpPaths ?? [];
-      const hop = paths[0];
+      const hop = paths[0]!;
       clearBoard(session);
       const board = session.getEngine().getState().board;
       requireIntersection(board, hop.from).occupant = 'BLUE';
@@ -136,7 +136,7 @@ describe('V1 production sanity (SmartBeadsEngine + FeatureSession + HonestAi + r
           if (engine.getState().currentPlayer === 'RED') {
             const moves = engine.getLegalMoves();
             if (moves.length === 0) break;
-            session.applyMove(moves[0]);
+            session.applyMove(moves[0]!);
             if (session.getUiState() === 'chain') session.finishChain();
           } else {
             const before = session.getMoveCount();

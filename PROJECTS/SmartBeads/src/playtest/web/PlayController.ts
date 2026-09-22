@@ -198,7 +198,7 @@ export function planAiTurnPath(session: FeatureSession, actingPlayer?: Player): 
     /* fall through to emergency legal hop — do not substitute Easy search */
   }
   const legal = session.getEngine().getLegalMoves();
-  return legal.length ? [legal[0]] : null;
+  return legal.length ? [legal[0]!] : null;
 }
 
 /**
@@ -232,8 +232,8 @@ export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopR
     if (i > 0 && !shouldContinueAiTurn(session.getEngine().getChainPieceId(), planned.length - i)) {
       break;
     }
-    const hopRecords = applyAiHops(session, [planned[i]], aiPlayer);
-    records.push({ ...hopRecords[0], index: i });
+    const hopRecords = applyAiHops(session, [planned[i]!], aiPlayer);
+    records.push({ ...hopRecords[0]!, index: i });
     if (!shouldContinueAiTurn(session.getEngine().getChainPieceId(), planned.length - (i + 1))) {
       break;
     }
@@ -345,7 +345,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     for (let i = 0; i < count; i++) {
       const p = document.createElement('div');
       p.className = 'celebration-particle';
-      const shape = shapes[i % shapes.length];
+      const shape = shapes[i % shapes.length]!;
       p.textContent = shape;
 
       const angle = (i / count) * 2 * Math.PI + (Math.random() - 0.5) * 0.3;
@@ -356,7 +356,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       const dur = 1.4 + Math.random() * 0.6;
       const delay = Math.random() * 0.25;
       const size = 12 + Math.random() * 12;
-      const color = colors[i % colors.length];
+      const color = colors[i % colors.length]!;
 
       p.style.setProperty('--dx', `${dx.toFixed(1)}px`);
       p.style.setProperty('--dy', `${dy.toFixed(1)}px`);
@@ -1428,8 +1428,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   ) {
     if (animBoardCache?.anim !== activeAnim) {
       const cloned = cloneBoardDefinition(liveBoard);
-      if (cloned.intersections[activeAnim.from]) {
-        cloned.intersections[activeAnim.from].occupant = undefined;
+      const fromNode = cloned.intersections[activeAnim.from];
+      if (fromNode) {
+        fromNode.occupant = undefined;
       }
       animBoardCache = { anim: activeAnim, board: cloned };
     }
@@ -1718,7 +1719,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     turnPulse = ts / 280;
     const now = performance.now();
     for (let i = capturePulseStarts.length - 1; i >= 0; i -= 1) {
-      if (now - capturePulseStarts[i].startMs >= CAPTURE_PULSE_MS) {
+      if (now - capturePulseStarts[i]!.startMs >= CAPTURE_PULSE_MS) {
         capturePulseStarts.splice(i, 1);
       }
     }
@@ -1796,7 +1797,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     const jump = findJumpPath(state.board, move.from, move.to);
     const captured = jump?.over;
     const capturedPlayer =
-      captured !== undefined ? state.board.intersections[captured].occupant : undefined;
+      captured !== undefined ? state.board.intersections[captured]!.occupant : undefined;
 
     if (jump) {
       soundEffects.playCapture(turnCaptures);
@@ -1948,7 +1949,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         return;
       }
 
-      const move = path![i];
+      const move = path![i]!;
       i += 1;
 
       const playHop = () => {

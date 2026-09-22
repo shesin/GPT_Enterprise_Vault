@@ -33,8 +33,8 @@ describe('Board7 (7-bead · 4×5)', () => {
     expect(Board7.maxPlies).toBeNull();
     expect(Board7.centerNodeIds).toEqual(BOARD7_CENTER_NODE_IDS);
     expect(Board7.centerNodeIds).toEqual([9, 10]);
-    expect(Board7.intersections[9].label).toBe('A21');
-    expect(Board7.intersections[10].label).toBe('A22');
+    expect(Board7.intersections[9]!.label).toBe('A21');
+    expect(Board7.intersections[10]!.label).toBe('A22');
   });
 
   it('gives RED 13 opening legal moves (reference parity)', () => {

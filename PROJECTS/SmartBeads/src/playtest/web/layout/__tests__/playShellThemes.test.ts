@@ -78,7 +78,7 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
   it('complete looks use one colour family on board frame and side panels', () => {
     for (const id of COMPLETE_LOOK_IDS) {
       const index = COMPLETE_LOOK_IDS.indexOf(id);
-      const tokens = LOVABLE_COMPLETE_BOARD_THEMES[index];
+      const tokens = LOVABLE_COMPLETE_BOARD_THEMES[index]!;
       const theme = PLAY_SHELL_THEMES[id];
       expect(theme.label).toBe(tokens.label);
       expect(theme.frameOuter).toBe(tokens.frameOuter);
@@ -160,7 +160,7 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
     expect(charcoalSide.boardLookId).toBe('6');
     expect(charcoalSide.sideLookId).toBe('7');
     expect(readPlayBoardMatchMode()).toBe('side-only');
-    expect(PLAY_SHELL_THEMES['6'].surfaceTop).toBe(LOVABLE_COMPLETE_BOARD_THEMES[3].surface);
+    expect(PLAY_SHELL_THEMES['6'].surfaceTop).toBe(LOVABLE_COMPLETE_BOARD_THEMES[3]!.surface);
   });
 
   describe('dark-same row — matched side panel colour (2026-09-19)', () => {

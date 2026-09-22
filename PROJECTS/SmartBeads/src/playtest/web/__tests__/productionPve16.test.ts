@@ -27,7 +27,7 @@ describe('production 16-bead PvE (SmartBeadsEngine + FeatureSession + HonestAi +
         if (player === 'RED') {
           const moves = engine.getLegalMoves();
           if (moves.length === 0) break;
-          session.applyMove(moves[0]);
+          session.applyMove(moves[0]!);
           if (session.getUiState() === 'chain') session.finishChain();
         } else {
           const before = session.getMoveCount();

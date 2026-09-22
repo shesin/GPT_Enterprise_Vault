@@ -402,7 +402,7 @@ export function drawCanvasBoard(canvas: HTMLCanvasElement, view: CanvasBoardView
   for (const conn of board.connections) {
     const from = board.intersections[conn.from];
     const to = board.intersections[conn.to];
-    if (from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined)
+    if (!from || !to || from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined)
       continue;
     const fromPt = project(from);
     const toPt = project(to);
@@ -472,7 +472,7 @@ export function drawCanvasBoard(canvas: HTMLCanvasElement, view: CanvasBoardView
   if (anim) {
     if (anim.captured != null && hideCap >= 0) {
       const capNode = board.intersections[anim.captured];
-      if (capNode.x !== undefined && capNode.y !== undefined && anim.capturedPlayer) {
+      if (capNode && capNode.x !== undefined && capNode.y !== undefined && anim.capturedPlayer) {
         const capPt = project(capNode);
         const fade = Math.max(0, 1 - anim.t * 1.4);
         drawPieceAt(ctx, capPt.x, capPt.y, anim.capturedPlayer, 16 * fade, fade, beadSet);
@@ -489,6 +489,8 @@ export function drawCanvasBoard(canvas: HTMLCanvasElement, view: CanvasBoardView
     const fromNode = board.intersections[anim.from];
     const toNode = board.intersections[anim.to];
     if (
+      fromNode &&
+      toNode &&
       fromNode.x !== undefined &&
       fromNode.y !== undefined &&
       toNode.x !== undefined &&

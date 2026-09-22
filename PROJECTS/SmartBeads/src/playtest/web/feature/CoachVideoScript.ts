@@ -606,7 +606,7 @@ export function findCoachKeyframeAt(
   _moves: readonly CoachVideoMove[] = [],
 ): CoachVideoKeyframe {
   if (ms >= COACH_VIDEO_DRAW_SEGMENT_START_MS) {
-    let best = keyframes[0];
+    let best = keyframes[0]!;
     for (const entry of keyframes) {
       if (
         entry.atMs <= ms &&
@@ -620,7 +620,7 @@ export function findCoachKeyframeAt(
   }
 
   if (ms >= COACH_VIDEO_RESIGN_SEGMENT_START_MS) {
-    let best = keyframes[0];
+    let best = keyframes[0]!;
     for (const entry of keyframes) {
       if (
         entry.atMs <= ms &&
@@ -634,7 +634,7 @@ export function findCoachKeyframeAt(
   }
 
   if (ms >= COACH_VIDEO_WIN_SEGMENT_START_MS) {
-    let best = keyframes[0];
+    let best = keyframes[0]!;
     for (const entry of keyframes) {
       if (
         entry.atMs <= ms &&
@@ -654,7 +654,7 @@ export function findCoachKeyframeByTime(
   atMs: number,
   keyframes: readonly CoachVideoKeyframe[],
 ): CoachVideoKeyframe {
-  let best = keyframes[0];
+  let best = keyframes[0]!;
   for (const entry of keyframes) {
     if (entry.atMs <= atMs && entry.atMs >= best.atMs) best = entry;
   }
@@ -785,7 +785,7 @@ export function coachPanelPointIndexAtTime(
 
 export function coachSpeechForTime(ms: number, script: CoachVideoScript = COACH_VIDEO): string {
   for (let i = script.speeches.length - 1; i >= 0; i--) {
-    if (script.speeches[i].atMs <= ms) return script.speeches[i].text;
+    if (script.speeches[i]!.atMs <= ms) return script.speeches[i]!.text;
   }
   let lastMoveSpeech = '';
   for (const move of script.moves) {

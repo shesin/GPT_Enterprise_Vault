@@ -168,12 +168,12 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
     const engine = session.getEngine();
     const paths = engine.getState().board.jumpPaths ?? [];
     expect(paths.length).toBeGreaterThan(0);
-    const path = paths[0];
+    const path = paths[0]!;
 
     // Clear board and place jumper on path.from, capturable enemy on path.over, path.to empty
     for (const point of engine.getState().board.intersections) point.occupant = undefined;
-    engine.getState().board.intersections[path.from].occupant = 'RED';
-    engine.getState().board.intersections[path.over].occupant = 'BLUE';
+    engine.getState().board.intersections[path.from]!.occupant = 'RED';
+    engine.getState().board.intersections[path.over]!.occupant = 'BLUE';
     // Add a spare enemy far away
     const spare = engine
       .getState()
@@ -195,8 +195,8 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
     expect(idleClick.kind).toBe('ignore');
     expect(session.getSelectedId()).toBeNull();
     expect(session.getUiState()).toBe('idle');
-    expect(engine.getState().board.intersections[path.over].occupant).toBe('BLUE');
-    expect(engine.getState().board.intersections[path.to].occupant).toBeUndefined();
+    expect(engine.getState().board.intersections[path.over]!.occupant).toBe('BLUE');
+    expect(engine.getState().board.intersections[path.to]!.occupant).toBeUndefined();
     expect(engine.getState().captures.RED).toBe(0);
     expect(engine.getState().moveCount).toBe(0);
 
@@ -210,11 +210,11 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
     (variant) => {
       const session = new FeatureSession(variant, { mode: 'pve', ...off });
       const engine = session.getEngine();
-      const path = (engine.getState().board.jumpPaths ?? [])[0];
+      const path = (engine.getState().board.jumpPaths ?? [])[0]!;
 
       for (const point of engine.getState().board.intersections) point.occupant = undefined;
-      engine.getState().board.intersections[path.from].occupant = 'RED';
-      engine.getState().board.intersections[path.over].occupant = 'BLUE';
+      engine.getState().board.intersections[path.from]!.occupant = 'RED';
+      engine.getState().board.intersections[path.over]!.occupant = 'BLUE';
       const spare = engine
         .getState()
         .board.intersections.find(
@@ -234,16 +234,16 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
       const victimClick = session.interpretClick(path.over);
       expect(victimClick.kind).toBe('ignore');
       expect(session.getSelectedId()).toBe(path.from); // Selection unchanged
-      expect(engine.getState().board.intersections[path.over].occupant).toBe('BLUE');
+      expect(engine.getState().board.intersections[path.over]!.occupant).toBe('BLUE');
 
       // Step 3: Clicking the empty landing square executes the capture
       const landingClick = session.interpretClick(path.to);
       expect(landingClick.kind).toBe('move');
       if (landingClick.kind === 'move') {
         session.applyMove(landingClick.move);
-        expect(engine.getState().board.intersections[path.from].occupant).toBeUndefined();
-        expect(engine.getState().board.intersections[path.over].occupant).toBeUndefined();
-        expect(engine.getState().board.intersections[path.to].occupant).toBe('RED');
+        expect(engine.getState().board.intersections[path.from]!.occupant).toBeUndefined();
+        expect(engine.getState().board.intersections[path.over]!.occupant).toBeUndefined();
+        expect(engine.getState().board.intersections[path.to]!.occupant).toBe('RED');
         expect(engine.getState().captures.RED).toBe(1);
       }
     },
@@ -269,9 +269,9 @@ describe('FeatureSession opponent inertness & standard rules (all 7 V1 boards)',
 
     const [hop1, hop2] = chain;
     for (const point of engine.getState().board.intersections) point.occupant = undefined;
-    engine.getState().board.intersections[hop1.from].occupant = 'RED';
-    engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
-    engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
+    engine.getState().board.intersections[hop1.from]!.occupant = 'RED';
+    engine.getState().board.intersections[hop1.over]!.occupant = 'BLUE';
+    engine.getState().board.intersections[hop2.over]!.occupant = 'BLUE';
     const spare = engine
       .getState()
       .board.intersections.find(
@@ -407,9 +407,9 @@ describe('FeatureSession turn start rings', () => {
     // follow-up available ends the turn instead of opening a chain.
     const [hop1, hop2] = chain;
     for (const point of engine.getState().board.intersections) point.occupant = undefined;
-    engine.getState().board.intersections[hop1.from].occupant = 'RED';
-    engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
-    engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
+    engine.getState().board.intersections[hop1.from]!.occupant = 'RED';
+    engine.getState().board.intersections[hop1.over]!.occupant = 'BLUE';
+    engine.getState().board.intersections[hop2.over]!.occupant = 'BLUE';
     engine.getState().currentPlayer = 'RED';
 
     expect(session.selectNode(hop1.from)).toBe(true);
@@ -442,9 +442,9 @@ describe('FeatureSession turn start rings', () => {
     // follow-up available ends the turn instead of opening a chain.
     const [hop1, hop2] = chain;
     for (const point of engine.getState().board.intersections) point.occupant = undefined;
-    engine.getState().board.intersections[hop1.from].occupant = 'RED';
-    engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
-    engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
+    engine.getState().board.intersections[hop1.from]!.occupant = 'RED';
+    engine.getState().board.intersections[hop1.over]!.occupant = 'BLUE';
+    engine.getState().board.intersections[hop2.over]!.occupant = 'BLUE';
     const otherRed = engine
       .getState()
       .board.intersections.find(

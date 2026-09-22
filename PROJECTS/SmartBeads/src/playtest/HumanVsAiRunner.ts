@@ -112,7 +112,7 @@ export function runInteractivePlaytest(): void {
             engine.endTurn();
             console.log('You voluntarily ended your capture turn.');
           } else if (selectedIndex > 0 && selectedIndex <= legalMoves.length) {
-            engine.applyMove(legalMoves[selectedIndex - 1]);
+            engine.applyMove(legalMoves[selectedIndex - 1]!);
           } else {
             console.log('Invalid selection. Retrying turn...');
           }
@@ -126,7 +126,7 @@ export function runInteractivePlaytest(): void {
           const selectedIndex = parseInt(choice.trim(), 10);
 
           if (selectedIndex > 0 && selectedIndex <= legalMoves.length) {
-            engine.applyMove(legalMoves[selectedIndex - 1]);
+            engine.applyMove(legalMoves[selectedIndex - 1]!);
           } else {
             console.log('Invalid move number. Retrying turn...');
           }

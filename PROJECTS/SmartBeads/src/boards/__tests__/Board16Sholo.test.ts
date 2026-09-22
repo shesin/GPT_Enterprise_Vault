@@ -29,7 +29,7 @@ describe('Board16Sholo', () => {
 
   it('uses a single centre node (A22) for endgame / cumulative rules', () => {
     expect(Board16Sholo.centerNodeIds).toEqual([12]);
-    const centre = Board16Sholo.intersections[12];
+    const centre = Board16Sholo.intersections[12]!;
     expect(centre.label).toBe('A22');
     expect(centre.x).toBe(4);
     expect(centre.y).toBe(4);

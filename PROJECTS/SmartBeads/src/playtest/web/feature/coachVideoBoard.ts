@@ -17,7 +17,7 @@ export function applyCoachVideoKeyframe(
   for (let i = 0; i < keyframe.occupants.length; i++) {
     const occupant = keyframe.occupants[i];
     if (occupant !== undefined) {
-      nodes[i].occupant = occupant;
+      nodes[i]!.occupant = occupant;
     }
   }
 
@@ -30,7 +30,7 @@ export function applyCoachVideoKeyframe(
   session.clearArmedSelection();
   const glow = keyframe.glowNodeIds ?? [];
   if (glow.length > 0) {
-    session.previewScriptedSelection(glow[0]);
+    session.previewScriptedSelection(glow[0]!);
   }
 }
 

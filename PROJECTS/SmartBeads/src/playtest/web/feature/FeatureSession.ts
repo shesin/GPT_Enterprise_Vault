@@ -263,7 +263,7 @@ export class FeatureSession {
   resolveClickMove(nodeId: number): Move | null {
     const moves = this.getLegalMovesForSelection();
     const landings = moves.filter((m) => m.to === nodeId);
-    if (landings.length === 1) return landings[0];
+    if (landings.length === 1) return landings[0]!;
     return null;
   }
 

@@ -64,7 +64,7 @@ export function executeAiRandomMove(engine: SmartBeadsEngine): boolean {
   }
 
   const randomIndex = Math.floor(Math.random() * legalMoves.length);
-  const chosenMove = legalMoves[randomIndex];
+  const chosenMove = legalMoves[randomIndex]!;
 
   try {
     engine.applyMove(chosenMove);

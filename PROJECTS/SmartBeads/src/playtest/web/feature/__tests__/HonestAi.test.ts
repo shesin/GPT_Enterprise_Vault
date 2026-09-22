@@ -26,10 +26,10 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
     );
     const from = id('A00');
     const stop = ends.find(
-      (e) => e.path.length === 1 && e.path[0].from === from && e.path[0].to === id('A02'),
+      (e) => e.path.length === 1 && e.path[0]!.from === from && e.path[0]!.to === id('A02'),
     );
     const cont = ends.find(
-      (e) => e.path.length === 2 && e.path[0].to === id('A02') && e.path[1].to === id('A04'),
+      (e) => e.path.length === 2 && e.path[0]!.to === id('A02') && e.path[1]!.to === id('A04'),
     );
     expect(stop).toBeDefined();
     expect(cont).toBeDefined();
@@ -41,7 +41,7 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
     engine.getState().currentPlayer = 'BLUE';
     const path = selectAiTurnPath('6x3x5', 1, engine.exportSnapshot(), 'BLUE', honestAiTestOpts());
     expect(path?.length).toBeGreaterThan(0);
-    engine.applyMove(path![0]);
-    expect(engine.getState().board.intersections[path![0].to]?.occupant).toBe('BLUE');
+    engine.applyMove(path![0]!);
+    expect(engine.getState().board.intersections[path![0]!.to]?.occupant).toBe('BLUE');
   });
 });

@@ -60,7 +60,7 @@ describe('boardVisualProfile', () => {
 
 describe('boardProjection per-board parity', () => {
   it('10-bead centre node maps to canvas centre file on 560 square', () => {
-    const node = Board10x5.intersections[12];
+    const node = Board10x5.intersections[12]!;
     const pt = projectIntersectionOnCanvas(node, 560, 560, Board10x5);
     const sq = projectLatticePointOnCanvas(4, 4, 560, 560, Board10x5);
     expect(Math.hypot(pt.x - sq.x, pt.y - sq.y)).toBeLessThan(1);
@@ -69,7 +69,7 @@ describe('boardProjection per-board parity', () => {
   it('6×4 square-fit centres the grid in canvas', () => {
     const corners = Board6.intersections.filter((n) => n.x === 0 && n.y === 0);
     expect(corners).toHaveLength(1);
-    const pt = projectIntersectionOnCanvas(corners[0], 560, 560, Board6);
+    const pt = projectIntersectionOnCanvas(corners[0]!, 560, 560, Board6);
     expect(pt.x).toBeGreaterThanOrEqual(44);
     expect(pt.y).toBeGreaterThanOrEqual(44);
   });

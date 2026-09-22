@@ -183,7 +183,7 @@ function buildBoardThemeFromTokens(
 function buildCompleteTheme(id: CompleteLookId): PlayShellTheme {
   return buildBoardThemeFromTokens(
     id,
-    LOVABLE_COMPLETE_BOARD_THEMES[COMPLETE_TOKEN_INDEX[id]],
+    LOVABLE_COMPLETE_BOARD_THEMES[COMPLETE_TOKEN_INDEX[id]]!,
     'complete',
   );
 }
@@ -193,10 +193,10 @@ function buildCharcoalSideTheme(): PlayShellTheme {
     id: '7',
     label: CHARCOAL_SIDE.label,
     lookGroup: 'side-only',
-    surfaceTop: LOVABLE_COMPLETE_BOARD_THEMES[0].surface,
-    surfaceBottom: LOVABLE_COMPLETE_BOARD_THEMES[0].shadow,
-    frameOuter: LOVABLE_COMPLETE_BOARD_THEMES[0].surface,
-    frameInner: LOVABLE_COMPLETE_BOARD_THEMES[0].shadow,
+    surfaceTop: LOVABLE_COMPLETE_BOARD_THEMES[0]!.surface,
+    surfaceBottom: LOVABLE_COMPLETE_BOARD_THEMES[0]!.shadow,
+    frameOuter: LOVABLE_COMPLETE_BOARD_THEMES[0]!.surface,
+    frameInner: LOVABLE_COMPLETE_BOARD_THEMES[0]!.shadow,
     lineColor: LOVABLE_SHELL.gold,
     edgeGlowRgba: 'rgba(0,0,0,0)',
     creamHorizontalStops: FLAT_CREAM_STOPS,

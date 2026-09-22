@@ -25,7 +25,7 @@ export function applyAiHops(
 ): AiHopRecord[] {
   const records: AiHopRecord[] = [];
   for (let i = 0; i < hops.length; i++) {
-    const hop = hops[i];
+    const hop = hops[i]!;
     const engine = session.getEngine();
     const state = engine.getState();
     const chainBefore = engine.getChainPieceId();

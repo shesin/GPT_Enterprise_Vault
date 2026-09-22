@@ -49,9 +49,9 @@ describe('SoundEffects event dispatch and mute/volume', () => {
 
       const events = sfx.getDispatchedEvents();
       expect(events).toHaveLength(1);
-      expect(events[0].kind).toBe('gameStart');
+      expect(events[0]!.kind).toBe('gameStart');
       expect(receivedEvents).toHaveLength(1);
-      expect(receivedEvents[0].kind).toBe('gameStart');
+      expect(receivedEvents[0]!.kind).toBe('gameStart');
     });
 
     it('dispatches correct sound-trigger event for: normal move (soft wooden slide)', () => {
@@ -59,10 +59,10 @@ describe('SoundEffects event dispatch and mute/volume', () => {
 
       const events = sfx.getDispatchedEvents();
       expect(events).toHaveLength(1);
-      expect(events[0].kind).toBe('slide');
-      expect(events[0].hopIndex).toBeUndefined();
+      expect(events[0]!.kind).toBe('slide');
+      expect(events[0]!.hopIndex).toBeUndefined();
       expect(receivedEvents).toHaveLength(1);
-      expect(receivedEvents[0].kind).toBe('slide');
+      expect(receivedEvents[0]!.kind).toBe('slide');
     });
 
     it('dispatches correct sound-trigger event for: single capture chime pop', () => {
@@ -70,9 +70,9 @@ describe('SoundEffects event dispatch and mute/volume', () => {
 
       const events = sfx.getDispatchedEvents();
       expect(events).toHaveLength(1);
-      expect(events[0].kind).toBe('capture');
-      expect(events[0].hopIndex).toBe(0);
-      expect(events[0].pitchMultiplier).toBe(1.0);
+      expect(events[0]!.kind).toBe('capture');
+      expect(events[0]!.hopIndex).toBe(0);
+      expect(events[0]!.pitchMultiplier).toBe(1.0);
     });
 
     it('dispatches ascending major triad musical intervals for 2-hop chain', () => {
@@ -82,14 +82,14 @@ describe('SoundEffects event dispatch and mute/volume', () => {
       const events = sfx.getDispatchedEvents();
       expect(events).toHaveLength(2);
 
-      expect(events[0].kind).toBe('capture');
-      expect(events[0].hopIndex).toBe(0);
-      expect(events[0].pitchMultiplier).toBe(1.0);
+      expect(events[0]!.kind).toBe('capture');
+      expect(events[0]!.hopIndex).toBe(0);
+      expect(events[0]!.pitchMultiplier).toBe(1.0);
 
-      expect(events[1].kind).toBe('capture');
-      expect(events[1].hopIndex).toBe(1);
-      expect(events[1].pitchMultiplier).toBeCloseTo(1.2599, 3);
-      expect(events[1].pitchMultiplier).toBeGreaterThan(events[0].pitchMultiplier!);
+      expect(events[1]!.kind).toBe('capture');
+      expect(events[1]!.hopIndex).toBe(1);
+      expect(events[1]!.pitchMultiplier).toBeCloseTo(1.2599, 3);
+      expect(events[1]!.pitchMultiplier).toBeGreaterThan(events[0]!.pitchMultiplier!);
     });
 
     it('dispatches ascending musical ladder + acoustic flourish for 3+ hop chain', () => {
@@ -101,10 +101,10 @@ describe('SoundEffects event dispatch and mute/volume', () => {
       const events = sfx.getDispatchedEvents();
       expect(events).toHaveLength(4);
 
-      expect(events[0].pitchMultiplier).toBe(1.0);
-      expect(events[1].pitchMultiplier).toBeCloseTo(1.2599, 3);
-      expect(events[2].pitchMultiplier).toBeCloseTo(1.4983, 3);
-      expect(events[3].kind).toBe('flourish');
+      expect(events[0]!.pitchMultiplier).toBe(1.0);
+      expect(events[1]!.pitchMultiplier).toBeCloseTo(1.2599, 3);
+      expect(events[2]!.pitchMultiplier).toBeCloseTo(1.4983, 3);
+      expect(events[3]!.kind).toBe('flourish');
     });
 
     it('dispatches correct events for victory celebration, defeat resolution, and draw chime', () => {
@@ -114,9 +114,9 @@ describe('SoundEffects event dispatch and mute/volume', () => {
 
       const events = sfx.getDispatchedEvents();
       expect(events).toHaveLength(3);
-      expect(events[0].kind).toBe('victory');
-      expect(events[1].kind).toBe('defeat');
-      expect(events[2].kind).toBe('draw');
+      expect(events[0]!.kind).toBe('victory');
+      expect(events[1]!.kind).toBe('defeat');
+      expect(events[2]!.kind).toBe('draw');
     });
 
     it('dispatches correct events for piece selection, button tap, and timer warning', () => {
@@ -126,9 +126,9 @@ describe('SoundEffects event dispatch and mute/volume', () => {
 
       const events = sfx.getDispatchedEvents();
       expect(events).toHaveLength(3);
-      expect(events[0].kind).toBe('select');
-      expect(events[1].kind).toBe('buttonTap');
-      expect(events[2].kind).toBe('timerWarning');
+      expect(events[0]!.kind).toBe('select');
+      expect(events[1]!.kind).toBe('buttonTap');
+      expect(events[2]!.kind).toBe('timerWarning');
     });
 
     it('clears dispatched events on request', () => {

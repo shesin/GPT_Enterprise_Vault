@@ -86,7 +86,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     session.selectNode(blueFrom);
     const blueTargets = session.getLegalTargetIds();
     expect(blueTargets.length).toBeGreaterThan(0);
-    const blueMove = session.resolveClickMove(blueTargets[0]);
+    const blueMove = session.resolveClickMove(blueTargets[0]!);
     expect(blueMove).not.toBeNull();
     session.applyMove(blueMove!);
 

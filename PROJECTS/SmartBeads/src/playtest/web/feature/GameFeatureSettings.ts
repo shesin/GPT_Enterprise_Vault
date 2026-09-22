@@ -141,7 +141,7 @@ export const DEFAULT_BGM_LABEL = "Cool Puzzle Groovin' 2";
 export const DEFAULT_BGM_VOLUME = 0.3;
 
 export function getDefaultBgmTrack(): BgmTrack {
-  return BGM_TRACKS.find((t) => t.label === DEFAULT_BGM_LABEL) ?? BGM_TRACKS[0];
+  return BGM_TRACKS.find((t) => t.label === DEFAULT_BGM_LABEL) ?? BGM_TRACKS[0]!;
 }
 
 export function parseShotLimit(shotClock: ShotClockSeconds): number {

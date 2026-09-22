@@ -113,7 +113,7 @@ describe('natural play geometry (prototype hit radius 22)', () => {
     let minPair = Infinity;
     for (let i = 0; i < pts.length; i++) {
       for (let j = i + 1; j < pts.length; j++) {
-        minPair = Math.min(minPair, dist(pts[i].pt, pts[j].pt));
+        minPair = Math.min(minPair, dist(pts[i]!.pt, pts[j]!.pt));
       }
     }
     expect(minPair).toBeGreaterThan(8);
@@ -127,8 +127,8 @@ describe('whose-turn highlight is one side only', () => {
     const p2 = listTurnHighlightNodeIds(board, 'BLUE', null);
     expect(p1.length).toBe(16);
     expect(p2.length).toBe(16);
-    expect(p1.every((id) => board.intersections[id].occupant === 'RED')).toBe(true);
-    expect(p2.every((id) => board.intersections[id].occupant === 'BLUE')).toBe(true);
+    expect(p1.every((id) => board.intersections[id]!.occupant === 'RED')).toBe(true);
+    expect(p2.every((id) => board.intersections[id]!.occupant === 'BLUE')).toBe(true);
     expect(p1.some((id) => p2.includes(id))).toBe(false);
   });
 });

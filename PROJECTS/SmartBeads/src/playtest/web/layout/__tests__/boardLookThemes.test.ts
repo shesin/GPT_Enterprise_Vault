@@ -56,7 +56,7 @@ describe('boardLookThemes', () => {
     mockPlayThemeDom('25', '7');
     applyPlayLookState('25', '7');
     const active = getActiveBoardLookTheme();
-    const jadeMatched = LOVABLE_COMPLETE_BOARD_THEMES[7];
+    const jadeMatched = LOVABLE_COMPLETE_BOARD_THEMES[7]!;
     expect(active.surfaceTop).toBe(jadeMatched.boardSurface);
     expect(active.frameOuter).toBe(jadeMatched.frameOuter);
   });

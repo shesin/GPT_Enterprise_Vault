@@ -39,7 +39,7 @@ describe('All V1 boards — own beads, capture/Finish, New game', () => {
     (boardId) => {
       const variant = resolveEngineVariant(boardId);
       const session = new FeatureSession(variant, { ...base, shotClock: '30' });
-      const slide = session.getEngine().getLegalMoves()[0];
+      const slide = session.getEngine().getLegalMoves()[0]!;
       session.applyMove(slide);
       session.endGameByFeature('RED', 'test end');
       expect(session.isGameOver()).toBe(true);
@@ -115,9 +115,9 @@ describe('Capture optionality (Finish) — 16 and small board', () => {
     expect(chain).not.toBeNull();
     const [hop1, hop2] = chain!;
     for (const point of engine.getState().board.intersections) point.occupant = undefined;
-    engine.getState().board.intersections[hop1.from].occupant = 'RED';
-    engine.getState().board.intersections[hop1.over].occupant = 'BLUE';
-    engine.getState().board.intersections[hop2.over].occupant = 'BLUE';
+    engine.getState().board.intersections[hop1.from]!.occupant = 'RED';
+    engine.getState().board.intersections[hop1.over]!.occupant = 'BLUE';
+    engine.getState().board.intersections[hop2.over]!.occupant = 'BLUE';
     // Extra BLUE so capture does not wipe the side.
     const spare = engine
       .getState()

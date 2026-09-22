@@ -35,9 +35,9 @@ describe('Board10x5 (10-bead · 5×5)', () => {
     expect(Board10x5.terminationProfile).toBe('sholo_guti');
     expect(Board10x5.maxPlies).toBeNull();
     expect(Board10x5.centerNodeIds).toEqual(BOARD10X5_CENTER_NODE_IDS);
-    expect(Board10x5.intersections[12].label).toBe('A22');
-    expect(Board10x5.intersections[12].x).toBe(4);
-    expect(Board10x5.intersections[12].y).toBe(4);
+    expect(Board10x5.intersections[12]!.label).toBe('A22');
+    expect(Board10x5.intersections[12]!.x).toBe(4);
+    expect(Board10x5.intersections[12]!.y).toBe(4);
   });
 
   it('gives RED 13 opening legal moves (reference parity)', () => {

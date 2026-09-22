@@ -236,7 +236,7 @@ describe('SmartBeadsEngine', () => {
     const engine = new SmartBeadsEngine('6');
     expect(engine.getState().board.maxPlies).toBeNull();
     engine.getState().moveCount = ENGINE_SAFETY_MAX_PLIES - 1;
-    const move = engine.getLegalMoves()[0];
+    const move = engine.getLegalMoves()[0]!;
     engine.applyMove(move);
     if (engine.getChainPieceId() !== null) engine.endTurn();
     expect(engine.getState().gameOver).toBe(true);
@@ -284,8 +284,8 @@ describe('SmartBeadsEngine', () => {
     const engine = new SmartBeadsEngine('4');
     const state = engine.getState();
     for (const point of state.board.intersections) point.occupant = undefined;
-    state.board.intersections[0].occupant = 'RED';
-    state.board.intersections[4].occupant = 'BLUE';
+    state.board.intersections[0]!.occupant = 'RED';
+    state.board.intersections[4]!.occupant = 'BLUE';
     engine.applyMove({ from: 0, to: 8 });
     expect(engine.countPieces('BLUE')).toBe(0);
     expect(state.gameOver).toBe(true);

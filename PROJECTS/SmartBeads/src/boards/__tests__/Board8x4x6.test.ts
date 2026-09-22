@@ -35,10 +35,10 @@ describe('Board8x4x6 (8-bead · 4×6)', () => {
     expect(Board8x4x6.maxPlies).toBeNull();
     expect(Board8x4x6.centerNodeIds).toEqual(BOARD8X4X6_CENTER_NODE_IDS);
     expect(Board8x4x6.centerNodeIds).toEqual([9, 10, 13, 14]);
-    expect(Board8x4x6.intersections[9].label).toBe('A21');
-    expect(Board8x4x6.intersections[10].label).toBe('A22');
-    expect(Board8x4x6.intersections[13].label).toBe('A31');
-    expect(Board8x4x6.intersections[14].label).toBe('A32');
+    expect(Board8x4x6.intersections[9]!.label).toBe('A21');
+    expect(Board8x4x6.intersections[10]!.label).toBe('A22');
+    expect(Board8x4x6.intersections[13]!.label).toBe('A31');
+    expect(Board8x4x6.intersections[14]!.label).toBe('A32');
   });
 
   it('gives RED 16 opening legal moves (reference parity)', () => {

@@ -52,7 +52,7 @@ describe('HonestAi depth-2 search completion', () => {
     for (let i = 0; i < 6; i += 1) {
       const moves = engine.getLegalMoves();
       if (!moves.length) break;
-      engine.applyMove(moves[0]);
+      engine.applyMove(moves[0]!);
       if (engine.getChainPieceId() !== null) engine.endTurn();
     }
     engine.getState().currentPlayer = 'BLUE';

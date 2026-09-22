@@ -28,8 +28,8 @@ describe('HonestAi repetition steer', () => {
     snap.positionHistory = { [repeatKey]: 1 };
 
     const ends = generateTurnEnds('6', snap, 'BLUE', 32, honestAiTurnEndsDeadlineMs(5_000));
-    const forwardEnd = ends.find((e) => e.path.length === 1 && e.path[0].to === forward.to);
-    const backEnd = ends.find((e) => e.path.length === 1 && e.path[0].to === back.to);
+    const forwardEnd = ends.find((e) => e.path.length === 1 && e.path[0]!.to === forward.to);
+    const backEnd = ends.find((e) => e.path.length === 1 && e.path[0]!.to === back.to);
     expect(forwardEnd).toBeDefined();
     expect(backEnd).toBeDefined();
 
@@ -75,6 +75,6 @@ describe('HonestAi repetition steer', () => {
 
     const path = selectAiTurnPath('6', 3, snap, 'BLUE', honestAiTestOpts());
     expect(path).not.toBeNull();
-    expect(path![0].to).not.toBe(forward.to);
+    expect(path![0]!.to).not.toBe(forward.to);
   });
 });

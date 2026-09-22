@@ -1,4 +1,5 @@
 import { BoardDefinition, Connection, Intersection, JumpPath } from '../models/GameState';
+import { at } from './arrayAccess';
 
 /**
  * 12-bead · 6×5 board (locked V1 #5).
@@ -39,11 +40,13 @@ function buildAdjacency(nodes: NodeSpec[]): number[][] {
   const link = (a: string, b: string): void => {
     const i = indexByLabel.get(a)!;
     const j = indexByLabel.get(b)!;
-    if (!adjacency[i].includes(j)) {
-      adjacency[i].push(j);
+    const adjI = at(adjacency, i);
+    const adjJ = at(adjacency, j);
+    if (!adjI.includes(j)) {
+      adjI.push(j);
     }
-    if (!adjacency[j].includes(i)) {
-      adjacency[j].push(i);
+    if (!adjJ.includes(i)) {
+      adjJ.push(i);
     }
   };
 
@@ -73,12 +76,12 @@ function continueCollinear(
   nodes: NodeSpec[],
   adjacency: number[][],
 ): number {
-  const a = nodes[from];
-  const b = nodes[over];
+  const a = at(nodes, from);
+  const b = at(nodes, over);
   const dx = b.x - a.x;
   const dy = b.y - a.y;
-  for (const landing of adjacency[over]) {
-    const c = nodes[landing];
+  for (const landing of at(adjacency, over)) {
+    const c = at(nodes, landing);
     if (sameDir(dx, dy, c.x - b.x, c.y - b.y)) {
       return landing;
     }
@@ -109,7 +112,7 @@ function buildIntersections(nodes: NodeSpec[]): Intersection[] {
 function buildConnections(adjacency: number[][]): Connection[] {
   const connections: Connection[] = [];
   for (let from = 0; from < adjacency.length; from++) {
-    for (const to of adjacency[from]) {
+    for (const to of at(adjacency, from)) {
       if (from < to) {
         connections.push({ from, to });
       }
@@ -121,7 +124,7 @@ function buildConnections(adjacency: number[][]): Connection[] {
 function buildJumpPaths(nodes: NodeSpec[], adjacency: number[][]): JumpPath[] {
   const jumpPaths: JumpPath[] = [];
   for (let from = 0; from < nodes.length; from++) {
-    for (const over of adjacency[from]) {
+    for (const over of at(adjacency, from)) {
       const landing = continueCollinear(from, over, nodes, adjacency);
       if (landing >= 0) {
         jumpPaths.push({ from, over, to: landing });
@@ -134,7 +137,7 @@ function buildJumpPaths(nodes: NodeSpec[], adjacency: number[][]): JumpPath[] {
 function buildCenterNodeIds(nodes: NodeSpec[]): number[] {
   const ids: number[] = [];
   for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
+    const node = at(nodes, i);
     if (node.x === 4 && (node.y === 4 || node.y === 6)) {
       ids.push(i);
     }

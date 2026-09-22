@@ -30,7 +30,7 @@ const off = {
 const productBoards = listProductBoards();
 
 function labelOf(board: BoardDefinition, id: number): string {
-  return board.intersections[id].label ?? String(id);
+  return board.intersections[id]!.label ?? String(id);
 }
 
 function edgeKeys(board: BoardDefinition): Set<string> {
@@ -44,9 +44,9 @@ function edgeKeys(board: BoardDefinition): Set<string> {
 
 /** Board-lattice collinearity: b continues in the same direction from a to c. */
 function isCollinear(board: BoardDefinition, a: number, b: number, c: number): boolean {
-  const pa = board.intersections[a];
-  const pb = board.intersections[b];
-  const pc = board.intersections[c];
+  const pa = board.intersections[a]!;
+  const pb = board.intersections[b]!;
+  const pc = board.intersections[c]!;
   const dx = pb.x! - pa.x!;
   const dy = pb.y! - pa.y!;
   const ex = pc.x! - pb.x!;
@@ -295,7 +295,7 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
         for (const [from, to] of [
           [conn.from, conn.to],
           [conn.to, conn.from],
-        ]) {
+        ] as const) {
           const engine = blankEngine(variant);
           requireIntersection(engine.getState().board, from).occupant = 'RED';
           placeSpareEnemy(engine, [from, to]);
@@ -454,7 +454,7 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       const board = session.getEngine().getState().board;
       for (const point of board.intersections) point.occupant = undefined;
 
-      const opener = (reference.jumpPaths ?? [])[0];
+      const opener = (reference.jumpPaths ?? [])[0]!;
       requireIntersection(board, opener.from).occupant = 'RED';
       requireIntersection(board, opener.over).occupant = 'BLUE';
 
@@ -464,10 +464,10 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
         if (point.occupant || point.id === opener.to) continue;
         const neighbours = getConnectedIds(board, point.id);
         if (neighbours.some((id) => [opener.from, opener.over, opener.to].includes(id))) continue;
-        if (neighbours.some((id) => board.intersections[id].occupant)) continue;
+        if (neighbours.some((id) => board.intersections[id]!.occupant)) continue;
         point.occupant = 'RED';
         neighbours.forEach((id) => {
-          board.intersections[id].occupant = 'RED';
+          board.intersections[id]!.occupant = 'RED';
         });
         immobile = point.id;
         break;
@@ -519,12 +519,17 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       const expectedKeys = board.connections
         .map((conn) => {
           const a = projectIntersectionOnCanvas(
-            board.intersections[conn.from],
+            board.intersections[conn.from]!,
             width,
             height,
             board,
           );
-          const b = projectIntersectionOnCanvas(board.intersections[conn.to], width, height, board);
+          const b = projectIntersectionOnCanvas(
+            board.intersections[conn.to]!,
+            width,
+            height,
+            board,
+          );
           return [`${round(a.x)},${round(a.y)}`, `${round(b.x)},${round(b.y)}`].sort().join('|');
         })
         .sort();
@@ -555,14 +560,14 @@ describe('V1 geometry + capture audit — all seven locked boards', () => {
       );
       const overlaps: string[] = [];
       for (const conn of reference.connections) {
-        const a = points[conn.from];
-        const b = points[conn.to];
+        const a = points[conn.from]!;
+        const b = points[conn.to]!;
         const vx = b.x - a.x;
         const vy = b.y - a.y;
         const len2 = vx * vx + vy * vy;
         for (const node of reference.intersections) {
           if (node.id === conn.from || node.id === conn.to) continue;
-          const p = points[node.id];
+          const p = points[node.id]!;
           const t = Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.y - a.y) * vy) / len2));
           const distance = Math.hypot(p.x - (a.x + t * vx), p.y - (a.y + t * vy));
           if (distance < 12) {
@@ -608,11 +613,11 @@ describe('16-bead triangle-to-rectangle junction', () => {
       [`${wing}T`, `${wing}IT`],
       [`${wing}M`, `${wing}IM`],
       [`${wing}B`, `${wing}IB`],
-    ]) {
+    ] as const) {
       for (const [from, over, to] of [
         [outer, inner, apex],
         [apex, inner, outer],
-      ]) {
+      ] as const) {
         const engine = blankEngine('16');
         const board = engine.getState().board;
         requireIntersection(board, idOf(board, from)).occupant = 'RED';

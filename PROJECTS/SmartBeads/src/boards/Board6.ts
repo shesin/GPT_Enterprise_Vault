@@ -1,4 +1,5 @@
 import { BoardDefinition, Connection, Intersection, JumpPath } from '../models/GameState';
+import { at } from './arrayAccess';
 
 /**
  * 6-bead · 4×4 board (locked V1 #2).
@@ -29,11 +30,13 @@ function buildAdjacency(nodes: NodeSpec[]): number[][] {
   const adjacency = Array.from({ length: nodes.length }, () => [] as number[]);
 
   const link = (i: number, j: number): void => {
-    if (!adjacency[i].includes(j)) {
-      adjacency[i].push(j);
+    const adjI = at(adjacency, i);
+    const adjJ = at(adjacency, j);
+    if (!adjI.includes(j)) {
+      adjI.push(j);
     }
-    if (!adjacency[j].includes(i)) {
-      adjacency[j].push(i);
+    if (!adjJ.includes(i)) {
+      adjJ.push(i);
     }
   };
 
@@ -63,7 +66,7 @@ function buildAdjacency(nodes: NodeSpec[]): number[][] {
 function buildJumpPaths(adjacency: number[][]): JumpPath[] {
   const jumpPaths: JumpPath[] = [];
   for (let from = 0; from < adjacency.length; from++) {
-    for (const over of adjacency[from]) {
+    for (const over of at(adjacency, from)) {
       const r1 = Math.floor(from / COLS);
       const c1 = from % COLS;
       const r2 = Math.floor(over / COLS);
@@ -74,7 +77,7 @@ function buildJumpPaths(adjacency: number[][]): JumpPath[] {
         continue;
       }
       const to = tr * COLS + tc;
-      if (adjacency[over].includes(to)) {
+      if (at(adjacency, over).includes(to)) {
         jumpPaths.push({ from, over, to });
       }
     }
@@ -108,7 +111,7 @@ function buildIntersections(nodes: NodeSpec[]): Intersection[] {
 function buildConnections(adjacency: number[][]): Connection[] {
   const connections: Connection[] = [];
   for (let from = 0; from < adjacency.length; from++) {
-    for (const to of adjacency[from]) {
+    for (const to of at(adjacency, from)) {
       if (from < to) {
         connections.push({ from, to });
       }

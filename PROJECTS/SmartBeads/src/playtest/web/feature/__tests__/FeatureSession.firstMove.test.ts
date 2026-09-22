@@ -27,14 +27,14 @@ const productBoards = listProductBoards();
 function expectBoundedAiHops(hops: AiHopRecord[], aiPlayer: 'BLUE'): void {
   expect(hops.length).toBeGreaterThan(0);
   for (let i = 0; i < hops.length; i++) {
-    const hop = hops[i];
+    const hop = hops[i]!;
     expect(hop.player).toBe(aiPlayer);
     expect(hop.fromOccupant).toBe(aiPlayer);
     if (hop.chainPieceIdBefore !== null) {
       expect(hop.from).toBe(hop.chainPieceIdBefore);
     }
     if (i > 0) {
-      expect(hop.from).toBe(hops[i - 1].to);
+      expect(hop.from).toBe(hops[i - 1]!.to);
     }
   }
 }
@@ -160,7 +160,7 @@ describe('first-ply occupancy (app session — no DOM)', () => {
     expect(path?.length).toBeGreaterThan(0);
     const hops = applyAiHops(session, path!, 'BLUE');
     expectBoundedAiHops(hops, 'BLUE');
-    const last = hops[hops.length - 1];
+    const last = hops[hops.length - 1]!;
     expect(last.chainPieceIdAfter).toBeNull();
     if (session.getUiState() === 'chain') session.finishChain();
 

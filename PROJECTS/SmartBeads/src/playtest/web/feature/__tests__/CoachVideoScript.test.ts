@@ -71,17 +71,17 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
   });
 
   it('uses Smart Bead Chess branding and 3 s pauses between slide moves', () => {
-    expect(COACH_VIDEO_SEGMENT_BANNERS[0].subtitle).toMatch(/SMART BEAD CHESS/i);
+    expect(COACH_VIDEO_SEGMENT_BANNERS[0]!.subtitle).toMatch(/SMART BEAD CHESS/i);
 
     const slideMoves = COACH_VIDEO.moves.slice(0, 3);
 
-    expect(slideMoves[1].atMs - slideMoves[0].atMs).toBe(11_200 - 6_500);
+    expect(slideMoves[1]!.atMs - slideMoves[0]!.atMs).toBe(11_200 - 6_500);
 
-    expect(slideMoves[2].atMs - slideMoves[1].atMs).toBe(15_900 - 11_200);
+    expect(slideMoves[2]!.atMs - slideMoves[1]!.atMs).toBe(15_900 - 11_200);
 
-    expect(COACH_VIDEO.segmentBanners[1].atMs - slideMoves[2].atMs).toBe(19_100 - 15_900);
+    expect(COACH_VIDEO.segmentBanners[1]!.atMs - slideMoves[2]!.atMs).toBe(19_100 - 15_900);
 
-    expect(COACH_VIDEO.segmentBanners[1].atMs - slideMoves[2].atMs).toBeGreaterThanOrEqual(
+    expect(COACH_VIDEO.segmentBanners[1]!.atMs - slideMoves[2]!.atMs).toBeGreaterThanOrEqual(
       COACH_POST_DEMO_PAUSE_MS,
     );
   });
@@ -91,26 +91,26 @@ describe('CoachVideoScript Video 1 basics (7-bead)', () => {
 
     expect(spokenMoves).toHaveLength(4);
 
-    expect(spokenMoves[0].atMs).toBe(6_500);
+    expect(spokenMoves[0]!.atMs).toBe(6_500);
 
-    expect(spokenMoves[1].atMs).toBe(25_100);
+    expect(spokenMoves[1]!.atMs).toBe(25_100);
 
-    expect(spokenMoves[2].atMs).toBe(43_940);
+    expect(spokenMoves[2]!.atMs).toBe(43_940);
 
-    expect(spokenMoves[3].atMs).toBe(COACH_VIDEO_TRIPLE_DEMO_MS);
+    expect(spokenMoves[3]!.atMs).toBe(COACH_VIDEO_TRIPLE_DEMO_MS);
 
-    expect(spokenMoves[3].speech).toBe(COACH_VIDEO_TRIPLE_SPEECH_TEXT);
+    expect(spokenMoves[3]!.speech).toBe(COACH_VIDEO_TRIPLE_SPEECH_TEXT);
 
     expect(COACH_VIDEO_TRIPLE_SPEECH_TEXT).toMatch(/while captures stay open/i);
   });
 
   it('keeps segment banners visible longer through the demo move without crossing the next banner', () => {
-    const moveBanner = COACH_VIDEO_SEGMENT_BANNERS[0];
+    const moveBanner = COACH_VIDEO_SEGMENT_BANNERS[0]!;
     expect(coachSegmentBannerUntilMs(moveBanner)).toBe(8_500);
     expect(findCoachSegmentBannerAtTime(8_499)?.title).toBe('MOVE');
     expect(findCoachSegmentBannerAtTime(8_500)).toBeNull();
 
-    const singleBanner = COACH_VIDEO_SEGMENT_BANNERS[1];
+    const singleBanner = COACH_VIDEO_SEGMENT_BANNERS[1]!;
     expect(coachSegmentBannerUntilMs(singleBanner)).toBe(27_100);
     expect(findCoachSegmentBannerAtTime(27_099)?.title).toBe('SINGLE CAPTURE');
     expect(findCoachSegmentBannerAtTime(27_100)).toBeNull();

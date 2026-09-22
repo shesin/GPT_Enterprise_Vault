@@ -244,7 +244,7 @@ export class CoachVideoPlayer {
     this.firedCues = new Set(
       (this.script.cues ?? [])
         .map((c, index) => index)
-        .filter((index) => (this.script.cues ?? [])[index].atMs <= this.timeMs),
+        .filter((index) => (this.script.cues ?? [])[index]!.atMs <= this.timeMs),
     );
     this.firedSegmentBanners = new Set(
       (this.script.segmentBanners ?? []).filter((b) => b.atMs <= this.timeMs).map((b) => b.atMs),

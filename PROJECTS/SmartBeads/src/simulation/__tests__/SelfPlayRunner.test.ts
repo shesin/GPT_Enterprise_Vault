@@ -37,10 +37,10 @@ describe('SelfPlayRunner', () => {
     const results = runSelfPlayBatch('4', 10);
 
     expect(results).toHaveLength(10);
-    expect(results[0].startingPlayer).toBe('RED');
-    expect(results[1].startingPlayer).toBe('BLUE');
-    expect(results[2].startingPlayer).toBe('RED');
-    expect(results[3].startingPlayer).toBe('BLUE');
+    expect(results[0]!.startingPlayer).toBe('RED');
+    expect(results[1]!.startingPlayer).toBe('BLUE');
+    expect(results[2]!.startingPlayer).toBe('RED');
+    expect(results[3]!.startingPlayer).toBe('BLUE');
   });
 
   it('generates a machine-readable JSON batch report with all required metrics', () => {

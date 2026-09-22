@@ -1,4 +1,5 @@
 import { BoardDefinition, Connection, Intersection, JumpPath } from '../models/GameState';
+import { at } from './arrayAccess';
 
 /**
  * Board4 — smallest progressive grid variant (4×4).
@@ -25,13 +26,13 @@ function buildIntersections(): Intersection[] {
 
   // Row 1 (top): RED
   for (let col = 0; col < SIZE; col++) {
-    intersections[col].occupant = 'RED';
+    at(intersections, col).occupant = 'RED';
   }
 
   // Row 4 (bottom): BLUE
   const lastRowStart = (SIZE - 1) * SIZE;
   for (let col = 0; col < SIZE; col++) {
-    intersections[lastRowStart + col].occupant = 'BLUE';
+    at(intersections, lastRowStart + col).occupant = 'BLUE';
   }
 
   return intersections;

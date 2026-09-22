@@ -33,17 +33,17 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     expect(hops.length).toBeGreaterThan(0);
     expect(hops.map((h) => h.fromOccupant)).toEqual(hops.map(() => 'BLUE'));
     for (let i = 0; i < hops.length; i++) {
-      const hop = hops[i];
+      const hop = hops[i]!;
       expect(hop.player).toBe('BLUE');
       expect(hop.fromOccupant).toBe('BLUE');
       if (hop.chainPieceIdBefore !== null) {
         expect(hop.from).toBe(hop.chainPieceIdBefore);
       }
       if (i > 0) {
-        expect(hop.from).toBe(hops[i - 1].to);
+        expect(hop.from).toBe(hops[i - 1]!.to);
       }
     }
-    const last = hops[hops.length - 1];
+    const last = hops[hops.length - 1]!;
     expect(last.chainPieceIdAfter).toBeNull();
     expect(session.getEngine().getChainPieceId()).toBeNull();
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
@@ -61,15 +61,15 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     expect(path?.length).toBeGreaterThan(0);
 
     const probe = hangingSession();
-    probe.applyMove(path![0]);
+    probe.applyMove(path![0]!);
     expect(probe.getEngine().getChainPieceId()).toBeNull();
-    const leftover = probe.getEngine().getLegalMoves()[0];
+    const leftover = probe.getEngine().getLegalMoves()[0]!;
     expect(leftover).toBeDefined();
     expect(probe.getEngine().getState().board.intersections[leftover.from]?.occupant).toBe('RED');
 
-    const hops = runAiTurn(session, [path![0], leftover]);
+    const hops = runAiTurn(session, [path![0]!, leftover]);
     expect(hops).toHaveLength(1);
-    expect(hops[0].fromOccupant).toBe('BLUE');
+    expect(hops[0]!.fromOccupant).toBe('BLUE');
     expect(session.getEngine().getChainPieceId()).toBeNull();
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
     expect(session.getMoveCount()).toBe(2);
@@ -81,7 +81,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     expect(session.getEngine().getChainPieceId()).toBeNull();
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
 
-    const leftover = session.getEngine().getLegalMoves()[0];
+    const leftover = session.getEngine().getLegalMoves()[0]!;
     expect(leftover).toBeDefined();
     expect(session.getEngine().getState().board.intersections[leftover.from]?.occupant).toBe('RED');
     expect(() => runAiTurn(session, [leftover])).toThrow(/stale hop/);
@@ -103,7 +103,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     const oneHop = { from: id('A00'), to: id('A02') };
     const hops = runAiTurn(session, [oneHop]);
     expect(hops).toHaveLength(1);
-    expect(hops[0].fromOccupant).toBe('BLUE');
+    expect(hops[0]!.fromOccupant).toBe('BLUE');
     expect(session.getEngine().getChainPieceId()).toBeNull();
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
     expect(session.getUiState()).not.toBe('chain');
@@ -131,7 +131,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     // Medium search returns a legal BLUE hop from the hanging reply position
     const eng = session.getEngine();
     expect(eng.getState().currentPlayer).toBe('BLUE');
-    const legal = eng.getLegalMoves().some((m) => m.from === path![0].from && m.to === path![0].to);
+    const legal = eng.getLegalMoves().some((m) => m.from === path![0]!.from && m.to === path![0]!.to);
     expect(legal).toBe(true);
   });
 
@@ -184,7 +184,7 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
                 .getState()
                 .board.jumpPaths?.some((j) => j.from === m.from && j.to === m.to);
               return !jump;
-            }) ?? moves[0];
+            }) ?? moves[0]!;
           session.applyMove(slide);
           if (session.getUiState() === 'chain') session.finishChain();
         } else {
