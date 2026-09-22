@@ -2,7 +2,6 @@ import {
   DEFAULT_PRODUCT_BOARD,
   getCatalogEntry,
   getPlayConfig,
-  listProductBoards,
   ProductBoardId,
   resolveEngineVariant,
 } from '../../config/BoardCatalog';
@@ -20,31 +19,26 @@ import {
 import { formatCenterDisplay } from './feature/centerScoring';
 import {
   aiLevelForActingPlayer,
-  BGM_TRACKS,
-  COACH_MAX_AI_LEVEL,
+  clampUiAiLevel,
   COACH_MOVE_PREVIEW_MS,
   buildCoachWatchSettings,
-  SPECTATE_WATCH_DEFAULTS,
-  clampUiAiLevel,
   DEFAULT_BGM_VOLUME,
-  CenterRule,
-  formatCenterRuleLabel,
-  formatTimerOptionLabel,
-  formatShotClockOptionLabel,
   formatAiLevelLabel,
   GameFeatureSettings,
-  HUMAN_PVE_MAX_AI_LEVEL,
   isHumanVsAiMode,
   isTournamentTimerActive,
   normalizeTimerSettings,
-  TimerMinutes,
   parseTimerSeconds,
-  effectiveCenterRule,
-  populateAiLevelSelect,
   spectateInterMoveDelayMs,
-  ShotClockSeconds,
 } from './feature/GameFeatureSettings';
-import { applyAiHops, AiHopRecord } from './feature/aiTurnPath';
+import {
+  aiCenterFromSession,
+  aiTimerFromSession,
+  completeAiTurnIfChainOpen,
+  planAiTurnPath,
+  runAiTurn,
+  shouldContinueAiTurn,
+} from './feature/aiTurnRunner';
 import {
   buildCoachLessonSettings,
   COACH_POST_DEMO_PAUSE_MS,
@@ -54,13 +48,11 @@ import {
   COACH_FINISH_CAPTURE_SPEECH_TEXT,
   isCoachFinishCaptureDemoActive,
   coachPanelPointIndexAtTime,
-  coachSegmentBannerUntilMs,
   coachSpeechForTime,
   findCoachKeyframeAt,
   findCoachSegmentBannerAtTime,
   formatCoachTime,
   type CoachVideoCue,
-  type CoachVideoSegmentBanner,
 } from './feature/CoachLesson';
 import { applyCoachVideoHighlight, applyCoachVideoKeyframe } from './feature/coachVideoBoard';
 import { CoachVideoPlayer } from './feature/CoachVideoPlayer';
@@ -68,15 +60,11 @@ import { renderCoachPanelHtml } from './feature/coachPanelRender';
 import { CoachVoice } from './feature/CoachVoice';
 import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
 import { shellTimerShouldSkip } from './feature/clockPolicy';
-import {
-  selectAiTurnPath,
-  shouldAcceptResignationDraw,
-  thinkBudgetForLevel,
-  AiCenterContext,
-  AiTimerContext,
-} from './feature/HonestAi';
+import { shouldAcceptResignationDraw } from './feature/HonestAi';
+import { createStartBannerController } from './feature/startBannerController';
 import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
+import { createBoardSettingsPanel } from './layout/boardSettingsPanel';
 import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
 import {
   isMoveHintAuraToggle,
@@ -84,6 +72,7 @@ import {
   resolveMoveHintAuraStyle,
   writeMoveHintAuraToggle,
 } from './layout/moveHintAuraThemes';
+import { populateBgmSelect, populateBoardSelect } from './layout/selectPopulators';
 import {
   BoardAnimState,
   drawCanvasBoard,
@@ -91,156 +80,17 @@ import {
   LastMoveHighlight,
   CapturePulse,
 } from './render/CanvasBoardRenderer';
+import { updatePlayerTimerMmss, updateShotRing } from './render/timerDisplay';
 import { soundEffects } from './audio/SoundEffects';
 
-function fmtClock(sec: number): string {
-  const clamped = sec < 0 ? 0 : sec;
-  const m = Math.floor(clamped / 60)
-    .toString()
-    .padStart(2, '0');
-  const s = (clamped % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-}
-
-function updatePlayerTimerMmss(el: HTMLElement | null, displaySec: number, limitSec: number): void {
-  if (!el) return;
-  if (limitSec <= 0) {
-    el.textContent = 'OFF';
-    el.classList.add('off');
-    return;
-  }
-  el.classList.remove('off');
-  el.textContent = fmtClock(displaySec);
-}
-
-function updateShotRing(
-  ringEl: HTMLElement | null,
-  secEl: HTMLElement | null,
-  secs: number,
-  limit: number,
-  active: boolean,
-): void {
-  if (!ringEl || !secEl) return;
-  if (limit <= 0) {
-    ringEl.classList.add('off');
-    ringEl.style.setProperty('--shot-pct', '1');
-    secEl.textContent = '—';
-    return;
-  }
-  ringEl.classList.toggle('off', !active);
-  const clamped = Math.max(0, secs);
-  const pct = limit > 0 ? clamped / limit : 0;
-  ringEl.style.setProperty('--shot-pct', String(pct));
-  secEl.textContent = String(clamped);
-}
-
-/** After a hop lands, the live AI loop continues only while a chain is still open. */
-export function shouldContinueAiTurn(chainPieceId: number | null, hopsRemaining: number): boolean {
-  return chainPieceId !== null && hopsRemaining > 0;
-}
-
-/**
- * Capture optionality: AI may stop while follow-up jumps still exist.
- * Humans use Finish capture; AI has no button, so the sequencer must end the turn.
- * Leaving the chain open keeps currentPlayer = BLUE and the shell sticks on “AI is thinking…”.
- */
-export function completeAiTurnIfChainOpen(session: FeatureSession): void {
-  if (!session.isGameOver() && session.getEngine().getChainPieceId() !== null) {
-    session.finishChain();
-  }
-}
-
-function aiCenterFromSession(session: FeatureSession): AiCenterContext {
-  const settings = session.getSettings();
-  const scores = session.getCenterDisplayScores();
-  return {
-    centerRule: effectiveCenterRule(settings),
-    cumulativeRed: scores.red,
-    cumulativeBlue: scores.blue,
-  };
-}
-
-function aiTimerFromSession(session: FeatureSession): AiTimerContext {
-  const settings = session.getSettings();
-  const tournament = isTournamentTimerActive(settings);
-  const timerLimitSec = parseTimerSeconds(tournament ? settings.tournamentTimer : settings.timer);
-  return {
-    timerLimitSec,
-    globalRemainingSec: session.getGlobalMatchRemaining(),
-    redRemainingSec: session.getP1Clock(),
-    blueRemainingSec: session.getP2Clock(),
-    usePerSideClocks: tournament,
-  };
-}
-
-/**
- * Choose an AI path without throwing.
- * Never silently downgrade Hard/Medium to Easy — that broke the difficulty contract.
- * Only emergency fallback: first legal hop if search returns empty.
- * Center + match timer rules are passed so eval matches session scoring.
- */
-export function planAiTurnPath(session: FeatureSession, actingPlayer?: Player): Move[] | null {
-  const settings = session.getSettings();
-  const aiPlayer = actingPlayer ?? session.getAiPlayer();
-  const level = aiLevelForActingPlayer(settings, aiPlayer);
-  const variant = session.getBoardVariant();
-  const snap = session.getEngine().exportSnapshot();
-  const center = aiCenterFromSession(session);
-  const timer = aiTimerFromSession(session);
-  try {
-    const planned = selectAiTurnPath(variant, level, snap, aiPlayer, {
-      budgetMs: thinkBudgetForLevel(level, variant),
-      center,
-      timer,
-    });
-    if (planned?.length) return planned;
-  } catch {
-    /* fall through to emergency legal hop — do not substitute Easy search */
-  }
-  const legal = session.getEngine().getLegalMoves();
-  return legal.length ? [legal[0]!] : null;
-}
-
-/**
- * Live AI turn sequencer (same continue/stop as the play-shell hop loop).
- * Animation is not used — engine rules must hold with the renderer unplugged.
- * Pass `path` to inject hops (leftover/stale cases). Omit it to use planAiTurnPath.
- */
-export function runAiTurn(session: FeatureSession, path?: Move[] | null): AiHopRecord[] {
-  const settings = session.getSettings();
-  const aiPlayer = session.getAiPlayer();
-  if (
-    session.isGameOver() ||
-    !isHumanVsAiMode(settings.mode) ||
-    session.getEngine().getState().currentPlayer !== aiPlayer
-  ) {
-    throw new Error('stale hop: AI turn is not live');
-  }
-
-  const planned = path === undefined ? planAiTurnPath(session) : path;
-
-  if (!planned?.length) {
-    if (path === undefined) {
-      session.endGameByFeature('RED', 'AI has no legal moves.');
-      return [];
-    }
-    throw new Error('stale hop: empty leftover path');
-  }
-
-  const records: AiHopRecord[] = [];
-  for (let i = 0; i < planned.length; i++) {
-    if (i > 0 && !shouldContinueAiTurn(session.getEngine().getChainPieceId(), planned.length - i)) {
-      break;
-    }
-    const hopRecords = applyAiHops(session, [planned[i]!], aiPlayer);
-    records.push({ ...hopRecords[0]!, index: i });
-    if (!shouldContinueAiTurn(session.getEngine().getChainPieceId(), planned.length - (i + 1))) {
-      break;
-    }
-  }
-  completeAiTurnIfChainOpen(session);
-  return records;
-}
+export {
+  aiCenterFromSession,
+  aiTimerFromSession,
+  completeAiTurnIfChainOpen,
+  planAiTurnPath,
+  runAiTurn,
+  shouldContinueAiTurn,
+};
 
 export function bootstrapPlayShell(onReady?: () => void): void {
   let currentBoardId: ProductBoardId = DEFAULT_PRODUCT_BOARD;
@@ -329,153 +179,16 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const startBannerSubtitle = document.getElementById(
     'start-banner-subtitle',
   ) as HTMLDivElement | null;
-  let bannerTimer: number | null = null;
-  let bannerPhase2Timer: number | null = null;
-
-  function emitCelebrationSparkles(
-    targetContainer: HTMLElement | null = celebrationParticles,
-  ): void {
-    if (!targetContainer) return;
-    targetContainer.innerHTML = '';
-
-    const colors = ['#ffd700', '#fbbf24', '#ffffff', '#f8fafc', '#fef08a'];
-    const shapes = ['★', '✦', '✧', '★', '✦'];
-    const count = 20;
-
-    for (let i = 0; i < count; i++) {
-      const p = document.createElement('div');
-      p.className = 'celebration-particle';
-      const shape = shapes[i % shapes.length]!;
-      p.textContent = shape;
-
-      const angle = (i / count) * 2 * Math.PI + (Math.random() - 0.5) * 0.3;
-      const distance = 60 + Math.random() * 130;
-      const dx = Math.cos(angle) * distance;
-      const dy = Math.sin(angle) * distance;
-      const rot = (Math.random() - 0.5) * 360;
-      const dur = 1.4 + Math.random() * 0.6;
-      const delay = Math.random() * 0.25;
-      const size = 12 + Math.random() * 12;
-      const color = colors[i % colors.length]!;
-
-      p.style.setProperty('--dx', `${dx.toFixed(1)}px`);
-      p.style.setProperty('--dy', `${dy.toFixed(1)}px`);
-      p.style.setProperty('--rot', `${rot.toFixed(0)}deg`);
-      p.style.setProperty('--dur', `${dur.toFixed(2)}s`);
-      p.style.setProperty('--delay', `${delay.toFixed(2)}s`);
-      p.style.setProperty('--size', `${size.toFixed(0)}px`);
-      p.style.setProperty('--color', color);
-
-      targetContainer.appendChild(p);
-    }
-  }
-
-  function triggerStartBanner(initialTitle?: string, subtitle?: string): void {
-    if (!startBanner || !startBannerTitle || !startBannerSubtitle) return;
-    const boardName = subtitle ?? getCatalogEntry(currentBoardId)?.displayName ?? 'SMARTBEADS';
-    startBannerSubtitle.textContent = `★ ${boardName.toUpperCase()} ★`;
-    startBannerTitle.textContent = initialTitle ?? '★ MATCH START ★';
-
-    if (bannerTimer !== null) {
-      clearTimeout(bannerTimer);
-      bannerTimer = null;
-    }
-    if (bannerPhase2Timer !== null) {
-      clearTimeout(bannerPhase2Timer);
-      bannerPhase2Timer = null;
-    }
-
-    // Reset and trigger animations
-    celebrationFx?.classList.remove('animate');
-    startBanner.classList.remove('animate');
-    void startBanner.offsetWidth;
-
-    celebrationFx?.classList.add('animate');
-    startBanner.classList.add('animate');
-    emitCelebrationSparkles();
-
-    // Phase 2: Pop into "READY... PLAY!" at 0.75s
-    bannerPhase2Timer = window.setTimeout(() => {
-      if (startBannerTitle && startBanner.classList.contains('animate')) {
-        startBannerTitle.textContent = 'READY... PLAY!';
-        emitCelebrationSparkles();
-      }
-      bannerPhase2Timer = null;
-    }, 750);
-
-    // Total duration: 2.0 seconds
-    bannerTimer = window.setTimeout(() => {
-      dismissStartBanner();
-    }, 2000);
-  }
-
-  function dismissStartBanner(): void {
-    if (celebrationFx) celebrationFx.classList.remove('animate', 'coach-segment-top');
-    if (startBanner)
-      startBanner.classList.remove('animate', 'coach-segment-banner', 'coach-segment-banner-move');
-    if (startBannerSubtitle) startBannerSubtitle.style.display = '';
-    if (celebrationParticles) celebrationParticles.innerHTML = '';
-    if (bannerTimer !== null) {
-      clearTimeout(bannerTimer);
-      bannerTimer = null;
-    }
-    if (bannerPhase2Timer !== null) {
-      clearTimeout(bannerPhase2Timer);
-      bannerPhase2Timer = null;
-    }
-  }
-
-  function triggerCoachSegmentBanner(
-    banner: CoachVideoSegmentBanner | null,
-    atTimeMs?: number,
-    holdMsOverride?: number,
-  ): void {
-    if (!isCoachMode()) return;
-    if (!banner) {
-      dismissStartBanner();
-      return;
-    }
-    if (!startBanner || !startBannerTitle || !startBannerSubtitle || !celebrationFx) return;
-
-    startBannerTitle.textContent = banner.title;
-    if (banner.subtitle) {
-      startBannerSubtitle.textContent = banner.subtitle;
-      startBannerSubtitle.style.display = '';
-    } else {
-      startBannerSubtitle.style.display = 'none';
-    }
-
-    if (bannerTimer !== null) {
-      clearTimeout(bannerTimer);
-      bannerTimer = null;
-    }
-    if (bannerPhase2Timer !== null) {
-      clearTimeout(bannerPhase2Timer);
-      bannerPhase2Timer = null;
-    }
-
-    const nowMs = atTimeMs ?? coachVideoPlayer?.getTimeMs() ?? banner.atMs;
-    const untilMs =
-      holdMsOverride != null ? nowMs + holdMsOverride : coachSegmentBannerUntilMs(banner);
-    const remainingMs = Math.max(400, untilMs - nowMs);
-    const isMoveBanner = banner.atMs === 0 && banner.title === 'MOVE';
-
-    celebrationFx.classList.add('coach-segment-top');
-    celebrationFx.classList.remove('animate');
-    startBanner.classList.remove('animate', 'coach-segment-banner', 'coach-segment-banner-move');
-    void startBanner.offsetWidth;
-
-    const animSec = `${(remainingMs / 1000).toFixed(2)}s`;
-    startBanner.style.setProperty('--coach-banner-dur', animSec);
-    celebrationFx.classList.add('animate');
-    startBanner.classList.add('animate', 'coach-segment-banner');
-    if (isMoveBanner) startBanner.classList.add('coach-segment-banner-move');
-    // Coach watch-only: no celebration sparkles on segment banners.
-
-    bannerTimer = window.setTimeout(() => {
-      dismissStartBanner();
-    }, remainingMs);
-  }
+  const startBannerCtl = createStartBannerController(
+    { celebrationFx, celebrationParticles, startBanner, startBannerTitle, startBannerSubtitle },
+    {
+      isCoachMode: () => isCoachMode(),
+      getCoachTimeMs: () => coachVideoPlayer?.getTimeMs(),
+      getBoardDisplayName: () => getCatalogEntry(currentBoardId)?.displayName ?? 'SMARTBEADS',
+    },
+  );
+  const { emitCelebrationSparkles, triggerStartBanner, dismissStartBanner, triggerCoachSegmentBanner } =
+    startBannerCtl;
 
   const boardSelect = document.getElementById('board-select') as HTMLSelectElement;
   const aiLevelSelect = document.getElementById('ai-level-select') as HTMLSelectElement;
@@ -817,23 +530,29 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     populateBoardSelect(startBoardSelect);
   }
 
-  function syncAiLevelOptions(): void {
-    const current = clampUiAiLevel(parseInt(aiLevelSelect.value, 10) || 2);
-    populateAiLevelSelect(aiLevelSelect, HUMAN_PVE_MAX_AI_LEVEL, current);
-  }
-
-  function syncCoachLevelOptions(): void {
-    if (!coachLevelSelect) return;
-    const current = clampUiAiLevel(parseInt(coachLevelSelect.value, 10) || 3);
-    populateAiLevelSelect(coachLevelSelect, COACH_MAX_AI_LEVEL, current);
-  }
-
-  syncAiLevelOptions();
-  syncCoachLevelOptions();
-
   function isCoachMode(): boolean {
     return session.getSettings().mode === 'coach';
   }
+
+  const boardSettingsPanel = createBoardSettingsPanel(
+    {
+      centerRuleSelect,
+      timerSelect,
+      tournamentTimerSelect,
+      tournamentTimerSetting,
+      shotClockSelect,
+      aiLevelSelect,
+      coachLevelSelect,
+    },
+    {
+      getCurrentBoardId: () => currentBoardId,
+      isCoachMode,
+      readGameMode,
+    },
+  );
+
+  boardSettingsPanel.syncAiLevelOptions();
+  boardSettingsPanel.syncCoachLevelOptions();
 
   function syncCoachShellUi(): void {
     const coach = isCoachMode();
@@ -874,8 +593,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     boardSelect.value = COACH_VIDEO_BOARD_ID;
     if (startBoardSelect) startBoardSelect.value = COACH_VIDEO_BOARD_ID;
     syncBoardTitle();
-    syncBoardPlayOptions();
-    applyBoardDefaults(COACH_VIDEO_BOARD_ID);
+    boardSettingsPanel.syncBoardPlayOptions();
+    boardSettingsPanel.applyBoardDefaults(COACH_VIDEO_BOARD_ID);
 
     session = createSession(COACH_VIDEO_BOARD_ID, buildCoachLessonSettings());
     session.reset();
@@ -946,22 +665,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     btn.classList.toggle('is-open', willOpen);
   }
 
-  function syncTimerSettingLocks(): void {
-    const mode = readGameMode();
-    const tournamentOn = tournamentTimerSelect.value !== 'off';
-    const timerOn = timerSelect.value !== 'off';
-    if (tournamentTimerSetting) {
-      tournamentTimerSetting.style.display = mode === 'pvp' ? '' : 'none';
-    }
-    if (mode !== 'pvp' && tournamentTimerSelect.value !== 'off') {
-      tournamentTimerSelect.value = 'off';
-    }
-    if (isCoachMode()) return;
-    tournamentTimerSelect.disabled = timerOn;
-    timerSelect.disabled = tournamentOn;
-    centerRuleSelect.disabled = tournamentOn;
-  }
-
   function readCoachWatchSettings(): GameFeatureSettings {
     const coachLevel = coachLevelSelect ? clampUiAiLevel(parseInt(coachLevelSelect.value, 10)) : 3;
     const aiLevel = clampUiAiLevel(parseInt(aiLevelSelect.value, 10));
@@ -999,121 +702,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       return readCoachWatchSettings();
     }
     return normalizeTimerSettings(readRawSettings());
-  }
-
-  function applyBoardDefaults(boardId: ProductBoardId): void {
-    const defaults = getPlayConfig(boardId).defaultSettings;
-    centerRuleSelect.value = defaults.centerRule;
-    timerSelect.value = defaults.timer;
-    tournamentTimerSelect.value = defaults.tournamentTimer;
-    shotClockSelect.value = defaults.shotClock;
-    syncTimerSettingLocks();
-  }
-
-  function applySpectateDefaultsToUi(boardId: ProductBoardId): void {
-    const play = getPlayConfig(boardId);
-    const centerRule = play.centerRuleOptions.includes(SPECTATE_WATCH_DEFAULTS.centerRule)
-      ? SPECTATE_WATCH_DEFAULTS.centerRule
-      : play.defaultSettings.centerRule;
-    centerRuleSelect.value = centerRule;
-    timerSelect.value = play.timerOptions.includes(SPECTATE_WATCH_DEFAULTS.timer)
-      ? SPECTATE_WATCH_DEFAULTS.timer
-      : play.defaultSettings.timer;
-    tournamentTimerSelect.value = 'off';
-    populateAiLevelSelect(
-      aiLevelSelect,
-      HUMAN_PVE_MAX_AI_LEVEL,
-      SPECTATE_WATCH_DEFAULTS.coachBlueLevel,
-    );
-    if (coachLevelSelect) {
-      populateAiLevelSelect(
-        coachLevelSelect,
-        COACH_MAX_AI_LEVEL,
-        SPECTATE_WATCH_DEFAULTS.coachRedLevel,
-      );
-    }
-    syncTimerSettingLocks();
-  }
-
-  function syncCenterRuleOptions(): void {
-    const options = getPlayConfig(currentBoardId).centerRuleOptions;
-    const current = centerRuleSelect.value as CenterRule;
-    centerRuleSelect.innerHTML = '';
-    for (const rule of options) {
-      const opt = document.createElement('option');
-      opt.value = rule;
-      opt.textContent = formatCenterRuleLabel(rule);
-      centerRuleSelect.appendChild(opt);
-    }
-    if (options.includes(current)) {
-      centerRuleSelect.value = current;
-    } else {
-      centerRuleSelect.value = getPlayConfig(currentBoardId).defaultSettings.centerRule;
-    }
-  }
-
-  function syncTimerOptions(): void {
-    const play = getPlayConfig(currentBoardId);
-    const options = play.timerOptions;
-    const current = timerSelect.value as TimerMinutes;
-    timerSelect.innerHTML = '';
-    for (const value of options) {
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = formatTimerOptionLabel(value, play.timerBest);
-      timerSelect.appendChild(opt);
-    }
-    if (options.includes(current)) {
-      timerSelect.value = current;
-    } else {
-      timerSelect.value = getPlayConfig(currentBoardId).defaultSettings.timer;
-    }
-  }
-
-  function syncTournamentTimerOptions(): void {
-    const play = getPlayConfig(currentBoardId);
-    const options = play.tournamentTimerOptions ?? play.timerOptions;
-    const current = tournamentTimerSelect.value as TimerMinutes;
-    tournamentTimerSelect.innerHTML = '';
-    for (const value of options) {
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = formatTimerOptionLabel(value, play.timerBest);
-      tournamentTimerSelect.appendChild(opt);
-    }
-    if (options.includes(current)) {
-      tournamentTimerSelect.value = current;
-    } else {
-      tournamentTimerSelect.value = getPlayConfig(currentBoardId).defaultSettings.tournamentTimer;
-    }
-  }
-
-  function syncShotClockOptions(): void {
-    const play = getPlayConfig(currentBoardId);
-    const options = play.shotClockOptions;
-    const current = shotClockSelect.value as ShotClockSeconds;
-    shotClockSelect.innerHTML = '';
-    for (const value of options) {
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = formatShotClockOptionLabel(value, play.shotClockBest);
-      shotClockSelect.appendChild(opt);
-    }
-    if (options.includes(current)) {
-      shotClockSelect.value = current;
-    } else {
-      shotClockSelect.value = getPlayConfig(currentBoardId).defaultSettings.shotClock;
-    }
-  }
-
-  function syncBoardPlayOptions(): void {
-    syncCenterRuleOptions();
-    syncTimerOptions();
-    syncTournamentTimerOptions();
-    syncShotClockOptions();
-    syncAiLevelOptions();
-    syncCoachLevelOptions();
-    syncTimerSettingLocks();
   }
 
   function syncBoardTitle(): void {
@@ -1259,7 +847,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       coachLevelSetting.style.display = coachWatch ? '' : 'none';
     }
     syncCoachShellUi();
-    syncTimerSettingLocks();
+    boardSettingsPanel.syncTimerSettingLocks();
   }
 
   function interMoveDelayMs(): number {
@@ -2142,8 +1730,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     boardSelect.value = boardId;
     syncStartBoardSelect();
     syncBoardTitle();
-    syncBoardPlayOptions();
-    applyBoardDefaults(boardId);
+    boardSettingsPanel.syncBoardPlayOptions();
+    boardSettingsPanel.applyBoardDefaults(boardId);
     session = createSession(boardId, readSettings());
     session.reset();
     stopCoachVideo();
@@ -2173,7 +1761,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (hubModeSelect) hubModeSelect.value = mode;
     prepareBoardSwitch(boardId);
     if (action === 'spectate') {
-      applySpectateDefaultsToUi(boardId);
+      boardSettingsPanel.applySpectateDefaultsToUi(boardId);
       session = createSession(boardId, readSettings());
       session.reset();
     }
@@ -2298,7 +1886,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (timerSelect.value !== 'off') {
       tournamentTimerSelect.value = 'off';
     }
-    syncTimerSettingLocks();
+    boardSettingsPanel.syncTimerSettingLocks();
     resetGame();
   });
   tournamentTimerSelect.addEventListener('change', () => {
@@ -2306,7 +1894,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       timerSelect.value = 'off';
       centerRuleSelect.value = 'off';
     }
-    syncTimerSettingLocks();
+    boardSettingsPanel.syncTimerSettingLocks();
     resetGame();
   });
   for (const { btn, text } of settingHelpPairs) {
@@ -2426,7 +2014,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   syncBoardTitle();
-  syncBoardPlayOptions();
+  boardSettingsPanel.syncBoardPlayOptions();
   updateSfxButton();
   resetGame();
 
@@ -2456,25 +2044,4 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   };
 
   onReady?.();
-}
-
-function populateBoardSelect(select: HTMLSelectElement): void {
-  select.innerHTML = '';
-  for (const entry of listProductBoards()) {
-    const opt = document.createElement('option');
-    opt.value = entry.id;
-    opt.textContent = entry.displayName;
-    select.appendChild(opt);
-  }
-  select.value = DEFAULT_PRODUCT_BOARD;
-}
-
-function populateBgmSelect(select: HTMLSelectElement): void {
-  select.innerHTML = '<option value="">— Select Music —</option>';
-  for (const track of BGM_TRACKS) {
-    const opt = document.createElement('option');
-    opt.value = track.url;
-    opt.textContent = track.label;
-    select.appendChild(opt);
-  }
 }

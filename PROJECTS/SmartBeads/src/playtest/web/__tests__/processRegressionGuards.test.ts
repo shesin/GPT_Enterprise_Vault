@@ -38,6 +38,10 @@ const gameFeatureSettingsSource = fs.readFileSync(
   path.resolve(__dirname, '../feature/GameFeatureSettings.ts'),
   'utf8',
 );
+const boardSettingsPanelSource = fs.readFileSync(
+  path.resolve(__dirname, '../layout/boardSettingsPanel.ts'),
+  'utf8',
+);
 
 function afterTurnCompletedBlock(): string {
   const start = featureSessionSource.indexOf('private afterTurnCompleted');
@@ -177,10 +181,10 @@ describe('process regression guards', () => {
 
   describe('Watch AI vs AI launch defaults', () => {
     it('locks End-Game, 2 min timer, Expert vs Expert on hub spectate entry', () => {
-      expect(playControllerSource).toMatch(/function applySpectateDefaultsToUi/);
-      expect(playControllerSource).toMatch(/SPECTATE_WATCH_DEFAULTS/);
+      expect(boardSettingsPanelSource).toMatch(/function applySpectateDefaultsToUi/);
+      expect(boardSettingsPanelSource).toMatch(/SPECTATE_WATCH_DEFAULTS/);
       expect(playControllerSource).toMatch(
-        /if \(action === 'spectate'\)[\s\S]*applySpectateDefaultsToUi\(boardId\)/,
+        /if \(action === 'spectate'\)[\s\S]*boardSettingsPanel\.applySpectateDefaultsToUi\(boardId\)/,
       );
       expect(gameFeatureSettingsSource).toMatch(/SPECTATE_WATCH_DEFAULTS/);
       expect(gameFeatureSettingsSource).toMatch(/centerRule: 'endgame'/);
