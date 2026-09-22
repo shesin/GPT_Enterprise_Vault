@@ -260,6 +260,17 @@ Every finding was verified against actual execution (a Jest run, a live AI-vs-AI
 
 ---
 
+## Engineering work log (2026-09-22, Claude)
+
+Not a fresh bug-hunting audit cycle — two explicitly-scoped continuation tasks, each independently verified. Recorded here per the Recommendation below rather than left undocumented.
+
+1. **`noUncheckedIndexedAccess` migration completed** — the TS strictness flag (deferred at the end of the 5th cycle, item carried to PENDING) surfaced 505 errors project-wide when first enabled; all were fixed file-by-file across `src/boards/*`, `src/playtest/web/**`, and `src/simulation/*`. Genuinely safe-by-construction array/object index access (fixed-size fixtures, loop counters bounded by the same array's `.length`, guarded lengths) got a `!` non-null assertion; the 7 board geometry files route through a new shared `at()` helper (`src/boards/arrayAccess.ts`) that throws with a clear message if the invariant is ever violated. One source-scanning regression-guard test (`processRegressionGuards.test.ts`) needed its regex updated to tolerate the added `!`. **Verified:** `tsc --noEmit -p tsconfig.json` → 0 errors (from 505); full Jest suite → 658/658 passing. Commit `ce854b3`.
+2. **`PlayController.ts` split (partial, by design)** — extracted the genuinely decoupled pieces of the ~2481-line file into 5 focused modules: `feature/aiTurnRunner.ts` (AI turn planning/execution), `layout/boardSettingsPanel.ts` (board-dependent settings `<select>` syncing), `feature/startBannerController.ts` (celebration/banner effects), `layout/selectPopulators.ts`, `render/timerDisplay.ts`. File went from 2481 → 2049 lines. The remaining ~1900 lines of `bootstrapPlayShell` is one closure sharing ~20 mutable variables (`session`, `anim`, `animating`, `aiThinking`, `timerId`, `undoStack`, etc.) across ~70 functions — deliberately **not** attempted this pass; fully modularizing it means converting it to a stateful controller (class or explicit context object) threaded through every extracted piece, a materially larger and higher-risk rewrite of the core game controller that deserves its own scoped check-in rather than being folded into an "extract the easy parts" pass. Another regression-guard test needed updating (function moved out of `PlayController.ts`, so the source-scan regex had to point at the new file). **Verified:** `tsc --noEmit` clean, `eslint --max-warnings=0` clean, full Jest suite 658/658 passing. Commit `ebeaa90`.
+
+Human-browser confirmation is outstanding for both (as with prior cycles) — these are non-UI-behavior-changing refactors (types and module boundaries only, no logic changes), verified by type-checker, linter, and the full existing test suite, not by a new browser pass.
+
+---
+
 ## Recommendation
 
 Do not soft-pedal language in future status docs. Prefer failing tests over narrative confidence. When adding a new failure cycle, append a dated section here or create `GPT_PROJECT_AUDIT_06P.md` — do not scatter audits in subfolders.
