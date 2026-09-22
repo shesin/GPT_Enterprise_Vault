@@ -7,7 +7,6 @@ import {
 import type { GameFeatureSettings } from './feature/GameFeatureSettings';
 import {
   applyPlayLookState,
-  forceBoardDefaultSelects,
   readStoredBoardLookId,
   readStoredSideLookId,
   wirePlayLookPreviewSetting,
@@ -74,11 +73,16 @@ function populateHubBoardGrid(
     btn.setAttribute('role', 'option');
     btn.setAttribute('aria-selected', String(entry.id === selectedId));
     if (entry.id === selectedId) btn.classList.add('is-selected');
-    btn.innerHTML = `
-      <span class="hub-board-tile-icon" aria-hidden="true"></span>
-      <span class="hub-board-tile-label">${primary}</span>
-      <span class="hub-board-tile-sub">${secondary}</span>
-    `;
+    const icon = document.createElement('span');
+    icon.className = 'hub-board-tile-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span');
+    label.className = 'hub-board-tile-label';
+    label.textContent = primary;
+    const sub = document.createElement('span');
+    sub.className = 'hub-board-tile-sub';
+    sub.textContent = secondary;
+    btn.append(icon, label, sub);
     btn.addEventListener('click', () => onSelect(entry.id));
     grid.appendChild(btn);
   }
@@ -107,7 +111,12 @@ function populateHubModeGrid(
     if (tile.disabled) {
       btn.title = 'Online play coming soon';
     }
-    btn.innerHTML = `<span class="hub-mode-tile-icon" aria-hidden="true"></span><span>${tile.label}</span>`;
+    const icon = document.createElement('span');
+    icon.className = 'hub-mode-tile-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span');
+    label.textContent = tile.label;
+    btn.append(icon, label);
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
       onLaunch(tile.value);
@@ -163,7 +172,7 @@ function wireHubModeHelp(helpBtn: HTMLButtonElement, helpText: HTMLParagraphElem
 function wireHubThemePicker(): void {
   applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
   const hubLook = document.getElementById('hub-play-theme-setting');
-  wirePlayLookPreviewSetting(hubLook, { onApplied: forceBoardDefaultSelects });
+  wirePlayLookPreviewSetting(hubLook);
 }
 
 export function bootstrapPlayHub(

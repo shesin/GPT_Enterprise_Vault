@@ -24,7 +24,7 @@ You are the primary implementer for this repository.
 - What's shipped & verified today → `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md`
 - Roadmap / open work → `PROJECTS/SmartBeads/GPT_PROJECT_PENDING_01P.md` — human-owned, never edit without the literal `Go — PENDING`
 - Known past issues and whether they're actually fixed → `PROJECTS/SmartBeads/GPT_PROJECT_AUDIT_05P.md` — check before claiming something already works
-- Broad principles / mission → `VISION_05P.md`
+- Broad principles / mission → `PROJECTS/SmartBeads/VISION_05P.md`
 - Paths only → `PROJECT_MAP_05P.md`
 
 ## Always

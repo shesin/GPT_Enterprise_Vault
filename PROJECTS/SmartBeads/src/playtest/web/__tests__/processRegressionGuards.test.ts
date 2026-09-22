@@ -189,19 +189,18 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('move hint aura — off, original, and gold-fill preview', () => {
-    it('board settings toggle and renderer support all presets', () => {
+  describe('move hint aura — off/on toggle only, board-resolved colour (2026-09-21)', () => {
+    it('board settings toggle and renderer support both presets', () => {
       expect(indexHtml).toContain('id="move-hint-aura-select"');
       expect(indexHtml).toContain('value="off"');
-      expect(indexHtml).toContain('value="original"');
-      expect(indexHtml).toContain('value="gold-fill"');
-      expect(indexHtml).toContain('value="black-gold-fill"');
+      expect(indexHtml).toContain('value="on"');
+      expect(indexHtml).not.toContain('value="original"');
       expect(indexHtml).not.toContain('value="white-gold"');
       expect(indexHtml).not.toContain('value="gold-no-fill"');
       expect(playControllerSource).toMatch(/initMoveHintAuraSetting/);
       expect(playControllerSource).toMatch(/moveHintAura: readMoveHintAuraFromUi\(\)/);
       expect(canvasRendererSource).toMatch(/drawGoldFillMoveHintAura/);
-      expect(canvasRendererSource).toMatch(/drawOriginalMoveHintAura/);
+      expect(canvasRendererSource).not.toMatch(/drawOriginalMoveHintAura/);
     });
   });
 
@@ -253,8 +252,6 @@ describe('process regression guards', () => {
       expect(playControllerSource).toMatch(/function syncPlayShellThemeFromStorage/);
       expect(playControllerSource).toMatch(/enterFromHub[\s\S]*syncPlayShellThemeFromStorage\(\)/);
       expect(playShellThemesSource).toMatch(/frameOuter: t\.frameOuter/);
-      expect(playControllerSource).toMatch(/initBeadSetSetting/);
-      expect(indexHtml).toContain('id="bead-set-select"');
       expect(canvasRendererSource).toMatch(/getActiveBoardLookTheme/);
     });
   });

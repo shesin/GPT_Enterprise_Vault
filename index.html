@@ -17,7 +17,9 @@
       <div class="hub-brand-block">
         <div class="hub-logo-mark" aria-hidden="true"></div>
         <p class="hub-brand-tagline"><em>Simple play. Superior strategy. Sharper brain.</em></p>
-        <h1 class="hub-brand-title">Smart Bead Chess</h1>
+        <!-- Persistent nav-rail branding, not a document heading — the page's
+             one <h1> is the hero title below (2026-09-22 audit: was a second h1). -->
+        <p class="hub-brand-title">Smart Bead Chess</p>
       </div>
       <nav class="hub-sidebar-nav">
         <button type="button" class="hub-sidebar-link hub-sidebar-link--active" aria-current="page" disabled>Play</button>
@@ -63,18 +65,18 @@
             <div class="hub-play-theme-setting play-theme-setting" id="hub-play-theme-setting" data-play-look-setting>
               <p class="play-theme-group-label">Light theme</p>
               <div class="play-theme-swatches play-theme-swatches--dark-same" role="radiogroup" aria-label="Light theme">
-                <button type="button" class="play-theme-swatch" data-play-theme="23" title="Seaglass Matched" aria-label="Seaglass Matched"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="24" title="Powder Lilac Matched" aria-label="Powder Lilac Matched"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="25" title="Celadon Jade Matched" aria-label="Celadon Jade Matched"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="26" title="Alabaster Pearl Matched" aria-label="Alabaster Pearl Matched"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="23" title="Seaglass Matched" aria-label="Seaglass Matched"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="24" title="Powder Lilac Matched" aria-label="Powder Lilac Matched"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="25" title="Celadon Jade Matched" aria-label="Celadon Jade Matched"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="26" title="Alabaster Pearl Matched" aria-label="Alabaster Pearl Matched"></button>
               </div>
               <p class="play-theme-group-label">Dark theme</p>
               <div class="play-theme-swatches play-theme-swatches--dark-same" role="radiogroup" aria-label="Dark theme">
-                <button type="button" class="play-theme-swatch" data-play-theme="1" title="Classic Green" aria-label="Classic Green"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="2" title="Wood Classic" aria-label="Wood Classic"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="3" title="Ocean Blue" aria-label="Ocean Blue"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="6" title="Purple Night" aria-label="Purple Night"></button>
-                <button type="button" class="play-theme-swatch" data-play-theme="14" title="Warm Walnut" aria-label="Warm Walnut"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="1" title="Classic Green" aria-label="Classic Green"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="2" title="Wood Classic" aria-label="Wood Classic"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="3" title="Ocean Blue" aria-label="Ocean Blue"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="6" title="Purple Night" aria-label="Purple Night"></button>
+                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="14" title="Warm Walnut" aria-label="Warm Walnut"></button>
               </div>
             </div>
           </section>
@@ -157,7 +159,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
           </div>
           <div class="play-block-row play-stat-amber">
             <span>Capture</span>
-            <span class="val-wrap"><span class="val" id="top-p2-capture">0</span><span class="capture-tick" id="black-cap-tick" aria-hidden="true"></span></span>
+            <span class="val-wrap" aria-live="polite"><span class="val" id="top-p2-capture">0</span><span class="capture-tick" id="black-cap-tick" aria-hidden="true"></span></span>
           </div>
           <div class="play-block-row play-stat-amber">
             <span>Centre</span>
@@ -186,7 +188,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
           </div>
           <div class="play-block-row play-stat-amber">
             <span>Capture</span>
-            <span class="val-wrap"><span class="val" id="top-p1-capture">0</span><span class="capture-tick" id="cream-cap-tick" aria-hidden="true"></span></span>
+            <span class="val-wrap" aria-live="polite"><span class="val" id="top-p1-capture">0</span><span class="capture-tick" id="cream-cap-tick" aria-hidden="true"></span></span>
           </div>
           <div class="play-block-row play-stat-amber">
             <span>Centre</span>
@@ -207,7 +209,8 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
     <main class="main">
       <span id="turn-count" hidden aria-hidden="true">0</span>
       <div class="board-frame">
-        <canvas id="board" width="500" height="680"></canvas>
+        <canvas id="board" width="500" height="680" role="img" aria-label="Smart Bead Chess board" aria-describedby="board-status"></canvas>
+        <div id="board-status" class="sr-only" aria-live="polite"></div>
         <div id="board-celebration-fx" class="board-celebration-fx">
           <div id="celebration-halo" class="celebration-halo"></div>
           <div id="celebration-particles" class="celebration-particles"></div>
@@ -238,21 +241,11 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
           <label style="margin-top: 8px;">Black player name</label>
           <input type="text" id="pvp-black-name" maxlength="24" placeholder="Black side name">
         </div>
-        <div class="setting" id="bead-set-setting">
-          <label for="bead-set-select">Bead set</label>
-          <select id="bead-set-select">
-            <option value="white-black">Black &amp; White</option>
-            <option value="wooden">Wooden &amp; White</option>
-            <option value="black-wooden">Black &amp; Wooden</option>
-          </select>
-        </div>
         <div class="setting" id="move-hint-aura-setting">
           <label for="move-hint-aura-select">Move hint aura</label>
           <select id="move-hint-aura-select">
+            <option value="on">On</option>
             <option value="off">Off</option>
-            <option value="original">Original (orange / lime)</option>
-            <option value="gold-fill">Gold</option>
-            <option value="black-gold-fill">Black Gold</option>
           </select>
         </div>
         <div class="setting" id="ai-level-setting">
@@ -322,7 +315,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
     </aside>
   </div>
 
-  <div class="modal" id="resign-offer-modal">
+  <div class="modal" id="resign-offer-modal" role="dialog" aria-modal="true" aria-live="assertive" aria-labelledby="resign-offer-title" aria-describedby="resign-offer-desc">
     <div class="modal-card">
       <h3 id="resign-offer-title">Resignation offer</h3>
       <p id="resign-offer-desc"></p>
@@ -333,7 +326,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
     </div>
   </div>
 
-  <div class="modal" id="result-modal">
+  <div class="modal" id="result-modal" role="dialog" aria-modal="true" aria-live="assertive" aria-labelledby="result-title" aria-describedby="result-desc">
     <div id="modal-celebration-halo" class="celebration-halo"></div>
     <div id="modal-celebration-particles" class="celebration-particles"></div>
     <div class="modal-card result-card">

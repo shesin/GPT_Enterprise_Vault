@@ -55,21 +55,19 @@ describe('production left play panel shell (index.html)', () => {
     expect(playControllerSource).not.toMatch(/play-block-p2[\s\S]*classList\.toggle\(\s*'active'/);
   });
 
-  it('board settings offers move hint aura presets off, original, and gold-fill', () => {
+  it('board settings offers only the off/on move hint aura toggle (2026-09-21)', () => {
     expect(indexHtml).toContain('id="move-hint-aura-setting"');
     expect(indexHtml).toContain('id="move-hint-aura-select"');
     expect(indexHtml).toContain('value="off"');
-    expect(indexHtml).toContain('Original (orange / lime)');
-    expect(indexHtml).toContain('value="gold-fill">Gold<');
-    expect(indexHtml).toContain('value="black-gold-fill">Black Gold<');
+    expect(indexHtml).toContain('value="on"');
+    expect(indexHtml).not.toContain('Original (orange / lime)');
     expect(indexHtml).not.toContain('White / gold (fill)');
     expect(indexHtml).not.toContain('Gold (no fill)');
   });
 
-  it('board settings keeps the bead set picker but drops Look preview (2026-09-19 — hub-only now)', () => {
-    expect(indexHtml).toContain('id="bead-set-select"');
-    expect(indexHtml).toContain('Black &amp; White');
-    expect(indexHtml).not.toContain('Ivory &amp; Ebony');
+  it('board settings has no bead set picker (fully automatic per board, 2026-09-21) and drops Look preview (2026-09-19 — hub-only now)', () => {
+    expect(indexHtml).not.toContain('id="bead-set-select"');
+    expect(indexHtml).not.toContain('id="bead-set-setting"');
     // Look preview (3 rows: dark/light/matched) lives on the hub (page 1) only —
     // it was locked-and-redundant clutter on page 2 since selection already
     // happened before the player got here. The class names still exist in the

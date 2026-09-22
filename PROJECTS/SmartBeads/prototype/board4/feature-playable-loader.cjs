@@ -5,7 +5,7 @@ const vm = require('vm');
 
 const { ROOT, playablePath } = require('./playable-dir.cjs');
 
-const API_KEYS = {
+const SANDBOX_GLOBAL_NAMES = {
   'SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html': '__SHOLO_GUTI_6_FEATURE__',
   'SHOLO_GUTI_10_BEAD_WITH_FEATURE.html': '__SHOLO_GUTI_10_FEATURE__',
   'SHOLO_GUTI_7_BEAD_WITH_FEATURE.html': '__SHOLO_GUTI_7_FEATURE__',
@@ -64,8 +64,8 @@ function initDefaultElements(elements) {
 }
 
 function loadFeaturePlayable(playableFile) {
-  const apiKey = API_KEYS[playableFile];
-  if (!apiKey) throw new Error('No API key for ' + playableFile);
+  const globalName = SANDBOX_GLOBAL_NAMES[playableFile];
+  if (!globalName) throw new Error('No sandbox global name for ' + playableFile);
   const filePath = playablePath(playableFile);
   const html = fs.readFileSync(filePath, 'utf8');
   const match = html.match(/<script>([\s\S]*?)<\/script>/);
@@ -105,8 +105,8 @@ function loadFeaturePlayable(playableFile) {
 
   vm.runInNewContext(match[1], sandbox, { filename: playableFile, timeout: 300000 });
   initDefaultElements(elements);
-  const api = sandbox.window[apiKey];
-  if (!api) throw new Error(apiKey + ' missing in ' + playableFile);
+  const api = sandbox.window[globalName];
+  if (!api) throw new Error(globalName + ' missing in ' + playableFile);
 
   return {
     api,
@@ -258,5 +258,5 @@ module.exports = {
   runOneGame,
   measureTurnBudget,
   parseSelectValues,
-  API_KEYS,
+  SANDBOX_GLOBAL_NAMES,
 };

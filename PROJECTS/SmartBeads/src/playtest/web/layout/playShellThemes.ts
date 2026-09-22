@@ -1,12 +1,11 @@
 /** Play look — 9 complete boards (5 base + 4 light-canvas "Matched") + side shell (7). Lovable OKLCH. */
 
-import { BEAD_SET_THEMES, DEFAULT_BEAD_SET_ID, forceDefaultBeadSetId, readBeadSetId } from './beadSetThemes';
+import { BEAD_SET_THEMES } from './beadSetThemes';
 import {
   LOVABLE_COMPLETE_BOARD_THEMES,
   LOVABLE_SHELL,
   type LovableBoardTokens,
 } from './lovableOklchTokens';
-import { forceDefaultMoveHintAuraStyle, readMoveHintAuraStyle } from './moveHintAuraThemes';
 
 export type CompleteLookId = '1' | '2' | '3' | '6' | '14' | '23' | '24' | '25' | '26';
 export type BoardLookThemeId = CompleteLookId;
@@ -101,7 +100,9 @@ const FLAT_CREAM_STOPS: readonly CreamHalfStop[] = [
   [1, 'rgba(0,0,0,0)'],
 ];
 
-const DEFAULT_BEADS = BEAD_SET_THEMES[DEFAULT_BEAD_SET_ID];
+// Placeholder only — every real render path overrides this with the live,
+// board-dependent bead set via getActiveBeadSet() (see boardLookThemes.ts).
+const DEFAULT_BEADS = BEAD_SET_THEMES['white-black'];
 
 const CHARCOAL_SIDE = {
   label: 'Charcoal + gold accents',
@@ -185,8 +186,6 @@ function buildCharcoalSideTheme(): PlayShellTheme {
 
 export const DEFAULT_BOARD_LOOK_ID: BoardLookThemeId = '1';
 export const DEFAULT_SIDE_LOOK_ID: PlayShellThemeId = '1';
-export const DEFAULT_PLAY_SHELL_THEME_ID: PlayShellThemeId = DEFAULT_SIDE_LOOK_ID;
-export const SIDE_ONLY_LOOK_ID: PlayShellThemeId = '7';
 
 export const PLAY_SHELL_THEMES: Record<PlayShellThemeId, PlayShellTheme> = {
   '1': buildCompleteTheme('1'),
@@ -281,10 +280,6 @@ export const PLAY_SIDE_LOOK_STORAGE_KEY = 'sb-play-side-look-v3';
 const LEGACY_SIDE_LOOK_STORAGE_KEY = 'sb-play-side-look';
 const LEGACY_PLAY_THEME_STORAGE_KEY = 'sb-play-theme';
 
-export function isPlayBoardMatchMode(value: string | null | undefined): value is PlayBoardMatchMode {
-  return value === 'matched' || value === 'side-only';
-}
-
 export function isCompleteLookId(value: string | null | undefined): value is CompleteLookId {
   return value === '1' || value === '2' || value === '3' || value === '6' || value === '14' || value === '23' || value === '24' || value === '25' || value === '26';
 }
@@ -309,17 +304,8 @@ export function isLookSwatchId(value: string | null | undefined): value is PlayS
   return isCompleteLookId(value) || value === '7';
 }
 
-export function normalizeSideLookId(value: string | null | undefined): PlayShellThemeId {
-  if (isPlayShellThemeId(value)) return value;
-  return DEFAULT_SIDE_LOOK_ID;
-}
-
 export function readPlayBoardMatchMode(): PlayBoardMatchMode {
   return resolveHubBoardMatchForSideLook(readSideLookThemeId());
-}
-
-export function resolveBoardMatchForTheme(_themeId: BoardLookThemeId): PlayBoardMatchMode {
-  return 'matched';
 }
 
 export function resolveHubBoardMatchForSideLook(sideLookId: PlayShellThemeId): PlayBoardMatchMode {
@@ -412,6 +398,10 @@ export function syncThemeSwatchActive(
         && sideLookId === boardLookId
         && isMatchedSideLookId(boardLookId));
     swatch.classList.toggle('is-active', Boolean(active));
+    // Swatches sit in role="radiogroup" containers as role="radio" buttons —
+    // selection was CSS-only (.is-active), invisible to assistive tech
+    // (2026-09-22 audit).
+    swatch.setAttribute('aria-checked', String(Boolean(active)));
   }
   }
 }
@@ -421,37 +411,7 @@ export type PlayLookPreviewWireOptions = {
   onApplied?: () => void;
 };
 
-/** Re-sync the bead set / move hint aura selects (wherever they live in the
- * DOM — hub page, page-2 shell settings, or both) to display the current
- * soft default / explicit choice for the now-active board.
- * readBeadSetId()/readMoveHintAuraStyle() return the player's explicit
- * choice when one exists, so this is a passive display refresh — it never
- * writes anything to storage. Used after the hub-to-play transition
- * (syncPlayShellThemeFromStorage), so page 2's dropdowns reflect whatever
- * board-switch on page 1 already decided. */
-export function syncSoftDefaultSelects(): void {
-  if (typeof document === 'undefined') return;
-  const beadSelect = document.getElementById('bead-set-select') as HTMLSelectElement | null;
-  if (beadSelect) beadSelect.value = readBeadSetId();
-  const auraSelect = document.getElementById('move-hint-aura-select') as HTMLSelectElement | null;
-  if (auraSelect) auraSelect.value = readMoveHintAuraStyle();
-}
-
-/** Forces bead set + move hint aura to the now-active board's soft default,
- * overriding any prior explicit choice, then refreshes the selects'
- * displayed value to match. Page-1 hub board picker only (2026-09-21, per
- * human request) — picking a board on page 1 always resets both to that
- * board's default; picking a board on page 2 (via wirePlayLookPreviewSetting
- * without this passed as onApplied) must never touch them. */
-export function forceBoardDefaultSelects(): void {
-  forceDefaultBeadSetId();
-  forceDefaultMoveHintAuraStyle();
-  syncSoftDefaultSelects();
-}
-
-/** Wire row-aware swatch clicks on hub (page 1) or board settings (page 2).
- * Pass `onApplied: forceBoardDefaultSelects` only for the page-1 hub picker —
- * page 2's own picker must leave bead set / aura untouched. */
+/** Wire row-aware swatch clicks on hub (page 1) or board settings (page 2). */
 export function wirePlayLookPreviewSetting(
   root: HTMLElement | null,
   options: PlayLookPreviewWireOptions = {},
@@ -572,28 +532,6 @@ export function applyPlayLookState(
   }
 }
 
-export function applyPlayShellThemeCssVars(
-  shell: HTMLElement,
-  sideLookId: PlayShellThemeId = readSideLookThemeId(),
-  boardLookId: BoardLookThemeId = readBoardLookThemeId(),
-): void {
-  applyShellThemeVars(shell, sideLookId, boardLookId);
-}
-
-/** @deprecated Use applyPlayLookState(boardLookId, sideLookId). */
-export function applySharedPlayTheme(themeId: PlayShellThemeId): void {
-  if (isCompleteLookId(themeId)) {
-    applyPlayLookState(themeId, themeId);
-    return;
-  }
-  applyPlayLookState(readStoredBoardLookId(), themeId);
-}
-
-/** @deprecated Use applyPlayLookState('1', '1'). */
-export function applyFixedPlayLook(): void {
-  applyPlayLookState(DEFAULT_BOARD_LOOK_ID, DEFAULT_SIDE_LOOK_ID);
-}
-
 export function migrateLegacyPlayThemeId(value: string | null | undefined): PlayShellThemeId | null {
   if (!value) return null;
   if (value === '5' || value === '6') return '7';
@@ -642,10 +580,6 @@ export function readStoredSideLookId(): PlayShellThemeId {
   return coalesceStoredLookState().sideLookId;
 }
 
-export function readStoredPlayThemeId(): PlayShellThemeId {
-  return readStoredSideLookId();
-}
-
 /** Storage is source of truth — DOM attrs can drift (hub defaults, HMR, partial updates). */
 export function readBoardLookThemeId(): BoardLookThemeId {
   return readStoredBoardLookId();
@@ -672,10 +606,6 @@ export function syncPlayLookFromStorageIfDrifted(): boolean {
 
 export function getPlayShellTheme(id: PlayShellThemeId): PlayShellTheme {
   return PLAY_SHELL_THEMES[id];
-}
-
-export function readPlayShellThemeId(): PlayShellThemeId {
-  return readSideLookThemeId();
 }
 
 export function applyPlayLookFromRow(

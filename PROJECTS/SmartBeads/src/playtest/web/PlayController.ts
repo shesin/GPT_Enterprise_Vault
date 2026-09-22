@@ -7,7 +7,6 @@ import {
   resolveEngineVariant,
 } from '../../config/BoardCatalog';
 import { cloneBoardDefinition, findJumpPath, Move, Player } from '../../models/GameState';
-import { isBeadSetId, readBeadSetId, writeBeadSetId } from './layout/beadSetThemes';
 import {
   applyPlayLookFromSwatch,
   applyPlayLookState,
@@ -15,7 +14,6 @@ import {
   readStoredBoardLookId,
   readStoredSideLookId,
   syncPlayLookFromStorageIfDrifted,
-  syncSoftDefaultSelects,
   wirePlayLookPreviewSetting,
   type PlayShellThemeId,
 } from './layout/playShellThemes';
@@ -84,9 +82,10 @@ import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './fe
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
 import { fitCanvasToFrame, installCanvasResizeObserver } from './layout/canvasDisplay';
 import {
-  isMoveHintAuraStyle,
-  readMoveHintAuraStyle,
-  writeMoveHintAuraStyle,
+  isMoveHintAuraToggle,
+  readMoveHintAuraToggle,
+  resolveMoveHintAuraStyle,
+  writeMoveHintAuraToggle,
 } from './layout/moveHintAuraThemes';
 import {
   BoardAnimState,
@@ -276,6 +275,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const capturePulseStarts: Array<{ nodeId: number; startMs: number }> = [];
   const CAPTURE_PULSE_MS = 420;
   let prevCaptures = { RED: 0, BLUE: 0 };
+  let lastBoardStatusText = '';
   /** Alternates who opens each new match (New game / Play again). RED = cream/human in PvE. */
   let nextGameStarter: Player = 'RED';
   let coachVideoPlayer: CoachVideoPlayer | null = null;
@@ -1363,13 +1363,34 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     el.classList.add('show');
   }
 
-  function drawBoard(): void {
-    syncPlayLookFromStorageIfDrifted();
-    const state = session.getEngine().getState();
-    const board = anim ? cloneBoardDefinition(state.board) : state.board;
-    if (anim && board.intersections[anim.from]) {
-      board.intersections[anim.from].occupant = undefined;
+  // Clone-and-hide-the-from-bead only needs to happen once per animation, not
+  // once per frame — state.board never changes until the animation ends and
+  // applyMove() runs, so every frame of the same anim can reuse one clone
+  // (perf, 2026-09-22 audit). Keyed on `anim` object identity: playAnimated()
+  // creates a fresh object per move and mutates `.t` in place on it, so a
+  // reference match means "same move, later frame".
+  let animBoardCache: { anim: BoardAnimState; board: ReturnType<typeof cloneBoardDefinition> } | null = null;
+
+  function boardForAnim(activeAnim: BoardAnimState, liveBoard: ReturnType<typeof cloneBoardDefinition>) {
+    if (animBoardCache?.anim !== activeAnim) {
+      const cloned = cloneBoardDefinition(liveBoard);
+      if (cloned.intersections[activeAnim.from]) {
+        cloned.intersections[activeAnim.from].occupant = undefined;
+      }
+      animBoardCache = { anim: activeAnim, board: cloned };
     }
+    return animBoardCache.board;
+  }
+
+  function drawBoard(): void {
+    // Skip the drift-repair check while animating — nothing can drift from
+    // another tab/HMR in a single move's ~200-300ms animation window, and
+    // it's checked again on the very next non-animating draw regardless.
+    // Cuts 2 localStorage reads + DOM attr reads per animation frame
+    // (perf, 2026-09-22 audit).
+    if (!anim) syncPlayLookFromStorageIfDrifted();
+    const state = session.getEngine().getState();
+    const board = anim ? boardForAnim(anim, state.board) : state.board;
     drawCanvasBoard(canvas, {
       board,
       currentPlayer: state.currentPlayer,
@@ -1387,10 +1408,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     });
   }
 
-  function readMoveHintAuraFromUi(): ReturnType<typeof readMoveHintAuraStyle> {
+  function readMoveHintAuraFromUi(): ReturnType<typeof resolveMoveHintAuraStyle> {
     const select = document.getElementById('move-hint-aura-select') as HTMLSelectElement | null;
-    if (select && isMoveHintAuraStyle(select.value)) return select.value;
-    return readMoveHintAuraStyle();
+    const toggle = select && isMoveHintAuraToggle(select.value) ? select.value : readMoveHintAuraToggle();
+    return resolveMoveHintAuraStyle(toggle);
   }
 
   function updateUI(): void {
@@ -1429,6 +1450,22 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     }
     prevCaptures = { RED: state.captures.RED, BLUE: state.captures.BLUE };
     (document.getElementById('turn-count') as HTMLElement).textContent = String(session.getMoveCount());
+
+    // Screen-reader-only live summary — the canvas itself has no accessible
+    // state (2026-09-22 audit). Only write when the text actually changes;
+    // updateUI() runs far more often than the summary does (e.g. every
+    // second on a timer tick), and rewriting an unchanged aria-live region
+    // would spam repeat announcements.
+    const boardStatusText = session.isGameOver()
+      ? `Game over. Cream captures ${state.captures.RED}, Black captures ${state.captures.BLUE}.`
+      : `${state.currentPlayer === 'RED' ? 'Cream' : 'Black'}'s turn. `
+        + `Captures: Cream ${state.captures.RED}, Black ${state.captures.BLUE}. `
+        + `Beads left: Cream ${redPieces}, Black ${bluePieces}.`;
+    if (boardStatusText !== lastBoardStatusText) {
+      lastBoardStatusText = boardStatusText;
+      const statusEl = document.getElementById('board-status');
+      if (statusEl) statusEl.textContent = boardStatusText;
+    }
 
     const uiState = session.getUiState();
     undoBtn.disabled = undoStack.length === 0 || animating || aiThinking || settings.mode === 'spectate';
@@ -2221,7 +2258,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function syncPlayShellThemeFromStorage(): void {
     if (!playShell) return;
     applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
-    syncSoftDefaultSelects();
     drawBoard();
   }
 
@@ -2246,7 +2282,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function applyPlayShellTheme(swatchId: PlayShellThemeId): void {
     if (!playShell || isLookPreviewLocked()) return;
     applyPlayLookFromSwatch(swatchId);
-    syncSoftDefaultSelects();
     drawBoard();
     updateUI();
   }
@@ -2254,21 +2289,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function initMoveHintAuraSetting(): void {
     const select = document.getElementById('move-hint-aura-select') as HTMLSelectElement | null;
     if (!select) return;
-    select.value = readMoveHintAuraStyle();
+    select.value = readMoveHintAuraToggle();
     select.addEventListener('change', () => {
-      if (!isMoveHintAuraStyle(select.value)) return;
-      writeMoveHintAuraStyle(select.value);
-      drawBoard();
-    });
-  }
-
-  function initBeadSetSetting(): void {
-    const select = document.getElementById('bead-set-select') as HTMLSelectElement | null;
-    if (!select) return;
-    select.value = readBeadSetId();
-    select.addEventListener('change', () => {
-      if (!isBeadSetId(select.value)) return;
-      writeBeadSetId(select.value);
+      if (!isMoveHintAuraToggle(select.value)) return;
+      writeMoveHintAuraToggle(select.value);
       drawBoard();
     });
   }
@@ -2314,7 +2338,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     applyPremiumShell(savedPremium);
     initPlayShellTheme();
     initMoveHintAuraSetting();
-    initBeadSetSetting();
   }
 
   syncBoardTitle();

@@ -121,11 +121,15 @@ body.hub-page {
   cursor: pointer;
   font-size: 1.1rem;
   line-height: 1;
-  color: var(--hub-muted);
+  /* --hub-muted is a light colour meant for the dark rail — --hub-card-bg
+     here is a light surface, so that pairing was light-on-light (2026-09-22
+     audit). --hub-centre-muted is the dark counterpart made for light
+     surfaces (see --hub-centre-text usage elsewhere). */
+  color: var(--hub-centre-muted);
 }
 
 .hub-review-panel-close:hover {
-  color: var(--hub-text);
+  color: var(--hub-centre-text);
 }
 
 .hub-rail--right {
@@ -272,7 +276,9 @@ body.hub-page {
   border: 1px solid var(--hub-border);
   border-radius: 6px;
   background: var(--hub-card-bg);
-  color: var(--hub-muted);
+  /* --hub-muted is light-on-light against this light card background —
+     --hub-centre-muted is the dark counterpart (2026-09-22 audit). */
+  color: var(--hub-centre-muted);
   font-size: 0.72rem;
   font-weight: 600;
   padding: 9px 6px;
@@ -588,7 +594,9 @@ body.hub-page {
   font-size: 0.58rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #777;
+  /* Darkened from #777 (2026-09-22 audit — 3.8:1 on --hub-ad-bg #ececec,
+     failed WCAG AA's 4.5:1) to meet contrast. */
+  color: #5c5c5c;
   font-weight: 700;
 }
 
@@ -598,7 +606,9 @@ body.hub-page {
   border-radius: 4px;
   border: 1px dashed #c8c8c8;
   background: #f8f8f8;
-  color: #999;
+  /* Darkened from #999 (2026-09-22 audit — 2.68:1 on #f8f8f8, failed WCAG
+     AA's 4.5:1) to meet contrast. */
+  color: #5c5c5c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -631,7 +641,7 @@ body.hub-page {
   font-size: 0.58rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #777;
+  color: #5c5c5c;
   font-weight: 700;
 }
 
@@ -641,7 +651,7 @@ body.hub-page {
   border-radius: 4px;
   border: 1px dashed #c8c8c8;
   background: #f8f8f8;
-  color: #999;
+  color: #5c5c5c;
   display: flex;
   align-items: center;
   justify-content: center;

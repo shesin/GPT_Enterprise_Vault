@@ -137,7 +137,7 @@ function centerScoreForPlayer(
   return cum + occ;
 }
 
-export function timerActive(timer: AiTimerContext | undefined): boolean {
+export function timerActive(timer: AiTimerContext | undefined): timer is AiTimerContext {
   return !!timer && timer.timerLimitSec > 0;
 }
 
@@ -147,18 +147,17 @@ export const matchTimerActive = timerActive;
 /** 0 = plenty of time, 1 = critical (timer about to force score/end). */
 function timerUrgency(timer: AiTimerContext | undefined, aiPlayer: Player): number {
   if (!timerActive(timer)) return 0;
-  const t = timer!;
 
-  if (t.usePerSideClocks) {
-    const aiSec = aiPlayer === 'RED' ? t.redRemainingSec : t.blueRemainingSec;
-    const limit = t.timerLimitSec;
+  if (timer.usePerSideClocks) {
+    const aiSec = aiPlayer === 'RED' ? timer.redRemainingSec : timer.blueRemainingSec;
+    const limit = timer.timerLimitSec;
     if (aiSec <= 0) return 1;
     const frac = aiSec / limit;
     if (frac >= 0.2) return 0;
     return 1 - frac / 0.2;
   }
 
-  const frac = t.globalRemainingSec / t.timerLimitSec;
+  const frac = timer.globalRemainingSec / timer.timerLimitSec;
   if (frac >= 0.12) return 0;
   return 1 - frac / 0.12;
 }
@@ -191,9 +190,9 @@ function timerEvalAdjust(
   const urgency = timerUrgency(timer, aiPlayer);
   let adj = 0;
 
-  if (timer!.usePerSideClocks) {
-    const aiSec = aiPlayer === 'RED' ? timer!.redRemainingSec : timer!.blueRemainingSec;
-    const oppSec = aiPlayer === 'RED' ? timer!.blueRemainingSec : timer!.redRemainingSec;
+  if (timer.usePerSideClocks) {
+    const aiSec = aiPlayer === 'RED' ? timer.redRemainingSec : timer.blueRemainingSec;
+    const oppSec = aiPlayer === 'RED' ? timer.blueRemainingSec : timer.redRemainingSec;
     const lead = aiSec - oppSec;
     if (lead > 45) adj += 10;
     else if (lead < -45) adj -= 12;

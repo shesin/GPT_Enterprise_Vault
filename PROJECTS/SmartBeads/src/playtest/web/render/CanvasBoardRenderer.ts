@@ -44,23 +44,32 @@ export interface CanvasBoardView {
   lastMove?: LastMoveHighlight | null;
   capturePulses?: CapturePulse[];
   coachGlowNodeIds?: readonly number[];
-  /** Original = orange/lime per side; gold-fill = gold glow on both beads. */
+  /** off = no glow; gold-fill/black-gold-fill = gold glow, auto-resolved per board. */
   moveHintAura?: MoveHintAuraStyle;
 }
 
+// Board geometry (intersection x/y/id) is fixed per board name — only
+// `occupant` mutates during play — so this is safe to cache per name instead
+// of recomputing on every single draw call (perf, 2026-09-22 audit).
+const centerHighlightCache = new Map<string, Set<number>>();
+
 function resolveCenterHighlight(board: BoardDefinition): Set<number> {
+  const cached = centerHighlightCache.get(board.name);
+  if (cached) return cached;
+
   const profile = getBoardVisualProfile(board.name);
   const byNodeId = new Set<number>();
   const ringPoints = profile.centerRingPoints;
-  if (!ringPoints?.length) return byNodeId;
-
-  const byLattice = new Set(ringPoints.map((pt) => `${pt.x},${pt.y}`));
-  for (const node of board.intersections) {
-    if (node.x === undefined || node.y === undefined) continue;
-    if (byLattice.has(`${node.x},${node.y}`)) {
-      byNodeId.add(node.id);
+  if (ringPoints?.length) {
+    const byLattice = new Set(ringPoints.map((pt) => `${pt.x},${pt.y}`));
+    for (const node of board.intersections) {
+      if (node.x === undefined || node.y === undefined) continue;
+      if (byLattice.has(`${node.x},${node.y}`)) {
+        byNodeId.add(node.id);
+      }
     }
   }
+  centerHighlightCache.set(board.name, byNodeId);
   return byNodeId;
 }
 
@@ -97,53 +106,6 @@ function drawCenterRing(ctx: CanvasRenderingContext2D, x: number, y: number, lin
   ctx.strokeStyle = lineRgba;
   ctx.lineWidth = 1.5;
   ctx.stroke();
-}
-
-function drawTwinMoveHintRings(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  pieceRadius: number,
-  innerRing: string,
-  outerRing: string,
-  innerWidth: number,
-  outerWidth: number,
-): void {
-  const innerRadius = pieceRadius + innerWidth / 2;
-  const outerRadius = pieceRadius + innerWidth + outerWidth / 2 + 1;
-
-  ctx.beginPath();
-  ctx.arc(x, y, innerRadius, 0, Math.PI * 2);
-  ctx.strokeStyle = innerRing;
-  ctx.lineWidth = innerWidth;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(x, y, outerRadius, 0, Math.PI * 2);
-  ctx.strokeStyle = outerRing;
-  ctx.lineWidth = outerWidth;
-  ctx.stroke();
-}
-
-/** Original — orange (cream) or lime (black) twin rings per DECISIONS §8. */
-function drawOriginalMoveHintAura(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  pieceRadius: number,
-  side: Player,
-): void {
-  const isCream = side === 'RED';
-  drawTwinMoveHintRings(
-    ctx,
-    x,
-    y,
-    pieceRadius,
-    isCream ? 'rgba(255, 95, 25, 0.95)' : 'rgba(180, 255, 80, 0.95)',
-    isCream ? 'rgba(255, 60, 20, 0.45)' : 'rgba(180, 255, 80, 0.38)',
-    isCream ? 3.5 : 2.5,
-    isCream ? 2 : 1.5,
-  );
 }
 
 /**
@@ -195,19 +157,11 @@ function drawBeadMoveHintAura(
   x: number,
   y: number,
   pieceRadius: number,
-  side: Player,
   style: MoveHintAuraStyle,
 ): void {
   if (style === 'off') return;
-  if (style === 'gold-fill') {
-    drawGoldFillMoveHintAura(ctx, x, y, pieceRadius, LOVABLE_RING_GOLD);
-    return;
-  }
-  if (style === 'black-gold-fill') {
-    drawGoldFillMoveHintAura(ctx, x, y, pieceRadius, LOVABLE_RING_BLACK_GOLD);
-    return;
-  }
-  drawOriginalMoveHintAura(ctx, x, y, pieceRadius, side);
+  const gold = style === 'black-gold-fill' ? LOVABLE_RING_BLACK_GOLD : LOVABLE_RING_GOLD;
+  drawGoldFillMoveHintAura(ctx, x, y, pieceRadius, gold);
 }
 
 function drawGoldenCapturePulse(ctx: CanvasRenderingContext2D, x: number, y: number, progress: number): void {
@@ -271,13 +225,13 @@ function drawPieceAt(
   player: Player,
   radius: number,
   alpha: number,
+  beadSet: ReturnType<typeof getActiveBeadSet>,
 ): void {
   // Capture fade-out shrinks radius to 0 — nothing left to draw, and the black-bead
   // rim strokes below (radius - 0.5 / - 0.12) would throw on a negative arc radius.
   if (radius <= 0) return;
   ctx.save();
   ctx.globalAlpha = alpha;
-  const beadSet = getActiveBeadSet();
   const bead = player === 'RED' ? beadSet.creamBead : beadSet.blackBead;
   const isBlack = player === 'BLUE';
   // The "Black & Wooden" set's cream-slot bead is the same wood-brown as the
@@ -371,6 +325,8 @@ export function drawCanvasBoard(
   const coachGlowNodeIds = view.coachGlowNodeIds ?? [];
   const coachGlowSet = new Set(coachGlowNodeIds);
   const moveHintAura = view.moveHintAura ?? readMoveHintAuraStyle();
+  const beadSet = getActiveBeadSet();
+  const legalTargetSet = new Set(legalTargets);
   const visualProfile = getBoardVisualProfile(board.name);
   const centerHighlight = resolveCenterHighlight(board);
   const project = (node: { x?: number; y?: number; id: number }) =>
@@ -453,7 +409,7 @@ export function drawCanvasBoard(
     if (isLastMoveNode && node.id !== hideFrom && node.id !== hideTo && lastMove) {
       const opponent: Player = lastMove.player === 'RED' ? 'BLUE' : 'RED';
       if (node.occupant !== opponent) {
-        drawBeadMoveHintAura(ctx, x, y, BEAD_RADIUS, lastMove.player, moveHintAura);
+        drawBeadMoveHintAura(ctx, x, y, BEAD_RADIUS, moveHintAura);
       }
     }
 
@@ -464,11 +420,8 @@ export function drawCanvasBoard(
     ctx.globalAlpha = 1;
     ctx.fill();
 
-    const selectedOccupant =
-      selectedId !== null ? board.intersections[selectedId]?.occupant : undefined;
-    if (legalTargets.includes(node.id) && !anim) {
-      const hintSide: Player = selectedOccupant === 'BLUE' ? 'BLUE' : 'RED';
-      drawBeadMoveHintAura(ctx, x, y, BEAD_RADIUS, hintSide, moveHintAura);
+    if (legalTargetSet.has(node.id) && !anim) {
+      drawBeadMoveHintAura(ctx, x, y, BEAD_RADIUS, moveHintAura);
     }
 
     if (node.occupant && node.id !== hideFrom && node.id !== hideTo) {
@@ -481,9 +434,9 @@ export function drawCanvasBoard(
       const r = BEAD_RADIUS * pulse;
       const showOccupiedAura =
         isSelected || turnHighlightSet.has(node.id) || (isCoachGlow && node.occupant === 'RED');
-      drawPieceAt(ctx, x, y, node.occupant, r, dimOpp);
+      drawPieceAt(ctx, x, y, node.occupant, r, dimOpp, beadSet);
       if (showOccupiedAura) {
-        drawBeadMoveHintAura(ctx, x, y, r, node.occupant, moveHintAura);
+        drawBeadMoveHintAura(ctx, x, y, r, moveHintAura);
       }
     }
   }
@@ -494,7 +447,7 @@ export function drawCanvasBoard(
       if (capNode.x !== undefined && capNode.y !== undefined && anim.capturedPlayer) {
         const capPt = project(capNode);
         const fade = Math.max(0, 1 - anim.t * 1.4);
-        drawPieceAt(ctx, capPt.x, capPt.y, anim.capturedPlayer, 16 * fade, fade);
+        drawPieceAt(ctx, capPt.x, capPt.y, anim.capturedPlayer, 16 * fade, fade, beadSet);
         if (fade > 0.2) {
           ctx.beginPath();
           ctx.arc(capPt.x, capPt.y, 22, 0, Math.PI * 2);
@@ -513,8 +466,8 @@ export function drawCanvasBoard(
       const ease = anim.t < 0.5 ? 2 * anim.t * anim.t : 1 - ((-2 * anim.t + 2) ** 2) / 2;
       const mx = fromPt.x + (toPt.x - fromPt.x) * ease;
       const my = fromPt.y + (toPt.y - fromPt.y) * ease;
-      drawPieceAt(ctx, mx, my, anim.player, 17, 1);
-      drawBeadMoveHintAura(ctx, mx, my, 17, anim.player, moveHintAura);
+      drawPieceAt(ctx, mx, my, anim.player, 17, 1, beadSet);
+      drawBeadMoveHintAura(ctx, mx, my, 17, moveHintAura);
     }
   }
 }

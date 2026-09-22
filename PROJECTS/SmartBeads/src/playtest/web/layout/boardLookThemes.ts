@@ -1,4 +1,4 @@
-/** Board canvas — driven by stored board look (complete 1,2,3,6,14); side-only never changes board. */
+/** Board canvas — driven by the stored board look id (see COMPLETE_LOOK_IDS in playShellThemes.ts); side-only never changes board. */
 
 import { getActiveBeadSet } from './beadSetThemes';
 import {
@@ -12,14 +12,8 @@ export type { BoardLookThemeId };
 export type { CreamHalfStop, BeadShade } from './playShellThemes';
 export type BoardLookTheme = import('./playShellThemes').PlayShellTheme;
 
-export { isBoardLookThemeId } from './playShellThemes';
-
 export function getBoardLookTheme(id: BoardLookThemeId): BoardLookTheme {
   return getPlayShellTheme(id);
-}
-
-export function readBoardLookThemeIdFromShell(): BoardLookThemeId {
-  return readBoardLookThemeId();
 }
 
 export function getActiveBoardLookTheme(): BoardLookTheme {

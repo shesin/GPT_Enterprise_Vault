@@ -23,6 +23,19 @@
   --ad-column-width: 260px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+/* Visually hidden but announced by screen readers (2026-09-22 audit) — used
+   for the board's live turn/capture status summary. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 body {
   height: 100dvh;
   min-height: 100dvh;
@@ -428,7 +441,9 @@ body {
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #888;
+  /* Darkened from #888 (2026-09-22 audit — 3.54:1 on white, failed WCAG
+     AA's 4.5:1) to meet contrast. */
+  color: #5c5c5c;
   font-weight: 700;
 }
 .ad-placeholder {
@@ -437,7 +452,9 @@ body {
   border-radius: 8px;
   border: 1px dashed #ccc;
   background: #fff;
-  color: #999;
+  /* Darkened from #999 (2026-09-22 audit — 2.85:1 on white, failed WCAG
+     AA's 4.5:1) to meet contrast. */
+  color: #5c5c5c;
   display: flex;
   align-items: center;
   justify-content: center;

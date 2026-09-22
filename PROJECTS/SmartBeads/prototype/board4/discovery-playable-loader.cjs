@@ -6,7 +6,7 @@ const vm = require('vm');
 const { ROOT, playablePath } = require('./playable-dir.cjs');
 
 /** Active discovery / NFT playables only (Web REJECT boards removed). */
-const API_KEYS = {
+const SANDBOX_GLOBAL_NAMES = {
   'SHOLO_GUTI_8_BEAD_5x5_WITH_FEATURE.html': '__SHOLO_GUTI_C3_8_5x5_FEATURE__',
   'SHOLO_GUTI_7_BEAD_4x4_DENSE_WITH_FEATURE.html': '__SHOLO_GUTI_F2b_7_4x4_FEATURE__',
   'SHOLO_GUTI_8_BEAD_4x6_HOURGLASS_WITH_FEATURE.html': '__SHOLO_GUTI_F1a_8_4x6_FEATURE__',
@@ -44,8 +44,8 @@ function mockEl(id, extra) {
 }
 
 function loadDiscoveryPlayable(playableFile) {
-  const apiKey = API_KEYS[playableFile];
-  if (!apiKey) throw new Error('No API key for ' + playableFile);
+  const globalName = SANDBOX_GLOBAL_NAMES[playableFile];
+  if (!globalName) throw new Error('No sandbox global name for ' + playableFile);
   const filePath = playablePath(playableFile);
   const html = fs.readFileSync(filePath, 'utf8');
   const match = html.match(/<script>([\s\S]*?)<\/script>/);
@@ -81,9 +81,9 @@ function loadDiscoveryPlayable(playableFile) {
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
   vm.runInContext(match[1], sandbox, { filename: playableFile });
-  const api = sandbox.window[apiKey];
-  if (!api) throw new Error(apiKey + ' missing in ' + playableFile);
+  const api = sandbox.window[globalName];
+  if (!api) throw new Error(globalName + ' missing in ' + playableFile);
   return { api, html, playableFile };
 }
 
-module.exports = { ROOT, API_KEYS, loadDiscoveryPlayable };
+module.exports = { ROOT, SANDBOX_GLOBAL_NAMES, loadDiscoveryPlayable };

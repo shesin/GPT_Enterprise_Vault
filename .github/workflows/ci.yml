@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  typecheck-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # Fast Jest batches only (--skip-slow) — the full suite also includes a
+      # ~5min AI-difficulty-tier batch and a separate Playwright browser gate
+      # (npm test) that launches a real headless browser against a live dev
+      # server; both are too slow/heavy to run on every push and, per the
+      # 2026-09-22 audit, the Playwright gate is flaky under concurrent file
+      # I/O even locally. Run those manually / on a schedule if needed, not
+      # as a required check here.
+      - run: npm run test:jest:fast

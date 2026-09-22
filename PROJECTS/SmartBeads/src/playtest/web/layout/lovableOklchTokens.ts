@@ -153,9 +153,6 @@ export const LOVABLE_COMPLETE_BOARD_THEMES: readonly LovableBoardTokens[] = [
   },
 ] as const;
 
-/** @deprecated Use LOVABLE_COMPLETE_BOARD_THEMES. */
-export const LOVABLE_BOARD_THEMES = LOVABLE_COMPLETE_BOARD_THEMES;
-
 export type BeadSetId = 'white-black' | 'wooden' | 'black-wooden';
 
 export interface LovableBeadSetTokens {
@@ -198,10 +195,17 @@ export const LOVABLE_BEAD_SETS: readonly LovableBeadSetTokens[] = [
     creamMid: 'oklch(0.90 0.006 70)',
     creamShadow: 'oklch(0.80 0.008 70)',
     creamStroke: 'oklch(0.86 0.01 70)',
-    blackHighlight: 'oklch(0.60 0.09 62)',
-    blackMid: 'oklch(0.40 0.08 57)',
-    blackShadow: 'oklch(0.24 0.06 52)',
-    blackRimStroke: 'oklch(0.66 0.085 68)',
+    // Richer + more saturated wood tone (2026-09-21, per human request,
+    // option B of 3 samples) — the old chroma 0.06-0.09 brown read as "dark
+    // grey" next to the true-black bead at actual in-game bead size, not
+    // clearly wood. This step also had to stay readable against the light
+    // Matched boards (same tokens reused below in black-wooden's cream slot),
+    // so it's tuned lighter than the boldest option tried, to keep a safe
+    // contrast margin against those pastel canvases.
+    blackHighlight: 'oklch(0.66 0.13 55)',
+    blackMid: 'oklch(0.46 0.13 50)',
+    blackShadow: 'oklch(0.30 0.10 46)',
+    blackRimStroke: 'oklch(0.72 0.13 61)',
   },
   {
     // Renamed from 'black-brown'/'Black & Brown' (2026-09-21) — the cream-slot
@@ -212,24 +216,22 @@ export const LOVABLE_BEAD_SETS: readonly LovableBeadSetTokens[] = [
     // Reuses Wooden's dark-wood brown (creamBead slot) and White & Black's true
     // black (blackBead slot) — both already-approved gradients, not new colours.
     // Soft default for light board themes (see beadSetThemes.ts).
-    creamHighlight: 'oklch(0.60 0.09 62)',
-    creamMid: 'oklch(0.40 0.08 57)',
-    creamShadow: 'oklch(0.24 0.06 52)',
+    // Same richer wood tone as Wooden's own blackHighlight/Mid/Shadow above
+    // (2026-09-21, per human request) — kept in sync since both are the same
+    // bead rendered the same way.
+    creamHighlight: 'oklch(0.66 0.13 55)',
+    creamMid: 'oklch(0.46 0.13 50)',
+    creamShadow: 'oklch(0.30 0.10 46)',
     // Back to Wooden's own blackRimStroke value (2026-09-21) — briefly
     // darkened to oklch(0.16 0.05 52) when this bead only got a flat outline
     // (no specular), which made a bright rim read as a mismatched halo. Now
     // that CanvasBoardRenderer.ts gives this set's cream bead the same
     // glossy specular treatment as Wooden's own black-slot bead, the bright
     // rim is correct again — it's the same bead rendered the same way.
-    creamStroke: 'oklch(0.66 0.085 68)',
+    creamStroke: 'oklch(0.72 0.13 61)',
     blackHighlight: 'oklch(0.48 0 0)',
     blackMid: 'oklch(0.22 0 0)',
     blackShadow: 'oklch(0.06 0 0)',
     blackRimStroke: 'oklch(0.55 0 0)',
   },
 ] as const;
-
-export const LOVABLE_SELECTED_RING = {
-  stroke: LOVABLE_SHELL.gold,
-  width: 1.05,
-} as const;

@@ -9,8 +9,6 @@ import type { BeadShade } from './playShellThemes';
 
 export type { BeadSetId };
 
-export const BEAD_SET_STORAGE_KEY = 'sb-bead-set';
-
 export interface BeadSetTheme {
   id: BeadSetId;
   label: string;
@@ -43,66 +41,44 @@ export const BEAD_SET_THEMES: Record<BeadSetId, BeadSetTheme> = Object.fromEntri
   LOVABLE_BEAD_SETS.map((t) => [t.id, toBeadSetTheme(t)]),
 ) as Record<BeadSetId, BeadSetTheme>;
 
-// Dark/complete boards default to Black & White; light boards default to
-// Black & Wooden (2026-09-21, per human request — Ivory & Ebony removed).
-export const DEFAULT_BEAD_SET_ID: BeadSetId = 'white-black';
-export const LIGHT_BOARD_DEFAULT_BEAD_SET_ID: BeadSetId = 'black-wooden';
-
-export function isBeadSetId(value: string | null | undefined): value is BeadSetId {
-  return value === 'white-black'
-    || value === 'wooden'
-    || value === 'black-wooden';
-}
-
 // Duplicated from playShellThemes.ts (not imported) to avoid a circular
 // dependency — playShellThemes.ts already imports BEAD_SET_THEMES from this
 // file at runtime, so importing back from it here would create a cycle.
 const PLAY_BOARD_LOOK_STORAGE_KEY = 'sb-play-board-look';
-// Boards with a light canvas need the light-appropriate bead default even
-// though they're "complete" boards, not the old charcoal-paired light row
-// (removed 2026-09-21) — Seaglass/Powder Lilac/Celadon Jade/Alabaster Pearl
-// "Matched" (23/24/25/26) all render the same light boardSurface tones the
-// removed row used to.
-const LIGHT_BOARD_LOOK_IDS = new Set(['23', '24', '25', '26']);
-
-function isStoredBoardLookLight(): boolean {
-  if (typeof localStorage === 'undefined') return false;
-  const stored = localStorage.getItem(PLAY_BOARD_LOOK_STORAGE_KEY);
-  return stored !== null && LIGHT_BOARD_LOOK_IDS.has(stored);
-}
 
 /**
- * Soft default only: applies when the player has never explicitly picked a
- * bead set. Once they choose one in Settings (writeBeadSetId), that choice
- * persists across board-theme switches — this never overrides it.
+ * Bead set is fully automatic per board (2026-09-21, per human request — the
+ * manual "Bead set" dropdown was removed entirely, no explicit override
+ * exists anymore):
+ * - Wood Classic (2) and Warm Walnut (14) default to Black & White — both are
+ *   wood-toned dark boards, so Wooden & White beads would blend into the
+ *   board itself.
+ * - The other 3 dark/complete boards (Classic Green, Ocean Blue, Purple
+ *   Night) default to Wooden & White.
+ * - The 4 light-canvas "Matched" boards (Seaglass/Powder Lilac/Celadon
+ *   Jade/Alabaster Pearl, ids 23/24/25/26) default to Black & Wooden.
  */
+const DEFAULT_BEAD_SET_BY_BOARD: Record<string, BeadSetId> = {
+  '1': 'wooden',
+  '2': 'white-black',
+  '3': 'wooden',
+  '6': 'wooden',
+  '14': 'white-black',
+  '23': 'black-wooden',
+  '24': 'black-wooden',
+  '25': 'black-wooden',
+  '26': 'black-wooden',
+};
+
+const FALLBACK_BEAD_SET_ID: BeadSetId = 'white-black';
+
 export function readBeadSetId(): BeadSetId {
-  if (typeof localStorage === 'undefined') return DEFAULT_BEAD_SET_ID;
-  const stored = localStorage.getItem(BEAD_SET_STORAGE_KEY);
-  if (isBeadSetId(stored)) return stored;
-  return isStoredBoardLookLight() ? LIGHT_BOARD_DEFAULT_BEAD_SET_ID : DEFAULT_BEAD_SET_ID;
-}
-
-export function writeBeadSetId(id: BeadSetId): void {
-  if (typeof localStorage === 'undefined') return;
-  localStorage.setItem(BEAD_SET_STORAGE_KEY, id);
-}
-
-/**
- * Forces the bead set to the current board's soft default, overriding any
- * prior explicit choice — unlike readBeadSetId(), which never does that.
- * Called only from the page-1 hub board picker (2026-09-21, per human
- * request): picking a board on page 1 should always reset bead set to that
- * board's default; picking a board on page 2 must not touch it.
- */
-export function forceDefaultBeadSetId(): void {
-  writeBeadSetId(isStoredBoardLookLight() ? LIGHT_BOARD_DEFAULT_BEAD_SET_ID : DEFAULT_BEAD_SET_ID);
-}
-
-export function getBeadSetTheme(id: BeadSetId = readBeadSetId()): BeadSetTheme {
-  return BEAD_SET_THEMES[id];
+  if (typeof localStorage === 'undefined') return FALLBACK_BEAD_SET_ID;
+  const stored = localStorage.getItem(PLAY_BOARD_LOOK_STORAGE_KEY);
+  const byBoard = stored ? DEFAULT_BEAD_SET_BY_BOARD[stored] : undefined;
+  return byBoard ?? FALLBACK_BEAD_SET_ID;
 }
 
 export function getActiveBeadSet(): BeadSetTheme {
-  return getBeadSetTheme(readBeadSetId());
+  return BEAD_SET_THEMES[readBeadSetId()];
 }

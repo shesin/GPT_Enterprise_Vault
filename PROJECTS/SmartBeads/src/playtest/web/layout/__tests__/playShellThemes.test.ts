@@ -118,6 +118,25 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
     expect(readStoredBoardLookId()).toBe('26');
   });
 
+  // Mirrors REMOVED_LIGHT_BOARD_LOOK_IDS and REMOVED_COMPLETE_LOOK_IDS in
+  // playShellThemes.ts (both private, not exported) — this is the exact
+  // failure class that already broke production once (see
+  // boardLineGoldThemes.test.ts's regression-guard comment for ids 19/20):
+  // a browser with a since-removed id already in storage must fall back
+  // cleanly, not crash getPlayShellTheme() (2026-09-22 audit).
+  it.each(['4', '8', '9', '10', '11', '13', '15', '16', '17', '18', '19', '20', '21', '22'])(
+    'migrates a stored removed id (%s) back to the default board without throwing',
+    (removedId) => {
+      mockPlayThemeDom('1', '1', 'matched', {
+        'sb-play-board-look': removedId,
+        'sb-play-side-look-v3': removedId,
+      });
+      expect(() => applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId())).not.toThrow();
+      expect(readBoardLookThemeId()).toBe('1');
+      expect(readPlayBoardMatchMode()).toBe('side-only');
+    },
+  );
+
   it('migrates a stored id from the removed charcoal-paired light row (e.g. old Sandy Beige, id 4) back to the default board', () => {
     mockPlayThemeDom('1', '1', 'matched', {
       'sb-play-board-look': '4',
@@ -283,6 +302,7 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
               dataset: { playTheme: s.id },
               closest: (sel: string) => (sel.includes(s.row) ? {} : null),
               classList: { toggle: (_: string, on: boolean) => { s.active = on; } },
+              setAttribute: jest.fn(),
             })),
           }];
         },
@@ -322,6 +342,7 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
             s.active = on;
           },
         },
+        setAttribute: jest.fn(),
       })),
     });
     Object.defineProperty(globalThis, 'document', {

@@ -1,18 +1,23 @@
-/** Move-hint aura presets — preview until locked in DECISIONS. */
+/** Move-hint aura — resolved render style is board-dependent; the only
+ * player-facing control is a plain off/on toggle (2026-09-21, per human
+ * request — "Original (orange/lime)" and the separate manual Gold/Black Gold
+ * choice were both dropped; "on" always auto-picks the right gold variant
+ * for whichever board is active). */
 
-export type MoveHintAuraStyle = 'off' | 'original' | 'gold-fill' | 'black-gold-fill';
+export type MoveHintAuraStyle = 'off' | 'gold-fill' | 'black-gold-fill';
+export type MoveHintAuraToggle = 'off' | 'on';
 
 export const MOVE_HINT_AURA_STORAGE_KEY = 'sb-move-hint-aura';
 
-const RETIRED_AURA_STYLES = new Set(['white-gold', 'gold-no-fill', 'ring-only']);
-
-export function isMoveHintAuraStyle(value: string | null | undefined): value is MoveHintAuraStyle {
-  return value === 'off' || value === 'original' || value === 'gold-fill' || value === 'black-gold-fill';
+export function isMoveHintAuraToggle(value: string | null | undefined): value is MoveHintAuraToggle {
+  return value === 'off' || value === 'on';
 }
 
-function normalizeMoveHintAuraStyle(value: string | null | undefined): MoveHintAuraStyle | null {
-  if (value && RETIRED_AURA_STYLES.has(value)) return 'gold-fill';
-  return isMoveHintAuraStyle(value) ? value : null;
+// Any pre-2026-09-21 stored value ('original', 'gold-fill', 'black-gold-fill',
+// or an older retired style like 'white-gold') migrates to 'on' — the colour
+// itself is no longer stored, only whether the aura shows at all.
+function normalizeStoredToggle(value: string | null | undefined): MoveHintAuraToggle {
+  return value === 'off' ? 'off' : 'on';
 }
 
 // Duplicated from playShellThemes.ts (not imported) to avoid a circular
@@ -29,34 +34,26 @@ function isStoredBoardLookLight(): boolean {
   return stored !== null && LIGHT_BOARD_LOOK_IDS.has(stored);
 }
 
-/**
- * Soft default only: applies when the player has never explicitly picked an
- * aura style (writeMoveHintAuraStyle). Once they choose one, including
- * explicitly picking 'off', that choice persists and this never overrides
- * it. Dark/complete boards default to Gold; light boards default to Black
- * Gold, since plain Gold has poor contrast against a light board surface
- * (2026-09-21, per human request).
- */
-export function readMoveHintAuraStyle(): MoveHintAuraStyle {
-  const fallback = isStoredBoardLookLight() ? 'black-gold-fill' : 'gold-fill';
-  if (typeof localStorage === 'undefined') return fallback;
-  const stored = localStorage.getItem(MOVE_HINT_AURA_STORAGE_KEY);
-  return normalizeMoveHintAuraStyle(stored) ?? fallback;
+export function readMoveHintAuraToggle(): MoveHintAuraToggle {
+  if (typeof localStorage === 'undefined') return 'on';
+  return normalizeStoredToggle(localStorage.getItem(MOVE_HINT_AURA_STORAGE_KEY));
 }
 
-export function writeMoveHintAuraStyle(style: MoveHintAuraStyle): void {
+export function writeMoveHintAuraToggle(toggle: MoveHintAuraToggle): void {
   if (typeof localStorage === 'undefined') return;
-  localStorage.setItem(MOVE_HINT_AURA_STORAGE_KEY, style);
+  localStorage.setItem(MOVE_HINT_AURA_STORAGE_KEY, toggle);
 }
 
-/**
- * Forces the aura style to the current board's soft default, overriding any
- * prior explicit choice — unlike readMoveHintAuraStyle(), which never does
- * that. Called only from the page-1 hub board picker (2026-09-21, per human
- * request) — see forceDefaultBeadSetId() in beadSetThemes.ts for the same
- * rule applied to bead sets.
- */
-export function forceDefaultMoveHintAuraStyle(): void {
-  writeMoveHintAuraStyle(isStoredBoardLookLight() ? 'black-gold-fill' : 'gold-fill');
+/** Resolves a toggle value to the style the renderer actually draws — off, or
+ * the board-appropriate gold variant. Exported separately so callers that
+ * already have the toggle (e.g. read straight from a live <select>, to avoid
+ * a storage read on every animation frame) can resolve it without another
+ * storage round-trip. */
+export function resolveMoveHintAuraStyle(toggle: MoveHintAuraToggle): MoveHintAuraStyle {
+  if (toggle === 'off') return 'off';
+  return isStoredBoardLookLight() ? 'black-gold-fill' : 'gold-fill';
 }
-
+
+export function readMoveHintAuraStyle(): MoveHintAuraStyle {
+  return resolveMoveHintAuraStyle(readMoveHintAuraToggle());
+}
