@@ -233,10 +233,6 @@ export function listProductBoards(): BoardCatalogEntry[] {
   );
 }
 
-export function listCatalogBoards(): BoardCatalogEntry[] {
-  return BOARD_CATALOG;
-}
-
 export function getCatalogEntry(id: ProductBoardId): BoardCatalogEntry | undefined {
   return BOARD_CATALOG.find((entry) => entry.id === id);
 }

@@ -23,7 +23,6 @@ const m2GateSource = fs.readFileSync(
   'utf8',
 );
 const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html'), 'utf8');
-const playBoardHtml = fs.readFileSync(path.join(repoRoot, 'play-board.html'), 'utf8');
 const canvasRendererSource = fs.readFileSync(
   path.resolve(__dirname, '../render/CanvasBoardRenderer.ts'),
   'utf8',
@@ -52,14 +51,12 @@ function afterTurnCompletedBlock(): string {
 
 describe('process regression guards', () => {
   describe('cross-surface — live controls vs coach cleanup', () => {
-    it('Finish capture lives in controls row after Resign in both HTML shells', () => {
-      for (const html of [indexHtml, playBoardHtml]) {
-        expect(html).toContain('id="finish-btn"');
-        expect(html).toContain('Finish capture');
-        expect(html).toMatch(/id="resign-btn"[\s\S]*id="finish-btn"/);
-        expect(html).not.toContain('finish-capture-bar');
-        expect(html).toMatch(/id="finish-btn"[^>]*hidden/);
-      }
+    it('Finish capture lives in controls row after Resign', () => {
+      expect(indexHtml).toContain('id="finish-btn"');
+      expect(indexHtml).toContain('Finish capture');
+      expect(indexHtml).toMatch(/id="resign-btn"[\s\S]*id="finish-btn"/);
+      expect(indexHtml).not.toContain('finish-capture-bar');
+      expect(indexHtml).toMatch(/id="finish-btn"[^>]*hidden/);
     });
 
     it('shows Finish capture after syncModeUi (not cleared by stopCoachVideo on every tick)', () => {
@@ -271,11 +268,9 @@ describe('process regression guards', () => {
       expect(restartHandler).not.toMatch(/returnToHub\(\)/);
     });
 
-    it('both HTML shells style New game like resign gold without red border hook', () => {
-      for (const html of [indexHtml, playBoardHtml]) {
-        expect(html).toMatch(/id="restart-btn"[^>]*type="button"/);
-        expect(html).toContain('class="new-game-new">New</span> game');
-      }
+    it('styles New game like resign gold without red border hook', () => {
+      expect(indexHtml).toMatch(/id="restart-btn"[^>]*type="button"/);
+      expect(indexHtml).toContain('class="new-game-new">New</span> game');
       expect(playShellCss).toMatch(/#restart-btn[\s\S]*border: 2px solid var\(--gold\)/);
       expect(playShellCss).toMatch(/\.new-game-new[\s\S]*color: #000/);
       expect(playShellCss).not.toMatch(/\.new-game-new[\s\S]*font-weight:\s*800/);
@@ -283,11 +278,9 @@ describe('process regression guards', () => {
   });
 
   describe('result modal — dismiss keeps final board', () => {
-    it('both HTML shells expose view-board control (no separate close X)', () => {
-      for (const html of [indexHtml, playBoardHtml]) {
-        expect(html).toContain('id="result-view-board-btn"');
-        expect(html).not.toContain('id="result-close-btn"');
-      }
+    it('exposes view-board control (no separate close X)', () => {
+      expect(indexHtml).toContain('id="result-view-board-btn"');
+      expect(indexHtml).not.toContain('id="result-close-btn"');
     });
 
     it('updateUI does not re-show modal after user dismisses at game over', () => {

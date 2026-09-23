@@ -62,8 +62,6 @@ export const COACH_VIDEO_BASICS_END_MS = COACH_VIDEO_WIN_SEGMENT_START_MS;
 export const COACH_WIN_SPEECH_TEXT =
   'Win. Capture all opponent beads to win. If your opponent captures all of yours, they win.';
 
-export const COACH_WIN_SPEECH_ESTIMATE_MS = estimateCoachSpeechMs(COACH_WIN_SPEECH_TEXT);
-
 /** Win demo: glowing board (10 s max) then congratulations modal (6 s). */
 export const COACH_WIN_BOARD_PHASE_MS = 10_000;
 export const COACH_WIN_CONGRATS_PHASE_MS = 6_000;
@@ -132,9 +130,6 @@ export const COACH_DRAW_SEGMENT_DURATION_MS =
 /** Total timeline length (ending appendix included). */
 export const COACH_VIDEO_DURATION_MS =
   COACH_VIDEO_DRAW_SEGMENT_START_MS + COACH_DRAW_SEGMENT_DURATION_MS + 1_000;
-
-/** Amber highlight appears this long before the scripted move plays. */
-export const COACH_HIGHLIGHT_LEAD_MS = 1_500;
 
 /** MOVE banner minimum on-screen time (capped before next segment). */
 export const COACH_MOVE_BANNER_MIN_MS = 8_000;

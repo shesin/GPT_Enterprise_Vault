@@ -129,7 +129,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 | **Engine** (moves, captures, chains) | **OK** — Jest + browser gates (automated pass 2026-09-11) |
 | **Finish capture (optional chain stop)** | **OK (Jest)** — controls row, `finishChain` ends turn, coach demo; human browser **UNCONFIRMED** |
 | **Turn bead highlighting** | **OK (Jest, 2026-09-11)** — see **DECISIONS §7–§8**. **Human browser UNCONFIRMED** |
-| **Settings ? help** | **OK (Jest, 2026-09-09)** — Timer, Tournament timer, Turn shot clock, Center rule rows in `index.html` / `play-board.html`. **UNCONFIRMED** human browser |
+| **Settings ? help** | **OK (Jest, 2026-09-09)** — Timer, Tournament timer, Turn shot clock, Center rule rows in `index.html`. **UNCONFIRMED** human browser |
 | **End-game user copy** | **OK (Jest, 2026-09-09)** — cream/black bead labels; no P1/P2 in timer/resign reasons. **UNCONFIRMED** congratulations modal on screen |
 | **Recent colour / panel edits** | **Partial (updated 2026-09-21)** — 9 complete OKLCH looks (5 base + 4 light-canvas Matched) + side-only charcoal; bead set fully automatic per board (no picker); board look persistence fix. **UNCONFIRMED** full browser sign-off |
 | **Play shell themes (board settings)** | **OK (Jest, updated 2026-09-21)** — 9 unified complete (5 base + 4 Matched) + side-only charcoal; board canvas from stored board id. **UNCONFIRMED** human browser |

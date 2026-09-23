@@ -12,5 +12,3 @@ export const SFX_URLS = {
   defeat: '/audio/sfx_defeat.wav',
   draw: '/audio/sfx_draw.wav',
 } as const;
-
-export type SfxUrlKey = keyof typeof SFX_URLS;

@@ -53,9 +53,6 @@ export interface AiTimerContext {
   usePerSideClocks: boolean;
 }
 
-/** @deprecated use AiTimerContext */
-export type AiMatchTimerContext = AiTimerContext;
-
 export const TIMER_OFF: AiTimerContext = {
   timerLimitSec: 0,
   globalRemainingSec: 0,
@@ -63,9 +60,6 @@ export const TIMER_OFF: AiTimerContext = {
   blueRemainingSec: 0,
   usePerSideClocks: false,
 };
-
-/** @deprecated use TIMER_OFF */
-export const MATCH_TIMER_OFF = TIMER_OFF;
 
 export interface SelectAiOptions {
   budgetMs?: number;
@@ -140,9 +134,6 @@ function centerScoreForPlayer(
 export function timerActive(timer: AiTimerContext | undefined): timer is AiTimerContext {
   return !!timer && timer.timerLimitSec > 0;
 }
-
-/** @deprecated use timerActive */
-export const matchTimerActive = timerActive;
 
 /** 0 = plenty of time, 1 = critical (timer about to force score/end). */
 function timerUrgency(timer: AiTimerContext | undefined, aiPlayer: Player): number {

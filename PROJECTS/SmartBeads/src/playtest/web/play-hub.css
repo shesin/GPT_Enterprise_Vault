@@ -161,7 +161,7 @@ body.hub-page {
   border-radius: 6px;
   background: transparent;
   color: var(--hub-text);
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.25;
   text-align: center;
@@ -273,12 +273,13 @@ body.hub-page {
 }
 
 .hub-rail-foot-link {
-  border: 1px solid var(--hub-border);
+  border: 1px solid var(--hub-border-soft);
   border-radius: 6px;
-  background: var(--hub-card-bg);
-  /* --hub-muted is light-on-light against this light card background —
-     --hub-centre-muted is the dark counterpart (2026-09-22 audit). */
-  color: var(--hub-centre-muted);
+  background: transparent;
+  /* This card sits on the dark rail (not a light surface), so it needs the
+     light-rail muted colour, not --hub-centre-muted (dark-on-dark was
+     unreadable — 2026-09-22 audit). */
+  color: var(--hub-muted);
   font-size: 0.72rem;
   font-weight: 600;
   padding: 9px 6px;

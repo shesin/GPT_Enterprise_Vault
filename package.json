@@ -12,7 +12,6 @@
     "sim:board4": "npx tsx PROJECTS/SmartBeads/src/simulation/SelfPlayRunner.ts",
     "web:board4": "vite",
     "web:smartbeads": "vite",
-    "web:smartbeads:play": "vite --mode play",
     "lint": "eslint \"PROJECTS/SmartBeads/src/**/*.ts\" \"SHARED/**/*.ts\"",
     "lint:fix": "eslint \"PROJECTS/SmartBeads/src/**/*.ts\" \"SHARED/**/*.ts\" --fix",
     "format": "prettier --write \"PROJECTS/SmartBeads/src/**/*.ts\" \"SHARED/**/*.ts\"",

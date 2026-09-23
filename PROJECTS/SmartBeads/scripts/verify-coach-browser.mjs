@@ -58,8 +58,6 @@ async function check(url, label) {
 }
 
 const hub = await check(`${BASE}/?coach=start`, 'HUB ?coach=start');
-const play = await check(`${BASE}/play-board.html?coach=start`, 'PLAY-BOARD ?coach=start');
 
 console.log('HUB OK:', hub.ok);
-console.log('PLAY OK:', play.ok);
-process.exit(hub.ok && play.ok ? 0 : 1);
+process.exit(hub.ok ? 0 : 1);

@@ -58,10 +58,11 @@ import { applyCoachVideoHighlight, applyCoachVideoKeyframe } from './feature/coa
 import { CoachVideoPlayer } from './feature/CoachVideoPlayer';
 import { renderCoachPanelHtml } from './feature/coachPanelRender';
 import { CoachVoice } from './feature/CoachVoice';
-import { FeatureSession, SessionSnapshot } from './feature/FeatureSession';
+import { FeatureSession } from './feature/FeatureSession';
 import { shellTimerShouldSkip } from './feature/clockPolicy';
-import { shouldAcceptResignationDraw } from './feature/HonestAi';
 import { createStartBannerController } from './feature/startBannerController';
+import { createResignationController } from './feature/resignationController';
+import { createUndoController } from './feature/undoController';
 import { AI_REPLY_DELAY_MS, HUMAN_JUMP_ANIM_MS, HUMAN_SLIDE_ANIM_MS } from './feature/pveTiming';
 import { getBoardCanvasSize } from './layout/boardVisualProfile';
 import { createBoardSettingsPanel } from './layout/boardSettingsPanel';
@@ -112,8 +113,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   let pulseRaf = 0;
   let animRaf = 0;
   let aiRunId = 0;
-  const undoStack: SessionSnapshot[] = [];
-  let pendingResignPlayer: Player | null = null;
   let lastGameOverPlayed = false;
   /** User closed congrats/draw overlay — keep final board visible until new game. */
   let resultModalDismissed = false;
@@ -189,6 +188,51 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   );
   const { emitCelebrationSparkles, triggerStartBanner, dismissStartBanner, triggerCoachSegmentBanner } =
     startBannerCtl;
+
+  const resignationCtl = createResignationController(
+    { resignOfferModal, resignOfferDesc },
+    {
+      getSession: () => session,
+      isAnimating: () => animating,
+      isAiThinking: () => aiThinking,
+      clearTimerId: () => {
+        if (timerId) clearInterval(timerId);
+      },
+      cancelAiWork: () => cancelAiWork(),
+      updateUI: () => updateUI(),
+      sideDisplayName: (player: Player) => sideDisplayName(player),
+    },
+  );
+  const { canOfferResignation, beginResignation, finishResignation } = resignationCtl;
+
+  const undoCtl = createUndoController(
+    { undoBtn },
+    {
+      getSession: () => session,
+      isAnimating: () => animating,
+      isAiThinking: () => aiThinking,
+      cancelAiWork: () => cancelAiWork(),
+      clearAnim: () => {
+        anim = null;
+        animating = false;
+      },
+      resetTurnCaptures: () => {
+        turnCaptures = 0;
+      },
+      clearMoveFeedback: () => clearMoveFeedback(),
+      hideResultModal: () => {
+        resultModal.style.display = 'none';
+      },
+      hideResignOfferModal: () => {
+        resignOfferModal.style.display = 'none';
+      },
+      clearPendingResignPlayer: () => resignationCtl.clearPendingResignPlayer(),
+      startTimersIfNotGameOver: () => {
+        if (!session.isGameOver()) startTimers();
+      },
+      updateUI: () => updateUI(),
+    },
+  );
 
   const boardSelect = document.getElementById('board-select') as HTMLSelectElement;
   const aiLevelSelect = document.getElementById('ai-level-select') as HTMLSelectElement;
@@ -431,7 +475,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
   function initCoachVideoPlayer(autoPlay = false): void {
     stopCoachVideo();
-    undoStack.length = 0;
+    undoCtl.reset();
     undoBtn.disabled = true;
     turnCaptures = 0;
     clearMoveFeedback();
@@ -604,7 +648,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     resultModal.style.display = 'none';
     resultModal.classList.remove('animate');
     resignOfferModal.style.display = 'none';
-    pendingResignPlayer = null;
+    resignationCtl.clearPendingResignPlayer();
 
     if (startScreenOverlay) startScreenOverlay.classList.add('hidden');
     if (hubModeSelect) hubModeSelect.value = 'pve';
@@ -747,7 +791,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (timerId) clearInterval(timerId);
     timerId = null;
     cancelAiWork();
-    undoStack.length = 0;
+    undoCtl.reset();
     session = createSession(currentBoardId, readSettings());
     session.reset();
     ensureHumanOpensStartScreen();
@@ -883,76 +927,6 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function cancelAiWork(): void {
     aiRunId += 1;
     aiThinking = false;
-  }
-
-  function pushUndoSnapshot(): void {
-    undoStack.push(session.exportSnapshot());
-    if (undoStack.length > 80) undoStack.shift();
-    undoBtn.disabled = undoStack.length === 0;
-  }
-
-  function canOfferResignation(): boolean {
-    if (session.getSettings().mode === 'spectate' || session.getSettings().mode === 'coach')
-      return false;
-    if (session.isGameOver() || animating || aiThinking) return false;
-    if (pendingResignPlayer !== null) return false;
-    // Only the side to move may resign (PvE: human only on cream's turn).
-    if (
-      session.getSettings().mode === 'pve' &&
-      session.getEngine().getState().currentPlayer !== 'RED'
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  function resigningPlayerForMode(): Player {
-    const settings = session.getSettings();
-    if (settings.mode === 'pve') return 'RED';
-    return session.getEngine().getState().currentPlayer;
-  }
-
-  function finishResignation(resigning: Player, acceptDraw: boolean): void {
-    if (timerId) clearInterval(timerId);
-    cancelAiWork();
-    resignOfferModal.style.display = 'none';
-    pendingResignPlayer = null;
-    session.resolveResignation(resigning, acceptDraw);
-    updateUI();
-  }
-
-  function beginResignation(): void {
-    if (!canOfferResignation()) return;
-    const settings = session.getSettings();
-    const resigning = resigningPlayerForMode();
-    const confirmed = window.confirm(
-      `Offer resignation as ${sideDisplayName(resigning)}? Opponent may accept a draw or claim a win.`,
-    );
-    if (!confirmed) return;
-
-    if (settings.mode === 'pve') {
-      const testOverride = sessionStorage.getItem('sb-test-resign-ai');
-      let acceptDraw: boolean;
-      if (testOverride === 'accept') {
-        acceptDraw = true;
-      } else if (testOverride === 'reject') {
-        acceptDraw = false;
-      } else {
-        acceptDraw = shouldAcceptResignationDraw(
-          session.getBoardVariant(),
-          session.getEngine().exportSnapshot(),
-          session.getAiPlayer(),
-          aiCenterFromSession(session),
-          aiTimerFromSession(session),
-        );
-      }
-      finishResignation(resigning, acceptDraw);
-      return;
-    }
-
-    pendingResignPlayer = resigning;
-    resignOfferDesc.textContent = `${sideDisplayName(resigning)} offers resignation. Agree to a draw?`;
-    resignOfferModal.style.display = 'flex';
   }
 
   function applyShellBoardClass(): void {
@@ -1121,8 +1095,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       if (statusEl) statusEl.textContent = boardStatusText;
     }
 
-    undoBtn.disabled =
-      undoStack.length === 0 || animating || aiThinking || settings.mode === 'spectate';
+    undoCtl.syncButtonState();
     resignBtn.disabled = !canOfferResignation();
 
     syncModeUi();
@@ -1178,7 +1151,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       shotActiveBlue,
     );
 
-    if (session.isGameOver() && pendingResignPlayer === null && !isCoachMode()) {
+    if (session.isGameOver() && resignationCtl.getPendingResignPlayer() === null && !isCoachMode()) {
       const winner = session.getDisplayedWinner();
       const redCaps = state.captures.RED;
       const blueCaps = state.captures.BLUE;
@@ -1253,7 +1226,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       } else {
         resultModal.style.display = 'none';
       }
-    } else if (pendingResignPlayer === null) {
+    } else if (resignationCtl.getPendingResignPlayer() === null) {
       resultModal.style.display = 'none';
       resultModal.classList.remove('animate');
       lastGameOverPlayed = false;
@@ -1517,7 +1490,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       return;
     }
 
-    pushUndoSnapshot();
+    undoCtl.pushSnapshot();
 
     let i = 0;
     function playNext(): void {
@@ -1600,39 +1573,9 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       return;
     }
     if (click.kind === 'move') {
-      pushUndoSnapshot();
+      undoCtl.pushSnapshot();
       executeMoveAnimated(click.move, state.currentPlayer);
     }
-  }
-
-  function undoMove(): void {
-    if (animating || aiThinking || undoStack.length === 0) return;
-    cancelAiWork();
-    anim = null;
-    animating = false;
-    turnCaptures = 0;
-    clearMoveFeedback();
-    const settings = session.getSettings();
-    const uiState = session.getUiState();
-
-    if (
-      isHumanVsAiMode(settings.mode) &&
-      undoStack.length >= 2 &&
-      session.getEngine().getState().currentPlayer === 'RED' &&
-      uiState !== 'chain'
-    ) {
-      undoStack.pop();
-      session.loadSnapshot(undoStack.pop()!);
-    } else {
-      session.loadSnapshot(undoStack.pop()!);
-    }
-
-    resultModal.style.display = 'none';
-    resignOfferModal.style.display = 'none';
-    pendingResignPlayer = null;
-    undoBtn.disabled = undoStack.length === 0;
-    if (!session.isGameOver()) startTimers();
-    updateUI();
   }
 
   function resetGame(): void {
@@ -1640,7 +1583,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     cancelAnimationFrame(pulseRaf);
     cancelAnimationFrame(animRaf);
     cancelAiWork();
-    undoStack.length = 0;
+    undoCtl.reset();
     anim = null;
     animating = false;
     aiThinking = false;
@@ -1673,7 +1616,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     resultModal.classList.remove('animate');
     resultModalDismissed = false;
     resignOfferModal.style.display = 'none';
-    pendingResignPlayer = null;
+    resignationCtl.clearPendingResignPlayer();
     session.resetTurnClock();
     updateUI();
     undoBtn.disabled = true;
@@ -1705,12 +1648,14 @@ export function bootstrapPlayShell(onReady?: () => void): void {
 
   resignBtn.addEventListener('click', beginResignation);
   resignAgreeBtn.addEventListener('click', () => {
-    if (pendingResignPlayer === null) return;
-    finishResignation(pendingResignPlayer, true);
+    const resigning = resignationCtl.getPendingResignPlayer();
+    if (resigning === null) return;
+    finishResignation(resigning, true);
   });
   resignDeclineBtn.addEventListener('click', () => {
-    if (pendingResignPlayer === null) return;
-    finishResignation(pendingResignPlayer, false);
+    const resigning = resignationCtl.getPendingResignPlayer();
+    if (resigning === null) return;
+    finishResignation(resigning, false);
   });
 
   function prepareBoardSwitch(boardId: ProductBoardId): void {
@@ -1718,7 +1663,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     cancelAnimationFrame(pulseRaf);
     cancelAnimationFrame(animRaf);
     cancelAiWork();
-    undoStack.length = 0;
+    undoCtl.reset();
     anim = null;
     animating = false;
     aiThinking = false;
@@ -1740,7 +1685,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     resultModal.style.display = 'none';
     resultModal.classList.remove('animate');
     resignOfferModal.style.display = 'none';
-    pendingResignPlayer = null;
+    resignationCtl.clearPendingResignPlayer();
     session.resetTurnClock();
     updateUI();
     undoBtn.disabled = true;
@@ -1843,7 +1788,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (isAwaitingStart() || animating || aiThinking || session.isGameOver()) return;
     if (isCoachMode()) return;
     if (session.getEngine().getChainPieceId() === null || !session.canHumanAct()) return;
-    pushUndoSnapshot();
+    undoCtl.pushSnapshot();
     soundEffects.playButtonTap();
     session.finishChain();
     turnCaptures = 0;
@@ -1855,7 +1800,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     resetGame();
   });
   function dismissResultModal(): void {
-    if (!session.isGameOver() || pendingResignPlayer !== null || isCoachMode()) return;
+    if (!session.isGameOver() || resignationCtl.getPendingResignPlayer() !== null || isCoachMode())
+      return;
     resultModalDismissed = true;
     resultModal.style.display = 'none';
     resultModal.classList.remove('animate');
@@ -1873,7 +1819,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   });
   undoBtn.addEventListener('click', () => {
     soundEffects.playButtonTap();
-    undoMove();
+    undoCtl.undo();
   });
   finishBtn?.addEventListener('click', () => {
     finishCaptureChain();

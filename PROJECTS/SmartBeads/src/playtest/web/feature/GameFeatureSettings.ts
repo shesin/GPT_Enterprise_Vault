@@ -13,16 +13,12 @@ export function isHumanVsAiMode(mode: GameMode): boolean {
 export type CenterRule = 'off' | 'endgame' | 'cumulative';
 /** Shared game timer (minutes) or off. */
 export type TimerMinutes = 'off' | '2' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';
-/** @deprecated use TimerMinutes */
-export type MatchTimerMinutes = TimerMinutes;
 /** Seconds per turn when enabled. */
 export type ShotClockSeconds = 'off' | '30' | '60' | '90' | '120';
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
 
 /** Default coach-watch board (8-bead · 4×6). */
 export const COACH_DEFAULT_BOARD_ID = '8x4x6' as const;
-/** @deprecated use COACH_DEFAULT_BOARD_ID */
-export const SPECTATE_BOARD_ID = COACH_DEFAULT_BOARD_ID;
 /** Pause after each animated move completes (ms) — reserved for future large boards. */
 export const SPECTATE_INTER_MOVE_DELAY_MS = 10_000;
 /** Watch AI vs AI — all shipped V1 boards (≤16 beads). */
@@ -136,13 +132,8 @@ export const BGM_TRACKS: BgmTrack[] = [
   },
 ];
 
-/** Shipped default BGM — Cool Puzzle Groovin' 2 @ 30% volume. */
-export const DEFAULT_BGM_LABEL = "Cool Puzzle Groovin' 2";
+/** Shipped default BGM volume — 30%. */
 export const DEFAULT_BGM_VOLUME = 0.3;
-
-export function getDefaultBgmTrack(): BgmTrack {
-  return BGM_TRACKS.find((t) => t.label === DEFAULT_BGM_LABEL) ?? BGM_TRACKS[0]!;
-}
 
 export function parseShotLimit(shotClock: ShotClockSeconds): number {
   return shotClock === 'off' ? 0 : parseInt(shotClock, 10);
@@ -152,25 +143,12 @@ export function parseTimerSeconds(timer: TimerMinutes): number {
   return timer === 'off' ? 0 : parseInt(timer, 10) * 60;
 }
 
-/** @deprecated use parseTimerSeconds */
-export const parseMatchSeconds = parseTimerSeconds;
-
-export function formatTimerLabel(value: TimerMinutes): string {
-  return value === 'off' ? 'Off' : `${value} min`;
-}
-
-/** @deprecated use formatTimerLabel */
-export const formatMatchTimerLabel = formatTimerLabel;
-
 /** Settings dropdown — recommended option shows e.g. `20 (best)`. */
 export function formatTimerOptionLabel(value: TimerMinutes, best?: TimerMinutes): string {
   if (value === 'off') return 'Off';
   if (best && value === best) return `${value} (best)`;
   return `${value} min`;
 }
-
-/** @deprecated use formatTimerOptionLabel */
-export const formatMatchTimerOptionLabel = formatTimerOptionLabel;
 
 export function isTournamentTimerActive(settings: GameFeatureSettings): boolean {
   return settings.mode === 'pvp' && parseTimerSeconds(settings.tournamentTimer) > 0;
@@ -198,10 +176,6 @@ export function normalizeTimerSettings(settings: GameFeatureSettings): GameFeatu
     return { ...next, tournamentTimer: 'off' };
   }
   return next;
-}
-
-export function formatShotClockLabel(value: ShotClockSeconds): string {
-  return value === 'off' ? 'Off' : `${value} sec`;
 }
 
 /** Settings dropdown — recommended option shows e.g. `120 (best)`. */
@@ -273,13 +247,6 @@ export function buildCoachWatchSettings(
     centerRule: SPECTATE_WATCH_DEFAULTS.centerRule,
     ...overrides,
   };
-}
-
-/** @deprecated use buildCoachWatchSettings */
-export function buildSpectateSettings(
-  overrides: Partial<GameFeatureSettings> = {},
-): GameFeatureSettings {
-  return buildCoachWatchSettings(overrides);
 }
 
 export function formatAiLevelSelectOption(level: AiLevel, numericLabels = false): string {

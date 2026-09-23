@@ -44,11 +44,11 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 | `m2-2step-observe.mjs` | 16-bead two-click slide (A41→A42 occupancy) |
 | `m2-capture-geometry-browser.mjs` | Real canvas clicks: captures, junction hops, Finish, inert opponent beads — all 7 boards |
 | `m2-2step-npm-gate.mjs` | Boots Vite if needed; runs both gates above (chained by `npm test`) |
-| `verify-coach-browser.mjs` | Coach panel + scrub max + intro copy at `?coach=start` (hub + play-board) |
+| `verify-coach-browser.mjs` | Coach panel + scrub max + intro copy at `?coach=start` |
 | `m2-*-browser-verify.mjs` | Per-board visual/gameplay checks |
 | `lab-ai-difficulty-eval.mjs` | HonestAi lab eval (not prototype `.cjs`) |
 
-**Prerequisite:** Vite on **5173** (hub) or pass `SMARTBEADS_PLAY_URL` for play shell. Gates use `/play-board.html`.
+**Prerequisite:** Vite on **5173** (hub). Gates use `/index.html`.
 
 ### Why prior runs hung (fixed 2026-09-03)
 
@@ -268,6 +268,20 @@ Not a fresh bug-hunting audit cycle — two explicitly-scoped continuation tasks
 2. **`PlayController.ts` split (partial, by design)** — extracted the genuinely decoupled pieces of the ~2481-line file into 5 focused modules: `feature/aiTurnRunner.ts` (AI turn planning/execution), `layout/boardSettingsPanel.ts` (board-dependent settings `<select>` syncing), `feature/startBannerController.ts` (celebration/banner effects), `layout/selectPopulators.ts`, `render/timerDisplay.ts`. File went from 2481 → 2049 lines. The remaining ~1900 lines of `bootstrapPlayShell` is one closure sharing ~20 mutable variables (`session`, `anim`, `animating`, `aiThinking`, `timerId`, `undoStack`, etc.) across ~70 functions — deliberately **not** attempted this pass; fully modularizing it means converting it to a stateful controller (class or explicit context object) threaded through every extracted piece, a materially larger and higher-risk rewrite of the core game controller that deserves its own scoped check-in rather than being folded into an "extract the easy parts" pass. Another regression-guard test needed updating (function moved out of `PlayController.ts`, so the source-scan regex had to point at the new file). **Verified:** `tsc --noEmit` clean, `eslint --max-warnings=0` clean, full Jest suite 658/658 passing. Commit `ebeaa90`.
 
 Human-browser confirmation is outstanding for both (as with prior cycles) — these are non-UI-behavior-changing refactors (types and module boundaries only, no logic changes), verified by type-checker, linter, and the full existing test suite, not by a new browser pass.
+
+---
+
+## Engineering work log (2026-09-23, Claude)
+
+Full 6-board V1 board-selection verification cycle (excl. `16`, called out by human as "standard"), requested per PENDING §8b. Not a code-change cycle — an evidence-gathering/verification cycle producing a new reusable Lab script and a full doc rewrite.
+
+1. **New script: `PROJECTS/SmartBeads/scripts/lab-board-fairness-eval.mjs`** — generalizes the single-board pattern in `lab-ai-difficulty-eval.mjs` into a reusable production-HonestAi Lab harness across all 6 shipped `ProductBoardId`s, at AI levels 1/2/3 (D1/D2/D3), both sides at the same level per match (board-fairness read), BLUE always first. Uses the real `SmartBeadsEngine` + `HonestAi.selectAiTurnPath` + `thinkBudgetForLevel` (the exact function production PvE uses for think-time budgeting) — never the prototype `.cjs` engines, per `GPT_PROJECT_RULES_01P.md` "Rule - Behavioral Gates". This was a required fix, not a nice-to-have: every existing `LAB_EVALUATION_*.json` in `prototype/board4/` (and the 2026-09-22 preliminary §8b comparison built on them) used the prototype engine, which the Rule explicitly disallows as a substitute for production board-selection verification.
+2. **Full production-grade self-play run** — D1=90 games, D2=100 games (primary depth per `VISION_05P.md`), D3=24 games (secondary, intentionally smaller sample — VISION: never rank boards by D3) per board; 1,284 games total across the 6 boards, seeded/reproducible RNG. Runtime ~30 minutes total (6x4/6x3x5 boards a few seconds each; 12x6x5 — the largest — took ~19 minutes for D2+D3 alone). Raw output: `PROJECTS/SmartBeads/prototype/board4/PRODUCTION_LAB_FAIRNESS_2026-09-23.json`. Result: all 6 boards pass the project's own D2 fairness gate (`|FPA| > 35pp` per VISION) with FPA ranging −20pp to +18.3pp, all with ≥85 games-with-winner (well above the ≥10-winner meaningful-read threshold); all 6 resolve 85–97% of D2 games by elimination (no board dominated by move-cap or ever hitting a stalemate ending across all 1,284 games). No genuine Lab or gameplay failure found on any board.
+3. **Alternative comparison (Tier B, prototype-engine)** — worked through all 3 `LAB_EVALUATION_*.json` files in `prototype/board4/`, matching each shipped board's bead count to its pooled/rejected alternative(s) (12-bead had 3 alternatives, 8-bead had 3, 10-bead and 7-bead had partial data, 6-bead had none evaluated at all). No alternative showed a materially better signal than its shipped counterpart — several are `REJECT` (fairness-failed under the prototype engine), the rest are underpowered (winner counts as low as 1–7 out of 90) or, in two cases, never resolved a single game. Explicitly flagged in PENDING §8b that this side of the comparison is prototype-engine-sourced and not blended with the Tier A production numbers.
+4. **Verification:** `npx tsc --noEmit -p tsconfig.json` → 0 errors (repo-wide baseline). Board-relevant Jest: 15 suites / 203 tests green (`Board6`/`Board6x3x5`/`Board10x5`/`Board12x6x5`/`Board8x4x6`/`Board7` + their `*PrototypeParity` suites, `BoardCatalog.test.ts`, `allBoards.smoke.test.ts`, `v1GeometryCaptureAudit.test.ts`) — full suite not run since no production code changed (only a new standalone script + doc updates). Live browser smoke pass via `npm run web:smartbeads` for all 6 boards: board renders, a move applied, AI response observed (5 of 6 boards produced an AI capture within the smoke sequence; `6x3x5`'s short sequence didn't happen to trigger one, capture path already covered by its `PrototypeParity` Jest suite), zero console errors on any board.
+5. **Minor script-quality fix in the same pass** — `lab-board-fairness-eval.mjs`'s `fpaMeetsWinnerThreshold` had a redundant `gamesWithWinner >= 20 ? true : gamesWithWinner >= 10` ternary (both branches reduce to the same `>= 10` check); simplified before treating the script as done, per the ongoing-audit-duty rule against landing known-redundant logic.
+
+Full detail, per-board verdict table, and the alternative-comparison table are in `GPT_PROJECT_PENDING_01P.md` §8b (rewritten this cycle, not just appended to). No catalog change made — none was warranted; the locked V1 board set stands per `VISION_05P.md`.
 
 ---
 

@@ -2,12 +2,6 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "smartbeads-play",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "web:smartbeads:play"],
-      "port": 5174
-    },
-    {
       "name": "smartbeads-hub",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "web:smartbeads"],

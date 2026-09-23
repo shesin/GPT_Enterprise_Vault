@@ -134,8 +134,6 @@ Center nodes: thin ring, same muted gold as the board's grid lines, under center
 
 **Hub modes (Page 1):** Play vs AI · Watch AI vs AI · Play with a Friend (Same Device) · Play with a Friend (Online — disabled until Phase 2). Mode tiles launch directly; no Start on hub.
 
-**Start overlay (direct `play-board.html` / dev):** gold **▶ START GAME**; board + mode selects.
-
 **Starter policy:** Human (cream) **first** on start overlay / new match. **New game / Play again** alternates opener in PvE. Board switch returns to start overlay with human first (does not consume alternation counter).
 
 **Watch AI inter-move pause:** **5s** after each animated move on **all shipped V1 boards** (6–16 beads). **10s** reserved for future larger boards only.

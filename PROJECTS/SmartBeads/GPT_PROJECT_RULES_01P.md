@@ -15,6 +15,25 @@ Target: ~1 page. **Extended workflow detail** (moved from `.cursor/rules/*.mdc` 
 
 ---
 
+## Where to look
+- Game-specific / product decisions (locked, wins on conflict) → `PROJECTS/SmartBeads/GPT_PROJECT_DECISIONS_05P.md`
+- Engineering / agent process rules → this file
+- What's shipped & verified today → `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md`
+- Roadmap / open work → `PROJECTS/SmartBeads/GPT_PROJECT_PENDING_01P.md` — human-owned, never edit without the literal `Go — PENDING`
+- Known past issues and whether they're actually fixed → `PROJECTS/SmartBeads/GPT_PROJECT_AUDIT_05P.md` — check before claiming something already works
+- Broad principles / mission → `PROJECTS/SmartBeads/VISION_05P.md`
+- Paths only → `PROJECT_MAP_05P.md`
+
+---
+
+## Rule - Handoff / new-chat prompts
+- When asked to write a prompt for a new chat session (handoff summary, context dump, etc.), it must end with an explicit, actionable task line — never just background/context and nothing else.
+- It must always state the repository path (`D:\Business Idea\Gpt_Enterprise_Vault`) up front — never assume a new session already knows which folder/repo this is about.
+- A fresh session has no memory of this conversation, and per `CLAUDE.md` Mode it will not act on context alone — it will just ask "what would you like me to do with this?" A handoff that stops at information, with no stated next task, causes exactly that dead-end.
+- State the actual next task plainly at the end of the handoff (e.g. "Task: implement X" / "Task: review Y and report back"), even if the task is just "confirm this context is correct before proceeding."
+
+---
+
 ## Rule - Agent mode (Suggest vs Implement)
 
 | User intent | Agent must |
@@ -144,6 +163,8 @@ Do not add a Jest test that freezes an unapproved decision into the product.
 ## Rule - Audit Completeness
 
 An audit is NOT done when you only list gaps. For every defect affecting shipped play: failing Jest first → fix → pass. Do not mark complete on `path.length > 0` or prose alone. CONFIRMED only with direct observation.
+
+Roughly every 1-2 days of active work (not literally calendar-daily if idle), review test coverage and source quality in the area just touched: are tests actually exercising the real behaviour (not a duplicated/stale table), is anything unreachable, is anything under-tested. Report findings; don't silently fix without approval.
 
 ---
 
