@@ -238,6 +238,14 @@ body.hub-page {
 #hub-section-look .hub-play-theme-setting {
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+#hub-section-look .play-theme-swatches {
+  flex-direction: column;
+  flex-wrap: nowrap;
 }
 
 #hub-section-look .play-theme-swatch {
@@ -250,9 +258,15 @@ body.hub-page {
   color: var(--hub-centre-muted);
 }
 
+.hub-look-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
 .hub-board-preview {
-  margin-top: 10px;
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
