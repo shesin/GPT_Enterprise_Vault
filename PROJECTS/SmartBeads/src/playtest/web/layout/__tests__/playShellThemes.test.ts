@@ -134,7 +134,8 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
       expect(() =>
         applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId()),
       ).not.toThrow();
-      expect(readBoardLookThemeId()).toBe('1');
+      // Default board is Celadon Jade ('25') as of 2026-09-24, was '1'.
+      expect(readBoardLookThemeId()).toBe('25');
       expect(readPlayBoardMatchMode()).toBe('side-only');
     },
   );
@@ -145,7 +146,8 @@ describe('playShellThemes — 9 complete boards (5 base + 4 light-canvas Matched
       'sb-play-side-look-v3': '4',
     });
     applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
-    expect(readBoardLookThemeId()).toBe('1');
+    // Default board is Celadon Jade ('25') as of 2026-09-24, was '1'.
+    expect(readBoardLookThemeId()).toBe('25');
     expect(readPlayBoardMatchMode()).toBe('side-only');
   });
 

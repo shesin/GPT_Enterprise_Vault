@@ -298,14 +298,10 @@ body.hub-page {
      straight from the swatch button's own background-image), not a
      <color> -- it must go through background-image, not background-color
      (which silently drops invalid values, which is why the box was
-     rendering transparent). Layered as the bottom image so the X-cross
-     gradients above it still show. X lines are the hub's own gold accent
-     (--hub-accent), matching the real board's gold lattice lines instead
-     of plain black. */
-  background-image:
-    linear-gradient(to bottom right, transparent calc(50% - 1px), var(--hub-accent) calc(50% - 1px), var(--hub-accent) calc(50% + 1px), transparent calc(50% + 1px)),
-    linear-gradient(to bottom left, transparent calc(50% - 1px), var(--hub-accent) calc(50% - 1px), var(--hub-accent) calc(50% + 1px), transparent calc(50% + 1px)),
-    var(--hub-board-preview-bg);
+     rendering transparent). No cross-line pattern here (removed
+     2026-09-24, human request) -- there's no single "the board's" lattice
+     to match, since each of the 7 board sizes has its own different one. */
+  background-image: var(--hub-board-preview-bg);
   position: relative;
 }
 

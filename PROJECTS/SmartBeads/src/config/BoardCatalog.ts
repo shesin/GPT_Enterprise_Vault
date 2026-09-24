@@ -237,7 +237,8 @@ export function getCatalogEntry(id: ProductBoardId): BoardCatalogEntry | undefin
   return BOARD_CATALOG.find((entry) => entry.id === id);
 }
 
-export const DEFAULT_PRODUCT_BOARD: ProductBoardId = '16';
+// 6-bead 4x4 (2026-09-24, human request) -- was 16-bead ('16').
+export const DEFAULT_PRODUCT_BOARD: ProductBoardId = '6x4';
 
 export function getPlayConfig(id: ProductBoardId): BoardPlayConfig {
   const entry = getCatalogEntry(id);

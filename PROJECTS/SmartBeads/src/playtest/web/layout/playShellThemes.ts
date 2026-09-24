@@ -215,7 +215,8 @@ function buildCharcoalSideTheme(): PlayShellTheme {
   };
 }
 
-export const DEFAULT_BOARD_LOOK_ID: BoardLookThemeId = '1';
+// Celadon Jade Matched (2026-09-24, human request) -- was Classic Green ('1').
+export const DEFAULT_BOARD_LOOK_ID: BoardLookThemeId = '25';
 export const DEFAULT_SIDE_LOOK_ID: PlayShellThemeId = '1';
 
 export const PLAY_SHELL_THEMES: Record<PlayShellThemeId, PlayShellTheme> = {
@@ -521,9 +522,12 @@ export function coalesceStoredLookState(): {
     } catch {
       /* storage unavailable */
     }
-    // Only honour Matched when the stored side actually says so — anything
-    // else (including a missing/stale side key) falls back to charcoal.
-    return { boardLookId, sideLookId: sideStored === boardLookId ? boardLookId : '7' };
+    // Only honour Matched when the stored side actually says so, OR when
+    // nothing has ever been stored at all (a genuinely fresh visitor hitting
+    // DEFAULT_BOARD_LOOK_ID, which is itself a Matched id as of 2026-09-24 --
+    // this must resolve to true Matched, not board=Jade/side=charcoal). A
+    // stray/stale side key that explicitly disagrees still falls to charcoal.
+    return { boardLookId, sideLookId: (sideStored === boardLookId || sideStored === null) ? boardLookId : '7' };
   }
   if (isCompleteLookId(boardLookId)) {
     return { boardLookId, sideLookId: '7' };
