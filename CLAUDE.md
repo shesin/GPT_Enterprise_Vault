@@ -23,6 +23,7 @@ Only this repo (`Gpt_Enterprise_Vault`). Never create, edit, move, or delete any
 - `git commit` / `git push` only when explicitly asked.
 - **Do only what is explicitly asked.** Never take proactive side-actions (writing memory files, extra docs, cleanup, anything not requested) without asking first. If something seems urgently needed, ask permission — don't just do it.
 - **Testing scope:** after a change, run only the test file(s) relevant to it by default — not the full suite. Run the full suite only when explicitly asked, *except* when there's real doubt the change could affect other parts of the codebase (e.g. it touches a shared token/type other boards or modules also read) — then run the full suite anyway without waiting to be asked.
+- **Never let a save/overwrite silently destroy existing data.** Any operation that can clobber saved state (multi-writer, stale cache, concurrent edits) needs a real safeguard — version check or confirmation — before it ships, not a hope it won't happen. If it happens anyway, fix the root cause immediately, not a patch that leaves the same failure mode live.
 
 ## Ongoing audit duty
 - **Investigate before asking.** You have direct file/code access — when something looks wrong, read and cross-check every related file yourself before asking a clarifying question. Only ask if the code truly can't resolve the ambiguity, and ask once, not iteratively.

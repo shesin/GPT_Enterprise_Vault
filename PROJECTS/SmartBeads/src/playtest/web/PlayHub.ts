@@ -20,8 +20,8 @@ export type HubModeValue = 'pve' | 'spectate' | 'pvp' | 'pvp-online';
 const HUB_MODE_TILES: ReadonlyArray<{ value: HubModeValue; label: string; disabled?: boolean }> = [
   { value: 'pve', label: 'Play vs AI' },
   { value: 'spectate', label: 'Watch AI vs AI' },
-  { value: 'pvp', label: 'Play with a Friend (Same Device)' },
-  { value: 'pvp-online', label: 'Play with a Friend (Online)', disabled: true },
+  { value: 'pvp', label: 'Friend (Same Device)' },
+  { value: 'pvp-online', label: 'Friend (Online)', disabled: true },
 ];
 
 const HUB_MODE_HELP_LINES = [
@@ -64,7 +64,7 @@ function populateHubBoardGrid(
   onSelect: (boardId: ProductBoardId) => void,
 ): void {
   grid.innerHTML = '';
-  for (const entry of listProductBoards()) {
+  listProductBoards().forEach((entry, i) => {
     const { primary, secondary } = boardTileLabel(entry);
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -73,6 +73,10 @@ function populateHubBoardGrid(
     btn.setAttribute('role', 'option');
     btn.setAttribute('aria-selected', String(entry.id === selectedId));
     if (entry.id === selectedId) btn.classList.add('is-selected');
+    const badge = document.createElement('span');
+    badge.className = 'hub-board-tile-badge';
+    badge.setAttribute('aria-hidden', 'true');
+    badge.textContent = String(i + 1);
     const icon = document.createElement('span');
     icon.className = 'hub-board-tile-icon';
     icon.setAttribute('aria-hidden', 'true');
@@ -82,10 +86,10 @@ function populateHubBoardGrid(
     const sub = document.createElement('span');
     sub.className = 'hub-board-tile-sub';
     sub.textContent = secondary;
-    btn.append(icon, label, sub);
+    btn.append(badge, icon, label, sub);
     btn.addEventListener('click', () => onSelect(entry.id));
     grid.appendChild(btn);
-  }
+  });
 }
 
 function syncBoardTileSelection(grid: HTMLElement, boardId: ProductBoardId): void {
@@ -168,10 +172,22 @@ function wireHubModeHelp(helpBtn: HTMLButtonElement, helpText: HTMLParagraphElem
   });
 }
 
+/** Small illustrative preview only — does not touch the hub's own locked
+ * Seaglass chrome, just recolors its own 3x3 swatch to match the picked look. */
+function updateHubBoardPreview(): void {
+  const active = document.querySelector<HTMLButtonElement>(
+    '#hub-play-theme-setting .play-theme-swatch.is-active',
+  );
+  const grid = document.getElementById('hub-board-preview-grid');
+  if (!active || !grid) return;
+  grid.style.setProperty('--hub-board-preview-bg', getComputedStyle(active).backgroundImage);
+}
+
 function wireHubThemePicker(): void {
   applyPlayLookState(readStoredBoardLookId(), readStoredSideLookId());
   const hubLook = document.getElementById('hub-play-theme-setting');
-  wirePlayLookPreviewSetting(hubLook);
+  wirePlayLookPreviewSetting(hubLook, { onApplied: updateHubBoardPreview });
+  updateHubBoardPreview();
 }
 
 export function bootstrapPlayHub(

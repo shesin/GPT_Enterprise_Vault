@@ -1,5 +1,6 @@
 import { bootstrapPlayHub } from './PlayHub';
 import { bootstrapPlayShell } from './PlayController';
+import { initHubEditMode } from './HubEditMode';
 import type { ProductBoardId } from '../../config/BoardCatalog';
 import type { GameFeatureSettings } from './feature/GameFeatureSettings';
 import type { HubLaunchAction } from './PlayHub';
@@ -64,6 +65,7 @@ function boot(): void {
         .getElementById('hub-section-lesson')
         ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
+    initHubEditMode();
   });
 }
 

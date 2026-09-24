@@ -178,7 +178,7 @@ Central 5×5 matches 10-bead width prominence (~70% vertical play height). Wing 
 
 **Left rail:** brand block → Play (current page) → Community → Tournament → Review (opens a same-width slide-out panel, "coming soon" placeholder) → spacer → Help & Support, Player Profile (disabled placeholders — no backend yet, see §13.1 in `GPT_PROJECT_PENDING_01P.md`).
 
-**Centre order:** How to play (compact single row) → Choose your look → Choose your board (row 1 smaller: 6-bead·3×5, 6-bead·4×4, 7-bead, 8-bead; row 2: 10-bead, 12-bead, 16-bead Classic) → Play with (2×2: Play vs AI + Friend same device top; Friend online + Watch AI vs AI bottom). **No Start Game button** — mode tiles keep launching directly (§9 above still governs).
+**Centre order:** How to play (compact single row) → Choose your look → Choose your board (row 1 smaller: 6-bead·3×5, 6-bead·4×4, 7-bead, 8-bead; row 2: 10-bead, 12-bead, 16-bead Classic) → Play with (**single row**, order: Play vs AI, Friend same device, Friend online, Watch AI vs AI — changed 2026-09-24 from the original 2×2 layout, same human, to fit the whole hero-through-Play-with flow above the fold). **No Start Game button** — mode tiles keep launching directly (§9 above still governs).
 
 **Right rail + footer:** pure ad space, no functional content.
 

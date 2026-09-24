@@ -18,11 +18,12 @@
         <div class="hub-logo-mark" aria-hidden="true"></div>
       </div>
       <nav class="hub-sidebar-nav">
-        <button type="button" class="hub-sidebar-link hub-sidebar-link--active" aria-current="page" disabled>smartbeadchess.com</button>
-        <button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="tournaments">Tournament</button>
-        <label for="hub-review-toggle" class="hub-sidebar-link hub-sidebar-link--soon hub-review-trigger" role="button" tabindex="0">Review</label>
-        <button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="community">Community</button>
-      </nav>
+        
+        
+        
+        
+        
+      <button type="button" class="hub-sidebar-link hub-sidebar-link--active" aria-current="page" disabled="">smartbeadchess.com</button><span class="hub-sidebar-link hub-sidebar-spacer" aria-hidden="true"></span><button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="community">Community</button><button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="tournaments">Tournament</button><label for="hub-review-toggle" class="hub-sidebar-link hub-sidebar-link--soon hub-review-trigger" role="button" tabindex="0">Review</label></nav>
       <div class="hub-review-panel" id="hub-review-panel">
         <div class="hub-review-panel-head">
           <span class="hub-rail-title">Player reviews</span>
@@ -31,9 +32,9 @@
         <p class="hub-coming-soon">Player reviews coming soon.</p>
       </div>
       <div class="hub-rail-foot">
-        <button type="button" class="hub-rail-foot-link" disabled title="Coming soon">Help &amp; Support</button>
-        <button type="button" class="hub-rail-foot-link" disabled title="Coming soon">Player Profile</button>
-      </div>
+        
+        
+      <button type="button" class="hub-rail-foot-link" title="Coming soon" disabled="">Help &amp; Support</button><button type="button" class="hub-rail-foot-link" title="Coming soon" disabled="">Player Profile</button></div>
     </aside>
 
     <div class="hub-main">
@@ -48,25 +49,27 @@
         </header>
 
         <div class="hub-sections">
-          <section class="hub-section" id="hub-section-lesson" aria-labelledby="hub-lesson-heading">
+          <div class="hub-grid-box" id="hub-section-lesson" style="grid-area: 1 / 1 / span 1 / span 3;">
             <h2 class="hub-section-title" id="hub-lesson-heading">How to play</h2>
-            <div class="hub-lesson-grid">
-              <button type="button" id="hub-lesson-basic" class="hub-lesson-btn">Basic</button>
-              <button type="button" id="hub-lesson-advanced" class="hub-lesson-btn" disabled title="Coming soon">Advanced</button>
-            </div>
-          </section>
+          </div>
 
-          <section class="hub-section" id="hub-section-look" aria-labelledby="hub-look-heading">
-            <h2 class="hub-section-title" id="hub-look-heading">Choose your look</h2>
-            <div class="hub-play-theme-setting play-theme-setting" id="hub-play-theme-setting" data-play-look-setting>
-              <p class="play-theme-group-label">Light theme</p>
+          <div class="hub-grid-box" style="grid-area: 1 / 4 / span 1 / span 2;">
+            <button type="button" id="hub-lesson-basic" class="hub-lesson-btn">Basic</button>
+          </div>
+
+          <div class="hub-grid-box" style="grid-area: 1 / 6 / span 1 / span 3;">
+            <button type="button" id="hub-lesson-advanced" class="hub-lesson-btn" title="Coming soon" disabled="">Advanced</button>
+          </div>
+
+          <div class="hub-grid-box" id="hub-section-look" style="grid-area: 2 / 1 / span 7 / span 6;">
+            <h2 class="hub-section-title" id="hub-look-heading">Choose board look</h2>
+            <div class="hub-play-theme-setting play-theme-setting" id="hub-play-theme-setting" data-play-look-setting="">
               <div class="play-theme-swatches play-theme-swatches--dark-same" role="radiogroup" aria-label="Light theme">
                 <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="23" title="Seaglass Matched" aria-label="Seaglass Matched"></button>
                 <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="24" title="Powder Lilac Matched" aria-label="Powder Lilac Matched"></button>
-                <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="25" title="Celadon Jade Matched" aria-label="Celadon Jade Matched"></button>
+                <button type="button" class="play-theme-swatch is-active" role="radio" aria-checked="true" data-play-theme="25" title="Celadon Jade Matched" aria-label="Celadon Jade Matched"></button>
                 <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="26" title="Alabaster Pearl Matched" aria-label="Alabaster Pearl Matched"></button>
               </div>
-              <p class="play-theme-group-label">Dark theme</p>
               <div class="play-theme-swatches play-theme-swatches--dark-same" role="radiogroup" aria-label="Dark theme">
                 <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="1" title="Classic Green" aria-label="Classic Green"></button>
                 <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="2" title="Wood Classic" aria-label="Wood Classic"></button>
@@ -75,34 +78,51 @@
                 <button type="button" class="play-theme-swatch" role="radio" aria-checked="false" data-play-theme="14" title="Warm Walnut" aria-label="Warm Walnut"></button>
               </div>
             </div>
-          </section>
+            <div class="hub-board-preview" aria-hidden="true">
+              <div class="hub-board-preview-grid" id="hub-board-preview-grid" style="--hub-board-preview-bg: linear-gradient(165deg, oklch(0.82 0.05 170), oklch(0.7 0.055 172));">
+                <span class="hub-board-preview-cell"></span>
+                <span class="hub-board-preview-cell"><span class="hub-board-preview-bead hub-board-preview-bead--dark"></span></span>
+                <span class="hub-board-preview-cell"></span>
+                <span class="hub-board-preview-cell"></span>
+                <span class="hub-board-preview-cell"></span>
+                <span class="hub-board-preview-cell"></span>
+                <span class="hub-board-preview-cell"></span>
+                <span class="hub-board-preview-cell"><span class="hub-board-preview-bead hub-board-preview-bead--light"></span></span>
+                <span class="hub-board-preview-cell"></span>
+              </div>
+              <p class="hub-board-preview-caption">Pick a colour to preview the board</p>
+            </div>
+          </div>
 
-          <section class="hub-section" id="hub-section-board" aria-labelledby="hub-board-heading">
+          <div class="hub-grid-box" id="hub-section-board" style="grid-area: 2 / 7 / span 7 / span 6;">
             <h2 class="hub-section-title" id="hub-board-heading">Choose your board</h2>
             <div id="hub-board-grid" class="hub-board-tile-grid" role="listbox" aria-labelledby="hub-board-heading"></div>
-            <select id="hub-board-select" hidden aria-hidden="true" tabindex="-1"></select>
-          </section>
+            <select id="hub-board-select" hidden="" aria-hidden="true" tabindex="-1"></select>
+          </div>
 
-          <section class="hub-section" id="hub-section-mode" aria-labelledby="hub-mode-heading">
+          <div class="hub-grid-box" id="hub-section-mode" style="grid-area: 9 / 1 / span 1 / span 12;">
             <div class="hub-section-head">
               <h2 class="hub-section-title" id="hub-mode-heading">Play with</h2>
               <button type="button" class="setting-help-btn" id="hub-mode-help-btn" aria-label="Who is playing help" aria-expanded="false" aria-controls="hub-mode-help-text">?</button>
             </div>
-            <p class="setting-help-text hub-mode-help-text" id="hub-mode-help-text" hidden>Play vs AI — You vs the computer. Pick board and difficulty on the board page.
+            <p class="setting-help-text hub-mode-help-text" id="hub-mode-help-text" hidden="">Play vs AI — You vs the computer. Pick board and difficulty on the board page.
 
 Watch AI vs AI — Two AIs play; you watch. Good for learning pace and rules.
 
 Play with a Friend (Same Device) — Pass the phone after each turn. No room code needed.
 
 Play with a Friend (Online) — Create or join a room on another device. Coming soon until Phase 2.</p>
+          </div>
+
+          <div class="hub-grid-box" style="grid-area: 10 / 1 / span 2 / span 12;">
             <div id="hub-mode-grid" class="hub-mode-tile-grid" role="group" aria-labelledby="hub-mode-heading"></div>
-            <select id="hub-mode-select" hidden aria-hidden="true" tabindex="-1">
-              <option value="pve" selected>Play vs AI</option>
+            <select id="hub-mode-select" hidden="" aria-hidden="true" tabindex="-1">
+              <option value="pve" selected="">Play vs AI</option>
               <option value="spectate">Watch AI vs AI</option>
               <option value="pvp">Play with a Friend (Same Device)</option>
               <option value="pvp-online">Play with a Friend (Online)</option>
             </select>
-          </section>
+          </div>
         </div>
       </div>
 

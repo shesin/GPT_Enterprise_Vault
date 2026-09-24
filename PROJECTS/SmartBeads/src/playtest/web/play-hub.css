@@ -181,6 +181,10 @@ body.hub-page {
   color: var(--hub-text);
 }
 
+.hub-sidebar-spacer {
+  visibility: hidden;
+}
+
 .hub-rail-notice {
   display: flex;
   align-items: flex-start;
@@ -246,6 +250,61 @@ body.hub-page {
   color: var(--hub-centre-muted);
 }
 
+.hub-board-preview {
+  margin-top: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.hub-board-preview-grid {
+  --hub-board-preview-bg: oklch(0.80 0.045 195);
+  width: 100%;
+  max-width: 160px;
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--hub-border);
+  border-radius: 6px;
+}
+
+.hub-board-preview-cell {
+  background: var(--hub-board-preview-bg);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hub-board-preview-bead {
+  width: 35%;
+  height: 35%;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.hub-board-preview-bead--dark {
+  background: var(--black-bead);
+}
+
+.hub-board-preview-bead--light {
+  background: var(--cream);
+}
+
+.hub-board-preview-caption {
+  font-size: 0.62rem;
+  color: var(--hub-centre-muted);
+  text-align: center;
+  margin: 0;
+}
+
 .hub-rail-foot .hub-play-theme-setting {
   width: 100%;
   margin: 0;
@@ -301,12 +360,12 @@ body.hub-page {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 18px 22px 12px;
+  padding: 12px 22px 8px;
 }
 
 .hub-hero {
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .hub-slogan {
@@ -329,11 +388,18 @@ body.hub-page {
 }
 
 .hub-sections {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(40px, auto);
+  gap: 6px 12px;
+  width: 100%;
+}
+
+.hub-grid-box {
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  max-width: min(560px, 100%);
-  margin: 0 auto;
 }
 
 .hub-section-title {
@@ -384,6 +450,7 @@ body.hub-page {
 }
 
 .hub-board-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -395,6 +462,23 @@ body.hub-page {
   color: var(--hub-centre-text, var(--hub-text));
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.hub-board-tile-badge {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--hub-accent);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .hub-board-tile:hover {
@@ -533,7 +617,7 @@ body.hub-page {
 
 .hub-mode-tile-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -573,8 +657,8 @@ body.hub-page {
   background: var(--hub-page-bg);
 }
 
-/* Play-with order (locked spec, PENDING §2): top row Play vs AI + Friend same
-   device; bottom row Friend online + Watch AI vs AI. */
+/* Play-with order (locked spec, DECISIONS §13, updated 2026-09-24): single
+   row — Play vs AI, Friend same device, Friend online, Watch AI vs AI. */
 .hub-mode-tile[data-hub-mode="pve"] { order: 1; }
 .hub-mode-tile[data-hub-mode="pvp"] { order: 2; }
 .hub-mode-tile[data-hub-mode="pvp-online"] { order: 3; }
@@ -666,6 +750,157 @@ body.hub-page {
   flex-direction: column;
 }
 
+/* Dev-only visual edit mode (HubEditMode.ts) — drag to reorder, edit text,
+   delete blocks, export the layout as JSON. Never shown until toggled. */
+#hub-edit-toggle {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 1000;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #1f4e42;
+  color: #fdfefe;
+  font: 600 0.8rem "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+#hub-edit-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  z-index: 1000;
+  display: none;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  overflow-x: auto;
+  background: #1c2b26;
+  color: #eaf1ed;
+  font: 500 0.78rem "Segoe UI", system-ui, sans-serif;
+}
+
+#hub-edit-toolbar span {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#hub-edit-toolbar button {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #3a6b5c;
+  background: #2b3d35;
+  color: #eaf1ed;
+  font: 600 0.76rem inherit;
+  cursor: pointer;
+}
+
+body.hub-edit-active .play-hub {
+  margin-top: 40px;
+  height: calc(100dvh - 40px);
+  max-height: calc(100dvh - 40px);
+}
+
+body.hub-edit-active [contenteditable="true"] {
+  outline: 1px dashed #c9a24a;
+  outline-offset: 2px;
+  cursor: text;
+}
+
+body.hub-edit-active .hub-sidebar-link,
+body.hub-edit-active .hub-rail-foot-link,
+body.hub-edit-active .hub-grid-box,
+body.hub-edit-active .hub-board-tile,
+body.hub-edit-active .hub-mode-tile {
+  cursor: grab;
+}
+
+body.hub-edit-active .hub-grid-box {
+  outline: 1px dashed rgba(201, 162, 74, 0.55);
+  outline-offset: 3px;
+}
+
+.hub-grid-box--in-rail {
+  width: 100%;
+}
+
+.hub-grid-box--in-rail .hub-box-resize-handle {
+  display: none;
+}
+
+body.hub-edit-active .hub-rail--left.hub-edit-drop-target,
+body.hub-edit-active .hub-rail--right.hub-edit-drop-target {
+  outline: 2px dashed #c9a24a;
+  outline-offset: -4px;
+  background: rgba(201, 162, 74, 0.1);
+}
+
+.hub-box-resize-handle {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px 0 6px 0;
+  background: #c9a24a;
+  cursor: nwse-resize;
+  touch-action: none;
+  z-index: 6;
+}
+
+.hub-edit-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  border-radius: 4px;
+  background: rgba(201, 162, 74, 0.35);
+  color: inherit;
+  font-size: 0.62rem;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  vertical-align: middle;
+}
+
+body.hub-edit-active .hub-edit-dragging {
+  opacity: 0.85;
+  outline: 2px solid #c9a24a;
+  z-index: 20;
+}
+
+.hub-edit-del {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #b3452f;
+  color: #fff;
+  border: 1.5px solid #fff;
+  font-size: 0.68rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 5;
+}
+
 @media (max-width: 860px) {
   .play-hub {
     width: 100vw;
@@ -723,6 +958,10 @@ body.hub-page {
   }
 
   .hub-board-tile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hub-mode-tile-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
