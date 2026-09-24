@@ -1,9 +1,8 @@
-/* Page 1 — Chess.com-inspired: full viewport · left | centre | right · bottom ad. */
+/* Page 1 — Chess.com-inspired: full viewport · left | centre | right. */
 
 .play-hub {
   --hub-left-w: clamp(132px, 14vw, 180px);
   --hub-right-w: clamp(148px, 16vw, 220px);
-  --hub-ad-h: clamp(96px, 14vh, 132px);
 
   width: 100vw;
   height: 100dvh;
@@ -275,41 +274,37 @@ body.hub-page {
   gap: 6px;
 }
 
+/* Same box-with-cross STYLE as .hub-board-tile-icon (the board-size tile
+   icons) -- style only. Size stays at the original 160px footprint, human
+   confirmed 2026-09-24: don't shrink it, only the look changes. */
 .hub-board-preview-grid {
   --hub-board-preview-bg: oklch(0.80 0.045 195);
   width: 100%;
   max-width: 160px;
   aspect-ratio: 1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 2px;
-  padding: 3px;
+  border-radius: 8px;
   border: 1px solid var(--hub-border);
-  border-radius: 6px;
-}
-
-.hub-board-preview-cell {
   background: var(--hub-board-preview-bg);
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
 }
 
-.hub-board-preview-bead {
-  width: 35%;
-  height: 35%;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.25);
+.hub-board-preview-grid::before {
+  content: '';
+  position: absolute;
+  inset: 22px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
 }
 
-.hub-board-preview-bead--dark {
-  background: var(--black-bead);
-}
-
-.hub-board-preview-bead--light {
-  background: var(--cream);
+.hub-board-preview-grid::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.3);
+  transform: translateY(-50%);
 }
 
 .hub-board-preview-caption {
@@ -379,7 +374,7 @@ body.hub-page {
 
 .hub-hero {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 24px;
 }
 
 .hub-slogan {
@@ -666,6 +661,13 @@ body.hub-page {
   cursor: not-allowed;
 }
 
+/* Spectate is a watch action, not a play action -- dashed border marks it
+   apart from the 3 play tiles (same visual language as ad/placeholder
+   boxes elsewhere in the hub), so it doesn't read as a 4th way to play. */
+.hub-mode-tile[data-hub-mode="spectate"] {
+  border-style: dashed;
+}
+
 .hub-mode-tile-icon {
   flex-shrink: 0;
   width: 28px;
@@ -681,43 +683,6 @@ body.hub-page {
 .hub-mode-tile[data-hub-mode="pvp"] { order: 2; }
 .hub-mode-tile[data-hub-mode="pvp-online"] { order: 3; }
 .hub-mode-tile[data-hub-mode="spectate"] { order: 4; }
-
-.hub-ad-bottom {
-  flex-shrink: 0;
-  height: var(--hub-ad-h);
-  background: var(--hub-ad-bg);
-  border-top: 1px solid var(--hub-ad-border);
-  padding: 8px 14px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.hub-ad-bottom .ad-label {
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  /* Darkened from #777 (2026-09-22 audit — 3.8:1 on --hub-ad-bg #ececec,
-     failed WCAG AA's 4.5:1) to meet contrast. */
-  color: #5c5c5c;
-  font-weight: 700;
-}
-
-.hub-ad-bottom .ad-placeholder {
-  flex: 1;
-  min-height: 0;
-  border-radius: 4px;
-  border: 1px dashed #c8c8c8;
-  background: #f8f8f8;
-  /* Darkened from #999 (2026-09-22 audit — 2.68:1 on #f8f8f8, failed WCAG
-     AA's 4.5:1) to meet contrast. */
-  color: #5c5c5c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
 
 .hub-rail-title {
   font-size: 0.62rem;

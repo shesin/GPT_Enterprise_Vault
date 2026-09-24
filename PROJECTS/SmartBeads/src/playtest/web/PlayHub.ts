@@ -20,8 +20,8 @@ export type HubModeValue = 'pve' | 'spectate' | 'pvp' | 'pvp-online';
 const HUB_MODE_TILES: ReadonlyArray<{ value: HubModeValue; label: string; disabled?: boolean }> = [
   { value: 'pve', label: 'Play vs AI' },
   { value: 'spectate', label: 'Watch AI vs AI' },
-  { value: 'pvp', label: 'Friend (Same Device)' },
-  { value: 'pvp-online', label: 'Friend (Online)', disabled: true },
+  { value: 'pvp', label: 'Play vs Friend – Same Device' },
+  { value: 'pvp-online', label: 'Play vs Friend – Online', disabled: true },
 ];
 
 const HUB_MODE_HELP_LINES = [
@@ -57,6 +57,20 @@ function populateHubBoardSelect(select: HTMLSelectElement, boardId: ProductBoard
   select.value = boardId;
 }
 
+/** Boards ranked 1-4 (tied) for D2 fairness/resolve-rate in the 2026-09-23
+ * lab-fairness review (PENDING §5) -- get a "recommended" star on the hub
+ * picker. The other two boards (10x5, 16) get no badge at all: not flagged
+ * as worse, just not called out, so the flagship 16-bead board isn't
+ * publicly marked "worst" on its own picker (that number stays internal
+ * per the human's earlier decision not to gate/flag it pre-launch). */
+const HUB_BOARD_RECOMMENDED_IDS: ReadonlySet<ProductBoardId> = new Set([
+  '6x4',
+  '6x3x5',
+  '7x4x5',
+  '12x6x5',
+  '8x4x6',
+] as ProductBoardId[]);
+
 function populateHubBoardGrid(
   grid: HTMLElement,
   boardSelect: HTMLSelectElement,
@@ -64,7 +78,7 @@ function populateHubBoardGrid(
   onSelect: (boardId: ProductBoardId) => void,
 ): void {
   grid.innerHTML = '';
-  listProductBoards().forEach((entry, i) => {
+  listProductBoards().forEach((entry) => {
     const { primary, secondary } = boardTileLabel(entry);
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -73,10 +87,6 @@ function populateHubBoardGrid(
     btn.setAttribute('role', 'option');
     btn.setAttribute('aria-selected', String(entry.id === selectedId));
     if (entry.id === selectedId) btn.classList.add('is-selected');
-    const badge = document.createElement('span');
-    badge.className = 'hub-board-tile-badge';
-    badge.setAttribute('aria-hidden', 'true');
-    badge.textContent = String(i + 1);
     const icon = document.createElement('span');
     icon.className = 'hub-board-tile-icon';
     icon.setAttribute('aria-hidden', 'true');
@@ -86,7 +96,14 @@ function populateHubBoardGrid(
     const sub = document.createElement('span');
     sub.className = 'hub-board-tile-sub';
     sub.textContent = secondary;
-    btn.append(badge, icon, label, sub);
+    if (HUB_BOARD_RECOMMENDED_IDS.has(entry.id)) {
+      const badge = document.createElement('span');
+      badge.className = 'hub-board-tile-badge';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.textContent = '★';
+      btn.append(badge);
+    }
+    btn.append(icon, label, sub);
     btn.addEventListener('click', () => onSelect(entry.id));
     grid.appendChild(btn);
   });
