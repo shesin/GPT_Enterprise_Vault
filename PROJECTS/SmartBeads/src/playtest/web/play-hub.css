@@ -416,6 +416,10 @@ body.hub-page {
   flex-direction: column;
 }
 
+#hub-section-lesson {
+  justify-content: center;
+}
+
 .hub-section-title {
   font-size: 0.68rem;
   font-weight: 700;
