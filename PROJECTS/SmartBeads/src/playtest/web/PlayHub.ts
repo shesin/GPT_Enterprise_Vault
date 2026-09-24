@@ -11,6 +11,7 @@ import {
   readStoredSideLookId,
   wirePlayLookPreviewSetting,
 } from './layout/playShellThemes';
+import { getActiveBeadSet } from './layout/beadSetThemes';
 
 export type HubLaunchAction = 'play' | 'coach' | 'spectate';
 
@@ -192,7 +193,11 @@ function wireHubModeHelp(helpBtn: HTMLButtonElement, helpText: HTMLParagraphElem
 }
 
 /** Small illustrative preview only — does not touch the hub's own locked
- * Seaglass chrome, just recolors its own 3x3 swatch to match the picked look. */
+ * Seaglass chrome, just recolors its own swatch and two corner beads to
+ * match the picked look. Bead colours come from the same automatic
+ * per-board bead-set pairing the real game uses (beadSetThemes.ts) — read
+ * fresh each call, since applyPlayLookState already wrote the new choice
+ * to storage synchronously before this runs (see wirePlayLookPreviewSetting). */
 function updateHubBoardPreview(): void {
   const active = document.querySelector<HTMLButtonElement>(
     '#hub-play-theme-setting .play-theme-swatch.is-active',
@@ -200,6 +205,9 @@ function updateHubBoardPreview(): void {
   const grid = document.getElementById('hub-board-preview-grid');
   if (!active || !grid) return;
   grid.style.setProperty('--hub-board-preview-bg', getComputedStyle(active).backgroundImage);
+  const beadSet = getActiveBeadSet();
+  grid.style.setProperty('--hub-board-preview-bead-dark', beadSet.blackBead.mid);
+  grid.style.setProperty('--hub-board-preview-bead-light', beadSet.creamBead.mid);
 }
 
 function wireHubThemePicker(): void {
