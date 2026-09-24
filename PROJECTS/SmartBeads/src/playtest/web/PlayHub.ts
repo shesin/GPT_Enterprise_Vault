@@ -206,8 +206,12 @@ function updateHubBoardPreview(): void {
   if (!active || !grid) return;
   grid.style.setProperty('--hub-board-preview-bg', getComputedStyle(active).backgroundImage);
   const beadSet = getActiveBeadSet();
-  grid.style.setProperty('--hub-board-preview-bead-dark', beadSet.blackBead.mid);
-  grid.style.setProperty('--hub-board-preview-bead-light', beadSet.creamBead.mid);
+  grid.style.setProperty('--hub-board-preview-bead-dark-hl', beadSet.blackBead.highlight);
+  grid.style.setProperty('--hub-board-preview-bead-dark-mid', beadSet.blackBead.mid);
+  grid.style.setProperty('--hub-board-preview-bead-dark-shadow', beadSet.blackBead.shadow);
+  grid.style.setProperty('--hub-board-preview-bead-light-hl', beadSet.creamBead.highlight);
+  grid.style.setProperty('--hub-board-preview-bead-light-mid', beadSet.creamBead.mid);
+  grid.style.setProperty('--hub-board-preview-bead-light-shadow', beadSet.creamBead.shadow);
 }
 
 function wireHubThemePicker(): void {

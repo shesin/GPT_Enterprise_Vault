@@ -283,20 +283,36 @@ body.hub-page {
    human confirmed 2026-09-24: don't shrink it, only the look changes. */
 .hub-board-preview-grid {
   --hub-board-preview-bg: oklch(0.80 0.045 195);
-  --hub-board-preview-bead-dark: #241812;
-  --hub-board-preview-bead-light: #ebe2cf;
+  --hub-board-preview-bead-dark-hl: #4a4038;
+  --hub-board-preview-bead-dark-mid: #241812;
+  --hub-board-preview-bead-dark-shadow: #0d0906;
+  --hub-board-preview-bead-light-hl: #ffffff;
+  --hub-board-preview-bead-light-mid: #ebe2cf;
+  --hub-board-preview-bead-light-shadow: #d6c9a8;
   width: 100%;
   max-width: 160px;
   aspect-ratio: 1;
   border-radius: 8px;
   border: 1px solid var(--hub-border);
-  background-color: var(--hub-board-preview-bg);
+  /* --hub-board-preview-bg holds a linear-gradient() (an <image>, read
+     straight from the swatch button's own background-image), not a
+     <color> -- it must go through background-image, not background-color
+     (which silently drops invalid values, which is why the box was
+     rendering transparent). Layered as the bottom image so the X-cross
+     gradients above it still show. */
   background-image:
     linear-gradient(to bottom right, transparent calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% + 1px), transparent calc(50% + 1px)),
-    linear-gradient(to bottom left, transparent calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% + 1px), transparent calc(50% + 1px));
+    linear-gradient(to bottom left, transparent calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% + 1px), transparent calc(50% + 1px)),
+    var(--hub-board-preview-bg);
   position: relative;
 }
 
+/* Centred exactly ON each corner (like the resize-handle dot in the
+   human's own sketch), not inset with a gap -- top/left and bottom/right
+   are negative half the bead's own size so the bead's centre point lands
+   precisely on the box corner. Radial gradient (highlight/mid/shadow, lit
+   from the upper-left) mirrors CanvasBoardRenderer.ts's real bead
+   rendering, so this reads as the same bead used in the actual game. */
 .hub-board-preview-bead {
   position: absolute;
   width: 22px;
@@ -307,15 +323,15 @@ body.hub-page {
 }
 
 .hub-board-preview-bead--dark {
-  top: 8px;
-  left: 8px;
-  background: var(--hub-board-preview-bead-dark);
+  top: -11px;
+  left: -11px;
+  background: radial-gradient(circle at 30% 28%, var(--hub-board-preview-bead-dark-hl) 0%, var(--hub-board-preview-bead-dark-mid) 55%, var(--hub-board-preview-bead-dark-shadow) 100%);
 }
 
 .hub-board-preview-bead--light {
-  bottom: 8px;
-  right: 8px;
-  background: var(--hub-board-preview-bead-light);
+  bottom: -11px;
+  right: -11px;
+  background: radial-gradient(circle at 30% 28%, var(--hub-board-preview-bead-light-hl) 0%, var(--hub-board-preview-bead-light-mid) 55%, var(--hub-board-preview-bead-light-shadow) 100%);
 }
 
 .hub-board-preview-caption {
@@ -567,9 +583,11 @@ body.hub-page {
   line-height: 1.2;
 }
 
-/* Board tile order (locked spec, PENDING §2): row 1 smaller — 6·3x5, 6·4x5,
-   7-bead, 8-bead; row 2 — 10, 12, 16 "Classic". 4-col grid wraps 7 tiles into
-   4 + 3 automatically once visual order matches this split. */
+/* Board tile order (locked spec, PENDING §2, size-unified 2026-09-24 --
+   human request: row 1 and row 2 tiles are now the same size, the earlier
+   "row 1 smaller" sizing is gone): 6·3x5, 6·4x5, 7-bead, 8-bead; row 2 —
+   10, 12, 16 "Classic". 4-col grid wraps 7 tiles into 4 + 3 automatically
+   once visual order matches this split. */
 .hub-board-tile[data-board-id="6x3x5"] { order: 1; }
 .hub-board-tile[data-board-id="6x4"] { order: 2; }
 .hub-board-tile[data-board-id="7x4x5"] { order: 3; }
@@ -577,35 +595,6 @@ body.hub-page {
 .hub-board-tile[data-board-id="10x5"] { order: 5; }
 .hub-board-tile[data-board-id="12x6x5"] { order: 6; }
 .hub-board-tile[data-board-id="16"] { order: 7; }
-
-.hub-board-tile[data-board-id="6x3x5"],
-.hub-board-tile[data-board-id="6x4"],
-.hub-board-tile[data-board-id="7x4x5"],
-.hub-board-tile[data-board-id="8x4x6"] {
-  padding: 7px 4px;
-}
-
-.hub-board-tile[data-board-id="6x3x5"] .hub-board-tile-icon,
-.hub-board-tile[data-board-id="6x4"] .hub-board-tile-icon,
-.hub-board-tile[data-board-id="7x4x5"] .hub-board-tile-icon,
-.hub-board-tile[data-board-id="8x4x6"] .hub-board-tile-icon {
-  width: 28px;
-  height: 28px;
-}
-
-.hub-board-tile[data-board-id="6x3x5"] .hub-board-tile-label,
-.hub-board-tile[data-board-id="6x4"] .hub-board-tile-label,
-.hub-board-tile[data-board-id="7x4x5"] .hub-board-tile-label,
-.hub-board-tile[data-board-id="8x4x6"] .hub-board-tile-label {
-  font-size: 0.66rem;
-}
-
-.hub-board-tile[data-board-id="6x3x5"] .hub-board-tile-sub,
-.hub-board-tile[data-board-id="6x4"] .hub-board-tile-sub,
-.hub-board-tile[data-board-id="7x4x5"] .hub-board-tile-sub,
-.hub-board-tile[data-board-id="8x4x6"] .hub-board-tile-sub {
-  font-size: 0.58rem;
-}
 
 .hub-lesson-grid {
   display: flex;
