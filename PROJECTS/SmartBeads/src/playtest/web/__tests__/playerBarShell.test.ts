@@ -76,7 +76,7 @@ describe('production left play panel shell (index.html)', () => {
     expect(indexHtml).not.toContain('play-theme-swatches--side');
     expect(indexHtml).not.toContain('data-play-theme="7"');
     expect(indexHtml).toContain('id="hub-play-theme-setting"');
-    expect(indexHtml).toContain('Choose your look');
+    expect(indexHtml).toContain('Choose board look');
     expect(indexHtml).toContain('Warm Walnut');
     expect(indexHtml).not.toContain('Desert Clay');
     expect(indexHtml).not.toContain('Cream Ivory');

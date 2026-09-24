@@ -22,7 +22,7 @@ describe('two-page play flow (index.html)', () => {
     expect(indexHtml).not.toContain('data-play-theme="7"');
     expect(indexHtml).toContain('id="hub-play-theme-setting"');
     expect(indexHtml).toContain('id="hub-section-look"');
-    expect(indexHtml).toContain('Choose your look');
+    expect(indexHtml).toContain('Choose board look');
     expect(indexHtml).not.toContain('name="play-board-match"');
     expect(indexHtml).toContain('hub-brand-block');
     expect(indexHtml).toContain('hub-sidebar-link--active');

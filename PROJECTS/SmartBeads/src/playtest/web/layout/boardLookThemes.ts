@@ -1,4 +1,4 @@
-/** Board canvas — driven by the stored board look id (see COMPLETE_LOOK_IDS in playShellThemes.ts); side-only never changes board. */
+/** Board canvas — driven by the stored board look id (see COMPLETE_LOOK_IDS in playShellThemes.ts). */
 
 import { getActiveBeadSet } from './beadSetThemes';
 import {

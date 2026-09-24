@@ -52,9 +52,9 @@ describe('boardLookThemes', () => {
     expect(getBoardLookTheme('25').label).toBe('Celadon Jade Matched');
   });
 
-  it('active board look follows a light-canvas Matched board id when side is charcoal', () => {
-    mockPlayThemeDom('25', '7');
-    applyPlayLookState('25', '7');
+  it('active board look follows a light-canvas Matched board id', () => {
+    mockPlayThemeDom('25', '25');
+    applyPlayLookState('25', '25');
     const active = getActiveBoardLookTheme();
     const jadeMatched = LOVABLE_COMPLETE_BOARD_THEMES[7]!;
     expect(active.surfaceTop).toBe(jadeMatched.boardSurface);

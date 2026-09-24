@@ -44,7 +44,7 @@ describe('boardLineGoldThemes', () => {
   // from each board's own theme.lineColor instead of a hand-maintained table,
   // so this can't happen again — this test proves that derivation for every
   // board id, not just the two that broke.
-  it('every non-charcoal board look derives its own line colour from theme.lineColor (no silent gold fallback)', () => {
+  it('every board look derives its own line colour from theme.lineColor (no silent gold fallback)', () => {
     const boardIds = [...COMPLETE_LOOK_IDS];
     for (const id of boardIds) {
       mockStoredBoardLook(id);

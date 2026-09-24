@@ -60,7 +60,7 @@ SmartBeads/
 │   │   │   ├── layout/
 │   │   │   │   ├── lovableOklchTokens.ts # OKLCH tokens — 9 complete board looks (5 base + 4 light-canvas Matched), shell, 3 bead sets
 │   │   │   │   ├── beadSetThemes.ts      # bead set fully automatic per board (no picker); keyed off sb-play-board-look
-│   │   │   │   ├── playShellThemes.ts    # 2 look rows (dark-charcoal, dark-same); applyPlayLookFromRow; charcoal side (7)
+│   │   │   │   ├── playShellThemes.ts    # 2 look rows, both dark-same (every board matched to itself); applyPlayLookFromSwatch; no charcoal/side-only
 │   │   │   │   ├── boardLookThemes.ts    # canvas look from stored board id
 │   │   │   │   ├── moveHintAuraThemes.ts # Off · On (colour auto-resolved per board); localStorage
 │   │   │   │   ├── boardLineGoldThemes.ts
@@ -138,7 +138,7 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`PlayController.ts`** — left play panel (AI/human blocks, shot rings, match mm:ss), settings panel, timers, undo, honest AI, board `<select>`, start overlay (mode + START GAME), starter policy (human on Start; alternate on New game), result modal; canvas clicks through `FeatureSession.interpretClick`. **Coach mode:** watch-only ~**1:53** video (play/pause/scrub); ending cues WIN / RESIGN / DRAW; no board input.
 - **`PlayHub.ts`** — hub navigation; applies stored look via `applyPlayLookState` on bootstrap; **Coach** sidebar + top card launches teaching video on **7-bead · 4×5** (`?coach=1` picker, `?coach=start` auto-launch).
 - **`layout/lovableOklchTokens.ts`** — Lovable OKLCH source of truth (9 complete board looks — 5 base + 4 light-canvas Matched — shell chrome, 3 bead sets).
-- **`layout/playShellThemes.ts`** — two Look preview rows (**Light theme**: 4 Matched boards · **Dark theme**: 5 base boards); hub `#hub-play-theme-setting` + board `#play-theme-setting`; `wirePlayLookPreviewSetting`; storage-backed reads; `syncPlayLookFromStorageIfDrifted`; charcoal side (`7`).
+- **`layout/playShellThemes.ts`** — two Look preview rows (**Light theme**: 4 Matched boards · **Dark theme**: 5 base boards), every board matched to its own colour on both board and side panel; hub `#hub-play-theme-setting` + board `#play-theme-setting`; `wirePlayLookPreviewSetting`; storage-backed reads (side always mirrors board); `syncPlayLookFromStorageIfDrifted`. No charcoal/side-only option (removed entirely 2026-09-24).
 - **`layout/beadSetThemes.ts`** — bead set fully automatic per board (`DEFAULT_BEAD_SET_BY_BOARD`, no manual picker), keyed off `sb-play-board-look`.
 - **`layout/moveHintAuraThemes.ts`** — move hint aura toggle (`off` | `on`); colour (`gold-fill` | `black-gold-fill`) auto-resolved per board; localStorage `sb-move-hint-aura`.
 - **`feature/CoachVideoScript.ts`** — Video 1 on **7-bead** (~**1:53**): basics + **WIN** / **RESIGN** / **DRAW** appendix; amber/lime highlights; scripted cues and TTS speeches.

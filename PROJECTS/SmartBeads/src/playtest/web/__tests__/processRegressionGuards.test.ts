@@ -158,10 +158,14 @@ describe('process regression guards', () => {
     });
   });
 
-  describe('board canvas — fixed cream half tint', () => {
-    it('uses drawCreamHalfTint every frame, not turn-based drawTurnWash', () => {
-      expect(canvasRendererSource).toMatch(/function drawCreamHalfTint/);
-      expect(canvasRendererSource).toMatch(/drawCreamHalfTint\(ctx, w, h,/);
+  describe('board canvas — no turn-based wash', () => {
+    // drawCreamHalfTint() itself was removed 2026-09-24 as dead code: its
+    // colour stops were already FLAT_CREAM_STOPS (fully transparent) for
+    // every board, and its one call site was the now-deleted side-only/
+    // charcoal branch -- it never painted anything, on any board, even
+    // before charcoal was removed. This guard still protects against the
+    // real older regression: a turn-based drawTurnWash reappearing.
+    it('does not reintroduce turn-based drawTurnWash', () => {
       expect(canvasRendererSource).not.toMatch(/function drawTurnWash/);
       expect(canvasRendererSource).not.toMatch(/rgba\(40,90,160/);
     });
@@ -207,7 +211,7 @@ describe('process regression guards', () => {
 
   describe('play theme — one look row (dark/matched, incl. light-canvas Matched boards), hub-only on page 2', () => {
     it('swatch UI, storage split, unified complete colours', () => {
-      expect(playShellThemesSource).toMatch(/function applyPlayLookFromRow/);
+      expect(playShellThemesSource).toMatch(/function applyPlayLookFromSwatch/);
       expect(playShellThemesSource).toMatch(/function applyPlayLookState/);
       expect(playHubSource).toMatch(/applyPlayLookState/);
       expect(playHubSource).toMatch(/wirePlayLookPreviewSetting/);
@@ -215,7 +219,7 @@ describe('process regression guards', () => {
       expect(playShellThemesSource).toMatch(/function wirePlayLookPreviewSetting/);
       expect(playShellThemesSource).toMatch(/data-play-look-setting/);
       expect(indexHtml).toContain('id="hub-play-theme-setting"');
-      expect(indexHtml).toContain('Choose your look');
+      expect(indexHtml).toContain('Choose board look');
       expect(playControllerSource).toMatch(/syncPlayLookFromStorageIfDrifted/);
       expect(playShellThemesSource).toMatch(/function syncPlayLookFromStorageIfDrifted/);
       expect(playControllerSource).toMatch(/function isLookPreviewLocked/);
@@ -225,12 +229,16 @@ describe('process regression guards', () => {
       // Look preview lives on the hub only (2026-09-19) — page 2 dropped it as
       // redundant clutter (locked, and selection already happened on the hub).
       expect(indexHtml).not.toContain('id="play-theme-setting"');
-      // Charcoal-side "Dark theme" row removed (2026-09-20) — the matched-side
-      // row (same boards, matched-colour sides) took over the "Dark theme"
-      // label since it's now the only dark-board option; charcoal side panel
-      // was judged unnecessary alongside it. Split into "Light theme" (the 4
-      // light-canvas Matched boards) and "Dark theme" (the 5 base complete
-      // boards) rows (2026-09-21) — both still use the same
+      // Charcoal-side "Dark theme" row's swatch UI was removed 2026-09-20 —
+      // the matched-side row (same boards, matched-colour sides) took over
+      // the "Dark theme" label since it's now the only dark-board option.
+      // The underlying '7'/charcoal storage id and theme machinery lingered
+      // in playShellThemes.ts until 2026-09-24, when it was deleted
+      // entirely (human request, after STATUS/DECISIONS docs were found to
+      // still describe charcoal as current -- they were simply never
+      // updated after the 2026-09-20 UI removal). Split into "Light theme"
+      // (the 4 light-canvas Matched boards) and "Dark theme" (the 5 base
+      // complete boards) rows (2026-09-21) — both still use the same
       // play-theme-swatches--dark-same class (matched behaviour), the split
       // is presentational only so each row's own bead/aura defaults are clear.
       expect(indexHtml).not.toContain('play-theme-swatches--dark-charcoal');

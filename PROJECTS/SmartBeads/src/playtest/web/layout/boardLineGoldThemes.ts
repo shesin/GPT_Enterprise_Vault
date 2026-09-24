@@ -46,13 +46,13 @@ function withAlpha(oklch: string, alphaPercent: number): string {
 /**
  * Grid line colour for the currently active board look, derived from that
  * board's own `lineColor` (its oklch `lines` token — the same one used for
- * the CSS board-frame border). CLASSIC_LINE_THEME (gold) is only a fallback
- * for the '7' charcoal side-only id, which has no board of its own.
+ * the CSS board-frame border). CLASSIC_LINE_THEME (gold) is only a defensive
+ * fallback if a theme is somehow missing.
  */
 export function getActiveBoardLineTheme(): BoardLineTheme {
   const id = readBoardLookThemeId();
   const theme = getPlayShellTheme(id);
-  if (!theme || theme.lookGroup === 'side-only') return CLASSIC_LINE_THEME;
+  if (!theme) return CLASSIC_LINE_THEME;
   return {
     lineRgba: withAlpha(theme.lineColor, 85),
     nodeRgba: withAlpha(theme.lineColor, 55),

@@ -1,4 +1,10 @@
-/** Play look — 9 complete boards (5 base + 4 light-canvas "Matched") + side shell (7). Lovable OKLCH. */
+/** Play look — 9 complete boards (5 base + 4 light-canvas "Matched"). Every
+ * board pairs with its own colour on both board and side panel — there is
+ * no separate "side" look any more (the charcoal side-only option and its
+ * '7' id were removed entirely 2026-09-24, human request: the docs and
+ * code previously disagreed about whether charcoal was still current, and
+ * in practice it was unreachable through the UI anyway — see the git
+ * history around this date for the full story). Lovable OKLCH. */
 
 import { BEAD_SET_THEMES } from './beadSetThemes';
 import {
@@ -9,30 +15,13 @@ import {
 
 export type CompleteLookId = '1' | '2' | '3' | '6' | '14' | '23' | '24' | '25' | '26';
 export type BoardLookThemeId = CompleteLookId;
-export type PlayShellThemeId = BoardLookThemeId | '7';
-export type PlayLookGroup = 'complete' | 'side-only';
-export type PlayBoardMatchMode = 'matched' | 'side-only';
-
-/** Which Look preview row was clicked (same swatch id can mean different pairings). */
-export type PlayLookRow = 'dark-charcoal' | 'dark-same';
-
-/** Complete boards that also appear in the "Matched" (same-colour-sides) row
- * (2026-09-19) — all complete boards, kept as its own type in case a future
- * board is complete-only and not matched-eligible. */
-export type MatchedSideLookId = CompleteLookId;
+/** Kept as a separate name (not just an alias inline) since many call sites
+ * already reference it -- but it is now always exactly BoardLookThemeId,
+ * there is no longer a distinct side-only value it could hold. */
+export type PlayShellThemeId = BoardLookThemeId;
+export type PlayLookGroup = 'complete';
 
 export const COMPLETE_LOOK_IDS: readonly CompleteLookId[] = [
-  '1',
-  '2',
-  '3',
-  '6',
-  '14',
-  '23',
-  '24',
-  '25',
-  '26',
-];
-export const MATCHED_SIDE_LOOK_IDS: readonly MatchedSideLookId[] = [
   '1',
   '2',
   '3',
@@ -135,20 +124,6 @@ const FLAT_CREAM_STOPS: readonly CreamHalfStop[] = [
 // board-dependent bead set via getActiveBeadSet() (see boardLookThemes.ts).
 const DEFAULT_BEADS = BEAD_SET_THEMES['white-black'];
 
-const CHARCOAL_SIDE = {
-  label: 'Charcoal + gold accents',
-  bodyBackground: 'oklch(0.11 0.01 60)',
-  sideCardBackground: 'linear-gradient(165deg, oklch(0.16 0.012 60), oklch(0.11 0.01 60))',
-  sideCardBorder: LOVABLE_SHELL.border,
-  sideCardGlow: `inset 0 1px 0 ${LOVABLE_SHELL.gold}28`,
-  playAiBg: 'oklch(0.13 0.012 60)',
-  playAiBorder: LOVABLE_SHELL.border,
-  playHumanBg: `${LOVABLE_SHELL.gold}18`,
-  playHumanBorder: `${LOVABLE_SHELL.gold}52`,
-  playHumanAccent: LOVABLE_SHELL.gold,
-  railBg: 'oklch(0.13 0.012 60)',
-} as const;
-
 function buildBoardThemeFromTokens(
   id: PlayShellThemeId,
   t: LovableBoardTokens,
@@ -188,43 +163,14 @@ function buildCompleteTheme(id: CompleteLookId): PlayShellTheme {
   );
 }
 
-function buildCharcoalSideTheme(): PlayShellTheme {
-  return {
-    id: '7',
-    label: CHARCOAL_SIDE.label,
-    lookGroup: 'side-only',
-    surfaceTop: LOVABLE_COMPLETE_BOARD_THEMES[0]!.surface,
-    surfaceBottom: LOVABLE_COMPLETE_BOARD_THEMES[0]!.shadow,
-    frameOuter: LOVABLE_COMPLETE_BOARD_THEMES[0]!.surface,
-    frameInner: LOVABLE_COMPLETE_BOARD_THEMES[0]!.shadow,
-    lineColor: LOVABLE_SHELL.gold,
-    edgeGlowRgba: 'rgba(0,0,0,0)',
-    creamHorizontalStops: FLAT_CREAM_STOPS,
-    creamVerticalStops: FLAT_CREAM_STOPS,
-    bodyBackground: CHARCOAL_SIDE.bodyBackground,
-    sideCardBackground: CHARCOAL_SIDE.sideCardBackground,
-    sideCardBorder: CHARCOAL_SIDE.sideCardBorder,
-    sideCardGlow: CHARCOAL_SIDE.sideCardGlow,
-    playAiBg: CHARCOAL_SIDE.playAiBg,
-    playAiBorder: CHARCOAL_SIDE.playAiBorder,
-    playHumanBg: CHARCOAL_SIDE.playHumanBg,
-    playHumanBorder: CHARCOAL_SIDE.playHumanBorder,
-    playHumanAccent: CHARCOAL_SIDE.playHumanAccent,
-    creamBead: DEFAULT_BEADS.creamBead,
-    blackBead: DEFAULT_BEADS.blackBead,
-  };
-}
-
 // Celadon Jade Matched (2026-09-24, human request) -- was Classic Green ('1').
 export const DEFAULT_BOARD_LOOK_ID: BoardLookThemeId = '25';
-export const DEFAULT_SIDE_LOOK_ID: PlayShellThemeId = '1';
 
 export const PLAY_SHELL_THEMES: Record<PlayShellThemeId, PlayShellTheme> = {
   '1': buildCompleteTheme('1'),
   '2': buildCompleteTheme('2'),
   '3': buildCompleteTheme('3'),
   '6': buildCompleteTheme('6'),
-  '7': buildCharcoalSideTheme(),
   '14': buildCompleteTheme('14'),
   '23': buildCompleteTheme('23'),
   '24': buildCompleteTheme('24'),
@@ -267,9 +213,8 @@ function buildHubCentrePalette(id: BoardLookThemeId): HubCentrePalette {
 
 function buildHubRailPalette(id: PlayShellThemeId): HubRailPalette {
   const theme = PLAY_SHELL_THEMES[id];
-  const railBg = id === '7' ? CHARCOAL_SIDE.railBg : theme.bodyBackground;
   return {
-    railBg,
+    railBg: theme.bodyBackground,
     text: LOVABLE_SHELL.text,
     muted: LOVABLE_SHELL.muted,
     border: LOVABLE_SHELL.border,
@@ -286,7 +231,6 @@ export const HUB_RAIL_PALETTES: Record<PlayShellThemeId, HubRailPalette> = {
   '2': buildHubRailPalette('2'),
   '3': buildHubRailPalette('3'),
   '6': buildHubRailPalette('6'),
-  '7': buildHubRailPalette('7'),
   '14': buildHubRailPalette('14'),
   '23': buildHubRailPalette('23'),
   '24': buildHubRailPalette('24'),
@@ -325,32 +269,16 @@ export function isCompleteLookId(value: string | null | undefined): value is Com
   );
 }
 
-export function isMatchedSideLookId(value: string | null | undefined): value is MatchedSideLookId {
-  return isCompleteLookId(value);
-}
-
 export function isBoardLookThemeId(value: string | null | undefined): value is BoardLookThemeId {
   return isCompleteLookId(value);
 }
 
-export function isSideOnlyLookId(value: string | null | undefined): value is '7' {
-  return value === '7';
-}
-
 export function isPlayShellThemeId(value: string | null | undefined): value is PlayShellThemeId {
-  return isBoardLookThemeId(value) || value === '7';
+  return isBoardLookThemeId(value);
 }
 
 export function isLookSwatchId(value: string | null | undefined): value is PlayShellThemeId {
-  return isCompleteLookId(value) || value === '7';
-}
-
-export function readPlayBoardMatchMode(): PlayBoardMatchMode {
-  return resolveHubBoardMatchForSideLook(readSideLookThemeId());
-}
-
-export function resolveHubBoardMatchForSideLook(sideLookId: PlayShellThemeId): PlayBoardMatchMode {
-  return isSideOnlyLookId(sideLookId) ? 'side-only' : 'matched';
+  return isCompleteLookId(value);
 }
 
 export function resolveHubCentrePalette(
@@ -399,19 +327,9 @@ export function resolveBoardCanvasLook(boardLookId: BoardLookThemeId): BoardCanv
 }
 
 export function resolvePlayShellPresentation(
-  sideLookId: PlayShellThemeId,
   boardLookId: BoardLookThemeId,
 ): Pick<PlayShellTheme, 'bodyBackground'> {
-  if (isSideOnlyLookId(sideLookId)) {
-    return { bodyBackground: PLAY_SHELL_THEMES['7'].bodyBackground };
-  }
   return { bodyBackground: PLAY_SHELL_THEMES[boardLookId].bodyBackground };
-}
-
-export function resolvePlayLookRowFromButton(btn: HTMLElement): PlayLookRow | null {
-  if (btn.closest('.play-theme-swatches--dark-charcoal')) return 'dark-charcoal';
-  if (btn.closest('.play-theme-swatches--dark-same')) return 'dark-same';
-  return null;
 }
 
 export function syncThemeSwatchActive(
@@ -427,17 +345,7 @@ export function syncThemeSwatchActive(
   for (const root of roots) {
     for (const swatch of root.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
       const id = swatch.dataset.playTheme;
-      const inDarkCharcoal = swatch.closest('.play-theme-swatches--dark-charcoal') !== null;
-      const inDarkSame = swatch.closest('.play-theme-swatches--dark-same') !== null;
-      const active =
-        (inDarkCharcoal &&
-          id === boardLookId &&
-          sideLookId === '7' &&
-          isCompleteLookId(boardLookId)) ||
-        (inDarkSame &&
-          id === boardLookId &&
-          sideLookId === boardLookId &&
-          isMatchedSideLookId(boardLookId));
+      const active = id === boardLookId && sideLookId === boardLookId && isCompleteLookId(boardLookId);
       swatch.classList.toggle('is-active', Boolean(active));
       // Swatches sit in role="radiogroup" containers as role="radio" buttons —
       // selection was CSS-only (.is-active), invisible to assistive tech
@@ -452,7 +360,9 @@ export type PlayLookPreviewWireOptions = {
   onApplied?: () => void;
 };
 
-/** Wire row-aware swatch clicks on hub (page 1) or board settings (page 2). */
+/** Wire swatch clicks on hub (page 1) or board settings (page 2) -- every
+ * swatch pairs board+side with itself, so there's no longer a "which row"
+ * distinction to resolve. */
 export function wirePlayLookPreviewSetting(
   root: HTMLElement | null,
   options: PlayLookPreviewWireOptions = {},
@@ -462,12 +372,6 @@ export function wirePlayLookPreviewSetting(
     btn.addEventListener('click', () => {
       if (options.isLocked?.()) return;
       const next = btn.dataset.playTheme;
-      const row = resolvePlayLookRowFromButton(btn);
-      if (row && next) {
-        applyPlayLookFromRow(next, row);
-        options.onApplied?.();
-        return;
-      }
       if (isLookSwatchId(next)) {
         applyPlayLookFromSwatch(next);
         options.onApplied?.();
@@ -483,7 +387,7 @@ function applyShellThemeVars(
 ): void {
   const sideTheme = getPlayShellTheme(sideLookId);
   const boardTheme = getPlayShellTheme(boardLookId);
-  const presentation = resolvePlayShellPresentation(sideLookId, boardLookId);
+  const presentation = resolvePlayShellPresentation(boardLookId);
   target.style.setProperty('--bg', presentation.bodyBackground);
   target.style.setProperty('--text', LOVABLE_SHELL.text);
   target.style.setProperty('--muted', LOVABLE_SHELL.muted);
@@ -497,14 +401,8 @@ function applyShellThemeVars(
   target.style.setProperty('--play-human-bg', sideTheme.playHumanBg);
   target.style.setProperty('--play-human-border', sideTheme.playHumanBorder);
   target.style.setProperty('--play-human-accent', sideTheme.playHumanAccent);
-  target.style.setProperty(
-    '--panel',
-    isSideOnlyLookId(sideLookId) ? sideTheme.playAiBg : boardTheme.bodyBackground,
-  );
-  target.style.setProperty(
-    '--panel-2',
-    isSideOnlyLookId(sideLookId) ? sideTheme.playAiBg : boardTheme.playAiBg,
-  );
+  target.style.setProperty('--panel', boardTheme.bodyBackground);
+  target.style.setProperty('--panel-2', boardTheme.playAiBg);
   target.style.setProperty('--board-frame-bg', boardTheme.surfaceBottom);
   target.style.setProperty('--board-frame-border', boardTheme.lineColor);
 }
@@ -513,45 +411,25 @@ export function coalesceStoredLookState(): {
   boardLookId: BoardLookThemeId;
   sideLookId: PlayShellThemeId;
 } {
+  // Every board pairs with itself -- there is no longer a distinct side
+  // value to read from storage, so side always mirrors board.
   const boardLookId = readStoredBoardLookIdRaw();
-
-  if (isMatchedSideLookId(boardLookId)) {
-    let sideStored: string | null = null;
-    try {
-      sideStored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
-    } catch {
-      /* storage unavailable */
-    }
-    // Only honour Matched when the stored side actually says so, OR when
-    // nothing has ever been stored at all (a genuinely fresh visitor hitting
-    // DEFAULT_BOARD_LOOK_ID, which is itself a Matched id as of 2026-09-24 --
-    // this must resolve to true Matched, not board=Jade/side=charcoal). A
-    // stray/stale side key that explicitly disagrees still falls to charcoal.
-    return { boardLookId, sideLookId: (sideStored === boardLookId || sideStored === null) ? boardLookId : '7' };
-  }
-  if (isCompleteLookId(boardLookId)) {
-    return { boardLookId, sideLookId: '7' };
-  }
-  return { boardLookId: DEFAULT_BOARD_LOOK_ID, sideLookId: DEFAULT_SIDE_LOOK_ID };
+  return { boardLookId, sideLookId: boardLookId };
 }
 
 export function applyPlayLookState(
   boardLookId: BoardLookThemeId,
-  sideLookId: PlayShellThemeId,
+  _sideLookId?: PlayShellThemeId,
 ): void {
   if (typeof document === 'undefined') return;
 
+  // Side always mirrors board now (charcoal/side-only removed entirely,
+  // 2026-09-24) -- the second parameter is accepted only so existing call
+  // sites (which all already pass readStoredSideLookId(), itself now just
+  // board) don't need updating, but its value is never used.
   const board = boardLookId;
-  let side = sideLookId;
-  // Matched (same-colour-sides) is only allowed for the 3 eligible boards, and
-  // only when the caller actually asked for board === side — everything else
-  // (including those 3 boards paired with any other side) still forces charcoal.
-  const isMatchedSelection = isMatchedSideLookId(board) && side === board;
-  if (!isMatchedSelection && isCompleteLookId(board)) {
-    side = '7';
-  }
+  const side = board;
 
-  const boardMatch = resolveHubBoardMatchForSideLook(side);
   const hub = document.getElementById('play-hub');
   const shell = document.getElementById('play-shell');
 
@@ -559,21 +437,20 @@ export function applyPlayLookState(
     el?.setAttribute('data-play-board-look', board);
     el?.setAttribute('data-play-side-look', side);
     el?.setAttribute('data-play-theme', side);
-    el?.setAttribute('data-play-board-match', boardMatch);
+    el?.setAttribute('data-play-board-match', 'matched');
   }
 
   syncThemeSwatchActive(board, side);
   if (hub) applyHubThemeCssVars(hub, side, board);
   if (shell) applyShellThemeVars(shell, side, board);
   applyShellThemeVars(document.body, side, board);
-  document.body.style.background = resolvePlayShellPresentation(side, board).bodyBackground;
+  document.body.style.background = resolvePlayShellPresentation(board).bodyBackground;
 
   try {
     localStorage.setItem(PLAY_BOARD_LOOK_STORAGE_KEY, board);
     localStorage.setItem(PLAY_SIDE_LOOK_STORAGE_KEY, side);
-    // When side is charcoal-only, keep board id in v2 so board can be recovered if primary key is lost
-    localStorage.setItem(PLAY_THEME_STORAGE_KEY, side === '7' ? board : side);
-    localStorage.setItem('sb-play-board-match', boardMatch);
+    localStorage.setItem(PLAY_THEME_STORAGE_KEY, side);
+    localStorage.setItem('sb-play-board-match', 'matched');
   } catch {
     /* storage unavailable */
   }
@@ -583,7 +460,11 @@ export function migrateLegacyPlayThemeId(
   value: string | null | undefined,
 ): PlayShellThemeId | null {
   if (!value) return null;
-  if (value === '5' || value === '6') return '7';
+  // '5'/'6' as legacy-key values were an old numbering scheme predating the
+  // current ids (not to be confused with '6' as a current CompleteLookId,
+  // Purple Night) -- previously migrated to charcoal ('7'), now unrecognized
+  // since charcoal no longer exists; caller falls back to the default.
+  if (value === '5') return null;
   if (isPlayShellThemeId(value)) return value;
   return null;
 }
@@ -597,29 +478,16 @@ function readStoredBoardLookIdRaw(): BoardLookThemeId {
     if (stored && REMOVED_LIGHT_BOARD_LOOK_IDS.has(stored)) return DEFAULT_BOARD_LOOK_ID;
     if (stored && REMOVED_COMPLETE_LOOK_IDS.has(stored)) return DEFAULT_BOARD_LOOK_ID;
     if (isBoardLookThemeId(stored)) return stored;
-    const sideStored = localStorage.getItem(PLAY_SIDE_LOOK_STORAGE_KEY);
     const v2 = localStorage.getItem(PLAY_THEME_STORAGE_KEY);
-    // v2 stores board id when side is charcoal-only (7) — recover board if primary key lost
-    // isBoardLookThemeId already excludes '7' (a side-only id), so no extra check needed.
-    if (sideStored === '7' && isBoardLookThemeId(v2)) return v2;
-    if (isCompleteLookId(v2) && (sideStored === v2 || sideStored === null)) return v2;
-    if (v2 === '7') return DEFAULT_BOARD_LOOK_ID;
-    if (v2 === '5' || v2 === '6') return DEFAULT_BOARD_LOOK_ID;
+    if (isBoardLookThemeId(v2)) return v2;
     const legacy = localStorage.getItem(LEGACY_PLAY_THEME_STORAGE_KEY);
     const migrated = migrateLegacyPlayThemeId(legacy);
     if (isBoardLookThemeId(migrated)) return migrated;
-    if (migrated === '7') return DEFAULT_BOARD_LOOK_ID;
   } catch {
     /* storage unavailable */
   }
   return DEFAULT_BOARD_LOOK_ID;
 }
-
-// readStoredSideLookIdRaw() and migrateLegacySideLookId() were removed 2026-09-14 —
-// coalesceStoredLookState() never consumed their result (every return path hardcoded
-// the side look), so this whole legacy-side-migration path was dead and untested.
-// The board theme is the only thing actually read from storage here; side look is
-// always forced by the current design (DECISIONS: single charcoal side, id '7').
 
 export function readStoredBoardLookId(): BoardLookThemeId {
   return coalesceStoredLookState().boardLookId;
@@ -657,40 +525,20 @@ export function getPlayShellTheme(id: PlayShellThemeId): PlayShellTheme {
   return PLAY_SHELL_THEMES[id];
 }
 
-export function applyPlayLookFromRow(
-  swatchId: string,
-  row: PlayLookRow,
-): {
-  boardLookId: BoardLookThemeId;
-  sideLookId: PlayShellThemeId;
-  boardChanged: boolean;
-} {
-  const priorBoard = readStoredBoardLookId();
-  if (row === 'dark-same' && isMatchedSideLookId(swatchId)) {
-    applyPlayLookState(swatchId, swatchId);
-    return { boardLookId: swatchId, sideLookId: swatchId, boardChanged: priorBoard !== swatchId };
-  }
-  if (row === 'dark-charcoal' && isCompleteLookId(swatchId)) {
-    applyPlayLookState(swatchId, '7');
-    return { boardLookId: swatchId, sideLookId: '7', boardChanged: priorBoard !== swatchId };
-  }
-  return { boardLookId: priorBoard, sideLookId: readStoredSideLookId(), boardChanged: false };
-}
-
-/** @deprecated Use applyPlayLookFromRow(swatchId, row). */
+/** Applies a clicked swatch -- every board pairs with itself, there's no
+ * other pairing left to choose between. */
 export function applyPlayLookFromSwatch(swatchId: PlayShellThemeId): {
   boardLookId: BoardLookThemeId;
   sideLookId: PlayShellThemeId;
   boardChanged: boolean;
 } {
-  if (isCompleteLookId(swatchId)) return applyPlayLookFromRow(swatchId, 'dark-charcoal');
-  if (isSideOnlyLookId(swatchId)) {
-    const boardLookId = readStoredBoardLookId();
-    applyPlayLookState(boardLookId, '7');
-    return { boardLookId, sideLookId: '7', boardChanged: false };
+  const priorBoard = readStoredBoardLookId();
+  if (isCompleteLookId(swatchId)) {
+    applyPlayLookState(swatchId, swatchId);
+    return { boardLookId: swatchId, sideLookId: swatchId, boardChanged: priorBoard !== swatchId };
   }
   return {
-    boardLookId: readStoredBoardLookId(),
+    boardLookId: priorBoard,
     sideLookId: readStoredSideLookId(),
     boardChanged: false,
   };

@@ -2,7 +2,6 @@ import { BoardDefinition, Player } from '../../../models/GameState';
 import { getActiveBeadSet } from '../layout/beadSetThemes';
 import { getActiveBoardLookTheme } from '../layout/boardLookThemes';
 import { getActiveBoardLineTheme } from '../layout/boardLineGoldThemes';
-import { readPlayBoardMatchMode } from '../layout/playShellThemes';
 import { LOVABLE_RING_BLACK_GOLD, LOVABLE_RING_GOLD } from '../layout/signalGoldTheme';
 import { type MoveHintAuraStyle, readMoveHintAuraStyle } from '../layout/moveHintAuraThemes';
 import { getBoardVisualProfile } from '../layout/boardVisualProfile';
@@ -206,28 +205,6 @@ function drawBoardFrame(
   ctx.restore();
 }
 
-/** Fixed cream-camp half tint — does not swap with currentPlayer (cream side only). */
-function drawCreamHalfTint(
-  ctx: CanvasRenderingContext2D,
-  w: number,
-  h: number,
-  axis: 'horizontal' | 'vertical',
-): void {
-  const look = getActiveBoardLookTheme();
-  const stops = axis === 'vertical' ? look.creamVerticalStops : look.creamHorizontalStops;
-  const wash =
-    axis === 'vertical'
-      ? ctx.createLinearGradient(0, 0, 0, h)
-      : ctx.createLinearGradient(0, 0, w, 0);
-
-  for (const [position, color] of stops) {
-    wash.addColorStop(position, color);
-  }
-
-  ctx.fillStyle = wash;
-  ctx.fillRect(0, 0, w, h);
-}
-
 function drawPieceAt(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -350,7 +327,6 @@ export function drawCanvasBoard(canvas: HTMLCanvasElement, view: CanvasBoardView
   const moveHintAura = view.moveHintAura ?? readMoveHintAuraStyle();
   const beadSet = getActiveBeadSet();
   const legalTargetSet = new Set(legalTargets);
-  const visualProfile = getBoardVisualProfile(board.name);
   const centerHighlight = resolveCenterHighlight(board);
   const project = (node: { x?: number; y?: number; id: number }) =>
     projectIntersectionOnCanvas(
@@ -369,19 +345,14 @@ export function drawCanvasBoard(canvas: HTMLCanvasElement, view: CanvasBoardView
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   const look = getActiveBoardLookTheme();
-  const boardMatch = readPlayBoardMatchMode();
-  const g =
-    boardMatch === 'matched'
-      ? ctx.createLinearGradient(0, 0, 0, h)
-      : ctx.createLinearGradient(0, 0, w, h);
+  // Every board now pairs with itself (charcoal/side-only removed
+  // 2026-09-24), so this is always the vertical (matched) gradient.
+  const g = ctx.createLinearGradient(0, 0, 0, h);
   g.addColorStop(0, look.surfaceTop);
   g.addColorStop(1, look.surfaceBottom);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 
-  if (boardMatch === 'side-only') {
-    drawCreamHalfTint(ctx, w, h, visualProfile.turnWashAxis ?? 'horizontal');
-  }
   drawBoardFrame(ctx, w, h, look.frameOuter, look.frameInner);
 
   const animating = anim !== null && anim.t < 1;
