@@ -58,18 +58,19 @@ function populateHubBoardSelect(select: HTMLSelectElement, boardId: ProductBoard
 }
 
 /** Boards ranked 1-4 (tied) for D2 fairness/resolve-rate in the 2026-09-23
- * lab-fairness review (PENDING §5) -- get a "recommended" star on the hub
- * picker. The other two boards (10x5, 16) get no badge at all: not flagged
+ * lab-fairness review (PENDING §5) -- get a "recommended" star count on the
+ * hub picker (human-picked tiers, 2026-09-24, not a strict 1:1 of the lab
+ * rank). The other two boards (10x5, 16) get no badge at all: not flagged
  * as worse, just not called out, so the flagship 16-bead board isn't
  * publicly marked "worst" on its own picker (that number stays internal
  * per the human's earlier decision not to gate/flag it pre-launch). */
-const HUB_BOARD_RECOMMENDED_IDS: ReadonlySet<ProductBoardId> = new Set([
-  '6x4',
-  '6x3x5',
-  '7x4x5',
-  '12x6x5',
-  '8x4x6',
-] as ProductBoardId[]);
+const HUB_BOARD_STAR_COUNT: ReadonlyMap<ProductBoardId, number> = new Map([
+  ['6x4', 3],
+  ['7x4x5', 2],
+  ['6x3x5', 2],
+  ['12x6x5', 1],
+  ['8x4x6', 1],
+] as [ProductBoardId, number][]);
 
 function populateHubBoardGrid(
   grid: HTMLElement,
@@ -96,11 +97,12 @@ function populateHubBoardGrid(
     const sub = document.createElement('span');
     sub.className = 'hub-board-tile-sub';
     sub.textContent = secondary;
-    if (HUB_BOARD_RECOMMENDED_IDS.has(entry.id)) {
+    const starCount = HUB_BOARD_STAR_COUNT.get(entry.id);
+    if (starCount) {
       const badge = document.createElement('span');
       badge.className = 'hub-board-tile-badge';
       badge.setAttribute('aria-hidden', 'true');
-      badge.textContent = '★';
+      badge.textContent = '★'.repeat(starCount);
       btn.append(badge);
     }
     btn.append(icon, label, sub);

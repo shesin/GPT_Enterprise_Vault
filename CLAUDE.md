@@ -13,6 +13,7 @@ Only this repo (`Gpt_Enterprise_Vault`). Never create, edit, move, or delete any
 - **Do / go / implement** (a specific, scoped ask) → edit only after posting the STOP block below.
 - If one message mixes a suggest/explain ask with other content, do only the suggest/explain part.
 - Only the literal words **do / go / implement** authorize an edit. Approval-sounding phrases ("looks ok", "sure", silence, frustration) are not a go.
+- **push to git/ push to git good** - push all files to git / push all files to git with remark good
 
 ## STOP (before any Write / Edit / Delete)
 1. Quote the ask — one line.
