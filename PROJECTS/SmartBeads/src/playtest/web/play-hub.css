@@ -299,10 +299,12 @@ body.hub-page {
      <color> -- it must go through background-image, not background-color
      (which silently drops invalid values, which is why the box was
      rendering transparent). Layered as the bottom image so the X-cross
-     gradients above it still show. */
+     gradients above it still show. X lines are the hub's own gold accent
+     (--hub-accent), matching the real board's gold lattice lines instead
+     of plain black. */
   background-image:
-    linear-gradient(to bottom right, transparent calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% + 1px), transparent calc(50% + 1px)),
-    linear-gradient(to bottom left, transparent calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% - 1px), rgba(0, 0, 0, 0.3) calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(to bottom right, transparent calc(50% - 1px), var(--hub-accent) calc(50% - 1px), var(--hub-accent) calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(to bottom left, transparent calc(50% - 1px), var(--hub-accent) calc(50% - 1px), var(--hub-accent) calc(50% + 1px), transparent calc(50% + 1px)),
     var(--hub-board-preview-bg);
   position: relative;
 }
@@ -325,13 +327,17 @@ body.hub-page {
 .hub-board-preview-bead--dark {
   top: -11px;
   left: -11px;
-  background: radial-gradient(circle at 30% 28%, var(--hub-board-preview-bead-dark-hl) 0%, var(--hub-board-preview-bead-dark-mid) 55%, var(--hub-board-preview-bead-dark-shadow) 100%);
+  background-image:
+    radial-gradient(circle at 25% 22%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 38%),
+    radial-gradient(circle at 30% 28%, var(--hub-board-preview-bead-dark-hl) 0%, var(--hub-board-preview-bead-dark-mid) 55%, var(--hub-board-preview-bead-dark-shadow) 100%);
 }
 
 .hub-board-preview-bead--light {
   bottom: -11px;
   right: -11px;
-  background: radial-gradient(circle at 30% 28%, var(--hub-board-preview-bead-light-hl) 0%, var(--hub-board-preview-bead-light-mid) 55%, var(--hub-board-preview-bead-light-shadow) 100%);
+  background-image:
+    radial-gradient(circle at 25% 22%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 38%),
+    radial-gradient(circle at 30% 28%, var(--hub-board-preview-bead-light-hl) 0%, var(--hub-board-preview-bead-light-mid) 55%, var(--hub-board-preview-bead-light-shadow) 100%);
 }
 
 .hub-board-preview-caption {
