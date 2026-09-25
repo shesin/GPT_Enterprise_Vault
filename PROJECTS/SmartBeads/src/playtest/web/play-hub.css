@@ -43,6 +43,7 @@
   --hub-brand: oklch(93% .025 82) !important;
   --hub-ad-bg: oklch(32% .10 158) !important;
   --hub-ad-border: oklch(45% .055 95 / 35%) !important;
+  --hub-look-box-bg: oklch(48% .095 158) !important;
 }
 
 body.hub-page {
@@ -258,6 +259,10 @@ body.hub-page {
   display: flex;
   align-items: flex-start;
   gap: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--hub-look-box-bg);
+  border: 1px solid var(--hub-border);
 }
 
 .hub-board-preview {
