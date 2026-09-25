@@ -539,6 +539,11 @@ body.hub-page {
   box-shadow: 0 0 0 1px var(--hub-accent-ring);
 }
 
+.hub-board-tile.is-selected .hub-board-tile-label,
+.hub-board-tile.is-selected .hub-board-tile-sub {
+  color: #000000;
+}
+
 .hub-board-tile-icon {
   width: 16px;
   height: 16px;
