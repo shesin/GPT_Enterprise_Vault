@@ -340,7 +340,7 @@ body.hub-page {
 
 .hub-board-preview-caption {
   font-size: 0.62rem;
-  color: var(--hub-centre-muted);
+  color: #000000;
   text-align: center;
   margin: 0;
 }
