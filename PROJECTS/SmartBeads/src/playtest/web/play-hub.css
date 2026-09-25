@@ -19,37 +19,34 @@
 }
 
 /*
- * Fixed hub chrome palette — Seaglass (locked 2026-09-21, replacing the
- * earlier "Pearl Deep + Gold" default). One palette for the hub regardless
- * of the selected board/look — not per-board. Was briefly a swatch-picked
- * optional look (added 2026-09-20 alongside a Jade option); both the picker
- * and the Jade option were removed per human request — Seaglass is now the
- * only, permanent hub look, not one of several choices.
+ * Fixed hub chrome palette — Forest Emerald Gold (locked 2026-09-25,
+ * replacing Seaglass, GPT_PROJECT_DECISIONS_05P.md §13). One palette for the
+ * hub regardless of the selected board/look — not per-board, not a picker.
  * !important beats the per-board inline vars playShellThemes.ts still sets on
  * #play-hub at runtime (that engine drives page 2's board looks, out of scope here).
  */
 .play-hub {
-  --hub-page-bg: linear-gradient(180deg, oklch(0.80 0.045 195), oklch(0.68 0.05 198) 220%) !important;
-  --hub-rail-bg: linear-gradient(165deg, oklch(0.40 0.065 195), oklch(0.28 0.07 198)) !important;
-  --hub-centre-bg: oklch(0.80 0.045 195) !important;
-  --hub-card-bg: oklch(0.72 0.04 195 / 55%) !important;
-  --hub-card-hover: oklch(0.78 0.04 195 / 70%) !important;
-  --hub-border: oklch(0.55 0.05 197 / 45%) !important;
-  --hub-border-soft: oklch(0.55 0.05 197 / 45%) !important;
-  --hub-text: #eaf5f2 !important;
-  --hub-muted: oklch(0.85 0.02 195 / 75%) !important;
-  --hub-centre-text: #14231f !important;
-  --hub-centre-muted: #3a534d !important;
-  --hub-accent: #c9a24a !important;
-  --hub-accent-soft: #e6ce94 !important;
-  --hub-accent-ring: #c9a24a73 !important;
-  --hub-brand: #eaf5f2 !important;
-  --hub-ad-bg: #ececec !important;
-  --hub-ad-border: #d4d4d4 !important;
+  --hub-page-bg: oklch(28% .11 158) !important;
+  --hub-rail-bg: linear-gradient(165deg, oklch(32% .10 158), oklch(22% .09 160)) !important;
+  --hub-centre-bg: oklch(28% .11 158) !important;
+  --hub-card-bg: oklch(34% .11 158 / 92%) !important;
+  --hub-card-hover: oklch(38% .115 158 / 96%) !important;
+  --hub-border: oklch(45% .055 95 / 35%) !important;
+  --hub-border-soft: oklch(45% .055 95 / 35%) !important;
+  --hub-text: oklch(93% .025 82) !important;
+  --hub-muted: oklch(70% .025 145) !important;
+  --hub-centre-text: oklch(93% .025 82) !important;
+  --hub-centre-muted: oklch(70% .025 145) !important;
+  --hub-accent: oklch(72% .105 78) !important;
+  --hub-accent-soft: oklch(82% .075 82) !important;
+  --hub-accent-ring: oklch(72% .105 78 / 45%) !important;
+  --hub-brand: oklch(93% .025 82) !important;
+  --hub-ad-bg: oklch(32% .10 158) !important;
+  --hub-ad-border: oklch(45% .055 95 / 35%) !important;
 }
 
 body.hub-page {
-  background: oklch(0.80 0.045 195);
+  background: oklch(28% .11 158);
 }
 
 .play-hub.is-hidden {
@@ -418,6 +415,7 @@ body.hub-page {
 }
 
 .hub-title {
+  font-family: Cinzel, "Libre Baskerville", Georgia, serif;
   font-size: clamp(1.35rem, 2.4vw, 1.75rem);
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -445,6 +443,7 @@ body.hub-page {
 }
 
 .hub-section-title {
+  font-family: Cinzel, "Libre Baskerville", Georgia, serif;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
