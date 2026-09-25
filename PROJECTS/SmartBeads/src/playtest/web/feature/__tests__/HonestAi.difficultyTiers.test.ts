@@ -402,22 +402,6 @@ describe('HonestAi production strength gates (6x3x5)', () => {
     expect(hardWins).toBeGreaterThan(mediumWins);
   });
 
-  it('Super Expert tiers 4–5 use depth-2 search with increasing budget (spectate slice)', () => {
-    expect(aiOpponentReplyPlies(4)).toBe(2);
-    expect(aiOpponentReplyPlies(5)).toBe(2);
-    expect(thinkBudgetForLevel(5)).toBeGreaterThan(thinkBudgetForLevel(4));
-    expect(thinkBudgetForLevel(4)).toBeGreaterThan(thinkBudgetForLevel(3));
-
-    const engine = new SmartBeadsEngine('6x3x5');
-    for (const level of [4, 5] as const) {
-      const path = selectAiTurnPath('6x3x5', level, engine.exportSnapshot(), 'RED', {
-        budgetMs: thinkBudgetForLevel(level),
-        rng: () => 0,
-        center: { centerRule: 'off' },
-      });
-      expect(path?.length).toBeGreaterThan(0);
-    }
-  });
 });
 
 describe('HonestAi strength gates (8x4x6 — human-reported Medium≈Hard board)', () => {

@@ -62,7 +62,7 @@ All 7 production boards are registered in `BoardConfig.ts`, selectable in `Board
 ### 3. PvE & AI Opponent (`HonestAi.ts`, `PlayController.ts`)
 - **Levels 1–3 (player-facing target):** Casual (0 reply) · Standard (1 reply) · Expert (depth-2). **TESTED** (`HonestAi.searchCompletion.test.ts` — all 7 boards, opening + 16 midgame).
 - **Depth-2 (Expert):** Full search required; extends think time up to ~45s on large boards rather than falling back to depth-1. Board-aware budgets (`thinkBudgetForLevel(level, variant)`).
-- **Still in code but improper UI:** levels **4–5** (Super Expert / +) — same depth as 3, extra time only. **Pending removal** per human direction (UI → 1–2–3 only).
+- **Levels 4–5 (Super Expert / +) removed from code 2026-09-25** (human direction) — they were same depth-2 search as level 3, only wider branch cap and extra think time; `AiLevel` type is now `1 | 2 | 3`, `formatAiLevelLabel` only returns Casual/Standard/Expert.
 - **Easy / Medium / Hard:** unchanged contract; center + **timer** in eval on levels 2–3 when rules on; Easy center tie-break among equal captures. **TESTED** (`HonestAi.difficultyTiers.test.ts`).
 - **3-fold repetition draw:** **OK (Jest, 2026-09-11)** — `SmartBeadsEngine` ends match on third identical position (occupancies + side to move). **DECISIONS §4** · **UNCONFIRMED** human browser.
 

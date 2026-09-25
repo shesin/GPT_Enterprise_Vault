@@ -241,8 +241,6 @@ export function aiOpponentReplyPlies(level: AiLevel): number {
 }
 
 function replyBranchForLevel(level: AiLevel): number {
-  if (level >= 5) return 160;
-  if (level >= 4) return 110;
   if (level >= 3) return 80;
   if (level === 2) return 64;
   return 60;
@@ -511,12 +509,11 @@ function softMissPath(ends: TurnEnd[], snapshotState: GameState, rng: () => numb
   return pickRandomEnd(ends, rng);
 }
 
-/** Hard/Expert: extend think time up to this cap so depth-2 never falls back. */
+/** Expert: extend think time up to this cap so depth-2 never falls back. */
 const MAX_DEPTH2_SEARCH_MS = 45_000;
-const MAX_DEPTH2_SEARCH_MS_TIER5 = 60_000;
 
-function maxSearchBudgetMs(level: AiLevel): number {
-  return level >= 5 ? MAX_DEPTH2_SEARCH_MS_TIER5 : MAX_DEPTH2_SEARCH_MS;
+function maxSearchBudgetMs(): number {
+  return MAX_DEPTH2_SEARCH_MS;
 }
 
 function searchLayerAtExactDepth(
@@ -600,11 +597,10 @@ function searchBestAtExactDepth(
   replyBranch: number,
   aiPlayer: Player,
   startBudgetMs: number,
-  level: AiLevel,
   center: AiCenterContext | undefined,
   timer: AiTimerContext | undefined,
 ): { best: TurnEnd[]; achievedReplyPlies: number; completeAtAchievedDepth: number } {
-  const maxBudget = Math.max(startBudgetMs, maxSearchBudgetMs(level));
+  const maxBudget = Math.max(startBudgetMs, maxSearchBudgetMs());
   let budgetMs = startBudgetMs;
 
   while (budgetMs <= maxBudget) {
@@ -735,7 +731,6 @@ export function selectAiTurnPath(
     replyBranch,
     aiPlayer,
     opts.budgetMs,
-    level,
     opts.center,
     opts.timer,
   );
@@ -769,7 +764,6 @@ export function probeSearchCompletion(
     replyBranch,
     aiPlayer,
     opts.budgetMs,
-    level,
     opts.center,
     opts.timer,
   );
@@ -798,9 +792,7 @@ export function thinkBudgetForLevel(level: AiLevel, variant?: BoardVariant): num
   let base: number;
   if (level <= 1) base = 250;
   else if (level === 2) base = 800;
-  else if (level === 3) base = 3200;
-  else if (level === 4) base = 4800;
-  else base = 9000;
+  else base = 3200;
 
   const mult = variant ? (BOARD_THINK_MULTIPLIER[variant] ?? 1) : 1;
   return Math.round(base * mult);

@@ -15,7 +15,7 @@ export type CenterRule = 'off' | 'endgame' | 'cumulative';
 export type TimerMinutes = 'off' | '2' | '3' | '5' | '10' | '15' | '20' | '25' | '30' | '35';
 /** Seconds per turn when enabled. */
 export type ShotClockSeconds = 'off' | '30' | '60' | '90' | '120';
-export type AiLevel = 1 | 2 | 3 | 4 | 5;
+export type AiLevel = 1 | 2 | 3;
 
 /** Default coach-watch board (8-bead · 4×6). */
 export const COACH_DEFAULT_BOARD_ID = '8x4x6' as const;
@@ -203,9 +203,7 @@ export const COACH_MAX_AI_LEVEL = MAX_UI_AI_LEVEL;
 export function formatAiLevelLabel(level: AiLevel): string {
   if (level === 1) return 'Casual';
   if (level === 2) return 'Standard';
-  if (level === 3) return 'Expert';
-  if (level === 4) return 'Super Expert';
-  return 'Super Expert+';
+  return 'Expert';
 }
 
 export function clampUiAiLevel(raw: number): AiLevel {
