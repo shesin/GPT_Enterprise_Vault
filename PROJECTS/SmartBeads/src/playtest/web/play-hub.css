@@ -34,9 +34,9 @@
   --hub-border: oklch(45% .055 95 / 35%) !important;
   --hub-border-soft: oklch(45% .055 95 / 35%) !important;
   --hub-text: oklch(93% .025 82) !important;
-  --hub-muted: oklch(70% .025 145) !important;
+  --hub-muted: oklch(85% .02 145) !important;
   --hub-centre-text: oklch(93% .025 82) !important;
-  --hub-centre-muted: oklch(70% .025 145) !important;
+  --hub-centre-muted: oklch(85% .02 145) !important;
   --hub-accent: oklch(72% .105 78) !important;
   --hub-accent-soft: oklch(82% .075 82) !important;
   --hub-accent-ring: oklch(72% .105 78 / 45%) !important;
@@ -503,7 +503,7 @@ body.hub-page {
   gap: 6px;
   padding: 10px 6px;
   border-radius: 6px;
-  border: 1px solid var(--hub-border);
+  border: 1px solid var(--hub-accent);
   background: var(--hub-card-bg);
   color: var(--hub-centre-text, var(--hub-text));
   cursor: pointer;
@@ -648,7 +648,7 @@ body.hub-page {
   gap: 10px;
   padding: 12px 12px;
   border-radius: 6px;
-  border: 1px solid var(--hub-border);
+  border: 1px solid var(--hub-accent);
   background: var(--hub-card-bg);
   color: var(--hub-centre-text, var(--hub-text));
   font-size: 0.8rem;
