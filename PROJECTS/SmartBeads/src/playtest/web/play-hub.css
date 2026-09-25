@@ -453,7 +453,7 @@ body.hub-page {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--hub-centre-muted, var(--hub-muted));
+  color: var(--hub-accent);
   margin: 0 0 8px;
 }
 
@@ -503,7 +503,7 @@ body.hub-page {
   gap: 6px;
   padding: 10px 6px;
   border-radius: 6px;
-  border: 1px solid var(--hub-accent);
+  border: 2px solid var(--hub-accent);
   background: var(--hub-card-bg);
   color: var(--hub-centre-text, var(--hub-text));
   cursor: pointer;
@@ -544,8 +544,8 @@ body.hub-page {
   width: 36px;
   height: 36px;
   border-radius: 4px;
-  border: 1px solid var(--hub-border);
-  background: var(--hub-page-bg);
+  border: 1px solid var(--hub-accent);
+  background: var(--hub-accent);
   position: relative;
 }
 
@@ -648,7 +648,7 @@ body.hub-page {
   gap: 10px;
   padding: 12px 12px;
   border-radius: 6px;
-  border: 1px solid var(--hub-accent);
+  border: 2px solid var(--hub-accent);
   background: var(--hub-card-bg);
   color: var(--hub-centre-text, var(--hub-text));
   font-size: 0.8rem;
@@ -681,8 +681,8 @@ body.hub-page {
   width: 28px;
   height: 28px;
   border-radius: 4px;
-  border: 1px solid var(--hub-border);
-  background: var(--hub-page-bg);
+  border: 1px solid var(--hub-accent);
+  background: var(--hub-accent);
 }
 
 /* Play-with order (locked spec, DECISIONS §13, updated 2026-09-24): single
