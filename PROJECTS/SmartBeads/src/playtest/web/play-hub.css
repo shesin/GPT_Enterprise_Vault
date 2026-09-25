@@ -33,10 +33,10 @@
   --hub-card-hover: oklch(38% .115 158 / 96%) !important;
   --hub-border: oklch(45% .055 95 / 35%) !important;
   --hub-border-soft: oklch(45% .055 95 / 35%) !important;
-  --hub-text: oklch(93% .025 82) !important;
-  --hub-muted: oklch(85% .02 145) !important;
-  --hub-centre-text: oklch(93% .025 82) !important;
-  --hub-centre-muted: oklch(85% .02 145) !important;
+  --hub-text: #ffffff !important;
+  --hub-muted: #ffffff !important;
+  --hub-centre-text: #ffffff !important;
+  --hub-centre-muted: #ffffff !important;
   --hub-accent: oklch(72% .105 78) !important;
   --hub-accent-soft: oklch(82% .075 82) !important;
   --hub-accent-ring: oklch(72% .105 78 / 45%) !important;
@@ -157,7 +157,7 @@ body.hub-page {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--hub-text);
+  color: var(--hub-accent);
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.25;
@@ -171,11 +171,11 @@ body.hub-page {
 }
 
 .hub-sidebar-link--soon {
-  color: var(--hub-muted);
+  color: var(--hub-accent);
 }
 
 .hub-sidebar-link--soon:hover {
-  color: var(--hub-text);
+  color: var(--hub-accent);
 }
 
 .hub-sidebar-spacer {
@@ -375,10 +375,7 @@ body.hub-page {
   border: 1px solid var(--hub-border-soft);
   border-radius: 6px;
   background: transparent;
-  /* This card sits on the dark rail (not a light surface), so it needs the
-     light-rail muted colour, not --hub-centre-muted (dark-on-dark was
-     unreadable — 2026-09-22 audit). */
-  color: var(--hub-muted);
+  color: var(--hub-accent);
   font-size: 0.72rem;
   font-weight: 600;
   padding: 9px 6px;
@@ -424,7 +421,7 @@ body.hub-page {
   font-size: clamp(1.35rem, 2.4vw, 1.75rem);
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: var(--hub-centre-text, var(--hub-text));
+  color: var(--hub-accent);
   margin: 0;
 }
 
