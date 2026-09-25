@@ -502,7 +502,7 @@ body.hub-page {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 77px;
+  min-height: 99px;
   padding: 7px 4px;
   border-radius: 6px;
   border: 2px solid var(--hub-accent);
