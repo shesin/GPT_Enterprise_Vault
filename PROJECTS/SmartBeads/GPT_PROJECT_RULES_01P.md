@@ -21,6 +21,7 @@ Target: ~1 page. **Extended workflow detail** (moved from `.cursor/rules/*.mdc` 
 - What's shipped & verified today → `PROJECTS/SmartBeads/GPT_PROJECT_STATUS_01P.md`
 - Roadmap / open work → `PROJECTS/SmartBeads/GPT_PROJECT_PENDING_01P.md` — human-owned, never edit without the literal `Go — PENDING`
 - Known past issues and whether they're actually fixed → `PROJECTS/SmartBeads/GPT_PROJECT_AUDIT_05P.md` — check before claiming something already works
+- Resolved product investigations / evidence (not agent-failure history — that's AUDIT above) → `PROJECTS/SmartBeads/GPT_PROJECT_CLOSED_ISSUES_05P.md`
 - Broad principles / mission → `PROJECTS/SmartBeads/VISION_05P.md`
 - Paths only → `PROJECT_MAP_05P.md`
 
@@ -92,6 +93,12 @@ Only when the user asks. **`ok` / `good`** = known-good checkpoint in the commit
 `push to git` / `commit local` without **all** = agent may pick files. **Never** edit permission.
 
 **Doc edits** — DECISIONS / AUDIT / VISION / RULES on **Go —** + **Files:**; STATUS / MAP on **push to git all good** only.
+
+---
+
+## Rule - Hub Layout Mockup-First Workflow
+
+Page 1 hub (`index.html`) layout changes: design in the "Hub Layout Builder" mockup artifact first, read its saved state via `ArtifactData`, then replicate into the real page at exact 1:1 fidelity (sizes, gaps, positions) — never edit from a verbal description alone. Before coding, check which parts of the target area are JS-regenerated vs static, and what tests/CSS decisions depend on them. (Lost ~8 hours before landing on this workflow — skipping it repeats that.)
 
 ---
 

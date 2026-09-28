@@ -623,7 +623,13 @@ function searchBestAtExactDepth(
         completeAtAchievedDepth: layer.completeCount,
       };
     }
-    budgetMs = Math.min(maxBudget, Math.round(budgetMs * 1.6));
+    const nextBudgetMs = Math.min(maxBudget, Math.round(budgetMs * 1.6));
+    // Once budgetMs is pinned at maxBudget, nextBudgetMs === budgetMs forever —
+    // without this break the loop condition never goes false and this retries
+    // the same maxBudget-length window indefinitely instead of falling through
+    // to the unlimited-deadline attempt below.
+    if (nextBudgetMs === budgetMs) break;
+    budgetMs = nextBudgetMs;
   }
 
   const layer = searchLayerAtExactDepth(

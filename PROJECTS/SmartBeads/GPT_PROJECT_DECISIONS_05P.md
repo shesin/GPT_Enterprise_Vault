@@ -182,7 +182,29 @@ Central 5×5 matches 10-bead width prominence (~70% vertical play height). Wing 
 
 **Right rail:** pure ad space, no functional content. (The bottom footer ad was removed 2026-09-24, same human — right rail only now.)
 
-**Palette — "Forest Emerald Gold", one single fixed palette (not per-board, not a choice of several):** locked 2026-09-25, replacing Seaglass. Uniform dark emerald green throughout (rail, centre, cards) — `--hub-page-bg`/`--hub-centre-bg: oklch(28% .11 158)` (`#003711`), rail gradient `linear-gradient(165deg, oklch(32% .10 158), oklch(22% .09 160))`, cards `oklch(34% .11 158 / 92%)` — with light ivory text throughout (`oklch(93% .025 82)`, muted `oklch(70% .025 145)`), gold accent `oklch(72% .105 78)` (`#c99c54`) / soft `oklch(82% .075 82)` (`#ddc08c`), border `oklch(45% .055 95 / 35%)`. Headings (`.hub-title`, `.hub-section-title`) set in Cinzel serif; body stays IBM Plex Sans/Segoe UI. Colour and font values taken from the human-approved "Forest Emerald Gold" candidate compared live in the scratch mockup `hub-theme-mockup.html` (green vs teal vs Seaglass), confirmed against the reference site's own computed styles. Unlike Seaglass, the centre panel is now dark-on-dark (not a light centre with dark text) — every hub surface uses the same dark-bg/light-text pairing. Applies to hub chrome only. Unrelated to the page 2 board-look picker ("Choose your look" dark/light/matched swatch rows) — that picker is untouched and still selects the actual game board's look on page 2. Replaces Seaglass (locked 2026-09-21, itself replacing the original "Pearl Deep + Gold" flat palette locked 2026-09-19) — the teal alternative compared alongside it in the mockup was not chosen and does not ship.
+**Palette — "Forest Emerald Gold" green, default of a two-option picker (green/black; superseded "one single fixed palette" below):** locked 2026-09-25, replacing Seaglass. Uniform dark emerald green throughout (rail, centre, cards) — `--hub-page-bg`/`--hub-centre-bg: oklch(28% .11 158)` (`#003711`), rail gradient `linear-gradient(165deg, oklch(32% .10 158), oklch(22% .09 160))`, cards `oklch(34% .11 158 / 92%)` — with light ivory text throughout (`oklch(93% .025 82)`, muted `oklch(70% .025 145)`), gold accent `oklch(72% .105 78)` (`#c99c54`) / soft `oklch(82% .075 82)` (`#ddc08c`), border `oklch(45% .055 95 / 35%)`. Headings (`.hub-title`, `.hub-section-title`) set in Cinzel serif; body stays IBM Plex Sans/Segoe UI. Colour and font values taken from the human-approved "Forest Emerald Gold" candidate compared live in the scratch mockup `hub-theme-mockup.html` (green vs teal vs Seaglass), confirmed against the reference site's own computed styles. Unlike Seaglass, the centre panel is now dark-on-dark (not a light centre with dark text) — every hub surface uses the same dark-bg/light-text pairing. Applies to hub chrome only. Unrelated to the page 2 board-look picker ("Choose your look" dark/light/matched swatch rows) — that picker is untouched and still selects the actual game board's look on page 2. Replaces Seaglass (locked 2026-09-21, itself replacing the original "Pearl Deep + Gold" flat palette locked 2026-09-19) — the teal alternative compared alongside it in the mockup was not chosen and does not ship.
+
+**2026-09-26 supersession — "not a picker" clause reversed, human direction.** A **black** hub-chrome variant was added alongside green, selectable live via two swatch buttons at the top of the left rail (`#hub-page-look-swatches` in `index.html`, wired by `wireHubPageLookPicker()` in `PlayHub.ts`), persisted per-browser in `localStorage` (`sb-hub-page-look`, values `green`/`black`; green remains the default for new visitors). Black values: `--hub-page-bg: oklch(9% 0 0)`, cards `oklch(15% 0 0 / 92%)`, rail gradient `linear-gradient(165deg, oklch(13% 0 0), oklch(6% 0 0))`, text `#ffffff`, gold accent unchanged (`#c9a24a`) for visual consistency with green. **Known open issue (not yet resolved):** the dark-theme board-look swatches (Classic Green id 1, Ocean Blue id 3, Purple Night id 6 especially — their `play-theme-swatch` fill sits at OKLCH L 0.17–0.34, very close to the black card background's L 0.15) read as low-contrast/hard to distinguish against black, unlike against the lighter green card background. A lighter "black" shade is under review to fix this — see `GPT_PROJECT_PENDING_01P.md`.
+
+---
+
+## 13a. Open decisions locked 2026-09-15/18 (moved from PENDING §13, 2026-09-28)
+
+1. **Accounts:** sign-in from day one (not guest + room code only). Hard launch blocker (2026-09-19, human): will not go to market without the full account system (signup/login/profile) — not optional, not deferrable.
+2. **Rematch path:** both offered — Page 2 setup again, or instant rematch with same settings.
+3. **Host preference:** single VPS (not split static + separate API).
+4. **Tournament timer model:** two independent per-player clocks (chess-clock style), each ticking only during that player's own turn — matches the shipped local PvP tournament-timer mechanism (`p1Clock`/`p2Clock`); online work adds server authority over the same model, not a new one.
+5. **Shot breach (HvH):** lose on time only — no softer penalty. 120s/90s/60s per the board-fixed table below judged long enough that a real breach means genuinely stalling.
+6. **Timers (HvH) — board-fixed table, confirmed locked 2026-09-28:**
+
+   | Board group | Match clock options | Shot clock (fixed) |
+   |-------------|---------------------|---------------------|
+   | 16, 12-bead | 5 min or 8 min | 120s |
+   | 10, 8-bead | 3 min or 5 min | 90s |
+   | 7, 6-bead | 2 min or 4 min | 60s |
+
+   Not a Casual/Quick/Standard/Blitz preset menu — fixed and simple, two length options per board-size group, shot clock a single fixed value per group.
+7. **Tournament board scope:** all 7 boards for V1 (not 16-bead-only).
 
 ---
 

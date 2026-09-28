@@ -1,6 +1,14 @@
 # SHEKHAR_PROMPT_01.md
 
-Human-side companion to `VISION/CURSOR_PROMPT_01.md`. Agent rules: `.cursor/rules/instruction-fidelity.mdc`.
+Human-side companion to `VISION/CURSOR_PROMPT_01.md`. Agent rules:' claude.md' `.cursor/rules/instruction-fidelity.mdc`.
+
+CLAUDE.md (project instructions, checked into this repo's git):
+D:\Business Idea\Gpt_Enterprise_Vault\CLAUDE.md
+
+Memory (my persistent cross-session notes about you/this project — not in git, lives in the relocated config dir):
+D:\ClaudeConfig\projects\D--Business-Idea-Gpt-Enterprise-Vault\memory\
+
+Read D:\ClaudeConfig\RESTORE_AFTER_OS_RESET.txt and do what it says to restore my Claude chat history.
 
 The agent is a machine. It matches **patterns** and **literal words**. **“All” means all.** It does not share human memory after a handoff.
 

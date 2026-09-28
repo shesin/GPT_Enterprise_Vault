@@ -221,6 +221,52 @@ function wireHubThemePicker(): void {
   updateHubBoardPreview();
 }
 
+type HubPageLook = 'green' | 'black' | 'black-l1' | 'black-l2' | 'black-l3';
+const HUB_PAGE_LOOK_STORAGE_KEY = 'sb-hub-page-look';
+const HUB_PAGE_LOOK_VALUES: ReadonlyArray<HubPageLook> = [
+  'green',
+  'black',
+  'black-l1',
+  'black-l2',
+  'black-l3',
+];
+
+function readStoredHubPageLook(): HubPageLook {
+  const stored = localStorage.getItem(HUB_PAGE_LOOK_STORAGE_KEY);
+  return (HUB_PAGE_LOOK_VALUES as ReadonlyArray<string>).includes(stored ?? '')
+    ? (stored as HubPageLook)
+    : 'green';
+}
+
+function applyHubPageLook(look: HubPageLook): void {
+  document.getElementById('play-hub')?.setAttribute('data-hub-page-look', look);
+}
+
+/** Hub page-background picker (black/green) — 2026-09-26, human direction,
+ * supersedes the 2026-09-25 "not a picker" lock (GPT_PROJECT_DECISIONS_05P.md §13). */
+function wireHubPageLookPicker(): void {
+  const stored = readStoredHubPageLook();
+  applyHubPageLook(stored);
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[data-hub-page-look-btn]'),
+  );
+  for (const btn of buttons) {
+    const look = btn.getAttribute('data-hub-page-look-btn') as HubPageLook;
+    const isActive = look === stored;
+    btn.classList.toggle('is-active', isActive);
+    btn.setAttribute('aria-checked', String(isActive));
+    btn.addEventListener('click', () => {
+      localStorage.setItem(HUB_PAGE_LOOK_STORAGE_KEY, look);
+      applyHubPageLook(look);
+      for (const b of buttons) {
+        const bLook = b.getAttribute('data-hub-page-look-btn') as HubPageLook;
+        b.classList.toggle('is-active', bLook === look);
+        b.setAttribute('aria-checked', String(bLook === look));
+      }
+    });
+  }
+}
+
 export function bootstrapPlayHub(
   enterPlay: (
     boardId: ProductBoardId,
@@ -267,6 +313,7 @@ export function bootstrapPlayHub(
 
   wireHubRailNotice();
   wireHubThemePicker();
+  wireHubPageLookPicker();
 
   const coachParam = new URLSearchParams(window.location.search).get('coach');
   if (coachParam === '1' || coachParam === 'start') {

@@ -64,9 +64,51 @@
       --hub-ad-bg: oklch(38% .10 195) !important;
       --hub-ad-border: oklch(55% .06 197 / 40%) !important;
     }
+
+    /* Black — step 3 (new comparison variant, alongside shipped green/emerald),
+       gold accent reused from the locked Classic-gold used everywhere else
+       (grid lines, teal/emerald accent) so it matches the existing visual language. */
+    body[data-mock-theme="black"] .play-hub {
+      --hub-page-bg: oklch(9% 0 0) !important;
+      --hub-rail-bg: linear-gradient(165deg, oklch(13% 0 0), oklch(6% 0 0)) !important;
+      --hub-centre-bg: oklch(9% 0 0) !important;
+      --hub-card-bg: oklch(15% 0 0 / 92%) !important;
+      --hub-card-hover: oklch(19% 0 0 / 96%) !important;
+      --hub-border: oklch(55% .07 95 / 35%) !important;
+      --hub-border-soft: oklch(55% .07 95 / 35%) !important;
+      --hub-text: oklch(95% .01 82) !important;
+      --hub-muted: oklch(70% .01 82 / 85%) !important;
+      --hub-centre-text: oklch(95% .01 82) !important;
+      --hub-centre-muted: oklch(70% .01 82 / 85%) !important;
+      --hub-accent: #c9a24a !important;
+      --hub-accent-soft: #e6ce94 !important;
+      --hub-accent-ring: #c9a24a73 !important;
+      --hub-brand: oklch(95% .01 82) !important;
+      --hub-ad-bg: oklch(13% 0 0) !important;
+      --hub-ad-border: oklch(55% .07 95 / 35%) !important;
+    }
+    body[data-mock-theme="black"] .hub-title,
+    body[data-mock-theme="black"] .hub-section-title {
+      font-family: Cinzel, "Libre Baskerville", Georgia, serif !important;
+    }
   </style>
 </head>
-<body>
+<body data-mock-theme="black">
+  <div id="mock-theme-switcher" style="position:fixed; top:12px; right:12px; z-index:9999; display:flex; gap:8px; padding:8px; background:#1a1a1a; border:1px solid #444; border-radius:8px;">
+    <button type="button" data-mock-theme-btn="black" style="width:32px; height:32px; border-radius:50%; border:2px solid #c9a24a; background:#0a0a0a; cursor:pointer;" title="Black" aria-label="Black"></button>
+    <button type="button" data-mock-theme-btn="emerald" style="width:32px; height:32px; border-radius:50%; border:2px solid transparent; background:#003711; cursor:pointer;" title="Green" aria-label="Green"></button>
+  </div>
+  <script>
+    document.querySelectorAll('[data-mock-theme-btn]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.body.setAttribute('data-mock-theme', btn.getAttribute('data-mock-theme-btn'));
+        document.querySelectorAll('[data-mock-theme-btn]').forEach(function (b) {
+          b.style.borderColor = 'transparent';
+        });
+        btn.style.borderColor = '#c9a24a';
+      });
+    });
+  </script>
   <div id="play-hub" class="play-hub" data-play-board-look="1" data-play-side-look="1" data-play-theme="1" data-play-board-match="matched">
     <aside class="hub-rail hub-rail--left" aria-label="Hub navigation">
       <input type="checkbox" id="hub-review-toggle" class="hub-review-toggle-input" aria-hidden="true">
