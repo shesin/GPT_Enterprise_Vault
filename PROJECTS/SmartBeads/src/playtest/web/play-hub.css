@@ -930,6 +930,25 @@ body.hub-edit-active .hub-edit-dragging {
 }
 
 @media (max-width: 860px) {
+  /* Stack "Choose board look" / "Choose your board" full-width instead of
+     side-by-side halves — each was locked to a 6-of-12-column grid-area via
+     inline style in index.html (highest specificity, needs !important here).
+     Pushing board/mode down onto fresh rows avoids overlapping the sections
+     that follow, which kept their original fixed row numbers. */
+  #hub-section-look {
+    grid-column: 1 / -1 !important;
+  }
+  #hub-section-board {
+    grid-column: 1 / -1 !important;
+    grid-row: 8 / span 5 !important;
+  }
+  #hub-section-mode {
+    grid-row: 13 / span 1 !important;
+  }
+  #hub-section-mode-tiles {
+    grid-row: 14 / span 2 !important;
+  }
+
   .play-hub {
     width: 100vw;
     height: 100dvh;
@@ -956,6 +975,8 @@ body.hub-edit-active .hub-edit-dragging {
 
   .hub-sidebar-nav {
     flex-direction: row;
+    flex-wrap: wrap;
+    row-gap: 4px;
     flex: 1;
     justify-content: center;
   }
