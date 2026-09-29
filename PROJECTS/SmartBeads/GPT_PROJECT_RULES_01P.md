@@ -88,11 +88,11 @@ Only when the user asks. **`ok` / `good`** = known-good checkpoint in the commit
 
 | User says | Agent must do |
 |-----------|----------------|
-| `push to git all` / `push to git all ok` / `push to git all good` | `git add` all changed files (skip secrets) → commit → push. Report push output. Update STATUS / MAP if required. |
+| `push to git` / `push to git ok` / `push to git good` | `git add` all changed files (skip secrets) → commit → push. Report push output. Update STATUS / MAP if required. |
 
-`push to git` / `commit local` without **all** = agent may pick files. **Never** edit permission.
+**Never** edit permission.
 
-**Doc edits** — DECISIONS / AUDIT / VISION / RULES on **Go —** + **Files:**; STATUS / MAP on **push to git all good** only.
+**Doc edits** — DECISIONS / AUDIT / VISION / RULES on **Go —** + **Files:**; STATUS / MAP on **push to git good** only.
 
 ---
 

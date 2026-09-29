@@ -6,22 +6,99 @@
 
 When an item here ships and is verified: remove it from here, log it in STATUS (and DECISIONS if it was a locked choice) and Closed Issues.
 
+**Ordering note :** within each Part below, items are grouped into "Claude task" (agent-doable, ordered smallest effort → largest) and "Shekhar task" (needs Shekhar directly — account creation, purchases, physical-device checks, subjective sign-off). Items are numbered sequentially in this new order (A1, A2, A3… / B1, B2, B3…)
 ---
 
-## 1. Hard blockers — close these ASAP, in this order
+**Recommendation :** knock out the small web wins (A1–A9) first since they're fast and close out quickly, then run Android's B1–B4 in parallel with the two web hard blockers.
 
-### 1a. Full account system (signup / login / profile)
+# PART A — WEB (nothing here is gated by DUNS — DUNS only affects the Android/Play Store side in Part B)
 
-**Why first, why non-negotiable:** human decision, 2026-09-19 — *"will not go to market without the full account system — not optional, not deferrable to a later phase."* Not a feature nice-to-have: the product vision explicitly rejects a guest-only / room-code-only launch. Every other web checklist item (§6) can be finished and it still wouldn't matter — this is a hard gate on launch itself.
+
+## Claude task 
+
+### A1. `vite build` production script
+
+Implementer. Not done. Client static bundle.
+
+### A2. Coach video polish — optional, needs your explicit go
+
+1. Highlight active panel bullet during playback.
+2. ~2s hold after each demo move before the next snap.
+
+Video 2 (timers, shot clock, centre rules) — planned, not started.
+
+### A3. Engineering hygiene
+
+- Dead-code / doc-mismatch sweep — extend the proven method (grep every reference repo-wide, trace reachability, `tsc --noEmit` clean, tests green, live browser check) from rendering/layout/theme files to the rest of `src/`. Do not remove anything without that full chain of evidence.
+
+### A4. UI polish backlog
+
+- Match timer progress ring (Human vs Human only) — radial countdown, low-time pulse.
+- Session score counter across rematches.
+- Left panel / settings dedup — hide duplicate mode/account chrome on hub.
+
+### A5. Timers (Human vs Human) — engineering detail
+
+**Layer A — Match clock (Chess.com model):** each player has their own bank; ticks only on that player's turn; reach 0:00 → lose on time; UI shows two clocks (opponent top, you bottom), active one highlighted.
+
+**Layer B — Shot clock:** each turn must complete within the board-fixed limit (120s/90s/60s — locked table, see `GPT_PROJECT_DECISIONS_05P.md` §13a); exceeding it is a loss on time, same as a match-clock flag fall; UI is a small per-turn countdown on the active player.
+
+**Why two layers, not one:** a single "whole game ends in N minutes" clock was rejected as the main competitive mode — unfair when move counts differ between players. Match clock rewards overall speed; shot clock stops stalling when someone hoards bank time.
+
+**Historical — superseded split:** the current board-fixed table (locked, `GPT_PROJECT_DECISIONS_05P.md` §13a) supersedes an earlier draft that used a 90s shot clock for 16/12/10-bead and 60s for 8/7/6-bead — that split no longer applies.
+
+**Work remaining (not started):** dual-clock UI, authoritative server-side clock sync for online play, preset wiring on Page 2 for online setup only. PvE stays frozen — do not touch (already locked in `GPT_PROJECT_DECISIONS_05P.md` §6).
+
+### A6. Page 1 UI — HvH Online mode fields (not yet built)
+
+When Human vs Human (Online) is selected on Page 1: time preset (A5), center rule, Create room / Join room, then Start match on Page 2 once connected.
+
+Tutorial — Coach lesson launches from Page 1; on completion, returns to Page 1 hub.
+
+### A7. Bugs from playtest
+
+Depends on A15. Failing test before fix, per standing rule.
+
+### A8. Web-side gap noticed, not previously tracked (flagging for your call)
+
+- **Privacy policy / Terms of Service for the web app itself** — currently only tracked for the Android Play Store listing (Part B); but the web app also collects account signup data, so it likely needs its own privacy policy/ToS page before public launch, not just an app-store listing.
+
+### A9. Hosting — deploy pipeline detail
+
+**We deploy:** `vite build` static assets → CDN or Nginx; game server container/process → same provider; env secrets (DB URL, JWT/session secret, CORS origin); CI runs the Jest suite on push, deploys on tagged release (human approves).
+
+**Environments:** Production (public URL) and Staging (same stack, separate DB) — staging used for online/timer QA before prod.
+
+### A10. Full account system (signup / login / profile) — HARD BLOCKER
+
+**Why non-negotiable:** human decision, 2026-09-19 — *"will not go to market without the full account system — not optional, not deferrable to a later phase."* Not a feature nice-to-have: the product vision explicitly rejects a guest-only / room-code-only launch. Every other web checklist item can be finished and it still wouldn't matter — this is a hard gate on launch itself.
 
 **What it blocks / depends on it:**
-- Online multiplayer (1b below) needs at least a lightweight identity per player.
+- Online multiplayer (A13 below) needs at least a lightweight identity per player.
 - Hub left-rail account row (Sign Up / Log In / Help & Support / Player Profile) — visual placeholders already shipped 2026-09-20, but disabled, "coming soon," no backend behind any of them yet.
-- The planned Review feature (§3 below) needs at least lightweight identity to prevent spam before it can go live past its current placeholder.
+- The planned Review feature (A11 below) needs at least lightweight identity to prevent spam before it can go live past its current placeholder.
 
 **Status:** not started. No implementation has begun — this is pure backlog right now.
 
-### 1b. Online multiplayer server (required, not static-only)
+### A11. Player reviews — product requirement for when Review ships
+
+Human wants the Review feature itself to be the ongoing signal for whether a board feels fair (not a one-off formal playtest) — AI self-play stats can suggest a fairness read but not confirm it; real players actually using the product is the ground truth. For that to work, when Review ships past its current disabled placeholder it needs to be:
+
+1. **Visible** — not buried; easy to find and use from the hub, not a disabled "coming soon" button.
+2. **Inviting** — presented well enough that players actually bother to write something, not a bare textbox.
+3. **Fast to read in aggregate** — a glance at a few weeks of reviews should give a real per-board signal, not require re-reading every review by hand.
+
+Needs its own design pass once accounts (A10) land — reviews need at least lightweight identity to prevent spam. Flagging the requirement now so it isn't designed as a generic "leave feedback" box that misses this specific purpose.
+
+### A12. Tournament plan (Phase 3)
+
+**V1 scope:** single elimination, fixed board+preset per event (host-configured); player registers before start window, bracket generated at close; each pairing = auto-assigned online room, winner advances; disconnect = loss if clock expired, else admin replay (kept minimal for V1).
+
+**Not in V1:** Swiss/round-robin, cash prizes/payment, cross-region latency guarantees.
+
+**Dependencies:** Online Phase 2 stable; persistent identity (even lightweight accounts); an admin tool or config file to create events (CLI first is fine).
+
+### A13. Online multiplayer server (required, not static-only) — HARD BLOCKER
 
 **Goals:**
 - Two humans, two browsers, one authoritative game.
@@ -46,41 +123,27 @@ When an item here ships and is verified: remove it from here, log it in STATUS (
 **Phasing:**
 - **Phase 2a (online core):** guest or simple account (email magic link), room code + share URL, one board + one preset for beta, expand to all 7 once stable.
 - **Phase 2b (polish):** reconnect, rematch, basic stats, report/abandon, all boards + all presets.
-- **Phase 3 (tournament):** scheduled events, single-elimination bracket, server-enforced clocks, DB schema for `tournaments`/`entries`/`pairings`/`results`. Full V1 tournament scope: §13 below.
+- **Phase 3 (tournament):** scheduled events, single-elimination bracket, server-enforced clocks, DB schema for `tournaments`/`entries`/`pairings`/`results`. Full V1 tournament scope: A12 above.
 
 **Status:** not started — architecture only, no code.
 
----
+## Shekhar task — 
 
-## 2. Page 1 UI — HvH Online mode fields (not yet built)
+### A14. Company email setup
 
-When Human vs Human (Online) is selected on Page 1: time preset (§12), center rule, Create room / Join room, then Start match on Page 2 once connected.
+Not done — needed for Play Store registration and general business use.
 
-Tutorial — Coach lesson launches from Page 1; on completion, returns to Page 1 hub.
+### A15. Human playtest, all 7 boards
 
----
+`npm run web:smartbeads`; feel/balance — human sign-off only. Not done.
 
-## 3. Player reviews — product requirement for when Review ships
-
-Human wants the Review feature itself to be the ongoing signal for whether a board feels fair (not a one-off formal playtest) — AI self-play stats can suggest a fairness read but not confirm it; real players actually using the product is the ground truth. For that to work, when Review ships past its current disabled placeholder it needs to be:
-
-1. **Visible** — not buried; easy to find and use from the hub, not a disabled "coming soon" button.
-2. **Inviting** — presented well enough that players actually bother to write something, not a bare textbox.
-3. **Fast to read in aggregate** — a glance at a few weeks of reviews should give a real per-board signal, not require re-reading every review by hand.
-
-Needs its own design pass once accounts (§1a) land — reviews need at least lightweight identity to prevent spam. Flagging the requirement now so it isn't designed as a generic "leave feedback" box that misses this specific purpose.
-
----
-
-## 4. Open risks (carried forward, not yet closed)
+### A16. Open risks (carried forward, not yet closed)
 
 - Touch precision on the 16-bead board (37 nodes, tight spacing) — not yet verified on a real phone/tablet.
 - Expert AI think time (up to ~45s on large boards, no "thinking…" indicator) may read as a frozen/dead app on mobile more than on desktop — worth a mobile-specific check when Android work starts.
 - Everything fixed 2026-09-14/15 (render-crash fix, timer race fix, rewritten chain tests, dead-code removal — full detail in `GPT_PROJECT_AUDIT_05P.md` 5th cycle) is Jest-verified only — no human has watched any of it on a real device or browser yet.
 
----
-
-## 5. Your unconfirmed browser checks
+### A17. Your unconfirmed browser checks
 
 *(Shekhar to fill in: what's already been tested, which boards, when — move confirmed items to a "Confirmed" list below as you go.)*
 
@@ -102,62 +165,66 @@ Needs its own design pass once accounts (§1a) land — reviews need at least li
 4. Same Watch AI setup, 2-3 matches back-to-back via "Play again" — confirms the timer-expiry fix holds under repeated play, not just once.
 5. Any board, get into a multi-jump chain (capture, then another capture available) — confirm "Finish capture" appears and ends the turn correctly.
 
----
+### A18. Hosting — purchase checklist
 
-## 6. Web launch checklist
+Human buys: (1) domain — **DONE**, `rosenlotus.com` / `smartbeadchess.com`; (2) host with Node + DB support, not static-only (see A19 on VPS timing); (3) managed Postgres (or Postgres on the same VPS).
+
+### A19. VPS/hosting timing — don't buy yet
+
+VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Store side (Part B). The real gate is the web engineering work: buying a VPS now means paying for a live server with nothing to deploy to it, since the account system (A10) + multiplayer server (A13) don't exist yet. **Buy VPS when the implementer is actually ready to deploy client+API+DB to staging** — i.e., once A10/A13 are substantially built, not before.
+
+### A20. Choose host, deploy, and go live (remaining web checklist rows)
 
 | Task | Owner | Status / Notes |
 |------|-------|--------|
-| Domain purchase | Shekhar | **DONE** — `rosenlotus.com`, `smartbeadchess.com` purchased |
-| Company email setup | Shekhar | Not done — needed for Play Store registration and general business use |
-| Human playtest, all 7 boards | Shekhar | Not done — `npm run web:smartbeads`; feel/balance sign-off |
-| Bugs from playtest | Shekhar + implementer | Depends on playtest above |
-| `vite build` production script | Implementer | Not done |
-| Choose host (VPS / Railway) | Shekhar | **Not yet — wait.** See §8 below for why |
-| Deploy client + API + DB | Implementer | Blocked on account system (§1) + host choice |
+| Choose host (VPS / Railway) | Shekhar | **Not yet — wait.** See A19 for why |
+| Deploy client + API + DB | Implementer | Blocked on A10 + A13 + host choice |
 | Live smoke vs local | Shekhar | Blocked on deploy |
+
+### A21. AI level 4 — ON HOLD
+
+Depth-3 search timing looked safe on a limited test sample (28 runs, all boards, all completed under 3.1s). A real hang bug was found and fixed in the shared search retry logic along the way (affected Expert today, unrelated to level 4 — fixed, 41/41 tests pass). **Not resumed** — human deferred to later; needs a wider timing sample before it can be called safe. Full investigation history: `GPT_PROJECT_CLOSED_ISSUES_05P.md` §AI level 4.
 
 ---
 
-## 7. Android app checklist (after web hub stable)
+# PART B — APP (Android)
 
-Capacitor wrap confirmed (not native WebView bridge).
+## Claude task 
 
-| Task | Owner | Notes |
-|------|-------|--------|
-| Install Capacitor + Android platform | Implementer | Can start now |
-| Touch verification on device | Shekhar confirms | Especially 16-bead (37 nodes, tight spacing) — can start now |
-| Phone layout pass | Implementer + Shekhar | Can start now |
-| Icon, splash, package ID | Shekhar assets; implementer wires | Can start now |
-| Signed `.aab` + keystore backup | Implementer builds; **Shekhar keeps keystore** | Can start now — loss = cannot ever update the listing again |
-| Play Console listing, privacy policy, content rating | Shekhar | **Blocked on DUNS** — see §11 |
-| Google review | Google | **Blocked on DUNS** — 1–3 days, after §11's testing gate |
+### B1. Install Capacitor + Android platform
+
+Owner: Implementer. Can start now. Capacitor wrap confirmed (not native WebView bridge).
+
+### B2. Icon, splash, package ID
+
+Owner: Shekhar assets; implementer wires. Can start now.
+
+### B3. Signed `.aab` build process
+
+Owner: Implementer builds. Can start now. (Keystore custody itself is a Shekhar task — see B5 below.)
+
+### B4. Phone layout pass
+
+Owner: Implementer + Shekhar. Can start now.
 
 **Out of V1 Android scope — do not let these creep in:** haptics, offline match persistence, native WebView bridge.
 
----
+## Shekhar task — 
 
-## 8. VPS/hosting timing — don't buy yet
+### B5. Keystore backup custody
 
-VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Store side (§11). The real gate is the web engineering work: buying a VPS now means paying for a live server with nothing to deploy to it, since the account system + multiplayer server (§1) don't exist yet. **Buy VPS when the implementer is actually ready to deploy client+API+DB to staging** — i.e., once §1 is substantially built, not before.
+**Shekhar keeps keystore** — loss = cannot ever update the listing again. (Pairs with the build in B3, which I can do; holding the keystore itself cannot be delegated.)
 
----
+### B6. Touch verification on device
 
-## 9. Hosting — deploy pipeline detail
+Owner: Shekhar confirms. Especially 16-bead (37 nodes, tight spacing) — can start now. Needs a real physical device.
 
-**We deploy:** `vite build` static assets → CDN or Nginx; game server container/process → same provider; env secrets (DB URL, JWT/session secret, CORS origin); CI runs the Jest suite on push, deploys on tagged release (human approves).
+### B7. App-side gaps noticed, not previously tracked (flagging for your call)
 
-**Environments:** Production (public URL) and Staging (same stack, separate DB) — staging used for online/timer QA before prod.
+- **Monetization decision** — nothing in any doc states whether the game is free or will ever charge money. This decides whether a Play Store payment profile is needed now (B8 already notes "skip if free" — but that's an assumption, not a confirmed decision).
+- **GST/MSME paperwork freshness** — flagged only once, in B8's MSME check; worth confirming this isn't a wider gap (e.g. GST filing status) rather than a one-line check.
 
----
-
-## 10. Hosting — purchase checklist
-
-Human buys: (1) domain — **DONE**, `rosenlotus.com` / `smartbeadchess.com`; (2) host with Node + DB support, not static-only (see §8 on VPS timing); (3) managed Postgres (or Postgres on the same VPS).
-
----
-
-## 11. Play Store account & launch logistics (blocked on DUNS)
+### B8. After DUNS — sequential, each step blocks the next
 
 **D-U-N-S timing:** near-instant to a couple of days if Dun & Bradstreet already has a record for the business (e.g. tied to a bank loan, GST filing, prior credit check); 5–30 business days if it's a brand-new D-U-N-S from scratch. Check status **inside Play Console** — it's the authoritative tracker, not D&B's own site.
 
@@ -169,6 +236,8 @@ Human buys: (1) domain — **DONE**, `rosenlotus.com` / `smartbeadchess.com`; (2
 - Accept Developer Distribution Agreement.
 - Payment profile — only needed if charging money later; skip if launching free.
 
+**Play Console listing, privacy policy, content rating** — Shekhar.
+
 **Mandatory closed-testing gate (sequential — starts only after account verifies, not parallel with DUNS):**
 1. Upload app to a closed testing track (not production).
 2. Recruit ≥12 testers who opt in (friends/family/colleagues fine — they just install and stay opted in, real active testing not required).
@@ -176,79 +245,6 @@ Human buys: (1) domain — **DONE**, `rosenlotus.com` / `smartbeadchess.com`; (2
 4. Apply for production access → Google review (1–3 days) → goes live.
 5. Prep the 12-tester list and closed-testing build **now**, before DUNS clears, so this doesn't add extra delay once the account verifies. (Sourcing testers is easy: friends/WhatsApp groups, Reddit r/AndroidApps / r/alphaandbetausers, or dev Discord servers — people fill 12 slots within a day or two routinely.)
 6. **Caveat:** Google changes these numbers occasionally — confirm the live figure inside Play Console once the account verifies.
-
----
-
-## 12. Timers (Human vs Human) — engineering detail
-
-**Layer A — Match clock (Chess.com model):** each player has their own bank; ticks only on that player's turn; reach 0:00 → lose on time; UI shows two clocks (opponent top, you bottom), active one highlighted.
-
-**Layer B — Shot clock:** each turn must complete within the board-fixed limit (120s/90s/60s — locked table, see `GPT_PROJECT_DECISIONS_05P.md` §13a); exceeding it is a loss on time, same as a match-clock flag fall; UI is a small per-turn countdown on the active player.
-
-**Why two layers, not one:** a single "whole game ends in N minutes" clock was rejected as the main competitive mode — unfair when move counts differ between players. Match clock rewards overall speed; shot clock stops stalling when someone hoards bank time.
-
-**Historical — superseded split:** the current board-fixed table (locked, `GPT_PROJECT_DECISIONS_05P.md` §13a) supersedes an earlier draft that used a 90s shot clock for 16/12/10-bead and 60s for 8/7/6-bead — that split no longer applies.
-
-**Work remaining (not started):** dual-clock UI, authoritative server-side clock sync for online play, preset wiring on Page 2 for online setup only. PvE stays frozen — do not touch (already locked in `GPT_PROJECT_DECISIONS_05P.md` §6).
-
----
-
-## 13. Tournament plan (Phase 3)
-
-**V1 scope:** single elimination, fixed board+preset per event (host-configured); player registers before start window, bracket generated at close; each pairing = auto-assigned online room, winner advances; disconnect = loss if clock expired, else admin replay (kept minimal for V1).
-
-**Not in V1:** Swiss/round-robin, cash prizes/payment, cross-region latency guarantees.
-
-**Dependencies:** Online Phase 2 stable; persistent identity (even lightweight accounts); an admin tool or config file to create events (CLI first is fine).
-
----
-
-## 14. UI polish backlog
-
-- Match timer progress ring (Human vs Human only) — radial countdown, low-time pulse.
-- Session score counter across rematches.
-- Left panel / settings dedup — hide duplicate mode/account chrome on hub.
-
----
-
-## 15. Engineering hygiene
-
-- Dead-code / doc-mismatch sweep — extend the proven method (grep every reference repo-wide, trace reachability, `tsc --noEmit` clean, tests green, live browser check) from rendering/layout/theme files to the rest of `src/`. Do not remove anything without that full chain of evidence.
-
----
-
-## 16. AI level 4 — ON HOLD
-
-Depth-3 search timing looked safe on a limited test sample (28 runs, all boards, all completed under 3.1s). A real hang bug was found and fixed in the shared search retry logic along the way (affected Expert today, unrelated to level 4 — fixed, 41/41 tests pass). **Not resumed** — human deferred to later; needs a wider timing sample before it can be called safe. Full investigation history: `GPT_PROJECT_CLOSED_ISSUES_05P.md` §AI level 4.
-
----
-
-## 17. Coach video polish — optional, needs your explicit go
-
-1. Highlight active panel bullet during playback.
-2. ~2s hold after each demo move before the next snap.
-
-Video 2 (timers, shot clock, centre rules) — planned, not started.
-
----
-
-## 18. Implementation order (suggested)
-
-1. Page 1 hub + Page 2 setup — AI + tutorial (local); online fields stubbed; no PvE timer changes.
-2. Dual match clocks + shot UI — presets on Page 2 for HvH only; server sync when online ships.
-3. `vite build` + staging deploy — client bundle; add game-server host.
-4. Game server — room create/join, move relay, server clocks.
-5. Online HvH beta — all boards, reconnect, rematch.
-6. Tournament MVP — single elimination.
-7. Mobile/touch — viewport, hitboxes (feeds Capacitor Android).
-
----
-
-## 19. Gaps noticed, not previously tracked anywhere (flagging for your call)
-
-- **Privacy policy / Terms of Service for the web app itself** — currently only tracked for the Android Play Store listing (§11); but the web app also collects account signup data, so it likely needs its own privacy policy/ToS page before public launch, not just an app-store listing.
-- **Monetization decision** — nothing in any doc states whether the game is free or will ever charge money. This decides whether a Play Store payment profile is needed now (§11 already notes "skip if free" — but that's an assumption, not a confirmed decision).
-- **GST/MSME paperwork freshness** — flagged only once, in §11's MSME check; worth confirming this isn't a wider gap (e.g. GST filing status) rather than a one-line check.
 
 ---
 
