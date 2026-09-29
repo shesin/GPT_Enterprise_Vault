@@ -8,6 +8,29 @@ Target: up to 5 pages.
 
 ---
 
+## PENDING A2 done: match-clock ring + session score counter (2026-09-29)
+
+Was PENDING item A2 (UI polish backlog), remaining 2 sub-items after the 3rd ("left panel dedup") was found already-shipped and removed separately (see next entry below).
+
+1. **Match timer progress ring (HvH only) + low-time pulse.** Added `.match-ring` SVG markup beside `#timer-mmss-p1`/`#timer-mmss-p2` in `index.html`, following the existing shot-clock ring's exact visual pattern (same geometry/CSS variable approach). New `updateMatchRing()` in `timerDisplay.ts`; wired into `PlayController.ts`'s `updateUI()`, gated strictly behind `tournamentActive` (HvH only) — the PvE/shared-timer branches explicitly force the ring off, so PvE timer UI/behaviour is untouched per the standing PvE-frozen rule. Low-time pulse (`.low-time` class → `match-ring-pulse` keyframes) triggers at ≤5s remaining, reusing the same threshold already used for the existing audio warning cue (no new magic number). Verified: `tsc --noEmit` clean, full suite 671/671, live browser check (ring renders, tracks the tournament clock, low-time class/animation confirmed wired via direct DOM inspection).
+2. **Session score counter across rematches.** New `sessionScore` state (module-level, outside `session` since `session` itself gets replaced on every `resetGame()`) tallies wins per side; increments once per game-over transition (reusing the existing `lastGameOverPlayed` one-shot flag). Displayed as a "Session" row (hidden until ≥1 decisive game), shown via new `renderSessionScore()` helper. Persists across `resetGame()` (both "New game" and "Play again" call the same function in this codebase — confirmed by reading the code, not assumed); resets on `returnToHub()` and `prepareBoardSwitch()` (leaving the match or changing board). Draws don't count toward either side (design choice — ambiguous which side a draw would credit).
+   - **Real bug found and fixed during live verification, not just claimed:** the render call was positioned earlier in `updateUI()` than the win-detection/increment code, so on the exact tick a game ended, the DOM would still show the pre-increment count; since the AI-turn/timer interval can stop ticking once the game is over, `updateUI()` might never run again, permanently freezing the display at the stale count. Watched this happen live (closure state correctly held `BLUE: 1` while the DOM still showed `0W`), traced it to the ordering bug, fixed by extracting a `renderSessionScore()` helper called both in its original spot and again immediately after the increment. Re-verified live: works correctly across 2 fresh AI-vs-AI matches (1 draw — correctly no-op; 1 decisive win — row appeared showing `1W`, persisted through a "Play again" rematch).
+   - Also found and fixed in the same pass: the `hidden` HTML attribute alone didn't hide the new row, because `.play-block-row { display: flex }` (an author-defined class, same CSS specificity) overrides the browser's default `[hidden] { display: none }` UA rule. Added an explicit `.session-score-row[hidden] { display: none; }` override.
+
+---
+
+## PENDING A2 sub-item stale: "left panel / settings dedup" already shipped (2026-09-29)
+
+Was one of 3 bullets under PENDING A2 (UI polish backlog). Checked `index.html`'s Page 2 board settings panel against the Page 1 hub mode-select: no duplicate mode/account chrome exists — confirmed by grep (no duplicate IDs) and an existing regression test, `playerBarShell.test.ts:21,28` (`not.toContain('id="start-mode-select"')`, `not.toContain('id="game-mode-select"')`, `toContain('id="hub-mode-select"')`). `GPT_PROJECT_STATUS_01P.md:117` already records this as done 2026-09-11 ("Settings game mode | OK — hub page 1 `#hub-mode-select` only; not on board settings panel"). The PENDING bullet was simply never removed after the fix shipped. Removed from PENDING A2; no code change needed.
+
+---
+
+## Dead-code / doc-mismatch sweep extended to rest of `src/` (2026-09-29)
+
+Was PENDING item A2 (web checklist, "Engineering hygiene"). Full detail and evidence in `GPT_PROJECT_AUDIT_05P.md` (2026-09-29 entry). Summary: `tsc --noEmit` had a real error (stale test fixture, fixed), two independent automated dead-code scans of all of `src/` came back clean, and one real doc-vs-code mismatch was found and fixed (AI levels 4–5 removal was actually complete but STATUS/DECISIONS still described it as pending — both corrected). Full suite verified 671/671 passing after the fix.
+
+---
+
 ## `vite build` production script added (2026-09-29)
 
 Was PENDING item A1 (web checklist). `package.json` had only `web:smartbeads` (`vite`, dev server — hot-reload, unoptimized, no build artifact). No `build` or `preview` script existed, so there was nothing to actually deploy.

@@ -19,6 +19,11 @@ Only this repo (`Gpt_Enterprise_Vault`). Never create, edit, move, or delete any
 1. Quote the ask — one line.
 2. `Go — <task>` + **Files:** (exact paths) + **Out:** (exclusions, or "NONE").
 
+## PENDING doc — specific rules (2026-09-29)
+- Plain **`go`** / **`do`** alone (no file path, no need to type "PENDING") is sufficient authorization for any edit in this vault, including `GPT_PROJECT_PENDING_01P.md` — overrides the literal `Go — PENDING` phrasing required elsewhere in this file/RULES doc.
+- Still show the exact new PENDING content in chat before writing it
+- dont renumber PENDING items.
+
 ## "Stop, read claude.md, then act"
 If the user says this (or equivalent — you're visibly failing/repeating a mistake), immediately: (1) stop all edits/pushes, (2) re-read this file fresh from disk (not from memory), (3) name explicitly which rule(s) were broken in recent actions, (4) only then resume.
 

@@ -22,6 +22,26 @@ export function updatePlayerTimerMmss(
   el.textContent = fmtClock(displaySec);
 }
 
+export function updateMatchRing(
+  ringEl: HTMLElement | null,
+  displaySec: number,
+  limitSec: number,
+  lowTime: boolean,
+): void {
+  if (!ringEl) return;
+  if (limitSec <= 0) {
+    ringEl.classList.add('off');
+    ringEl.classList.remove('low-time');
+    ringEl.style.setProperty('--match-pct', '1');
+    return;
+  }
+  ringEl.classList.remove('off');
+  const clamped = Math.max(0, displaySec);
+  const pct = limitSec > 0 ? clamped / limitSec : 0;
+  ringEl.style.setProperty('--match-pct', String(pct));
+  ringEl.classList.toggle('low-time', lowTime);
+}
+
 export function updateShotRing(
   ringEl: HTMLElement | null,
   secEl: HTMLElement | null,

@@ -383,6 +383,13 @@ body {
   color: var(--gold);
   font-weight: 800;
 }
+.session-score-row .val {
+  color: var(--text);
+  font-weight: 700;
+}
+.session-score-row[hidden] {
+  display: none;
+}
 .shot-ring {
   --shot-pct: 1;
   position: relative;
@@ -422,6 +429,38 @@ body {
 }
 .shot-ring.off .shot-ring-progress { stroke: rgba(155, 181, 166, 0.35); }
 .shot-ring.off .shot-ring-sec { color: var(--muted); }
+.match-ring {
+  --match-pct: 1;
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.match-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.match-ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 3;
+}
+.match-ring-progress {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 106.8;
+  stroke-dashoffset: calc(106.8 * (1 - var(--match-pct)));
+  transition: stroke-dashoffset 0.35s linear;
+}
+.match-ring.off .match-ring-progress { stroke: rgba(155, 181, 166, 0.35); }
+.match-ring.low-time .match-ring-progress { animation: match-ring-pulse 1s ease-in-out infinite; }
+@keyframes match-ring-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
 .ad-slot {
   align-self: start;
   width: var(--ad-column-width);

@@ -285,6 +285,19 @@ Full detail, per-board verdict table, and the alternative-comparison table are i
 
 ---
 
+## Engineering work log (2026-09-29, Claude) — PENDING A2, dead-code/doc-mismatch sweep extended to rest of `src/`
+
+Scope: the 5th cycle covered rendering/layout/theme + AI eval/timers/dead-tests in depth; this pass extended the same method to the areas it hadn't touched — `config/`, `core/`, `models/`, `playtest/web/audio/`, and a full repo-wide automated scan (not just the sampled areas).
+
+1. **Real bug found: `tsc --noEmit` was not clean** — `GameFeatureSettings.test.ts:59` passed `coachBlueLevel: 5` as a plain number literal against the `AiLevel = 1 | 2 | 3` type. The test's *intent* is legitimate (exercises `clampUiAiLevel` defensively clamping a stale/legacy stored value down to 3) — the type was tightened since the test was written and the fixture was never updated to match, exactly the "invalid test fixture value" class of bug the 5th cycle warned about recurring. **Fixed:** `5 as unknown as AiLevel` with an inline comment explaining the intentional out-of-range value; `AiLevel` type imported. **Verified:** `tsc --noEmit` → 0 errors; `GameFeatureSettings.test.ts` → 8/8 passing; full suite → 671/671 passing (all 6 batches, exit 0).
+2. **Automated dead-code scan, two methods, both clean:** (a) every `export function/const/class/interface/type` in `src/` (excl. tests) checked for total repo-wide occurrence count ≤1 (i.e. never referenced anywhere outside its own declaration) — zero hits. (b) every non-test `.ts` file checked for whether any other file imports/references it by basename — only `playtest/web/main.ts` came back unreferenced, confirmed as the legitimate Vite entry point (`index.html:356`), not dead code. No exported symbol or file removed — none warranted it.
+3. **Doc-mismatch found and fixed (STATUS + DECISIONS):** both docs still described AI levels 4–5 as "in code pending removal" / "HonestAi still accepts 4–5 if passed in code." Grepped `HonestAi.ts` and the `AiLevel` type definition directly — confirmed zero level-4/5 code paths remain anywhere (the type is a hard `1 | 2 | 3` with no bypass cast). The removal had actually completed since those doc rows were written; they were just never updated. Fixed both: `GPT_PROJECT_STATUS_01P.md` § Integrity row → `VERIFIED CLEAN`; `GPT_PROJECT_DECISIONS_05P.md` §10 → "fully removed."
+4. **Spot-checked, confirmed clean (no bug found):** `SoundManifest.ts`'s 8-entry `SFX_URLS` map against actual files in `public/audio/` — exact match, 8/8. `BoardCatalog.ts` default settings (`centerRule: 'off'`, all timers `'off'`) against `GPT_PROJECT_DECISIONS_05P.md` §5/§6 — matches on every board checked.
+
+**Verified, not just claimed:** every finding above traced to an actual grep/type-check/test-run result before being reported, per Rule - Audit Completeness — no gap-list-only findings.
+
+---
+
 ## Recommendation
 
 Do not soft-pedal language in future status docs. Prefer failing tests over narrative confidence. When adding a new failure cycle, append a dated section here or create `GPT_PROJECT_AUDIT_06P.md` — do not scatter audits in subfolders.

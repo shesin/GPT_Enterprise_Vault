@@ -221,15 +221,9 @@ function wireHubThemePicker(): void {
   updateHubBoardPreview();
 }
 
-type HubPageLook = 'green' | 'black' | 'black-l1' | 'black-l2' | 'black-l3';
+type HubPageLook = 'green' | 'black';
 const HUB_PAGE_LOOK_STORAGE_KEY = 'sb-hub-page-look';
-const HUB_PAGE_LOOK_VALUES: ReadonlyArray<HubPageLook> = [
-  'green',
-  'black',
-  'black-l1',
-  'black-l2',
-  'black-l3',
-];
+const HUB_PAGE_LOOK_VALUES: ReadonlyArray<HubPageLook> = ['green', 'black'];
 
 function readStoredHubPageLook(): HubPageLook {
   const stored = localStorage.getItem(HUB_PAGE_LOOK_STORAGE_KEY);

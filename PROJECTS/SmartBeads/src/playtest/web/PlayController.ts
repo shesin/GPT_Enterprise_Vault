@@ -81,7 +81,7 @@ import {
   LastMoveHighlight,
   CapturePulse,
 } from './render/CanvasBoardRenderer';
-import { updatePlayerTimerMmss, updateShotRing } from './render/timerDisplay';
+import { updateMatchRing, updatePlayerTimerMmss, updateShotRing } from './render/timerDisplay';
 import { soundEffects } from './audio/SoundEffects';
 
 export {
@@ -121,6 +121,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   const capturePulseStarts: Array<{ nodeId: number; startMs: number }> = [];
   const CAPTURE_PULSE_MS = 420;
   let prevCaptures = { RED: 0, BLUE: 0 };
+  /** Session win tally, persists across "New game" / "Play again" rematches; reset on hub return or board switch. Draws don't count toward either side. */
+  let sessionScore = { RED: 0, BLUE: 0 };
   let lastBoardStatusText = '';
   /** Alternates who opens each new match (New game / Play again). RED = cream/human in PvE. */
   let nextGameStarter: Player = 'RED';
@@ -732,11 +734,24 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     return !!document.getElementById('play-hub');
   }
 
+  function renderSessionScore(): void {
+    const hasSessionScore = sessionScore.RED > 0 || sessionScore.BLUE > 0;
+    const scoreRowP1 = document.getElementById('session-score-row-p1');
+    const scoreRowP2 = document.getElementById('session-score-row-p2');
+    if (scoreRowP1) scoreRowP1.hidden = !hasSessionScore;
+    if (scoreRowP2) scoreRowP2.hidden = !hasSessionScore;
+    const scoreP1 = document.getElementById('p1-session-score');
+    const scoreP2 = document.getElementById('p2-session-score');
+    if (scoreP1) scoreP1.textContent = `${sessionScore.RED}W`;
+    if (scoreP2) scoreP2.textContent = `${sessionScore.BLUE}W`;
+  }
+
   function returnToHub(): void {
     if (timerId) clearInterval(timerId);
     timerId = null;
     cancelAiWork();
     stopCoachVideo();
+    sessionScore = { RED: 0, BLUE: 0 };
     document.getElementById('play-shell')?.classList.add('is-hidden');
     document.getElementById('play-hub')?.classList.remove('is-hidden');
   }
@@ -1051,6 +1066,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     (document.getElementById('cream-panel-role') as HTMLElement).textContent =
       settings.mode === 'spectate' ? '(AI)' : settings.mode === 'coach' ? '(Lesson)' : '(Human)';
 
+    renderSessionScore();
+
     (document.getElementById('top-p1-capture') as HTMLElement).textContent = String(
       state.captures.RED,
     );
@@ -1119,16 +1136,26 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     const shotLimit = session.getShotLimit();
     const timerP1El = document.getElementById('timer-mmss-p1');
     const timerP2El = document.getElementById('timer-mmss-p2');
+    const matchRingP1El = document.getElementById('match-ring-p1');
+    const matchRingP2El = document.getElementById('match-ring-p2');
     if (tournamentActive) {
-      updatePlayerTimerMmss(timerP1El, session.getP1Clock(), timerLimitSec);
-      updatePlayerTimerMmss(timerP2El, session.getP2Clock(), timerLimitSec);
+      const p1Clock = session.getP1Clock();
+      const p2Clock = session.getP2Clock();
+      updatePlayerTimerMmss(timerP1El, p1Clock, timerLimitSec);
+      updatePlayerTimerMmss(timerP2El, p2Clock, timerLimitSec);
+      updateMatchRing(matchRingP1El, p1Clock, timerLimitSec, p1Clock <= 5 && p1Clock > 0);
+      updateMatchRing(matchRingP2El, p2Clock, timerLimitSec, p2Clock <= 5 && p2Clock > 0);
     } else if (timerLimitSec > 0) {
       const sharedRem = session.getGlobalMatchRemaining();
       updatePlayerTimerMmss(timerP1El, sharedRem, timerLimitSec);
       updatePlayerTimerMmss(timerP2El, sharedRem, timerLimitSec);
+      updateMatchRing(matchRingP1El, 0, 0, false);
+      updateMatchRing(matchRingP2El, 0, 0, false);
     } else {
       updatePlayerTimerMmss(timerP1El, 0, 0);
       updatePlayerTimerMmss(timerP2El, 0, 0);
+      updateMatchRing(matchRingP1El, 0, 0, false);
+      updateMatchRing(matchRingP2El, 0, 0, false);
     }
 
     const shotRemaining = session.getShotRemaining();
@@ -1206,6 +1233,10 @@ export function bootstrapPlayShell(onReady?: () => void): void {
         resultModal.style.display = 'flex';
         if (!lastGameOverPlayed) {
           lastGameOverPlayed = true;
+          if (winner === 'RED' || winner === 'BLUE') {
+            sessionScore[winner] += 1;
+            renderSessionScore();
+          }
           resultModal.classList.remove('animate');
           void resultModal.offsetWidth;
           resultModal.classList.add('animate');
@@ -1670,6 +1701,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     turnCaptures = 0;
     clearMoveFeedback();
     prevCaptures = { RED: 0, BLUE: 0 };
+    sessionScore = { RED: 0, BLUE: 0 };
 
     currentBoardId = boardId;
     boardSelect.value = boardId;

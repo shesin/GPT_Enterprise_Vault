@@ -9,6 +9,7 @@ import {
   HUMAN_PVE_MAX_AI_LEVEL,
   MAX_UI_AI_LEVEL,
   normalizeTimerSettings,
+  type AiLevel,
 } from '../GameFeatureSettings';
 
 describe('GameFeatureSettings AI labels', () => {
@@ -56,7 +57,7 @@ describe('GameFeatureSettings coach watch', () => {
   it('buildCoachWatchSettings maps cream coach + black AI levels', () => {
     const settings = buildCoachWatchSettings({
       coachRedLevel: 2,
-      coachBlueLevel: 5,
+      coachBlueLevel: 5 as unknown as AiLevel, // intentionally out-of-range: exercises clampUiAiLevel on a stale/legacy stored value
       timer: '10',
       tournamentTimer: 'off',
       shotClock: '60',

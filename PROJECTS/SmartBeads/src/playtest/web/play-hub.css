@@ -68,75 +68,11 @@
   --hub-brand: #ffffff !important;
   --hub-ad-bg: oklch(13% 0 0) !important;
   --hub-ad-border: oklch(55% .07 95 / 35%) !important;
-  --hub-look-box-bg: oklch(19% 0 0) !important;
+  --hub-look-box-bg: oklch(34% 0 0) !important;
 }
 
 body.hub-page {
   background: oklch(28% .11 158);
-}
-
-/* Lighter black variants (2026-09-26) — same structure as [data-hub-page-look="black"],
-   progressively lighter card/page so the dark board-look swatches (Purple Night,
-   Classic Green, Ocean Blue) stay visible against the hub card background. */
-.play-hub[data-hub-page-look="black-l1"] {
-  --hub-page-bg: oklch(12% 0 0) !important;
-  --hub-rail-bg: linear-gradient(165deg, oklch(16% 0 0), oklch(9% 0 0)) !important;
-  --hub-centre-bg: oklch(12% 0 0) !important;
-  --hub-card-bg: oklch(20% 0 0 / 92%) !important;
-  --hub-card-hover: oklch(24% 0 0 / 96%) !important;
-  --hub-border: oklch(55% .07 95 / 35%) !important;
-  --hub-border-soft: oklch(55% .07 95 / 35%) !important;
-  --hub-text: #ffffff !important;
-  --hub-muted: #ffffff !important;
-  --hub-centre-text: #ffffff !important;
-  --hub-centre-muted: #ffffff !important;
-  --hub-accent: #c9a24a !important;
-  --hub-accent-soft: #e6ce94 !important;
-  --hub-accent-ring: #c9a24a73 !important;
-  --hub-brand: #ffffff !important;
-  --hub-ad-bg: oklch(16% 0 0) !important;
-  --hub-ad-border: oklch(55% .07 95 / 35%) !important;
-  --hub-look-box-bg: oklch(24% 0 0) !important;
-}
-.play-hub[data-hub-page-look="black-l2"] {
-  --hub-page-bg: oklch(15% 0 0) !important;
-  --hub-rail-bg: linear-gradient(165deg, oklch(19% 0 0), oklch(11% 0 0)) !important;
-  --hub-centre-bg: oklch(15% 0 0) !important;
-  --hub-card-bg: oklch(24% 0 0 / 92%) !important;
-  --hub-card-hover: oklch(28% 0 0 / 96%) !important;
-  --hub-border: oklch(55% .07 95 / 35%) !important;
-  --hub-border-soft: oklch(55% .07 95 / 35%) !important;
-  --hub-text: #ffffff !important;
-  --hub-muted: #ffffff !important;
-  --hub-centre-text: #ffffff !important;
-  --hub-centre-muted: #ffffff !important;
-  --hub-accent: #c9a24a !important;
-  --hub-accent-soft: #e6ce94 !important;
-  --hub-accent-ring: #c9a24a73 !important;
-  --hub-brand: #ffffff !important;
-  --hub-ad-bg: oklch(19% 0 0) !important;
-  --hub-ad-border: oklch(55% .07 95 / 35%) !important;
-  --hub-look-box-bg: oklch(28% 0 0) !important;
-}
-.play-hub[data-hub-page-look="black-l3"] {
-  --hub-page-bg: oklch(19% 0 0) !important;
-  --hub-rail-bg: linear-gradient(165deg, oklch(23% 0 0), oklch(15% 0 0)) !important;
-  --hub-centre-bg: oklch(19% 0 0) !important;
-  --hub-card-bg: oklch(30% 0 0 / 92%) !important;
-  --hub-card-hover: oklch(34% 0 0 / 96%) !important;
-  --hub-border: oklch(55% .07 95 / 35%) !important;
-  --hub-border-soft: oklch(55% .07 95 / 35%) !important;
-  --hub-text: #ffffff !important;
-  --hub-muted: #ffffff !important;
-  --hub-centre-text: #ffffff !important;
-  --hub-centre-muted: #ffffff !important;
-  --hub-accent: #c9a24a !important;
-  --hub-accent-soft: #e6ce94 !important;
-  --hub-accent-ring: #c9a24a73 !important;
-  --hub-brand: #ffffff !important;
-  --hub-ad-bg: oklch(23% 0 0) !important;
-  --hub-ad-border: oklch(55% .07 95 / 35%) !important;
-  --hub-look-box-bg: oklch(34% 0 0) !important;
 }
 
 /* Hub page-background swatch picker (top of left rail, below logo). */
@@ -158,18 +94,6 @@ body.hub-page {
 
 .hub-page-look-swatch--black {
   background: oklch(9% 0 0);
-}
-
-.hub-page-look-swatch--black-l1 {
-  background: oklch(12% 0 0);
-}
-
-.hub-page-look-swatch--black-l2 {
-  background: oklch(15% 0 0);
-}
-
-.hub-page-look-swatch--black-l3 {
-  background: oklch(19% 0 0);
 }
 
 .hub-page-look-swatch--green {
