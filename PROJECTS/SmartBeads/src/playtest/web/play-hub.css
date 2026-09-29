@@ -1008,10 +1008,26 @@ body.hub-edit-active .hub-edit-dragging {
 
   .hub-board-tile-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .hub-board-tile {
+    min-height: 84px;
+    padding: 6px 3px;
   }
 
   .hub-mode-tile-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Squeeze "Choose board look" ~15% smaller on mobile (2026-09-29, human request). */
+  #hub-section-look .play-theme-swatch {
+    width: 34px;
+    height: 24px;
+  }
+
+  .hub-board-preview-grid {
+    max-width: 136px;
   }
 }
 
