@@ -9,35 +9,31 @@ When an item here ships and is verified: remove it from here, log it in STATUS (
 **Ordering note :** within each Part below, items are grouped into "Claude task" (agent-doable, ordered smallest effort → largest) and "Shekhar task" (needs Shekhar directly — account creation, purchases, physical-device checks, subjective sign-off). Items are numbered sequentially in this new order (A1, A2, A3… / B1, B2, B3…)
 ---
 
-**Recommendation :** knock out the small web wins (A1–A9) first since they're fast and close out quickly, then run Android's B1–B4 in parallel with the two web hard blockers.
+**Recommendation :** knock out the small web wins (A1–A8) first since they're fast and close out quickly, then run Android's B1–B4 in parallel with the two web hard blockers.
 
 # PART A — WEB (nothing here is gated by DUNS — DUNS only affects the Android/Play Store side in Part B)
 
 
 ## Claude task 
 
-### A1. `vite build` production script
-
-Implementer. Not done. Client static bundle.
-
-### A2. Coach video polish — optional, needs your explicit go
+### A1. Coach video polish — optional, needs your explicit go
 
 1. Highlight active panel bullet during playback.
 2. ~2s hold after each demo move before the next snap.
 
 Video 2 (timers, shot clock, centre rules) — planned, not started.
 
-### A3. Engineering hygiene
+### A2. Engineering hygiene
 
 - Dead-code / doc-mismatch sweep — extend the proven method (grep every reference repo-wide, trace reachability, `tsc --noEmit` clean, tests green, live browser check) from rendering/layout/theme files to the rest of `src/`. Do not remove anything without that full chain of evidence.
 
-### A4. UI polish backlog
+### A3. UI polish backlog
 
 - Match timer progress ring (Human vs Human only) — radial countdown, low-time pulse.
 - Session score counter across rematches.
 - Left panel / settings dedup — hide duplicate mode/account chrome on hub.
 
-### A5. Timers (Human vs Human) — engineering detail
+### A4. Timers (Human vs Human) — engineering detail
 
 **Layer A — Match clock (Chess.com model):** each player has their own bank; ticks only on that player's turn; reach 0:00 → lose on time; UI shows two clocks (opponent top, you bottom), active one highlighted.
 
@@ -49,38 +45,38 @@ Video 2 (timers, shot clock, centre rules) — planned, not started.
 
 **Work remaining (not started):** dual-clock UI, authoritative server-side clock sync for online play, preset wiring on Page 2 for online setup only. PvE stays frozen — do not touch (already locked in `GPT_PROJECT_DECISIONS_05P.md` §6).
 
-### A6. Page 1 UI — HvH Online mode fields (not yet built)
+### A5. Page 1 UI — HvH Online mode fields (not yet built)
 
-When Human vs Human (Online) is selected on Page 1: time preset (A5), center rule, Create room / Join room, then Start match on Page 2 once connected.
+When Human vs Human (Online) is selected on Page 1: time preset (A4), center rule, Create room / Join room, then Start match on Page 2 once connected.
 
 Tutorial — Coach lesson launches from Page 1; on completion, returns to Page 1 hub.
 
-### A7. Bugs from playtest
+### A6. Bugs from playtest
 
-Depends on A15. Failing test before fix, per standing rule.
+Depends on A14. Failing test before fix, per standing rule.
 
-### A8. Web-side gap noticed, not previously tracked (flagging for your call)
+### A7. Web-side gap noticed, not previously tracked (flagging for your call)
 
 - **Privacy policy / Terms of Service for the web app itself** — currently only tracked for the Android Play Store listing (Part B); but the web app also collects account signup data, so it likely needs its own privacy policy/ToS page before public launch, not just an app-store listing.
 
-### A9. Hosting — deploy pipeline detail
+### A8. Hosting — deploy pipeline detail
 
 **We deploy:** `vite build` static assets → CDN or Nginx; game server container/process → same provider; env secrets (DB URL, JWT/session secret, CORS origin); CI runs the Jest suite on push, deploys on tagged release (human approves).
 
 **Environments:** Production (public URL) and Staging (same stack, separate DB) — staging used for online/timer QA before prod.
 
-### A10. Full account system (signup / login / profile) — HARD BLOCKER
+### A9. Full account system (signup / login / profile) — HARD BLOCKER
 
 **Why non-negotiable:** human decision, 2026-09-19 — *"will not go to market without the full account system — not optional, not deferrable to a later phase."* Not a feature nice-to-have: the product vision explicitly rejects a guest-only / room-code-only launch. Every other web checklist item can be finished and it still wouldn't matter — this is a hard gate on launch itself.
 
 **What it blocks / depends on it:**
-- Online multiplayer (A13 below) needs at least a lightweight identity per player.
+- Online multiplayer (A11 below) needs at least a lightweight identity per player.
 - Hub left-rail account row (Sign Up / Log In / Help & Support / Player Profile) — visual placeholders already shipped 2026-09-20, but disabled, "coming soon," no backend behind any of them yet.
-- The planned Review feature (A11 below) needs at least lightweight identity to prevent spam before it can go live past its current placeholder.
+- The planned Review feature (A10 below) needs at least lightweight identity to prevent spam before it can go live past its current placeholder.
 
 **Status:** not started. No implementation has begun — this is pure backlog right now.
 
-### A11. Player reviews — product requirement for when Review ships
+### A10. Player reviews — product requirement for when Review ships
 
 Human wants the Review feature itself to be the ongoing signal for whether a board feels fair (not a one-off formal playtest) — AI self-play stats can suggest a fairness read but not confirm it; real players actually using the product is the ground truth. For that to work, when Review ships past its current disabled placeholder it needs to be:
 
@@ -88,17 +84,9 @@ Human wants the Review feature itself to be the ongoing signal for whether a boa
 2. **Inviting** — presented well enough that players actually bother to write something, not a bare textbox.
 3. **Fast to read in aggregate** — a glance at a few weeks of reviews should give a real per-board signal, not require re-reading every review by hand.
 
-Needs its own design pass once accounts (A10) land — reviews need at least lightweight identity to prevent spam. Flagging the requirement now so it isn't designed as a generic "leave feedback" box that misses this specific purpose.
+Needs its own design pass once accounts (A9) land — reviews need at least lightweight identity to prevent spam. Flagging the requirement now so it isn't designed as a generic "leave feedback" box that misses this specific purpose.
 
-### A12. Tournament plan (Phase 3)
-
-**V1 scope:** single elimination, fixed board+preset per event (host-configured); player registers before start window, bracket generated at close; each pairing = auto-assigned online room, winner advances; disconnect = loss if clock expired, else admin replay (kept minimal for V1).
-
-**Not in V1:** Swiss/round-robin, cash prizes/payment, cross-region latency guarantees.
-
-**Dependencies:** Online Phase 2 stable; persistent identity (even lightweight accounts); an admin tool or config file to create events (CLI first is fine).
-
-### A13. Online multiplayer server (required, not static-only) — HARD BLOCKER
+### A11. Online multiplayer server (required, not static-only) — HARD BLOCKER
 
 **Goals:**
 - Two humans, two browsers, one authoritative game.
@@ -123,27 +111,35 @@ Needs its own design pass once accounts (A10) land — reviews need at least lig
 **Phasing:**
 - **Phase 2a (online core):** guest or simple account (email magic link), room code + share URL, one board + one preset for beta, expand to all 7 once stable.
 - **Phase 2b (polish):** reconnect, rematch, basic stats, report/abandon, all boards + all presets.
-- **Phase 3 (tournament):** scheduled events, single-elimination bracket, server-enforced clocks, DB schema for `tournaments`/`entries`/`pairings`/`results`. Full V1 tournament scope: A12 above.
+- **Phase 3 (tournament):** scheduled events, single-elimination bracket, server-enforced clocks, DB schema for `tournaments`/`entries`/`pairings`/`results`. Full V1 tournament scope: A12 below.
 
 **Status:** not started — architecture only, no code.
 
+### A12. Tournament plan (Phase 3)
+
+**V1 scope:** single elimination, fixed board+preset per event (host-configured); player registers before start window, bracket generated at close; each pairing = auto-assigned online room, winner advances; disconnect = loss if clock expired, else admin replay (kept minimal for V1).
+
+**Not in V1:** Swiss/round-robin, cash prizes/payment, cross-region latency guarantees.
+
+**Dependencies:** Online Phase 2 stable; persistent identity (even lightweight accounts); an admin tool or config file to create events (CLI first is fine).
+
 ## Shekhar task — 
 
-### A14. Company email setup
+### A13. Company email setup
 
 Not done — needed for Play Store registration and general business use.
 
-### A15. Human playtest, all 7 boards
+### A14. Human playtest, all 7 boards
 
 `npm run web:smartbeads`; feel/balance — human sign-off only. Not done.
 
-### A16. Open risks (carried forward, not yet closed)
+### A15. Open risks (carried forward, not yet closed)
 
 - Touch precision on the 16-bead board (37 nodes, tight spacing) — not yet verified on a real phone/tablet.
 - Expert AI think time (up to ~45s on large boards, no "thinking…" indicator) may read as a frozen/dead app on mobile more than on desktop — worth a mobile-specific check when Android work starts.
 - Everything fixed 2026-09-14/15 (render-crash fix, timer race fix, rewritten chain tests, dead-code removal — full detail in `GPT_PROJECT_AUDIT_05P.md` 5th cycle) is Jest-verified only — no human has watched any of it on a real device or browser yet.
 
-### A17. Your unconfirmed browser checks
+### A16. Your unconfirmed browser checks
 
 *(Shekhar to fill in: what's already been tested, which boards, when — move confirmed items to a "Confirmed" list below as you go.)*
 
@@ -165,23 +161,23 @@ Not done — needed for Play Store registration and general business use.
 4. Same Watch AI setup, 2-3 matches back-to-back via "Play again" — confirms the timer-expiry fix holds under repeated play, not just once.
 5. Any board, get into a multi-jump chain (capture, then another capture available) — confirm "Finish capture" appears and ends the turn correctly.
 
-### A18. Hosting — purchase checklist
+### A17. Hosting — purchase checklist
 
-Human buys: (1) domain — **DONE**, `rosenlotus.com` / `smartbeadchess.com`; (2) host with Node + DB support, not static-only (see A19 on VPS timing); (3) managed Postgres (or Postgres on the same VPS).
+Human buys: (1) domain — **DONE**, `rosenlotus.com` / `smartbeadchess.com`; (2) host with Node + DB support, not static-only (see A18 on VPS timing); (3) managed Postgres (or Postgres on the same VPS).
 
-### A19. VPS/hosting timing — don't buy yet
+### A18. VPS/hosting timing — don't buy yet
 
-VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Store side (Part B). The real gate is the web engineering work: buying a VPS now means paying for a live server with nothing to deploy to it, since the account system (A10) + multiplayer server (A13) don't exist yet. **Buy VPS when the implementer is actually ready to deploy client+API+DB to staging** — i.e., once A10/A13 are substantially built, not before.
+VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Store side (Part B). The real gate is the web engineering work: buying a VPS now means paying for a live server with nothing to deploy to it, since the account system (A9) + multiplayer server (A11) don't exist yet. **Buy VPS when the implementer is actually ready to deploy client+API+DB to staging** — i.e., once A9/A11 are substantially built, not before.
 
-### A20. Choose host, deploy, and go live (remaining web checklist rows)
+### A19. Choose host, deploy, and go live (remaining web checklist rows)
 
 | Task | Owner | Status / Notes |
 |------|-------|--------|
-| Choose host (VPS / Railway) | Shekhar | **Not yet — wait.** See A19 for why |
-| Deploy client + API + DB | Implementer | Blocked on A10 + A13 + host choice |
+| Choose host (VPS / Railway) | Shekhar | **Not yet — wait.** See A18 for why |
+| Deploy client + API + DB | Implementer | Blocked on A9 + A11 + host choice |
 | Live smoke vs local | Shekhar | Blocked on deploy |
 
-### A21. AI level 4 — ON HOLD
+### A20. AI level 4 — ON HOLD
 
 Depth-3 search timing looked safe on a limited test sample (28 runs, all boards, all completed under 3.1s). A real hang bug was found and fixed in the shared search retry logic along the way (affected Expert today, unrelated to level 4 — fixed, 41/41 tests pass). **Not resumed** — human deferred to later; needs a wider timing sample before it can be called safe. Full investigation history: `GPT_PROJECT_CLOSED_ISSUES_05P.md` §AI level 4.
 

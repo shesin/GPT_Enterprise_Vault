@@ -8,6 +8,18 @@ Target: up to 5 pages.
 
 ---
 
+## `vite build` production script added (2026-09-29)
+
+Was PENDING item A1 (web checklist). `package.json` had only `web:smartbeads` (`vite`, dev server — hot-reload, unoptimized, no build artifact). No `build` or `preview` script existed, so there was nothing to actually deploy.
+
+**Fix:** added `"build:smartbeads": "vite build"` and `"preview:smartbeads": "vite preview"`.
+
+**Verified (not just claimed):** ran the build — 57 modules transformed, produced `dist/index.html` + hashed `assets/main-*.css` (44KB) / `.js` (132KB). Started the preview server, confirmed HTTP 200, then loaded it in the browser: hub renders correctly, clicked "Play vs AI" → board and live PvE session both load correctly from the production build, zero console errors either screen.
+
+**Not covered by this fix:** actually uploading `dist/` to the live host (smartbeadchess.com) — that's still open, tracked under PENDING A17/A19 (hosting purchase/deploy) since it needs host credentials this agent doesn't have.
+
+---
+
 ## Resolved UI note (2026-09-24)
 
 Light board side panels — same-hue instead of charcoal: originally parked 2026-09-19, overtaken the same day by a bigger decision to remove the charcoal side-only option entirely, for every board. Every board now pairs with its own same-hue side panel by default — no charcoal left to replace, no remaining work.
