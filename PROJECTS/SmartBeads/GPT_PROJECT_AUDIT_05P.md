@@ -298,6 +298,40 @@ Scope: the 5th cycle covered rendering/layout/theme + AI eval/timers/dead-tests 
 
 ---
 
+## A18 / A19 — full evaluation record (2026-09-29/30, Claude; report only, no repo code changed)
+
+All runs used scratch copies of the repo (committed state) outside the vault; nothing in the repo was modified. Lab = prototype `.cjs` engines; production = `SmartBeadsEngine` + `HonestAi`.
+
+### A19 — 16-bead board: X in every cell (current) vs standard 4 big X's (diagonals only where row+col is even)
+**Trigger:** Shekhar, 2026-09-29: "standard 16-bead board has 4 cross, we have 16." Confirmed by his Alquerque drawing. Web search (Wikipedia, AlignIt, GameRules, Roll the Dice, bead16.com) confirmed 37 points, 16 pieces per side, any-direction movement, but gave NO per-node diagonal map; AlignIt says diagonal steps are legal only where a diagonal is drawn. So the standard layout rests on Shekhar's drawing + Alquerque convention, not on a published source.
+
+**Current code:** `Board16Sholo.ts` and `prototype/board4/sholo-guti-fullturn-engine.cjs:83` link both diagonals in all 16 cells → 25 diagonal grid nodes, 32 diagonal edges, 92 edges, 128 jumpPaths. Ported from the prototype; `Board16PrototypeParity.test.ts` compares against that same prototype, so it inherited the geometry.
+**Standard:** 76 edges, 112 jumpPaths, 13 diagonal grid nodes / 16 diagonal edges. Wing junctions A20/A24 are even points so they stay consistent.
+
+**Geometry (scratch):** opening moves per side 13 → 9; nodes with ≤3 links 14 → 22; 11 stuck pieces per side at start on both; no trapped wing pieces.
+**Full tests, candidate vs baseline (tsc + 59 files / 6 batches):** baseline all green (655 tests); candidate 1 expected failure (`Board16Sholo.test.ts` "13 opening legal slides" → 9). Board16PrototypeParity passes only with the prototype patched too. Renderer draws from `board.connections`, so lines follow the geometry automatically.
+**Fairness:**
+- Lab engine (D1 greedy, 500 games per opener): first-mover win 43.1% current vs 49.0% standard.
+- Production engine (level 1, 2000 games each, 1224 decided, 39% draws at 120 plies): 46.2% vs 56.0%. RED wins 49.5% vs 49.0% (no colour bias).
+- The two engines disagree → no proven fairness gain; on production the standard board flips the bias to the first mover (6.0 vs 3.8 points from 50/50).
+- D2: 100% move-cap draws on both (lab and production) → no signal. D3 lab (90 games): 7–8 decided, rest draws.
+- Prototype D2 captures/game 11.7–12.7 (current) vs 8.6–9.1 (standard).
+**Speed:** production depth-3-reply search on 16-bead ~22% faster on standard (avg 271 vs 349 ms; all 14 positions full depth).
+**Official lab gate (`final-validate-sholo-lab.cjs`):** NOT READY on unmodified main (`parity_node_coords`; `primary_D2_play_signal` 9.92 vs ≥10 at N=25) although the committed SHOLO_LAB_FINAL_TRUST.json (2026-08-14) says READY. Candidate adds 3 failures: `parity_edges` (playable HTML 92 vs 76), `parity_opening_move_count` (13 vs 9), first-player check. The playable HTMLs (SHOLO_GUTI.html, ..._WITH_FEATURE.html) would also need changing.
+**Tooling defect found:** `evaluate-ladder-lab.cjs` requires `sholo-8-bead-fullturn-engine.cjs`, which does not exist (crashes).
+**Other boards:** all 6 other boards use the same all-cells-crossed loop. They are our own designs, not traditional boards; 6-bead 3×5 is a recorded human KEEP and already near the G2 limit (D1 first mover 20% / second 80%, −30pp vs ±35pp). 12-bead is 6 rows × 5 cols, so an alternating pattern cannot be 180°-symmetric (the rotation flips row+col parity) and would create a first/second-mover bias. Decision: no other board is altered.
+**Not tested:** human play, browser/phone check, D3 swap, production D2/D3 decisive fairness.
+**Verdict (Shekhar, 2026-09-30): CLOSED, no change to the 16-bead board.**
+
+### A18 — AI level 4 (depth-3 = 3 opponent replies), current geometry
+Production `HonestAi` with a level-4 shim (`aiOpponentReplyPlies` level ≥4 → 3) in a scratch copy, Expert think budget per board.
+**Single-position timing (avg / max; positions; over budget; over 45s):** 6x4 0.3/0.8s (20; 0; 0) · 6x3x5 0.1/0.3s (21; 0; 0) · 7x4x5 0.7/1.2s (18; 0; 0) · 8x4x6 1.4/3.2s (24; 0; 0) · 10x5 2.8/15.4s (22; 3; 0) · 16 3.8/10.4s (28; 4; 0) · 12x6x5 12.1/59.3s (27; 14; 2). Every position reached full depth 3.
+**Strength, level 4 vs level 3, alternating colour and opener:** 6x4 32 games 23W/0L/9D, L4 ahead on pieces 28, avg +2.81, worst L4 move 0.6s · 10x5 12 games 4W/0L/8D, ahead 11, +3.08, worst 7.8s · 16-bead 7 games (stopped, partial) 1W/0L/6D, ahead 7, +4.43, worst L4 move 66s (three games >39s).
+**Finding:** isolated-position timing understated real play on 16-bead (max 10s vs 66s in games). Level 4 is stronger than level 3 and never lost, but is too slow on 10-, 12- and 16-bead.
+**Decision (Shekhar, 2026-09-30):** no level 4 for big boards; small boards only (6x4, 6x3x5, 7x4x5, 8x4x6). Level 4 stays ON HOLD until those boards are tested properly (see PENDING A18).
+
+---
+
 ## Recommendation
 
 Do not soft-pedal language in future status docs. Prefer failing tests over narrative confidence. When adding a new failure cycle, append a dated section here or create `GPT_PROJECT_AUDIT_06P.md` — do not scatter audits in subfolders.

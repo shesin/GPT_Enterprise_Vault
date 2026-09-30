@@ -177,9 +177,7 @@ VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Sto
 | Deploy client + API + DB | Implementer | Blocked on A7 + A9 + host choice |
 | Live smoke vs local | Shekhar | Blocked on deploy |
 
-### A18. AI level 4 — ON HOLD
-
-### A19. 16-bead board diagonals (X in every cell vs standard 4 big X's) — DEFERRED, NO-GO BY DEFAULT
+### A18. AI level 4 — ON HOLD - see at bottom
 
 ---
 
@@ -265,29 +263,23 @@ Owner: Shekhar confirms. Especially 16-bead (37 nodes, tight spacing) — can st
 
 ---
 
-## A18 / A19 — detail (moved here from Part A, 2026-09-29; Part A keeps the headings only)
+## A18 — detail (moved here from Part A, 2026-09-29; Part A keeps the heading only)
 
 ### A18. AI level 4 — ON HOLD
 
 Depth-3 search timing looked safe on a limited test sample (28 runs, all boards, all completed under 3.1s). A real hang bug was found and fixed in the shared search retry logic along the way (affected Expert today, unrelated to level 4 — fixed, 41/41 tests pass). **Not resumed** — human deferred to later; needs a wider timing sample before it can be called safe. Full investigation history: `GPT_PROJECT_CLOSED_ISSUES_05P.md` §AI level 4.
 
-**Decision 2026-09-29 (Shekhar):** not pursued unless a strong benefit is shown — currently the benefit is unclear and the risk (search hangs, timing on slow boards such as 12-bead) is real. Stays ON HOLD indefinitely; do not start without an explicit go. If A19 were ever done, the 16-bead timings above would be stale and must be re-measured (the standard geometry has fewer connections; depth-3 search measured ~29% cheaper in scratch runs).
+**Earlier decision 2026-09-29 (Shekhar):** not pursued unless a strong benefit is shown — currently the benefit is unclear and the risk (search hangs, timing on slow boards such as 12-bead) is real. Stays ON HOLD indefinitely; do not start without an explicit go.
 
-### A19. 16-bead board diagonals (X in every cell vs standard 4 big X's) — DEFERRED, NO-GO BY DEFAULT
-Raised 2026-09-29 by Shekhar ("standard has 4 cross, we have 16"), confirmed via his Alquerque drawing (diagonals only at r+c even points → 13 grid nodes, 16 diagonal edges).
+**Decision 2026-09-30 (Shekhar):** level 4 for **small boards only — 6-bead 4×4 (6x4), 6-bead 3×5 (6x3x5), 7-bead (7x4x5), 8-bead (8x4x6)**. **Not for 10-, 12- or 16-bead** (depth-3 too slow: single positions up to 15s / 59s / 10s; real 16-bead games up to 66s per move; 12-bead beat the 45s ceiling). Do not implement until the small boards are tested properly. Evidence so far: `GPT_PROJECT_AUDIT_05P.md` § "A18 / A19 — full evaluation record". A19 (16-bead geometry) is closed with no change, so the 16-bead timings above stay valid: `GPT_PROJECT_CLOSED_ISSUES_05P.md` § A19.
 
-**Decision 2026-09-29 (Shekhar):** high risk (a "new board" invalidates every prior certification), high cost, no other board will be altered. Change **16-bead only**, and **only** if the evidence is very strong and it is a must-do. Otherwise no change at all. **Never** alter any other board (6-bead 3×5 does not justify it; 12-bead has 6 rows so no alternating pattern is 180°-symmetric — it would create a first/second-mover bias).
+**Test properly before implementing (scratch copy, no repo changes):**
+1. Level 4 vs level 3, ≥60 games per board on 6x3x5, 7x4x5, 8x4x6 (6x4 has 32 games already; top up to ≥60), alternating colour and opener, several seeds. Record wins/losses/draws, piece margin, worst and average L4 move time in real games, count over the think budget.
+2. Hang check: 45s retry loop with level 4 enabled; hard time cap with a defined fallback.
+3. Wider positions than the hand-built sample: capture-heavy and randomly generated mid-game positions.
+4. Human playtest of how level 4 plays.
+5. UI/catalog: level 4 offered only on these four boards.
 
-**Facts (audit, 2026-09-29, report only):**
-- Current code + prototype: `Board16Sholo.ts` and `prototype/board4/sholo-guti-fullturn-engine.cjs` (line 83) link both diagonals in all 16 cells → 25 diagonal grid nodes, 32 diagonal edges; 92 edges, 128 jumpPaths. Standard: 76 edges, 112 jumpPaths. Wing junctions A20/A24 are even points, so they stay consistent with the standard.
-- Why missed: `Board16PrototypeParity.test.ts` validates against the same prototype, so it inherited the error; "CERTIFIED / VERIFIED CLEAN" for 16-bead never checked physical-board fidelity. No web source found with a per-node diagonal map (text pages only).
-- Scratch measurement (prototype engine, not production, D1 = greedy, 500 games per opener): first-mover win rate 43.1% on current vs 49.0% on standard (second-mover edge on current ≈ 56.9%, ~4σ). D2 captures/game 11.7–12.7 (current) vs 8.6–9.1 (standard); D2/D3 are almost all move-cap draws on both, so no fairness signal there. Depth-3 batch ~29% faster on standard. Both pass the official G2 D1 bound (±35pp).
-- Not tested: official G1–G9 evaluator, production `SmartBeadsEngine`/`HonestAi`, human play, D3 swap. Lab results certify geometry/balance only.
+**Proposed pass bar (for Shekhar to confirm):** level 4 loses no more games than it wins against level 3; worst real-game L4 move within the board's think budget (no over-45s); every position reaches full depth 3; no hangs.
 
-**Go only if ALL true:** (1) standard pattern confirmed by a real source (photo/diagram) — Shekhar supplies; (2) every test failure on the pre-written expected list (the `92` test, parity test); (3) official G1–G9 pass on standard; (4) second-mover bias reproduced on the production engine and standard is fairer; (5) depth-3 timing and opening mobility acceptable, no trapped wing pieces; (6) Shekhar accepts the cost (lab re-labelling, ★ tiers, DECISIONS §12, STATUS, WEB_REPORT).
-**No-go if ANY true:** source not confirmed; unexpected test failures/crash; any G-gate or reject trigger fails; bias does not reproduce or gets worse; timing regresses; cost not accepted.
-
-**Owner — Shekhar:** supply a photo/diagram of a real board (gate 1). Decide go/no-go.
-**Owner — Claude (only after explicit go, on a new branch, never `main`):** read-only baseline first (full Jest, type check, official evaluators for 16-bead and 12-bead as regression, AI timings, browser check); then show the exact diff (`GRID_LINK_DIRS` diagonals r+c-even in `Board16Sholo.ts`, `92`→`76` in tests, same filter in the prototype engine); full validation pass; update DECISIONS §12/STATUS/WEB_REPORT and re-run the lab for 16-bead only.
-
-**Removed from earlier A19 (with the human's approval, 2026-09-29):** the step "check other 7-board geometries for the same all-cells-crossed pattern" and the note about other boards following the alternating rule — replaced by the "16-bead only, no other board" decision above.
+**Also found on the way (needs a fix decision):** `evaluate-ladder-lab.cjs` requires a non-existent `sholo-8-bead-fullturn-engine.cjs`; `final-validate-sholo-lab.cjs` is NOT READY on unmodified main while the committed trust JSON (2026-08-14) says READY.

@@ -133,3 +133,11 @@ Verified against the real file: full `HonestAi` test suite, 41/41 pass, no regre
 ## Resolved: timer-lock contradiction (2026-09-28)
 
 The old PENDING doc had two conflicting statements about the board-fixed HvH timer table — one calling it locked, one calling it "still needs further discussion." **Human confirmed 2026-09-28: locked.** Written into `GPT_PROJECT_DECISIONS_05P.md` §13a along with the other 2026-09-15/18 locked decisions that used to sit in PENDING's old §13.
+
+---
+
+## A19 — 16-bead board diagonals (X in every cell vs standard 4 big X's) — CLOSED, no change (2026-09-30)
+
+Shekhar raised that the standard 16-bead board has 4 big X's (diagonals at r+c-even points only) while the code has an X in every cell. Evaluated in a scratch copy; full record in `GPT_PROJECT_AUDIT_05P.md` § "A18 / A19 — full evaluation record".
+
+**Closed with no change. Reasons:** (1) the fairness gain did not reproduce on the production engine (first-mover win 46.2% current vs 56.0% standard; lab engine said the opposite) — no proven improvement; (2) high cost and risk: the change makes a new, uncertified board — opening moves 13→9, playable HTMLs and prototype engine would need changing, official trust gate gains 3 failures, lab results and ★ tiers would need re-labelling; (3) the standard layout is confirmed only by Shekhar's drawing, no published source found; (4) no other board can be altered (own designs; 12-bead cannot be made 180°-symmetric). Reopen only if a real board source shows the current layout is wrong and Shekhar orders it.
