@@ -1,6 +1,6 @@
 /** Canvas layout + centre decoration — ported from prototype/board4 SHOLO_GUTI_*_WITH_FEATURE.html. */
 
-export type ProjectionKind = 'sholo16' | 'square5' | 'grid-stretch' | 'square-fit' | 'portrait45';
+export type ProjectionKind = 'sholo16' | 'square5' | 'grid-stretch' | 'square-fit' | 'square-stretch' | 'portrait45';
 
 export interface LatticePoint {
   x: number;
@@ -75,8 +75,23 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   },
 };
 
+/** Phones: boards drawn in 'square-fit' would leave empty rows in a portrait screen, so they
+ * switch to 'square-stretch' (same axes as 'square-fit', stretched) on a taller canvas (same approach the 16-bead board already uses). */
+const PHONE_QUERY = '(max-width: 980px)';
+const PHONE_STRETCH_CANVAS = { canvasWidth: 560, canvasHeight: 800 } as const;
+
+function isPhoneWidth(): boolean {
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia(PHONE_QUERY).matches
+    : false;
+}
+
 export function getBoardVisualProfile(boardName: string): BoardVisualProfile {
-  return PROFILES[boardName] ?? { projection: 'grid-stretch', ...SQUARE_CANVAS };
+  const base = PROFILES[boardName] ?? { projection: 'grid-stretch', ...SQUARE_CANVAS };
+  if (base.projection === 'square-fit' && isPhoneWidth()) {
+    return { ...base, projection: 'square-stretch', ...PHONE_STRETCH_CANVAS };
+  }
+  return base;
 }
 
 export function getBoardCanvasSize(boardName: string): { width: number; height: number } {

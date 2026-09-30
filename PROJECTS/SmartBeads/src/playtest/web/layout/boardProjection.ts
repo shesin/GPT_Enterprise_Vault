@@ -78,6 +78,14 @@ function projectWithKind(
         y: oy + (y / maxY) * gridH,
       };
     }
+    case 'square-stretch': {
+      const pad = 44;
+      const { maxX, maxY } = bounds;
+      return {
+        x: pad + (x / maxX) * (viewWidth - pad * 2),
+        y: pad + (y / maxY) * (viewHeight - pad * 2),
+      };
+    }
     case 'portrait45': {
       const pad = 44;
       return {

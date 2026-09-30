@@ -960,7 +960,13 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   }
 
   installCanvasResizeObserver(canvas, () => {
-    fitCanvasToFrame(canvas);
+    // Phone widths use a taller canvas for some boards — re-apply if the width class changed.
+    const wanted = getBoardCanvasSize(session.getEngine().getState().board.name);
+    if (canvas.width !== wanted.width || canvas.height !== wanted.height) {
+      applyCanvasSizeForBoard();
+    } else {
+      fitCanvasToFrame(canvas);
+    }
     drawBoard();
   });
 
@@ -1047,6 +1053,19 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     return resolveMoveHintAuraStyle(toggle);
   }
 
+  /** Full label stays in textContent; the " · level" part is a span so phones can hide it. */
+  function setPanelName(el: HTMLElement, label: string): void {
+    const sep = label.indexOf(' · ');
+    if (sep < 0) {
+      el.textContent = label;
+      return;
+    }
+    const level = document.createElement('span');
+    level.className = 'panel-name-level';
+    level.textContent = label.slice(sep);
+    el.replaceChildren(label.slice(0, sep), level);
+  }
+
   function updateUI(): void {
     syncPlayLookFromStorageIfDrifted();
     const state = session.getEngine().getState();
@@ -1055,8 +1074,8 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     const bluePieces = session.getEngine().countPieces('BLUE');
     const centerScores = session.getCenterDisplayScores();
 
-    (document.getElementById('black-panel-name') as HTMLElement).textContent = blackPlayerLabel();
-    (document.getElementById('cream-panel-name') as HTMLElement).textContent = creamPlayerLabel();
+    setPanelName(document.getElementById('black-panel-name') as HTMLElement, blackPlayerLabel());
+    setPanelName(document.getElementById('cream-panel-name') as HTMLElement, creamPlayerLabel());
     (document.getElementById('black-panel-role') as HTMLElement).textContent =
       settings.mode === 'spectate'
         ? '(AI)'

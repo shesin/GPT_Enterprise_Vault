@@ -1337,4 +1337,68 @@ canvas {
     height: auto;
     min-height: 0;
   }
+
+  /* Phone layout (2026-09-30): AI strip on top, board centred, human strip below,
+     controls last, Settings behind a toggle. Desktop is unchanged (≤980px only). */
+  body:not(.hub-page) {
+    align-items: flex-start;
+    overflow-y: auto;
+    height: auto;
+    max-height: none;
+    padding: 6px 8px;
+  }
+  #play-shell {
+    max-height: none;
+    overflow: visible;
+    gap: 6px;
+    --side-columns-width: 0px;
+    --shell-gutter-h: 16px;
+    --stack-chrome: 200px;
+  }
+  #play-shell .card.left,
+  #play-shell .play-panel,
+  #play-shell .main {
+    display: contents;
+  }
+  #play-shell .play-block-ai { order: 1; }
+  #play-shell .board-frame { order: 2; width: 100%; }
+  #play-shell .play-block-human { order: 3; }
+  /* Buttons pinned to the bottom of the screen; body gets room so nothing hides behind them. */
+  #play-shell .controls {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    flex-wrap: wrap;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-top: 1px solid rgba(201, 162, 78, 0.22);
+  }
+  body:not(.hub-page) { padding-bottom: 64px; }
+  /* Ad banner (unpaid accounts only — .shell--no-ads still hides it) sits at the very bottom, after Settings. */
+  #play-shell .ad-slot { display: block; order: 6; width: 100%; max-height: none; }
+  #play-shell.shell--no-ads .ad-slot { display: none; }
+  #play-shell .ad-frame {
+    height: auto;
+    max-height: none;
+    flex-direction: row;
+    align-items: center;
+    padding: 4px 8px;
+  }
+  #play-shell .ad-placeholder { min-height: 50px; }
+  #play-shell .card.right { order: 5; }
+  .play-block {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 10px;
+    padding: 4px 10px;
+  }
+  .play-block-head { flex: 0 0 auto; }
+  .play-block-head .tiny,
+  .panel-name-level { display: none; }
+  .play-block-row { gap: 6px; }
+  .play-block-row:has(.shot-ring.off),
+  .play-block-row-timer:has(.match-ring.off) { display: none; }
 }
