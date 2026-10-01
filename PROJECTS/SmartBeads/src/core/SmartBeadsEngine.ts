@@ -3,6 +3,7 @@ import {
   cloneBoardDefinition,
   findJumpPath,
   getConnectedIds,
+  getJumpPathsFrom,
   GameState,
   hasReachedPlyLimit,
   JumpPath,
@@ -318,10 +319,7 @@ export class SmartBeadsEngine {
     }
 
     const moves: Move[] = [];
-    for (const path of board.jumpPaths ?? []) {
-      if (path.from !== pieceId) {
-        continue;
-      }
+    for (const path of getJumpPathsFrom(board, pieceId)) {
       if (this.isJumpCurrentlyLegal(path, currentPlayer)) {
         moves.push({ from: path.from, to: path.to });
       }

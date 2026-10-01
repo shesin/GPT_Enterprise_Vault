@@ -82,7 +82,9 @@ export function createBoardSettingsPanel(
     if (deps.isCoachMode()) return;
     tournamentTimerSelect.disabled = timerOn;
     timerSelect.disabled = tournamentOn;
-    centerRuleSelect.disabled = tournamentOn;
+    // Centre rule only exists with a shared match timer.
+    if (!timerOn && centerRuleSelect.value !== 'off') centerRuleSelect.value = 'off';
+    centerRuleSelect.disabled = tournamentOn || !timerOn;
   }
 
   function syncCenterRuleOptions(): void {

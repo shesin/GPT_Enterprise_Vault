@@ -163,7 +163,10 @@ export function effectiveCenterRule(settings: GameFeatureSettings): CenterRule {
   return settings.centerRule;
 }
 
-/** Timer and tournament timer are mutually exclusive; tournament forces centre off. */
+/**
+ * Timer and tournament timer are mutually exclusive; tournament forces centre off.
+ * Centre rule exists only with a shared match timer (Shekhar, 2026-10-01): no timer -> centre off.
+ */
 export function normalizeTimerSettings(settings: GameFeatureSettings): GameFeatureSettings {
   const next = { ...settings };
   if (next.mode !== 'pvp') {
@@ -175,7 +178,7 @@ export function normalizeTimerSettings(settings: GameFeatureSettings): GameFeatu
   if (parseTimerSeconds(next.timer) > 0) {
     return { ...next, tournamentTimer: 'off' };
   }
-  return next;
+  return { ...next, centerRule: 'off' };
 }
 
 /** Settings dropdown — recommended option shows e.g. `120 (best)`. */

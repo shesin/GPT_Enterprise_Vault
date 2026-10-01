@@ -27,19 +27,18 @@ function setOcc(session: FeatureSession, label: string, player: 'RED' | 'BLUE'):
 }
 
 describe('FeatureSession center / timer (runtime rules)', () => {
-  it('preserves centerRule when match timer is off (center is independent of timer)', () => {
-    const session = new FeatureSession('6x3x5', {
-      ...base,
-      centerRule: 'endgame',
-      timer: 'off',
-    });
-    expect(session.getSettings().centerRule).toBe('endgame');
+  it('centre rule needs a match timer: no timer forces centre off, timer on keeps it', () => {
+    const noTimer = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame', timer: 'off' });
+    expect(noTimer.getSettings().centerRule).toBe('off');
+    const withTimer = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame', timer: '5' });
+    expect(withTimer.getSettings().centerRule).toBe('endgame');
   });
 
-  it('endgame center tiebreak awards winner when captures tied with match timer off', () => {
+  it('endgame center tiebreak awards winner when captures tied (match timer on)', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,
       centerRule: 'endgame',
+      timer: '15',
     });
     clearOccupants(session);
     setOcc(session, 'A21', 'RED');
@@ -55,7 +54,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
   });
 
   it('engine safety cap: tied captures + centre rule on -> centre decides, not a draw', () => {
-    const session = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame' });
+    const session = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame', timer: '15' });
     clearOccupants(session);
     setOcc(session, 'A21', 'RED');
     setOcc(session, 'A00', 'RED');
@@ -95,7 +94,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
   });
 
   it('engine safety cap: more captures wins, regardless of centre', () => {
-    const session = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame' });
+    const session = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame', timer: '15' });
     clearOccupants(session);
     setOcc(session, 'A21', 'RED');
     setOcc(session, 'A00', 'RED');
@@ -114,6 +113,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
       ...base,
       mode: 'pvp',
       centerRule: 'cumulative',
+      timer: '15',
     });
     clearOccupants(session);
     setOcc(session, 'A11', 'RED');
@@ -153,6 +153,7 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,
       centerRule: 'cumulative',
+      timer: '15',
     });
     clearOccupants(session);
     setOcc(session, 'A00', 'RED');

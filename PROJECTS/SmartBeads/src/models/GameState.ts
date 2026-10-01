@@ -57,8 +57,10 @@ export function cloneBoardDefinition(board: BoardDefinition): BoardDefinition {
   return {
     name: board.name,
     intersections: board.intersections.map((intersection) => ({ ...intersection })),
-    connections: board.connections.map((connection) => ({ ...connection })),
-    jumpPaths: board.jumpPaths ? board.jumpPaths.map((path) => ({ ...path })) : undefined,
+    // Geometry (connections, jumpPaths) is never mutated after a board is built — share it instead of
+    // copying 200+ objects per snapshot (hot path in AI search). Only occupants differ between clones.
+    connections: board.connections,
+    jumpPaths: board.jumpPaths,
     centerNodeIds: board.centerNodeIds ? [...board.centerNodeIds] : undefined,
     maxPlies: board.maxPlies,
     terminationProfile: board.terminationProfile,
@@ -84,19 +86,44 @@ export interface Move {
 
 /** Adjacent intersection ids joined by a legal connection. */
 export function getConnectedIds(board: BoardDefinition, pointId: number): number[] {
-  const connected: number[] = [];
-  for (const connection of board.connections) {
-    if (connection.from === pointId) {
-      connected.push(connection.to);
-    } else if (connection.to === pointId) {
-      connected.push(connection.from);
+  return (adjacencyFor(board)[pointId] ?? []).slice();
+}
+
+// Geometry indexes, built once per geometry array (shared by every clone of a board).
+const adjacencyCache = new WeakMap<object, number[][]>();
+const jumpFromCache = new WeakMap<object, JumpPath[][]>();
+const jumpByEndsCache = new WeakMap<object, Map<number, JumpPath>>();
+
+function adjacencyFor(board: BoardDefinition): number[][] {
+  let adj = adjacencyCache.get(board.connections);
+  if (!adj) {
+    adj = [];
+    for (const connection of board.connections) {
+      (adj[connection.from] ??= []).push(connection.to);
+      (adj[connection.to] ??= []).push(connection.from);
     }
+    adjacencyCache.set(board.connections, adj);
   }
-  return connected;
+  return adj;
+}
+
+/** Jump routes starting at `from`, in board definition order. */
+export function getJumpPathsFrom(board: BoardDefinition, from: number): readonly JumpPath[] {
+  const paths = board.jumpPaths;
+  if (!paths) return [];
+  let byFrom = jumpFromCache.get(paths);
+  if (!byFrom) {
+    byFrom = [];
+    for (const path of paths) (byFrom[path.from] ??= []).push(path);
+    jumpFromCache.set(paths, byFrom);
+  }
+  return byFrom[from] ?? [];
 }
 
 /** Lookup by id; throws if the board graph is inconsistent. */
 export function requireIntersection(board: BoardDefinition, id: number): Intersection {
+  const direct = board.intersections[id];
+  if (direct && direct.id === id) return direct;
   const point = board.intersections.find((intersection) => intersection.id === id);
   if (!point) {
     throw new Error(`Unknown intersection id: ${id}`);
@@ -110,7 +137,18 @@ export function findJumpPath(
   from: number,
   to: number,
 ): JumpPath | undefined {
-  return board.jumpPaths?.find((path) => path.from === from && path.to === to);
+  const paths = board.jumpPaths;
+  if (!paths) return undefined;
+  let byEnds = jumpByEndsCache.get(paths);
+  if (!byEnds) {
+    byEnds = new Map();
+    for (const path of paths) {
+      const key = path.from * 65536 + path.to;
+      if (!byEnds.has(key)) byEnds.set(key, path); // first match, like Array.find
+    }
+    jumpByEndsCache.set(paths, byEnds);
+  }
+  return byEnds.get(from * 65536 + to);
 }
 
 /** True when a positive maxPlies is configured and the limit has been reached. */

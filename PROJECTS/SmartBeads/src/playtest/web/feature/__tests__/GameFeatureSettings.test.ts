@@ -104,4 +104,17 @@ describe('GameFeatureSettings coach watch', () => {
     expect(timerOn.tournamentTimer).toBe('off');
     expect(timerOn.centerRule).toBe('endgame');
   });
+
+  it('centre rule exists only with a shared match timer (no timer -> centre off)', () => {
+    const base = {
+      aiLevel: 2 as const,
+      tournamentTimer: 'off' as const,
+      shotClock: 'off' as const,
+      centerRule: 'cumulative' as const,
+    };
+    for (const mode of ['pve', 'pvp', 'spectate'] as const) {
+      expect(normalizeTimerSettings({ ...base, mode, timer: 'off' }).centerRule).toBe('off');
+      expect(normalizeTimerSettings({ ...base, mode, timer: '5' }).centerRule).toBe('cumulative');
+    }
+  });
 });

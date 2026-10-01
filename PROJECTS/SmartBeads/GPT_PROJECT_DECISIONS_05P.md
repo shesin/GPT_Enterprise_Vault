@@ -62,6 +62,8 @@ Draw is legitimate — not a failure to engineer away.
 
 **Engine safety cap (unlimited mode only) — changed 2026-10-01 (Shekhar):** when board `maxPlies` is null, a game with no other end condition stops after **120 completed turns total on the small boards (6x4, 6x3x5, 7x4x5)** and **240 total (120 per side) on the larger boards (8x4x6, 10x5, 12x6x5, 16)** (`engineSafetyCapForVariant`). At the cap the side with **more captures wins** (`safety_cap_captures`); if captures are tied, the **centre rule (when on) decides**; only if still tied is it a **draw** (`safety_cap`). Same order as match-timer expiry. Previously: a flat 120-ply draw even when one side was far ahead (evidence: `GPT_PROJECT_AUDIT_05P.md` § "AI review 2026-10-01"). Last-resort belt — **not** the product move-limit mode and **not** timer-based.
 
+**Centre rule only with a match timer (Shekhar, 2026-10-01):** the Centre Rule setting exists only when a shared match timer is selected. `normalizeTimerSettings` forces `centerRule: 'off'` when the timer is off (and it stays off under the HvH tournament timer); the settings screen disables the Centre Rule dropdown and resets it to Off while the timer is Off. The AI's centre evaluation weight is `CENTER_EVAL_WEIGHT = 1` (tie-breaker only; the timer-urgency boost still makes centre decisive near expiry).
+
 **AI repetition steer:** `HonestAi` applies a soft eval penalty when a candidate turn would revisit an already-seen position (Lab-aligned). Does not forbid the legal third repeat — engine draw still owns termination.
 
 ---

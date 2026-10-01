@@ -1,7 +1,15 @@
 import { BoardVariant } from '../../../config/BoardConfig';
 import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
 import { repetitionPenaltyForPosition } from '../../../core/positionKey';
-import { findJumpPath, GameState, Move, Player } from '../../../models/GameState';
+import {
+  findJumpPath,
+  GameState,
+  getConnectedIds,
+  getJumpPathsFrom,
+  Move,
+  Player,
+  requireIntersection,
+} from '../../../models/GameState';
 import { AiLevel, CenterRule } from './GameFeatureSettings';
 import { countCenterOccupancy } from './centerScoring';
 
@@ -99,13 +107,31 @@ function countPieces(state: GameState, player: Player): number {
   return state.board.intersections.filter((p) => p.occupant === player).length;
 }
 
-function mobility(variant: BoardVariant, state: GameState, player: Player): number {
-  const eng = new SmartBeadsEngine(variant);
-  eng.loadSnapshot({
-    state: { ...state, currentPlayer: player, board: state.board },
-    chainPieceId: null,
-  });
-  return eng.getLegalMoves().length;
+/**
+ * Number of legal moves `player` would have (no open chain). Same count as
+ * SmartBeadsEngine.getLegalMoves() — slides to empty neighbours + legal jumps — without building an engine
+ * per call (this runs at every search leaf). Equivalence is asserted in HonestAi.test.ts.
+ */
+export function mobility(state: GameState, player: Player): number {
+  if (state.gameOver) return 0;
+  const board = state.board;
+  const opponent = opponentOf(player);
+  let n = 0;
+  for (const point of board.intersections) {
+    if (point.occupant !== player) continue;
+    for (const to of getConnectedIds(board, point.id)) {
+      if (requireIntersection(board, to).occupant === undefined) n += 1;
+    }
+    for (const path of getJumpPathsFrom(board, point.id)) {
+      if (
+        requireIntersection(board, path.over).occupant === opponent &&
+        requireIntersection(board, path.to).occupant === undefined
+      ) {
+        n += 1;
+      }
+    }
+  }
+  return n;
 }
 
 function centerScoreForPlayer(
@@ -175,7 +201,7 @@ function timerEvalAdjust(
  */
 export function evaluate(
   state: GameState,
-  variant: BoardVariant,
+  _variant: BoardVariant,
   aiPlayer: Player = 'BLUE',
   center?: AiCenterContext,
   timer?: AiTimerContext,
@@ -186,8 +212,8 @@ export function evaluate(
   if (humanCount === 0) return 10000;
   if (aiCount === 0) return -10000;
 
-  const aiMob = mobility(variant, state, aiPlayer);
-  const humanMob = mobility(variant, state, human);
+  const aiMob = mobility(state, aiPlayer);
+  const humanMob = mobility(state, human);
   let score = (aiCount - humanCount) * 48 + (aiMob - humanMob) * 1.5;
 
   if (center && center.centerRule !== 'off') {
@@ -217,11 +243,10 @@ function replyBranchForLevel(level: AiLevel): number {
 }
 
 function getFollowUpJumps(
-  variant: BoardVariant,
+  eng: SmartBeadsEngine,
   snapshot: { state: GameState; chainPieceId: number | null },
 ): Move[] {
   if (snapshot.chainPieceId === null) return [];
-  const eng = new SmartBeadsEngine(variant);
   eng.loadSnapshot(snapshot);
   return eng.getLegalMoves().filter((m) => isJump(snapshot.state, m));
 }
@@ -233,12 +258,14 @@ export function generateTurnEnds(
   maxBranch: number,
   deadlineMs = Infinity,
 ): TurnEnd[] {
+  // One scratch engine for the whole call: loadSnapshot fully replaces its state each time.
   const eng = new SmartBeadsEngine(variant);
-  eng.loadSnapshot({
+  const rootSnapshot = {
     ...snapshot,
     state: { ...snapshot.state, currentPlayer: player },
     chainPieceId: null,
-  });
+  };
+  eng.loadSnapshot(rootSnapshot);
   const root = eng.getLegalMoves().slice();
   root.sort((a, b) => (isJump(snapshot.state, b) ? 1 : 0) - (isJump(snapshot.state, a) ? 1 : 0));
 
@@ -247,14 +274,9 @@ export function generateTurnEnds(
 
   for (const move of root) {
     if (ends.length > 0 && Date.now() > deadlineMs) return ends;
-    const afterEng = new SmartBeadsEngine(variant);
-    afterEng.loadSnapshot({
-      ...snapshot,
-      state: { ...snapshot.state, currentPlayer: player },
-      chainPieceId: null,
-    });
-    afterEng.applyMove(move);
-    const afterSnap = afterEng.exportSnapshot();
+    eng.loadSnapshot(rootSnapshot);
+    eng.applyMove(move);
+    const afterSnap = eng.exportSnapshot();
     ends.push({ snapshot: afterSnap, path: [move] });
     if (ends.length >= branchCap) return ends;
 
@@ -270,12 +292,11 @@ export function generateTurnEnds(
       if (Date.now() > deadlineMs) return ends;
       const node = stack.pop()!;
       if (node.depth > 8) continue;
-      const jumps = getFollowUpJumps(variant, node.snap);
+      const jumps = getFollowUpJumps(eng, node.snap);
       for (const hop of jumps) {
-        const hopEng = new SmartBeadsEngine(variant);
-        hopEng.loadSnapshot(node.snap);
-        hopEng.applyMove(hop);
-        const hopSnap = hopEng.exportSnapshot();
+        eng.loadSnapshot(node.snap);
+        eng.applyMove(hop);
+        const hopSnap = eng.exportSnapshot();
         const path = node.path.concat(hop);
         ends.push({ snapshot: hopSnap, path });
         stack.push({ snap: hopSnap, path, depth: node.depth + 1 });
@@ -285,6 +306,27 @@ export function generateTurnEnds(
   }
 
   return ends;
+}
+
+/**
+ * Search captures first (stable). Alpha-beta returns the same exact value for any move order, but
+ * cuts off far more when strong replies are tried early. Pure speed-up: never changes a result.
+ */
+function capturesFirst(state: GameState, ends: TurnEnd[]): TurnEnd[] {
+  const caps = ends.map((end) => pathCaptureCount(state, end.path));
+  if (!caps.some((c) => c > 0)) return ends;
+  return ends
+    .map((end, i) => ({ end, i, c: caps[i]! }))
+    .sort((a, b) => b.c - a.c || a.i - b.i)
+    .map((x) => x.end);
+}
+
+/** Indexes of `ends`, captures first, original order among equals. */
+function capturesFirstIndexes(state: GameState, ends: TurnEnd[]): number[] {
+  const caps = ends.map((end) => pathCaptureCount(state, end.path));
+  const idx = ends.map((_, i) => i);
+  if (!caps.some((c) => c > 0)) return idx;
+  return idx.sort((a, b) => caps[b]! - caps[a]! || a - b);
 }
 
 function minimaxTurns(
@@ -312,11 +354,12 @@ function minimaxTurns(
   if (!ends.length) {
     return { score: maximizing ? -900 : 900, complete: true };
   }
+  const ordered = capturesFirst(snapshot.state, ends);
 
   if (maximizing) {
     let best = -Infinity;
     let complete = true;
-    for (const end of ends) {
+    for (const end of ordered) {
       if (Date.now() > deadlineMs) {
         complete = false;
         break;
@@ -344,7 +387,7 @@ function minimaxTurns(
 
   let best = Infinity;
   let complete = true;
-  for (const end of ends) {
+  for (const end of ordered) {
     if (Date.now() > deadlineMs) {
       complete = false;
       break;
@@ -380,6 +423,7 @@ function scoreRootEnd(
   deadlineMs: number,
   center: AiCenterContext | undefined,
   timer: AiTimerContext | undefined,
+  alpha = -Infinity,
 ): MinimaxResult {
   if (replyDepth <= 0) {
     return {
@@ -392,7 +436,7 @@ function scoreRootEnd(
     end.snapshot,
     replyDepth,
     false,
-    -Infinity,
+    alpha,
     Infinity,
     replyBranch,
     aiPlayer,
@@ -525,11 +569,19 @@ function searchLayerAtExactDepth(
     return { best: best.length ? best : [ends[0]!], completeCount: ends.length };
   }
 
-  let best: TurnEnd[] = [];
+  let bestIdx: number[] = [];
   let bestScore = -Infinity;
   let completeCount = 0;
 
-  for (const end of ends) {
+  // Exact speed-up (same chosen move set): score captures first, and give each reply search the
+  // best score found so far as its alpha bound. A move whose true score would be below the best is
+  // cut off early (returns a value <= alpha, so it can never tie or win); a move that ties or beats
+  // the best is searched exactly because alpha sits just below the score it needs.
+  const order = capturesFirstIndexes(snapshot.state, ends);
+  for (const idx of order) {
+    const end = ends[idx]!;
+    const adjust = endScore(end, snapshot.state, { score: 0, complete: true }, positionHistory);
+    const alpha = Number.isFinite(bestScore) ? bestScore - adjust - 1e-6 : -Infinity;
     const result = scoreRootEnd(
       variant,
       snapshot.state,
@@ -540,19 +592,22 @@ function searchLayerAtExactDepth(
       deadlineMs,
       center,
       timer,
+      alpha,
     );
     if (!result.complete) continue;
     completeCount += 1;
     const score = endScore(end, snapshot.state, result, positionHistory);
     if (score > bestScore) {
       bestScore = score;
-      best = [end];
+      bestIdx = [idx];
     } else if (score === bestScore) {
-      best.push(end);
+      bestIdx.push(idx);
     }
   }
 
-  return { best, completeCount };
+  // Keep the original move order among ties so seeded/deterministic picks are unchanged.
+  bestIdx.sort((a, b) => a - b);
+  return { best: bestIdx.map((i) => ends[i]!), completeCount };
 }
 
 function searchBestAtExactDepth(
