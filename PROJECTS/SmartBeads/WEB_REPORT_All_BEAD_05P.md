@@ -5,7 +5,7 @@
 **Methodology:** `LAB_TERMINOLOGY_05P.md` (G1–G9 gates, no new thresholds)  
 **Reference anchor:** 16-bead Sholo — **FULLY CERTIFIED** — `WEB_REPORT_16_BEAD_05P.md`, `LAB_16_BEAD_REFERENCE_VALIDATION.json`  
 **Authoritative evaluators:**
-- Sholo ladder: `evaluate-ladder-lab.cjs` → `LADDER_LAB_EVALUATION.json`
+- Sholo ladder: `evaluate-ladder-lab.cjs` (RETIRED 2026-10-01) → `LADDER_LAB_EVALUATION.json` (historical evidence)
 - Cursor Index 4×4: `evaluate-cursor-index-lab.cjs` → `CURSOR_INDEX_LAB_EVALUATION.json` (same certified protocol via `cursor-index-fullturn-engine.cjs`)
 
 **Sholo protocol (canonical):** D1 / D2 / D3 · seeds 101, 202, 303 · **N=30** per seed · move-cap **120** · P1 first · 270 games per board · 540 games per compare run (`sholo-lab-protocol.cjs`).
@@ -69,7 +69,7 @@
 
 | Area | Evidence |
 |------|----------|
-| Single verdict path | `evaluate-ladder-lab.cjs` only; compare scripts metrics-only; audit clean |
+| Single verdict path | `evaluate-ladder-lab.cjs` only (RETIRED 2026-10-01); compare scripts metrics-only; audit clean |
 | Canonical N=30 | All compare JSON + G9 pass |
 | Complete-turn search | Candidate engines share Sholo full-turn semantics; trust gate 25/25 |
 | Reproducibility | Identical D2 fingerprints (seed 101, N=30) on every candidate |

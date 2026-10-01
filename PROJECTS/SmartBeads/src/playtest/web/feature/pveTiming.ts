@@ -4,7 +4,7 @@ export const HUMAN_SLIDE_ANIM_MS = 200;
 export const HUMAN_JUMP_ANIM_MS = 280;
 /**
  * Artificial pause before AI search — zero: search starts as soon as the prior ply allows.
- * Level think budgets (HonestAi) are the only intentional AI timing.
+ * The search itself has no time limit (HonestAi); it is made fast, never cut short.
  */
 export const AI_REPLY_DELAY_MS = 0;
 

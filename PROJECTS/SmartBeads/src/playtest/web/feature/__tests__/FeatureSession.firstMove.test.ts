@@ -3,7 +3,7 @@ import { findJumpPath } from '../../../../models/GameState';
 import { FeatureSession } from '../FeatureSession';
 import { applyAiHops, AiHopRecord } from '../aiTurnPath';
 import { selectAiTurnPath } from '../HonestAi';
-import { honestAiTestOpts } from './honestAiTestBudget';
+import { honestAiTestOpts } from './honestAiTestOpts';
 import {
   engineOccupancy,
   firstOpeningSlide,

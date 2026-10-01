@@ -152,7 +152,7 @@ Needs its own design pass once accounts (A7) land — reviews need at least ligh
 ### A13. Open risks (carried forward, not yet closed)
 
 - Touch precision on the 16-bead board (37 nodes, tight spacing) — not yet verified on a real phone/tablet.
-- Expert AI think time (up to ~45s on large boards, no "thinking…" indicator) may read as a frozen/dead app on mobile more than on desktop — worth a mobile-specific check when Android work starts.
+- Expert AI think time is now milliseconds (worst measured 46 ms desktop, 336 ms at 6x CPU throttle; `GPT_PROJECT_AUDIT_05P.md` § 10) — still worth one real-phone check when Android work starts (emulated only).
 - Everything fixed 2026-09-14/15 (render-crash fix, timer race fix, rewritten chain tests, dead-code removal — full detail in `GPT_PROJECT_AUDIT_05P.md` 5th cycle) is Jest-verified only — no human has watched any of it on a real device or browser yet.
 
 **Business / infra — not game-blocking, but still open:**
@@ -258,10 +258,3 @@ Owner: Shekhar confirms. Especially 16-bead (37 nodes, tight spacing) — can st
 ---
 
 *Draft maintained: human product decision.*
-
----
-
-## Lab-script defects (found during A18, still open — needs a fix decision)
-
-`evaluate-ladder-lab.cjs` requires a non-existent `sholo-8-bead-fullturn-engine.cjs`; `final-validate-sholo-lab.cjs` is NOT READY on unmodified main while the committed trust JSON (2026-08-14) says READY. Context: `GPT_PROJECT_AUDIT_05P.md` § "A18 / A19 — full evaluation record".
-

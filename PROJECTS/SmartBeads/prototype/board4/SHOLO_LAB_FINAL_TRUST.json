@@ -1,5 +1,7 @@
 {
-  "verdict": "READY",
+  "verdict": "STALE",
+  "staleNote": "2026-10-01: this file recorded READY on 2026-08-14, but final-validate-sholo-lab.cjs now reports NOT READY on unmodified main (parity_node_coords; primary_D2_play_signal 9.92 vs >=10 at N=25). Do not trust it; re-run final-validate-sholo-lab.cjs to regenerate.",
+  "previousVerdict": "READY (2026-08-14)",
   "purpose": "Final trust gate before SmartBeads candidate testing",
   "comparisonProtocol": {
     "primaryDepth": 2,

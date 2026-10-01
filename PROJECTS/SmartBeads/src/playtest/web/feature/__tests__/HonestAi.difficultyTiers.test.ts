@@ -4,7 +4,6 @@ import {
   evaluate,
   generateTurnEnds,
   selectAiTurnPath,
-  thinkBudgetForLevel,
   EASY_SOFT_MISS_RATE,
   MEDIUM_SOFT_MISS_RATE,
   CENTER_EVAL_WEIGHT,
@@ -63,7 +62,6 @@ describe('HonestAi difficulty contract', () => {
     let captureTurns = 0;
     for (let i = 0; i < 20; i++) {
       const path = selectAiTurnPath('16', 2, snap, 'BLUE', {
-        budgetMs: 400,
         mediumSoftMissRate: 1,
         rng: () => (i + 0.1) / 20,
       });
@@ -84,7 +82,6 @@ describe('HonestAi difficulty contract', () => {
     engine.getState().currentPlayer = 'BLUE';
     const snap = engine.exportSnapshot();
     const path = selectAiTurnPath('16', 3, snap, 'BLUE', {
-      budgetMs: 800,
       mediumSoftMissRate: 1,
       rng: () => 0,
     });
@@ -98,14 +95,13 @@ describe('HonestAi difficulty contract', () => {
     const engine = new SmartBeadsEngine('6x3x5');
     engine.getState().currentPlayer = 'BLUE';
     const snap = engine.exportSnapshot();
-    const ends = generateTurnEnds('6x3x5', snap, 'BLUE', 200, Date.now() + 10_000);
+    const ends = generateTurnEnds('6x3x5', snap, 'BLUE', 200);
     expect(ends.length).toBeGreaterThan(5);
 
     const distinct = new Set<string>();
     for (let i = 0; i < ends.length; i++) {
       let call = 0;
       const path = selectAiTurnPath('6x3x5', 1, snap, 'BLUE', {
-        budgetMs: 500,
         easySoftMissRate: 0,
         rng: () => {
           call += 1;
@@ -131,7 +127,6 @@ describe('HonestAi difficulty contract', () => {
     let captureTurns = 0;
     for (let i = 0; i < 30; i++) {
       const path = selectAiTurnPath('16', 1, snap, 'BLUE', {
-        budgetMs: 400,
         easySoftMissRate: 1,
         rng: () => (i + 0.1) / 30,
       });
@@ -169,7 +164,6 @@ describe('HonestAi difficulty contract', () => {
     const centerId = engine.getState().board.intersections.find((p) => p.label === 'A21')!.id;
 
     const path = selectAiTurnPath('6x3x5', 2, snap, 'BLUE', {
-      budgetMs: 1500,
       rng: () => 0,
       mediumSoftMissRate: 0,
       center: { centerRule: 'endgame' },
@@ -196,13 +190,11 @@ describe('HonestAi difficulty contract', () => {
     const centerId = engine.getState().board.intersections.find((p) => p.label === 'A21')!.id;
 
     const withoutCum = selectAiTurnPath('6x3x5', 2, snap, 'BLUE', {
-      budgetMs: 1500,
       rng: () => 0,
       mediumSoftMissRate: 0,
       center: { centerRule: 'off' },
     });
     const withCum = selectAiTurnPath('6x3x5', 2, snap, 'BLUE', {
-      budgetMs: 1500,
       rng: () => 0,
       mediumSoftMissRate: 0,
       center: { centerRule: 'cumulative', cumulativeRed: 0, cumulativeBlue: 0 },
@@ -258,7 +250,6 @@ describe('HonestAi difficulty contract', () => {
     const centerId = engine.getState().board.intersections.find((p) => p.label === 'A21')!.id;
 
     const path = selectAiTurnPath('6x3x5', 2, snap, 'BLUE', {
-      budgetMs: 1500,
       rng: () => 0,
       mediumSoftMissRate: 0,
       center: { centerRule: 'endgame' },
@@ -288,7 +279,6 @@ describe('HonestAi difficulty contract', () => {
     const centerId = engine.getState().board.intersections.find((p) => p.label === 'A21')!.id;
 
     const path = selectAiTurnPath('6x3x5', 1, snap, 'BLUE', {
-      budgetMs: 400,
       rng: () => 0,
       easySoftMissRate: 0,
       center: { centerRule: 'endgame' },
@@ -311,7 +301,6 @@ describe('HonestAi production strength gates (6x3x5)', () => {
       const player = engine.getState().currentPlayer;
       const level = player === 'BLUE' ? blueLevel : 1;
       const path = selectAiTurnPath('6x3x5', level, engine.exportSnapshot(), player, {
-        budgetMs: level >= 3 ? 1200 : level === 2 ? 500 : 200,
         easySoftMissRate: level === 1 ? EASY_SOFT_MISS_RATE : 0,
         mediumSoftMissRate: level === 2 ? MEDIUM_SOFT_MISS_RATE : 0,
         rng,
@@ -370,7 +359,6 @@ describe('HonestAi production strength gates (6x3x5)', () => {
         // Hard as first player (RED) vs Medium (BLUE) — isolates skill from second-player deficit.
         const level = player === 'RED' ? 3 : 2;
         const path = selectAiTurnPath('6x3x5', level as 2 | 3, engine.exportSnapshot(), player, {
-          budgetMs: level === 3 ? 2500 : 700,
           easySoftMissRate: 0,
           mediumSoftMissRate: level === 2 ? MEDIUM_SOFT_MISS_RATE : 0,
           rng,
@@ -412,7 +400,6 @@ describe('HonestAi strength gates (8x4x6 — human-reported Medium≈Hard board)
         const player = engine.getState().currentPlayer;
         const level = player === 'RED' ? 3 : 2;
         const path = selectAiTurnPath('8x4x6', level as 2 | 3, engine.exportSnapshot(), player, {
-          budgetMs: level === 3 ? 2500 : 700,
           easySoftMissRate: 0,
           mediumSoftMissRate: level === 2 ? MEDIUM_SOFT_MISS_RATE : 0,
           rng,
@@ -441,7 +428,6 @@ describe('HonestAi Hard coverage on 16-bead', () => {
     const engine = new SmartBeadsEngine('16');
     engine.getState().currentPlayer = 'BLUE';
     const path = selectAiTurnPath('16', 3, engine.exportSnapshot(), 'BLUE', {
-      budgetMs: 2800,
       mediumSoftMissRate: 0,
       rng: () => 0,
     });
@@ -463,7 +449,6 @@ describe('HonestAi Hard coverage on 16-bead', () => {
         const player = engine.getState().currentPlayer;
         const lv = player === 'BLUE' ? level : 1;
         const path = selectAiTurnPath('16', lv, engine.exportSnapshot(), player, {
-          budgetMs: lv === 3 ? 2000 : 200,
           easySoftMissRate: lv === 1 ? EASY_SOFT_MISS_RATE : 0,
           mediumSoftMissRate: 0,
           rng,

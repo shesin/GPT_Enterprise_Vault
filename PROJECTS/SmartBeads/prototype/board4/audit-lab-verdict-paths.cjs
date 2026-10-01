@@ -17,7 +17,7 @@ const EMIT_PATTERNS = [
 ];
 
 const AUTHORITATIVE = {
-  sholo: ['evaluate-ladder-lab.cjs'],
+  sholo: [], // evaluate-ladder-lab.cjs retired 2026-10-01 (it crashed: required the missing sholo-8-bead-fullturn-engine.cjs)
   cursorIndex: ['evaluate-cursor-index-lab.cjs'],
 };
 

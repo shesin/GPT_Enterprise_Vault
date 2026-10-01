@@ -64,6 +64,8 @@ Draw is legitimate — not a failure to engineer away.
 
 **Centre rule only with a match timer (Shekhar, 2026-10-01):** the Centre Rule setting exists only when a shared match timer is selected. `normalizeTimerSettings` forces `centerRule: 'off'` when the timer is off (and it stays off under the HvH tournament timer); the settings screen disables the Centre Rule dropdown and resets it to Off while the timer is Off. The AI's centre evaluation weight is `CENTER_EVAL_WEIGHT = 1` (tie-breaker only; the timer-urgency boost still makes centre decisive near expiry).
 
+**AI never trades strength for time (Shekhar, 2026-10-01):** an AI move must never take more than 3 s on any device, and the AI must not play a random, "best so far" or shallower move to meet that. The search therefore has no time limit at all; speed comes only from exact pruning and engine speed (proved to pick the same moves). Measured: worst Expert move 46 ms on desktop, 336 ms with Chrome CPU throttled 6x (`GPT_PROJECT_AUDIT_05P.md` § 10). If a future board or device cannot meet 3 s with the same search, stop and report the board and trade-off — do not add a clock silently.
+
 **AI repetition steer:** `HonestAi` applies a soft eval penalty when a candidate turn would revisit an already-seen position (Lab-aligned). Does not forbid the legal third repeat — engine draw still owns termination.
 
 ---

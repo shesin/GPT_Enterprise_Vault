@@ -8,7 +8,7 @@ import {
   Move,
   Player,
 } from '../../../../models/GameState';
-import { generateTurnEnds, mobility, selectAiTurnPath, thinkBudgetForLevel } from '../HonestAi';
+import { generateTurnEnds, mobility, selectAiTurnPath } from '../HonestAi';
 
 /**
  * 2026-10-01 AI speed-up guards. The speed-up (engine geometry indexes, mobility without engines,
@@ -76,9 +76,8 @@ describe('AI speed-up never changes the chosen move (golden picks from the pre-s
     expect(e).not.toBeNull();
     const snap = e!.exportSnapshot();
     const p = e!.getState().currentPlayer;
-    const budgetMs = thinkBudgetForLevel(3, v);
-    expect(key(selectAiTurnPath(v, 3, snap, p, { budgetMs, rng: () => 0 }))).toBe(first);
-    expect(key(selectAiTurnPath(v, 3, snap, p, { budgetMs, rng: () => 0.999 }))).toBe(last);
+    expect(key(selectAiTurnPath(v, 3, snap, p, { rng: () => 0 }))).toBe(first);
+    expect(key(selectAiTurnPath(v, 3, snap, p, { rng: () => 0.999 }))).toBe(last);
   });
 });
 

@@ -3,7 +3,7 @@ import { FeatureSession } from '../feature/FeatureSession';
 import { engineOccupancy, isolatedPly, moveByLabel } from '../feature/firstMoveInvariants';
 import { selectAiTurnPath } from '../feature/HonestAi';
 import { planAiTurnPath, runAiTurn } from '../PlayController';
-import { honestAiTestOpts } from '../feature/__tests__/honestAiTestBudget';
+import { honestAiTestOpts } from '../feature/__tests__/honestAiTestOpts';
 
 const off = {
   aiLevel: 2 as const,

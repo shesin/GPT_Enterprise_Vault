@@ -48,7 +48,6 @@ function playMatch(blueLevel, seed, maxPlies = 50) {
     const player = engine.getState().currentPlayer;
     const level = player === 'BLUE' ? blueLevel : 1;
     const turnPath = selectAiTurnPath('6x3x5', level, engine.exportSnapshot(), player, {
-      budgetMs: level >= 3 ? 2500 : level === 2 ? 700 : 200,
       easySoftMissRate: level === 1 ? EASY_SOFT_MISS_RATE : 0,
       mediumSoftMissRate: level === 2 ? MEDIUM_SOFT_MISS_RATE : 0,
       rng,

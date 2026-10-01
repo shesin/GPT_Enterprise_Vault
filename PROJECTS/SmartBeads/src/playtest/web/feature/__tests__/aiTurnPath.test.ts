@@ -4,7 +4,7 @@ import { applyAiHops } from '../aiTurnPath';
 import { engineOccupancy, isolatedPly, moveByLabel } from '../firstMoveInvariants';
 import { selectAiTurnPath } from '../HonestAi';
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
-import { honestAiTestOpts } from './honestAiTestBudget';
+import { honestAiTestOpts } from './honestAiTestOpts';
 
 const off = {
   aiLevel: 2 as const,

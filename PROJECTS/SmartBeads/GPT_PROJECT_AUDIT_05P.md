@@ -35,7 +35,8 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 | **Feature / settings** | `GameFeatureSettings`, `FeatureSession.*`, `clockPolicy`, `aiTurnPath`, `HonestAi.test`, `spectate`, `CoachVideoScript.test`, `CoachVideoPlayer.test`, `CoachVoice.test`, `FeatureSession.coach.test` | Timers, center rules, resignation, AI level UI, **Watch AI** (spectate), **Coach** Video 1 (watch-only, **7-bead · 4×5**, ~1:53) |
 | **Shell / layout / audio** | `PlayController`, `playerBarShell`, `hubShell`, `viewportFit`, `creamCampRendersLower`, `CanvasBoardRenderer.moveFeedback`, `SoundEffects` | Settings DOM, cream-on-bottom, moveFeedback (turn colour → STATUS / PENDING), capture pulse, layout contracts |
 | **Slow AI — tiers** | `HonestAi.difficultyTiers.test.ts` | Easy/Medium/Hard behaviour, Medium soft-miss, 8×4×6 and 16 gates (~7 min alone) |
-| **Slow AI — search** | `HonestAi.searchCompletion.test.ts` | Expert (level 3) depth-2 completion on all 7 boards + 16 midgame |
+| **Slow AI — search** | `HonestAi.searchLatency.test.ts` | Expert and Standard return a legal move under 3 s on all 7 boards (opening) + 16 midgame (one full search, no time limit) |
+| **AI exactness + fuzz** (feature batch) | `HonestAi.turnEndsEquivalence.test.ts`, `HonestAi.fuzz.test.ts`, `HonestAi.speedEquivalence.test.ts`, `HonestAi.testAudit.test.ts` | Search turn ends == replay on the plain engine (repetition draws included); legal, deterministic, never-throw AI on random positions of all boards; golden picks; `HonestAi.ts` has no clock/budget |
 
 ### Browser gates (Playwright — not Jest)
 
@@ -318,7 +319,7 @@ All runs used scratch copies of the repo (committed state) outside the vault; no
 - Prototype D2 captures/game 11.7–12.7 (current) vs 8.6–9.1 (standard).
 **Speed:** production depth-3-reply search on 16-bead ~22% faster on standard (avg 271 vs 349 ms; all 14 positions full depth).
 **Official lab gate (`final-validate-sholo-lab.cjs`):** NOT READY on unmodified main (`parity_node_coords`; `primary_D2_play_signal` 9.92 vs ≥10 at N=25) although the committed SHOLO_LAB_FINAL_TRUST.json (2026-08-14) says READY. Candidate adds 3 failures: `parity_edges` (playable HTML 92 vs 76), `parity_opening_move_count` (13 vs 9), first-player check. The playable HTMLs (SHOLO_GUTI.html, ..._WITH_FEATURE.html) would also need changing.
-**Tooling defect found:** `evaluate-ladder-lab.cjs` requires `sholo-8-bead-fullturn-engine.cjs`, which does not exist (crashes).
+**Tooling defect found:** `evaluate-ladder-lab.cjs` requires `sholo-8-bead-fullturn-engine.cjs`, which does not exist (crashes). **Resolved 2026-10-01:** script retired (deleted) and trust file marked STALE — see CLOSED_ISSUES § "Lab-script defects — CLOSED".
 **Other boards:** all 6 other boards use the same all-cells-crossed loop. They are our own designs, not traditional boards; 6-bead 3×5 is a recorded human KEEP and already near the G2 limit (D1 first mover 20% / second 80%, −30pp vs ±35pp). 12-bead is 6 rows × 5 cols, so an alternating pattern cannot be 180°-symmetric (the rotation flips row+col parity) and would create a first/second-mover bias. Decision: no other board is altered.
 **Not tested:** human play, browser/phone check, D3 swap, production D2/D3 decisive fairness.
 **Verdict (Shekhar, 2026-09-30): CLOSED, no change to the 16-bead board.**
@@ -356,7 +357,7 @@ Expert (L3) vs Standard (L2), 520 games: 486 W / 2 L / 32 D (6x4 99/0, 6x3x5 97/
 Every draw in section 1 was `safety_cap`; on 16-bead 9 of 11 draws had Expert ahead ~7.3 v 3.1 pieces. Uncapped, 40 games (10 each on 16, 12x6x5, 10x5, 8x4x6): all 40 ended by elimination, none drawn. Game length (turns) uncapped: 16-bead 92-186 (median 138); 12x6x5 53-131 (76); 10x5 42-249 (65); 8x4x6 32-78 (45). **Fix (Shekhar, 2026-10-01):** cap kept; 120 turns total on 6x4 / 6x3x5 / 7x4x5, 240 (120 per side) on 8x4x6 / 10x5 / 12x6x5 / 16; at the cap more captures wins, centre rule (when on) breaks a captures tie, else draw. `engineSafetyCapForVariant`, `FeatureSession.maybeApplyCenterTiebreakAfterEngineEnd`. DECISIONS (line "Engine safety cap") updated.
 
 ### 3. AI search froze the page (FIXED)
-`PlayController.runAutomatedTurn` called the synchronous search on the main thread; no Web Worker existed. Expert think times seen serially on big boards (other jobs were running, so inflated): 16-bead worst 41.0 s (12 of 669 moves over the 4.96 s budget), 12x6x5 9.8 s (9/401 over 4.16 s), 8x4x6 18.5 s (5/242 over 3.52 s), 10x5 2.2 s (0/419). **Fix:** `feature/aiSearchWorker.ts` + `AiSearchClient` + `main.ts` (`?worker` import, `vite-worker.d.ts`); `bootstrapPlayShell(onReady, { aiSearchClient })`; tests/Node keep the synchronous path. Verified in the browser (dev server and a production `vite build`): worker created and replying, game progressing, longest frame gap 54-90 ms during Expert-vs-Expert 16-bead. Worker failure falls back to the same full-strength search on the main thread, logged. The existing comment "clocks must keep running during AI think" is now actually true. **Not changed:** the search itself still retries to 45 s then runs unbounded (no downgrade by design) — the page no longer freezes, but a pathological position can still make the AI think for a long time. Phone / Android WebView not tested.
+`PlayController.runAutomatedTurn` called the synchronous search on the main thread; no Web Worker existed. Expert think times seen serially on big boards (other jobs were running, so inflated): 16-bead worst 41.0 s (12 of 669 moves over the 4.96 s budget), 12x6x5 9.8 s (9/401 over 4.16 s), 8x4x6 18.5 s (5/242 over 3.52 s), 10x5 2.2 s (0/419). **Fix:** `feature/aiSearchWorker.ts` + `AiSearchClient` + `main.ts` (`?worker` import, `vite-worker.d.ts`); `bootstrapPlayShell(onReady, { aiSearchClient })`; tests/Node keep the synchronous path. Verified in the browser (dev server and a production `vite build`): worker created and replying, game progressing, longest frame gap 54-90 ms during Expert-vs-Expert 16-bead. Worker failure falls back to the same full-strength search on the main thread, logged. The existing comment "clocks must keep running during AI think" is now actually true. **Not changed in this step:** the search itself still retried up to 45 s then ran unbounded (superseded: removed in section 10) — the page no longer froze, but a pathological position could still make the AI think for a long time. Phone / Android WebView not tested. *(Second pass 2026-10-01, section 10: the retry loop below was removed.)*
 
 ### 4. Silent first-legal-move fallback (FIXED)
 `PlayController` and `planAiTurnPath` swallowed search errors and played the first legal move. Now `emergencyLegalPath` logs `[AI] search failed…` (no log when there are genuinely no legal moves). Tested.
@@ -379,7 +380,7 @@ Every draw in section 1 was `safety_cap`; on 16-bead 9 of 11 draws had Expert ah
 
 ### 8. AI took too long on big boards (FIXED without changing a single move)
 Shekhar: over 5 s is unacceptable, a phone is slower still, and the AI must not play a random/weaker move to save time. Profiling (16-bead mid-game, 98.7% of samples in the search process): ~55% of the time was engine bookkeeping (`getJumpMovesFrom` 23%, `getLegalMoves` 15%, array `find` scans 13%, per-leaf engine construction + repetition keys 12%, board cloning 12%). The reply search also started every candidate move from scratch (no best-so-far bound) and tried moves in arbitrary order. **Exact-preserving fixes:** (1) `cloneBoardDefinition` shares the never-mutated `connections`/`jumpPaths` arrays; per-geometry indexes for neighbours, jump-by-origin and jump-by-ends (`getConnectedIds`, `getJumpPathsFrom`, `findJumpPath`) and a direct-index `requireIntersection`; (2) `mobility` counts moves without building an engine per leaf; (3) `generateTurnEnds` reuses one scratch engine; (4) captures searched first at every level; (5) at the root each move's reply search gets alpha = (best score so far - that move's score adjustments - 1e-6), so a move that cannot tie or beat the best is cut off while ties are still searched exactly; ties keep their original order so seeded picks are unchanged.
-**Proof of "same moves":** 49 seeded full games (Expert vs Standard and Expert vs Expert, 7 boards) hash-identical move logs before vs after; 354 seeded mid-game positions (8x4x6, 12x6x5, 16) picked the same first and last tie-break move. **Speed (desktop, nothing else running), Expert L3:** total think time per game set 4.2x-11.0x less; heavy tail (120 positions per board) p99 / max: 16-bead 1985 / 2262 ms -> 124 / 160 ms, 12x6x5 1879 / 2449 -> 143 / 146, 8x4x6 822 / 842 -> 62 / 68; nothing over 3 s before or after on this PC. (Earlier 10 s / 41 s figures were taken while other jobs were running on the same CPU and are not reproducible without load.) Permanent guard: `HonestAi.speedEquivalence.test.ts` (golden picks recorded from commit 7126494, mobility == engine move count on seeded positions, geometry indexes == naive scans). The 45 s retry loop and the unbounded final attempt are unchanged and, per Shekhar, no time-cap/best-so-far fallback was added. Phone speed still unmeasured.
+**Proof of "same moves":** 49 seeded full games (Expert vs Standard and Expert vs Expert, 7 boards) hash-identical move logs before vs after; 354 seeded mid-game positions (8x4x6, 12x6x5, 16) picked the same first and last tie-break move. **Speed (desktop, nothing else running), Expert L3:** total think time per game set 4.2x-11.0x less; heavy tail (120 positions per board) p99 / max: 16-bead 1985 / 2262 ms -> 124 / 160 ms, 12x6x5 1879 / 2449 -> 143 / 146, 8x4x6 822 / 842 -> 62 / 68; nothing over 3 s before or after on this PC. (Earlier 10 s / 41 s figures were taken while other jobs were running on the same CPU and are not reproducible without load.) Permanent guard: `HonestAi.speedEquivalence.test.ts` (golden picks recorded from commit 7126494, mobility == engine move count on seeded positions, geometry indexes == naive scans). The 45 s retry loop and the unbounded final attempt were still there at this step (removed in section 10; still no time-cap/best-so-far fallback). Phone speed was unmeasured here (emulated in section 10).
 
 ### 9. Centre rule only with a timer (Shekhar decision)
 Implemented: `normalizeTimerSettings` forces centre Off without a match timer; settings screen disables the dropdown. Session tests that exercised centre without a timer now use a timer. No further centre testing requested.
@@ -389,9 +390,90 @@ Implemented: `normalizeTimerSettings` forces centre Off without a match timer; s
 
 **Re-run after sections 8-9 (speed-up + centre needs a timer):** `tsc --noEmit` 0 errors; ESLint 0 errors; all 7 Jest batches PASS, 704 tests (slow AI tier batch 249 s -> 24 s, ladder guard 62 s -> 14 s because of the speed-up). Browser check of the settings screen (dev server): timer Off -> Centre dropdown disabled and Off; timer 5 -> enabled; Centre = End-Game kept; timer back to Off -> Centre reset to Off and disabled. Prettier reports 11 files not formatted repo-wide (18 before these changes); none of the new files. Uncommitted at the time of writing.
 
+### 10. Deep AI audit, second pass (2026-10-01, Claude; Shekhar: "systematic, evidence-based, every function")
+
+**Why it was needed.** The first pass measured strength but not worst-case time, and left three structural flaws: one search restarted from zero up to six times, "budgets" that were not budgets, and an engine that copied the whole game history for every node. All are fixed below; every speed change was proved to keep the same moves.
+
+**Rules held (Shekhar):** an AI move must not need more than 3 s on any device; no random move, no "best so far", no lower depth, no weaker play to save time; speed only from making the SAME search faster.
+
+#### 10.1 Every function in the AI path (purpose / worst-case cost / failure modes)
+| Function | What it does | Cost / risk found |
+|---|---|---|
+| `evaluate`, `mobility`, `countPieces`, `centerScoreForPlayer`, `timerUrgency`, `centerEvalWeight`, `timerEvalAdjust` (HonestAi) | Static score: material 48 + mobility 1.5 + centre (weight 1, plus timer boost) + timer adjust | Pure, no throws, one pass over the board per call (~4 µs on 16-bead). `mobility` == engine move count (tested). Found: unused `aiPlayer` parameter in `centerEvalWeight` (REMOVED). `evaluate` keeps an unused `_variant` argument that many callers pass (left, harmless). |
+| `aiOpponentReplyPlies`, `replyBranchForLevel` | Level -> reply depth (0/1/2) and list cap (60/64/80) | Cap measured, see 10.4 |
+| `walkTurnEnds` / `generateTurnEnds` | All ways to end a turn: root slide/jump, then jump chains | Found: "unbounded" really stopped at roots+512 ends (now the named constant `UNCAPPED_EXTRA_ENDS`); chains limited to 8 hops (`MAX_CHAIN_HOPS`, see 10.4); a root-list deadline (`Date.now()+budget`) could silently truncate the root options (REMOVED with the budgets). One scratch engine per board is reused (not re-entrant; documented). |
+| `capturesFirst`, `capturesFirstIndexes` | Stable captures-first ordering | Order only; cannot change a result |
+| `minimaxTurns`, `leafSearch` | Alpha-beta over whole turns; last ply evaluated in place and generation stops at the cutoff | Exact. Found: every leaf cloned a snapshot (REMOVED) |
+| `scoreRootEnd`, `endScore` | Root scoring (+0.05 per capture tie-break, soft repetition penalty) | Root alpha bound is exact (a tie is searched fully) |
+| `searchBestAtExactDepth` | Scores every root move, returns the tied best set | Found: restarted the whole search up to 6 windows (4960..45000 ms, ~123 s if every window timed out) and then ran unlimited anyway; result identical to one search (FIXED: one pass, no clock) |
+| `selectAiTurnPath` | Level dispatch; Casual ~30% soft-miss, Standard ~20% soft-miss, Expert 0% | `budgetMs` option and numeric overload REMOVED (dead) |
+| `bestCapturePool`, `softMissPath`, `steerCapturePoolByRepetition`, `pickRandomEnd` | Casual / soft-miss paths | Linear; no throws |
+| `shouldAcceptResignationDraw` | Accept a resigned draw when eval <= 0 | Pure |
+| `thinkBudgetForLevel`, `BOARD_THINK_MULTIPLIER`, `MAX_DEPTH2_SEARCH_MS`, `probeSearchCompletion`, `SearchCompletionReport` | Think budgets (3200 ms x board factor, all above 3 s) and a "did depth 2 finish" probe | Found: budgets only fed the restart windows, so they meant nothing. REMOVED with the loop. |
+| `aiTurnRunner` (`buildAiPlanRequest`, `emergencyLegalPath`, `planAiTurnPath`, `runAiTurn`) | Builds the plan request, logged emergency fallback | `budgetMs` removed from the request. Fallback is logged, never silent. |
+| `aiSearch`, `AiSearchClient`, `aiSearchWorker` | Same search in a Web Worker; `cancel()` terminates it | Worker crash -> logged retry on main thread (tested, `aiSearchWorker.test.ts`) |
+| `PlayController` `runAutomatedTurn` / `continueAutomatedTurn` / `cancelAiWork` | Schedule, plan, animate, cancel on Undo / New game / board or setting change | Stale runs are dropped by `aiRunId`; no leak found |
+| `SmartBeadsEngine` (as used by the AI) | Rules | Found: each snapshot copied the full repetition history (O(game length)), each move re-checked legality by building the move list, each turn end built key strings and a full legal-move list for the stalemate test. FIXED, see 10.2 |
+
+#### 10.2 What was changed (all exact, same moves)
+1. One search, no windows, no clock (`HonestAi.ts`). `budgetMs` / `thinkBudgetForLevel` / `probeSearchCompletion` deleted; tests, scripts (`lab-*.mjs`) and docs updated.
+2. Engine "search mode" (`SmartBeadsEngine.ts`): repetition history is the shared game history plus a short numeric path (`SearchSnapshot`, `loadForSearch`, `exportSearchSnapshot`); repetition counts use an exact numeric position encoding with a hash pre-filter against the game history; `applyLegalMoveWithUndo` / `undoLastMove` instead of reloading a cloned board per move; `applyLegalMove` skips the legality re-check for moves taken from `getLegalMoves()`; `hasLegalMove` (early exit) replaces `getLegalMoves().length`; `countPieces` without allocation. The normal game engine path (`exportSnapshot`, `loadSnapshot`, `applyMove`) is unchanged for the app; in search mode `exportSnapshot` throws on purpose.
+3. Last search ply evaluated in place; one scratch engine per board; moves generated in the same order as before.
+
+**Proof of "same moves".** (a) 49 seeded full games (Expert vs Standard / Expert, 7 boards): move-log hash, turn count and winner identical to commit 7126494 for all 49, after each step. (b) Differential test against the original code (commit 7126494): ~118,000 turn-end lists (3 turns deep) on all 7 boards, every path, board, captures, game-over reason compared, 0 mismatches, including about 1,560 turn ends that end the game by 3-fold repetition. (c) Permanent guards: `HonestAi.turnEndsEquivalence.test.ts` (every search turn end == replay on the plain engine, repetition draws included), `HonestAi.speedEquivalence.test.ts` (golden picks), `HonestAi.fuzz.test.ts`, `HonestAi.searchLatency.test.ts`, `HonestAi.testAudit.test.ts` (fails if `HonestAi.ts` ever gets a clock or budget again).
+
+#### 10.3 Worst-case time (Expert, level 3; idle machine, one board at a time)
+Desktop, Node, seeded positions (random, capture-biased, long capture-biased; positions where the game was already over are skipped):
+
+| Board | Positions | p50 ms | p99 ms | p99.9 ms | max ms | max before this pass | max x5 (slow phone) |
+|---|---|---|---|---|---|---|---|
+| 6x4 | 4,925 | 1.1 | 3.7 | 6.2 | 12.9 | 48 | 0.06 s |
+| 6x3x5 | 5,198 | 1.0 | 4.1 | 8.0 | 11.0 | 47 | 0.05 s |
+| 7x4x5 | 5,740 | 2.1 | 9.1 | 16.0 | 23.4 | 106 | 0.12 s |
+| 8x4x6 | 6,586 | 3.1 | 9.6 | 14.8 | 26.5 | 139 | 0.13 s |
+| 10x5 | 7,431 | 3.8 | 10.5 | 15.7 | 28.7 | 154 | 0.14 s |
+| 12x6x5 | 9,968 | 6.0 | 16.8 | 27.0 | 45.2 | 291 | 0.23 s |
+| 16 | 13,759 | 5.6 | 18.0 | 28.5 | 46.4 | 517 | 0.23 s |
+
+("max before" = same method on the code as pushed at 2d62ccf. Full games: total Expert think time over the 49 oracle games 626 s at commit 7126494 -> 10.3 s now; slowest single move in them 4357 ms -> 51 ms.)
+
+Adversarial search (hill-climb: mutate a position toward the slowest Expert move, 100-150 restarts x 100-120 steps per board; re-timed 3x): 16-bead 27 ms (one 92 ms reading did not repeat), 12x6x5 56 ms (a position with 179 root move-ends), 10x5 39 ms (89 root ends), 8x4x6 11 ms.
+
+Real Chrome (installed Chrome, headless, CDP CPU throttling; same seeded positions; a throttled run is slower than "rate x desktop" because the engine is JIT-compiled):
+
+| Board | Throttle | Positions | p50 ms | p99 ms | max ms |
+|---|---|---|---|---|---|
+| 16 | none | 5,898 | 3.9 | 12.4 | 23 |
+| 16 | 4x | 1,176 | 39 | 122 | 212 |
+| 16 | 6x | 1,176 | 69 | 226 | 336 |
+| 12x6x5 | 4x | 862 | 38 | 105 | 163 |
+| 12x6x5 | 6x | 862 | 66 | 177 | 268 |
+
+Acceptance (< 3 s at 5x slowdown, i.e. < ~0.6 s desktop): met on all 7 boards (worst measured: 16-bead 336 ms at 6x throttle, about 9x under 3 s). Browser: a real Expert game on 16-bead (human move, AI capture reply, Undo, New game) and Watch AI vs AI ran with the worker, 0 errors, longest main-thread pause 105 ms.
+
+**Not a proof.** The numbers come from tens of thousands of positions plus adversarial search, not from a formal bound. In theory the work grows with (root move-ends) x (reply list <= 80) x (reply list <= 80); alpha-beta cuts almost all of it, and the largest root list seen was 306 move-ends (old code, ~0.3 s then; it is far cheaper now).
+
+#### 10.4 Caps measured (flaws C and D)
+- **Reply list cap (80 / 64 / 60), flaw C.** Of about 4.3 million turn ends in 226,000 lists (full unpruned 3-turn tree from 118-300 positions on each of 6 boards; 6x3x5 not scanned), lists of 80 or more occurred on 16-bead (largest 134, 9 of 46,402 lists), 8x4x6 (86) and 12x6x5 (84). Capped vs uncapped Expert picks (first and last tie-break) on 12,844 seeded positions (16, 12x6x5, 8x4x6, 10x5, 7x4x5): **0 differences**. Standard (cap 64): 0 differences on 3,550 positions (16, 12x6x5; with a fixed rng of 0 the Standard path takes its soft-miss branch, so only the 0.999 pick exercised the search). Uncapped search costs about 2x the average time (16-bead max 110 ms). Not material -> cap kept (it also bounds the cost).
+- **Chain depth (8 hops), flaw D.** Longest capture chain seen: 7 hops (16-bead, 12x6x5), 0 of the 4.3 million turn ends reached 9. The limit is a safety bound only; kept and named.
+
+#### 10.5 Rules, evaluation and clocks
+- Evaluation unchanged by this pass, so the ladder and the centre-on results from sections 1 and 5 stand (moves proved identical on 49 games + 12,844 capped/uncapped positions). Ladder guard `HonestAi.ladderStrength.test.ts` re-run green (see Verification).
+- Clocks: the match / shot / tournament timers keep running during AI think (`clockPolicy.ts`). Shot clock options are Off / 60 / 90 / 120 s and the AI now needs well under 0.4 s even at 6x throttle, so the shot clock cannot cost the AI the game; on a shared match timer both sides pay the same (tiny) think time.
+- The evaluation reads the match-timer value once when the search starts (it does not tick during the 5-50 ms search); no issue.
+
+#### 10.6 Checked / found / fixed / UNCONFIRMED
+- **Checked:** every function listed in 10.1; worst-case time on 7 boards (desktop, adversarial, Chrome throttled); equivalence to the original code; caps (C) and chain depth (D); property/fuzz (legal, deterministic, never throws, null only when no moves); browser PvE flow, Undo, New game, Watch AI vs AI; docs vs code.
+- **Found and FIXED:** A restart loop (one search now); B budgets meaningless and above 3 s (removed); root list deadline could truncate silently (removed); hidden `roots+512` cap (named); engine copying history / cloning per leaf / rebuilding legal-move lists (search mode); unused `aiPlayer` parameter; docs saying "up to ~45 s" (STATUS, PENDING, PROJECT_MAP, `pveTiming.ts` comment) corrected. Caps C and D measured and kept.
+- **Not a flaw but worth knowing:** a hand-built position with a huge number of capture chains could still be slower than anything tested (no formal bound).
+- **UNCONFIRMED:** real phones (ARM CPUs, thermal throttling, Android WebView) - only emulated by Chrome's CPU throttle; the Playwright live gates in `npm test` (Playwright's browser is not installed here); Resign, Coach lessons and "change a setting during an AI move" in a real browser (covered by Jest; an AI move now takes milliseconds, so there is almost no window to interrupt); Watch AI vs AI was checked on 6x4 only, with `requestAnimationFrame` replaced by a timer because the app window was minimized and not painting (the AI search itself was also checked directly through the worker: 98 ms, legal move).
+
+#### 10.7 Final verification of this pass (final code)
+`tsc --noEmit` 0 errors; ESLint 0 errors / 0 warnings; Jest batch audit: 64 test files, each in exactly one batch; all 7 batches PASS, 708 tests (feature batch now includes the new exactness and fuzz tests; slow tiers 13.6 s, ladder 9.7 s, search-latency 5.8 s); `vite build` OK (worker chunk `aiSearchWorker` 27.9 kB); oracle 49/49 identical to commit 7126494. **UNCONFIRMED:** Playwright live gates in `npm test` (browser not installed), real-phone speed.
+
 ### Not done / open
 - Human playtest of the changed AI feel (centre rule, timed games); Android WebView / phone check of the worker.
-- Search retry still unbounded after 45 s (see 3).
+- ~~Search retry still unbounded after 45 s~~ RESOLVED in section 10: one search, no clock; worst measured Expert move 46 ms desktop / 336 ms at 6x CPU throttle.
 - The two broken lab scripts remain open in PENDING.
 - No other flaw found in these conditions; "no flaw at all" cannot be proven by any finite test.
 

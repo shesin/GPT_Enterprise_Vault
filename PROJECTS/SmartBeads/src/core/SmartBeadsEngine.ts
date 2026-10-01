@@ -6,6 +6,7 @@ import {
   getJumpPathsFrom,
   GameState,
   hasReachedPlyLimit,
+  Intersection,
   JumpPath,
   Move,
   Player,
@@ -38,6 +39,97 @@ export type EngineSnapshot = {
 };
 
 /**
+ * AI-search snapshot. Repetition history is the shared, never-mutated `searchBase` plus the positions
+ * played along this search line (`searchPath`, each position encoded as `positionStride` numbers), so
+ * cloning a node never copies the whole game history. Counts are identical to a full history:
+ * base count + occurrences in the path.
+ */
+export type SearchSnapshot = {
+  state: GameState;
+  chainPieceId: number | null;
+  searchBase: Record<string, number>;
+  searchPath: readonly number[];
+};
+
+/** Occupancy is packed 15 intersections (2 bits each) per number; one more number holds side + chain. */
+const NODES_PER_WORD = 15;
+
+function positionStride(nodeCount: number): number {
+  return Math.ceil(nodeCount / NODES_PER_WORD) + 1;
+}
+
+function mixWords(words: ArrayLike<number>, length: number): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < length; i += 1) h = Math.imul(h ^ words[i]!, 0x01000193) ^ (h >>> 13);
+  return h | 0;
+}
+
+/** Encode a buildPositionKey() string as the same words the search computes from a live board. */
+function wordsFromPositionKey(key: string): number[] {
+  const [occ, player, chain] = key.split('|') as [string, string, string];
+  const words: number[] = [];
+  let word = 0;
+  let inWord = 0;
+  for (let i = 0; i < occ.length; ) {
+    let code = 0;
+    if (occ[i] === 'R') {
+      code = 1;
+      i += 3;
+    } else if (occ[i] === 'B') {
+      code = 2;
+      i += 4;
+    } else {
+      i += 1;
+    }
+    word = word * 4 + code;
+    inWord += 1;
+    if (inWord === NODES_PER_WORD) {
+      words.push(word);
+      word = 0;
+      inWord = 0;
+    }
+  }
+  if (inWord > 0) words.push(word);
+  words.push((chain === 'none' ? 0 : Number(chain) + 1) * 2 + (player === 'BLUE' ? 1 : 0));
+  return words;
+}
+
+// Hashes of every position in a game history, built once per history object (it is never mutated).
+const baseHashCache = new WeakMap<object, Set<number>>();
+
+function baseHashesFor(base: Record<string, number>): Set<number> {
+  let hashes = baseHashCache.get(base);
+  if (!hashes) {
+    hashes = new Set();
+    for (const key of Object.keys(base)) {
+      const words = wordsFromPositionKey(key);
+      hashes.add(mixWords(words, words.length));
+    }
+    baseHashCache.set(base, hashes);
+  }
+  return hashes;
+}
+
+/** What applyLegalMoveWithUndo changed, so undoLastMove can restore it without copying the board. */
+interface MoveUndo {
+  from: Intersection;
+  to: Intersection;
+  over: Intersection | undefined;
+  fromOcc: Player | undefined;
+  toOcc: Player | undefined;
+  overOcc: Player | undefined;
+  red: number;
+  blue: number;
+  moveCount: number;
+  currentPlayer: Player;
+  gameOver: boolean;
+  winner: Player | 'DRAW' | undefined;
+  endReason: string | undefined;
+  chainPieceId: number | null;
+  pathLength: number;
+}
+
+/**
  * Project gameplay engine.
  * Board geometry, jump routes, centers, and ply limits come from BoardDefinition.
  *
@@ -52,6 +144,12 @@ export class SmartBeadsEngine {
   /** When set, the chaining bead may continue capturing; stop only via endTurn (Finish capture). */
   private chainPieceId: number | null = null;
   private positionHistory: Record<string, number> = {};
+  /** Search mode (loadForSearch): history = searchBase (shared, read-only) + searchPath. */
+  private searchBase: Record<string, number> | null = null;
+  private searchBaseHashes: Set<number> | null = null;
+  private searchPath: number[] = [];
+  private wordsScratch: number[] = [];
+  private lastUndo: MoveUndo | null = null;
 
   constructor(variant: BoardVariant) {
     this.variant = variant;
@@ -69,6 +167,7 @@ export class SmartBeadsEngine {
 
   /** Deep snapshot for undo, AI search, and feature-layer restore. */
   exportSnapshot(): EngineSnapshot {
+    if (this.searchBase) throw new Error('exportSnapshot is not available in search mode.');
     return {
       state: {
         ...this.currentState,
@@ -80,6 +179,94 @@ export class SmartBeadsEngine {
     };
   }
 
+  /** Search-mode snapshot of the current position (engine must be in search mode). */
+  exportSearchSnapshot(): SearchSnapshot {
+    if (!this.searchBase) throw new Error('exportSearchSnapshot requires loadForSearch first.');
+    return {
+      state: {
+        ...this.currentState,
+        board: cloneBoardDefinition(this.currentState.board),
+        captures: { ...this.currentState.captures },
+      },
+      chainPieceId: this.chainPieceId,
+      searchBase: this.searchBase,
+      searchPath: this.searchPath.slice(),
+    };
+  }
+
+  /**
+   * Load a position for AI search. A full snapshot is converted once (its history becomes the shared
+   * base); a search snapshot is restored without copying any history.
+   */
+  loadForSearch(snapshot: EngineSnapshot | SearchSnapshot): void {
+    if ('searchBase' in snapshot) {
+      this.currentState = {
+        ...snapshot.state,
+        board: cloneBoardDefinition(snapshot.state.board),
+        captures: { ...snapshot.state.captures },
+      };
+      this.chainPieceId = snapshot.chainPieceId;
+      this.searchBase = snapshot.searchBase;
+      this.searchBaseHashes = baseHashesFor(snapshot.searchBase);
+      this.searchPath = snapshot.searchPath.slice();
+      return;
+    }
+    this.loadSnapshot(snapshot);
+    this.searchBase = this.positionHistory;
+    this.searchBaseHashes = baseHashesFor(this.searchBase);
+    this.searchPath = [];
+  }
+
+  /**
+   * applyLegalMove that remembers what it changed; undoLastMove() then restores the exact prior position
+   * without copying the board (AI search tries thousands of moves from one position). One level only.
+   */
+  applyLegalMoveWithUndo(move: Move): void {
+    const st = this.currentState;
+    const board = st.board;
+    const jump = this.resolveLegalJump(move);
+    const from = requireIntersection(board, move.from);
+    const to = requireIntersection(board, move.to);
+    const over = jump ? requireIntersection(board, jump.over) : undefined;
+    this.lastUndo = {
+      from,
+      to,
+      over,
+      fromOcc: from.occupant,
+      toOcc: to.occupant,
+      overOcc: over?.occupant,
+      red: st.captures.RED,
+      blue: st.captures.BLUE,
+      moveCount: st.moveCount,
+      currentPlayer: st.currentPlayer,
+      gameOver: st.gameOver,
+      winner: st.winner,
+      endReason: st.endReason,
+      chainPieceId: this.chainPieceId,
+      pathLength: this.searchPath.length,
+    };
+    this.applyLegalMove(move);
+  }
+
+  undoLastMove(): void {
+    const u = this.lastUndo;
+    if (!u) throw new Error('Nothing to undo.');
+    const st = this.currentState;
+    u.from.occupant = u.fromOcc;
+    u.to.occupant = u.toOcc;
+    if (u.over) u.over.occupant = u.overOcc;
+    st.captures.RED = u.red;
+    st.captures.BLUE = u.blue;
+    st.moveCount = u.moveCount;
+    st.currentPlayer = u.currentPlayer;
+    st.gameOver = u.gameOver;
+    st.winner = u.winner;
+    st.endReason = u.endReason;
+    this.chainPieceId = u.chainPieceId;
+    this.searchPath.length = u.pathLength;
+    this.lastUndo = null;
+  }
+
   /** Restore a prior snapshot without changing match rules. */
   loadSnapshot(snapshot: EngineSnapshot): void {
     this.currentState = {
@@ -88,6 +275,9 @@ export class SmartBeadsEngine {
       captures: { ...snapshot.state.captures },
     };
     this.chainPieceId = snapshot.chainPieceId;
+    this.searchBase = null;
+    this.searchBaseHashes = null;
+    this.searchPath = [];
     if (snapshot.positionHistory) {
       this.positionHistory = { ...snapshot.positionHistory };
     } else {
@@ -97,14 +287,20 @@ export class SmartBeadsEngine {
 
   /** Re-seed repetition counts after scripted board setup that bypasses applyMove. */
   rebaselineRepetitionHistory(): void {
+    this.searchBase = null;
+    this.searchBaseHashes = null;
+    this.searchPath = [];
     this.positionHistory = {};
     this.recordPositionCount();
   }
 
   /** Counts remaining pieces on the board for the specified player. */
   countPieces(playerId: Player): number {
-    return this.currentState.board.intersections.filter((point) => point.occupant === playerId)
-      .length;
+    let n = 0;
+    for (const point of this.currentState.board.intersections) {
+      if (point.occupant === playerId) n += 1;
+    }
+    return n;
   }
 
   /** Bead id that must continue a multi-jump, if any. */
@@ -166,7 +362,14 @@ export class SmartBeadsEngine {
     if (!isLegal) {
       throw new Error(`Illegal move: ${move.from} -> ${move.to}`);
     }
+    this.applyLegalMove(move);
+  }
 
+  /**
+   * applyMove without the legality re-check, for callers that took `move` from getLegalMoves() on this
+   * exact position (AI search, thousands of calls per turn). Behaviour is identical for legal moves.
+   */
+  applyLegalMove(move: Move): void {
     const board = this.currentState.board;
     const jump = this.resolveLegalJump(move);
     const fromPoint = requireIntersection(board, move.from);
@@ -292,15 +495,71 @@ export class SmartBeadsEngine {
       this.endGame('DRAW', 'repetition');
       return;
     }
-    if (this.getLegalMoves().length === 0) {
+    if (!this.hasLegalMove()) {
       this.endGame(mover, 'stalemate');
     }
   }
 
+  /** Same truth value as getLegalMoves().length > 0 (no open chain), without building the list. */
+  private hasLegalMove(): boolean {
+    const { board, currentPlayer } = this.currentState;
+    for (const intersection of board.intersections) {
+      if (intersection.occupant !== currentPlayer) continue;
+      for (const to of getConnectedIds(board, intersection.id)) {
+        if (requireIntersection(board, to).occupant === undefined) return true;
+      }
+      for (const path of getJumpPathsFrom(board, intersection.id)) {
+        if (this.isJumpCurrentlyLegal(path, currentPlayer)) return true;
+      }
+    }
+    return false;
+  }
+
   private recordPositionCount(): boolean {
+    if (this.searchBase) return this.recordSearchPosition(this.searchBase);
     const key = buildPositionKey(this.currentState, this.chainPieceId);
     const count = (this.positionHistory[key] ?? 0) + 1;
     this.positionHistory[key] = count;
+    return isThreefoldRepetition(count);
+  }
+
+  /**
+   * Search-mode repetition count. Same number as the string-keyed history gives: occurrences on this
+   * search line (exact word comparison) + the game-history count, which is looked up by string key
+   * only when a cheap hash says the position can possibly be in that history.
+   */
+  private recordSearchPosition(base: Record<string, number>): boolean {
+    const nodes = this.currentState.board.intersections;
+    const stride = positionStride(nodes.length);
+    const words = this.wordsScratch;
+    let idx = 0;
+    for (let w = 0; w < stride - 1; w += 1) {
+      let word = 0;
+      for (let k = 0; k < NODES_PER_WORD && idx < nodes.length; k += 1, idx += 1) {
+        const occupant = nodes[idx]!.occupant;
+        word = word * 4 + (occupant === undefined ? 0 : occupant === 'RED' ? 1 : 2);
+      }
+      words[w] = word;
+    }
+    words[stride - 1] =
+      ((this.chainPieceId ?? -1) + 1) * 2 + (this.currentState.currentPlayer === 'BLUE' ? 1 : 0);
+
+    const path = this.searchPath;
+    let count = 1;
+    for (let i = 0; i < path.length; i += stride) {
+      let same = true;
+      for (let j = 0; j < stride; j += 1) {
+        if (path[i + j] !== words[j]) {
+          same = false;
+          break;
+        }
+      }
+      if (same) count += 1;
+    }
+    if (this.searchBaseHashes!.has(mixWords(words, stride))) {
+      count += base[buildPositionKey(this.currentState, this.chainPieceId)] ?? 0;
+    }
+    for (let j = 0; j < stride; j += 1) path.push(words[j]!);
     return isThreefoldRepetition(count);
   }
 

@@ -72,6 +72,8 @@ const BATCHES = [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/aiTurnPath.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/aiSearchWorker.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.speedEquivalence.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.fuzz.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.turnEndsEquivalence.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.repetitionSteer.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.testAudit.test.ts',
@@ -136,7 +138,7 @@ const BATCHES = [
     timeoutMs: 600_000,
     testTimeoutMs: 120_000,
     files: [
-      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.searchCompletion.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.searchLatency.test.ts',
     ],
   },
 ];

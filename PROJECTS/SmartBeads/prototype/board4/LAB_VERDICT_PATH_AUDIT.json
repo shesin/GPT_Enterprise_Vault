@@ -1,9 +1,7 @@
 {
   "purpose": "Verdict-path audit — one authoritative evaluator per Lab family",
   "authoritativeEvaluators": {
-    "sholo": [
-      "evaluate-ladder-lab.cjs"
-    ],
+    "sholo": [],
     "cursorIndex": [
       "evaluate-cursor-index-lab.cjs"
     ]

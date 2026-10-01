@@ -550,7 +550,7 @@ Combined non-REJECT ranking: `ALL_NON_REJECT_LAB_RANKING.json` · full tables in
 Same certified protocol as the 16-bead anchor — no new gates:
 
 - D1 / D2 / D3 · seeds **101, 202, 303** · **N=30**/seed · move-cap **120**
-- Authoritative verdict only from `evaluate-ladder-lab.cjs` (or Cursor Index evaluator for C2)
+- Authoritative verdict was only from `evaluate-ladder-lab.cjs` (RETIRED 2026-10-01; it crashed) or the Cursor Index evaluator for C2
 - Geometry guards: node count, start fingerprint, not silently 16-bead
 - Report G2 in plain language: who opened, who won more, exact P1/P2 %, depth
 - Capture-per-bead vs 16-bead D2 (~0.37) and vs the sister KEEP board (10-bead 0.60 or 4×4 6-bead 0.55)

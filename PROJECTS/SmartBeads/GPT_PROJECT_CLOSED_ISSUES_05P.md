@@ -147,3 +147,15 @@ Shekhar raised that the standard 16-bead board has 4 big X's (diagonals at r+c-e
 ## A18 — AI level 4 — CLOSED, dropped completely (2026-10-01)
 
 Level 4 (3 opponent replies, depth 3) was evaluated on the small boards. Strength was fine, but timing was not safe enough: on 8x4x6 it exceeded the think budget, and the AI search runs on the main thread, so a slow move freezes the page. 7x4x5 passed on this PC, but its margin on slower devices is unknown, and no risk was accepted. **Decision (Shekhar, 2026-10-01): drop level 4 on all boards, no implementation, A18 closed.** Nothing was changed in `src/`. Full run, numbers, and reasons: `GPT_PROJECT_AUDIT_05P.md` § "A18 — AI level 4 extensive small-board run (2026-10-01)". The earlier hang-bug fix in `searchBestAtExactDepth` stays in place.
+
+---
+
+## Lab-script defects — CLOSED (2026-10-01)
+
+Found during A18. **`evaluate-ladder-lab.cjs`** (old Sholo G1–G9 verdict script, prototype only, not part of the game) crashed because it required a file that never existed (`sholo-8-bead-fullturn-engine.cjs`). **Retired by Shekhar's order (2026-10-01): deleted**, and every reference was updated or marked RETIRED (`LAB_TERMINOLOGY_05P.md`, `BOARD_DISCOVERY_05P.md`, `WEB_REPORT_*`, `WEB_FEATURE_TEST_05P.md`, `LAB_CAPABILITY_STATUS.json`, `sholo-lab-gates.cjs` comment, `audit-lab-verdict-paths.cjs` — its Sholo evaluator list is now empty and the audit still reports CODE_PATHS_OK). Existing `LADDER_LAB_EVALUATION.json` and the `*_COMPARE.json` files are kept as historical evidence (some still name the retired script in a text field). **`SHOLO_LAB_FINAL_TRUST.json`** said READY (2026-08-14) while `final-validate-sholo-lab.cjs` reports NOT READY on current main (`parity_node_coords`; `primary_D2_play_signal` 9.92 vs ≥10 at N=25): the file is now marked `"verdict": "STALE"` with a note (re-run `final-validate-sholo-lab.cjs` to regenerate; `record-sholo-16-feature-baseline.cjs` correctly refuses a non-READY trust file). Detail: `GPT_PROJECT_AUDIT_05P.md` § "A18 / A19 — full evaluation record".
+
+---
+
+## A20 — AI deep audit, second pass — CLOSED (2026-10-01)
+
+Shekhar asked for a systematic audit of every function in the AI path and a hard limit of 3 s per AI move on any device, with no random / "best so far" / shallower / weaker move. Result (full evidence: `GPT_PROJECT_AUDIT_05P.md` § 10): the search restart loop (up to 6 windows, then unlimited) and the meaningless 3.2-5 s "budgets" were removed — one search, no clock, and `HonestAi.testAudit.test.ts` fails if a clock is ever added; the engine got an exact "search mode" (shared repetition history, numeric position keys, apply/undo, no per-leaf snapshots). Same moves as commit 7126494 on 49/49 seeded games and ~118,000 compared turn-end lists. Worst Expert move: 46 ms desktop (16-bead, 13,759 positions), 336 ms with Chrome CPU throttled 6x. Branch cap (80/64/60) and chain limit (8 hops) measured immaterial (0 pick differences in 12,844 Expert positions; longest chain 7) and kept. **UNCONFIRMED:** real phone hardware; Playwright live gates; Resign / Coach / setting-change-during-think in a real browser.

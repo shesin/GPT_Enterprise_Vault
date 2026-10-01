@@ -1,5 +1,5 @@
 import { BoardVariant } from '../../../config/BoardConfig';
-import { SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
+import { EngineSnapshot, SearchSnapshot, SmartBeadsEngine } from '../../../core/SmartBeadsEngine';
 import { repetitionPenaltyForPosition } from '../../../core/positionKey';
 import {
   findJumpPath,
@@ -13,8 +13,17 @@ import {
 import { AiLevel, CenterRule } from './GameFeatureSettings';
 import { countCenterOccupancy } from './centerScoring';
 
+/** Position handed to the search: a game snapshot, or a search-line snapshot from a TurnEnd. */
+export type SearchPosition = {
+  state: GameState;
+  chainPieceId: number | null;
+  positionHistory?: Record<string, number>;
+  searchBase?: Record<string, number>;
+  searchPath?: readonly number[];
+};
+
 export interface TurnEnd {
-  snapshot: { state: GameState; chainPieceId: number | null };
+  snapshot: SearchSnapshot;
   path: Move[];
 }
 
@@ -59,33 +68,12 @@ export const TIMER_OFF: AiTimerContext = {
 };
 
 export interface SelectAiOptions {
-  budgetMs?: number;
   rng?: () => number;
   easySoftMissRate?: number;
   mediumSoftMissRate?: number;
   center?: AiCenterContext;
   timer?: AiTimerContext;
 }
-
-export interface SearchCompletionReport {
-  targetReplyPlies: number;
-  achievedReplyPlies: number;
-  rootMoveCount: number;
-  completeAtAchievedDepth: number;
-}
-
-interface MinimaxResult {
-  score: number;
-  complete: boolean;
-}
-
-const BOARD_THINK_MULTIPLIER: Partial<Record<BoardVariant, number>> = {
-  '16': 1.55,
-  '12x6x5': 1.3,
-  '10x5': 1.15,
-  '8x4x6': 1.1,
-  '7': 1.05,
-};
 
 function opponentOf(player: Player): Player {
   return player === 'RED' ? 'BLUE' : 'RED';
@@ -161,7 +149,6 @@ function timerUrgency(timer: AiTimerContext | undefined): number {
 
 function centerEvalWeight(
   state: GameState,
-  aiPlayer: Player,
   center: AiCenterContext | undefined,
   timer: AiTimerContext | undefined,
 ): number {
@@ -219,7 +206,7 @@ export function evaluate(
   if (center && center.centerRule !== 'off') {
     const aiC = centerScoreForPlayer(state, aiPlayer, center);
     const humanC = centerScoreForPlayer(state, human, center);
-    score += (aiC - humanC) * centerEvalWeight(state, aiPlayer, center, timer);
+    score += (aiC - humanC) * centerEvalWeight(state, center, timer);
   }
 
   score += timerEvalAdjust(state, aiPlayer, timer);
@@ -242,69 +229,100 @@ function replyBranchForLevel(level: AiLevel): number {
   return 60;
 }
 
-function getFollowUpJumps(
-  eng: SmartBeadsEngine,
-  snapshot: { state: GameState; chainPieceId: number | null },
-): Move[] {
-  if (snapshot.chainPieceId === null) return [];
-  eng.loadSnapshot(snapshot);
-  return eng.getLegalMoves().filter((m) => isJump(snapshot.state, m));
+/** With an unbounded `maxBranch`, a list still stops this many ends after the root move count. */
+const UNCAPPED_EXTRA_ENDS = 512;
+/** Capture chains are followed at most this many hops deep (a chain this long never occurs in play). */
+const MAX_CHAIN_HOPS = 8;
+
+// One scratch engine per board, reused by every search node: loading a snapshot fully replaces its state.
+// Safe because the search is synchronous and walkTurnEnds never runs re-entrantly.
+const scratchEngines = new Map<BoardVariant, SmartBeadsEngine>();
+
+function scratchEngine(variant: BoardVariant): SmartBeadsEngine {
+  let eng = scratchEngines.get(variant);
+  if (!eng) {
+    eng = new SmartBeadsEngine(variant);
+    scratchEngines.set(variant, eng);
+  }
+  return eng;
+}
+
+/**
+ * Visit every way `player` can end a turn (root slides/jumps, then follow-up jump chains), in a fixed
+ * order: root jumps first, each followed by its chain extensions. `visit` runs while `eng` holds the
+ * end position; `snap()` exports it (memoised) and must be called inside `visit`. Return true to stop.
+ */
+function walkTurnEnds(
+  variant: BoardVariant,
+  snapshot: SearchPosition,
+  player: Player,
+  maxBranch: number,
+  visit: (eng: SmartBeadsEngine, path: Move[], snap: () => SearchSnapshot) => boolean,
+): void {
+  const eng = scratchEngine(variant);
+  eng.loadForSearch({
+    ...snapshot,
+    state: { ...snapshot.state, currentPlayer: player },
+    chainPieceId: null,
+  } as EngineSnapshot | SearchSnapshot);
+  const rootSnapshot = eng.exportSearchSnapshot();
+  const root = eng.getLegalMoves().slice();
+  root.sort((a, b) => (isJump(snapshot.state, b) ? 1 : 0) - (isJump(snapshot.state, a) ? 1 : 0));
+
+  const branchCap = Number.isFinite(maxBranch) ? maxBranch : root.length + UNCAPPED_EXTRA_ENDS;
+  let count = 0;
+
+  for (const move of root) {
+    // Plain moves are applied and undone in place; only an open capture chain needs a snapshot.
+    eng.applyLegalMoveWithUndo(move);
+    let memo: SearchSnapshot | null = null;
+    const snap = (): SearchSnapshot => (memo ??= eng.exportSearchSnapshot());
+    count += 1;
+    const stop = visit(eng, [move], snap);
+    const open = isJump(snapshot.state, move) && eng.getChainPieceId() !== null;
+    const afterSnap = open ? snap() : null;
+    eng.undoLastMove();
+    if (stop || count >= branchCap) return;
+    if (!afterSnap) continue;
+
+    const stack: Array<{ snap: SearchSnapshot; path: Move[]; depth: number }> = [
+      { snap: afterSnap, path: [move], depth: 1 },
+    ];
+    while (stack.length) {
+      const node = stack.pop()!;
+      if (node.depth > MAX_CHAIN_HOPS) continue;
+      eng.loadForSearch(node.snap);
+      const jumps = eng.getLegalMoves().filter((m) => isJump(node.snap.state, m));
+      for (const hop of jumps) {
+        eng.applyLegalMoveWithUndo(hop);
+        let hopMemo: SearchSnapshot | null = null;
+        const hopSnap = (): SearchSnapshot => (hopMemo ??= eng.exportSearchSnapshot());
+        const path = node.path.concat(hop);
+        count += 1;
+        const hopStop = visit(eng, path, hopSnap);
+        const hopOpen = eng.getChainPieceId() !== null;
+        const next = hopOpen ? hopSnap() : null;
+        eng.undoLastMove();
+        if (hopStop) return;
+        if (next) stack.push({ snap: next, path, depth: node.depth + 1 });
+        if (count >= branchCap) return;
+      }
+    }
+    eng.loadForSearch(rootSnapshot);
+  }
 }
 
 export function generateTurnEnds(
   variant: BoardVariant,
-  snapshot: { state: GameState; chainPieceId: number | null },
+  snapshot: SearchPosition,
   player: Player,
   maxBranch: number,
-  deadlineMs = Infinity,
 ): TurnEnd[] {
-  // One scratch engine for the whole call: loadSnapshot fully replaces its state each time.
-  const eng = new SmartBeadsEngine(variant);
-  const rootSnapshot = {
-    ...snapshot,
-    state: { ...snapshot.state, currentPlayer: player },
-    chainPieceId: null,
-  };
-  eng.loadSnapshot(rootSnapshot);
-  const root = eng.getLegalMoves().slice();
-  root.sort((a, b) => (isJump(snapshot.state, b) ? 1 : 0) - (isJump(snapshot.state, a) ? 1 : 0));
-
   const ends: TurnEnd[] = [];
-  const branchCap = Number.isFinite(maxBranch) ? maxBranch : root.length + 512;
-
-  for (const move of root) {
-    if (ends.length > 0 && Date.now() > deadlineMs) return ends;
-    eng.loadSnapshot(rootSnapshot);
-    eng.applyMove(move);
-    const afterSnap = eng.exportSnapshot();
-    ends.push({ snapshot: afterSnap, path: [move] });
-    if (ends.length >= branchCap) return ends;
-
-    if (!isJump(snapshot.state, move)) continue;
-
-    const stack: Array<{
-      snap: { state: GameState; chainPieceId: number | null };
-      path: Move[];
-      depth: number;
-    }> = [{ snap: afterSnap, path: [move], depth: 1 }];
-
-    while (stack.length) {
-      if (Date.now() > deadlineMs) return ends;
-      const node = stack.pop()!;
-      if (node.depth > 8) continue;
-      const jumps = getFollowUpJumps(eng, node.snap);
-      for (const hop of jumps) {
-        eng.loadSnapshot(node.snap);
-        eng.applyMove(hop);
-        const hopSnap = eng.exportSnapshot();
-        const path = node.path.concat(hop);
-        ends.push({ snapshot: hopSnap, path });
-        stack.push({ snap: hopSnap, path, depth: node.depth + 1 });
-        if (ends.length >= branchCap) return ends;
-      }
-    }
-  }
-
+  walkTurnEnds(variant, snapshot, player, maxBranch, (_eng, path, snap) => {
+    ends.push({ snapshot: snap(), path });
+    return false;
+  });
   return ends;
 }
 
@@ -329,42 +347,66 @@ function capturesFirstIndexes(state: GameState, ends: TurnEnd[]): number[] {
   return idx.sort((a, b) => caps[b]! - caps[a]! || a - b);
 }
 
+/**
+ * Last search ply: evaluate each turn end in place (no snapshot per leaf) and stop generating moves as
+ * soon as the alpha-beta window closes. Same score as scoring every end of generateTurnEnds().
+ */
+function leafSearch(
+  variant: BoardVariant,
+  snapshot: SearchPosition,
+  maximizing: boolean,
+  alpha: number,
+  beta: number,
+  branchCap: number,
+  aiPlayer: Player,
+  center: AiCenterContext | undefined,
+  timer: AiTimerContext | undefined,
+): number {
+  const player = maximizing ? aiPlayer : opponentOf(aiPlayer);
+  let best = maximizing ? -Infinity : Infinity;
+  let any = false;
+  walkTurnEnds(variant, snapshot, player, branchCap, (eng) => {
+    any = true;
+    const score = evaluate(eng.getState(), variant, aiPlayer, center, timer);
+    if (maximizing) {
+      if (score > best) best = score;
+      if (score > alpha) alpha = score;
+    } else {
+      if (score < best) best = score;
+      if (score < beta) beta = score;
+    }
+    return beta <= alpha;
+  });
+  if (!any) return maximizing ? -900 : 900;
+  return best;
+}
+
 function minimaxTurns(
   variant: BoardVariant,
-  snapshot: { state: GameState; chainPieceId: number | null },
+  snapshot: SearchPosition,
   depth: number,
   maximizing: boolean,
   alpha: number,
   beta: number,
   branchCap: number,
   aiPlayer: Player,
-  deadlineMs: number,
   center: AiCenterContext | undefined,
   timer: AiTimerContext | undefined,
-): MinimaxResult {
-  if (Date.now() > deadlineMs) {
-    return { score: evaluate(snapshot.state, variant, aiPlayer, center, timer), complete: false };
-  }
-  if (depth === 0) {
-    return { score: evaluate(snapshot.state, variant, aiPlayer, center, timer), complete: true };
+): number {
+  if (depth === 0) return evaluate(snapshot.state, variant, aiPlayer, center, timer);
+  if (depth === 1) {
+    return leafSearch(variant, snapshot, maximizing, alpha, beta, branchCap, aiPlayer, center, timer);
   }
 
   const player = maximizing ? aiPlayer : opponentOf(aiPlayer);
-  const ends = generateTurnEnds(variant, snapshot, player, branchCap, deadlineMs);
-  if (!ends.length) {
-    return { score: maximizing ? -900 : 900, complete: true };
-  }
+  const ends = generateTurnEnds(variant, snapshot, player, branchCap);
+  if (!ends.length) return maximizing ? -900 : 900;
   const ordered = capturesFirst(snapshot.state, ends);
 
   if (maximizing) {
     let best = -Infinity;
-    let complete = true;
     for (const end of ordered) {
-      if (Date.now() > deadlineMs) {
-        complete = false;
-        break;
-      }
-      const child = minimaxTurns(
+      const score = minimaxTurns(
         variant,
         end.snapshot,
         depth - 1,
@@ -373,26 +415,19 @@ function minimaxTurns(
         beta,
         branchCap,
         aiPlayer,
-        deadlineMs,
         center,
         timer,
       );
-      if (!child.complete) complete = false;
-      if (child.score > best) best = child.score;
-      if (child.score > alpha) alpha = child.score;
+      if (score > best) best = score;
+      if (score > alpha) alpha = score;
       if (beta <= alpha) break;
     }
-    return { score: best, complete };
+    return best;
   }
 
   let best = Infinity;
-  let complete = true;
   for (const end of ordered) {
-    if (Date.now() > deadlineMs) {
-      complete = false;
-      break;
-    }
-    const child = minimaxTurns(
+    const score = minimaxTurns(
       variant,
       end.snapshot,
       depth - 1,
@@ -401,36 +436,27 @@ function minimaxTurns(
       beta,
       branchCap,
       aiPlayer,
-      deadlineMs,
       center,
       timer,
     );
-    if (!child.complete) complete = false;
-    if (child.score < best) best = child.score;
-    if (child.score < beta) beta = child.score;
+    if (score < best) best = score;
+    if (score < beta) beta = score;
     if (beta <= alpha) break;
   }
-  return { score: best, complete };
+  return best;
 }
 
 function scoreRootEnd(
   variant: BoardVariant,
-  snapshot: GameState,
   end: TurnEnd,
   replyDepth: number,
   replyBranch: number,
   aiPlayer: Player,
-  deadlineMs: number,
   center: AiCenterContext | undefined,
   timer: AiTimerContext | undefined,
   alpha = -Infinity,
-): MinimaxResult {
-  if (replyDepth <= 0) {
-    return {
-      score: evaluate(end.snapshot.state, variant, aiPlayer, center, timer),
-      complete: true,
-    };
-  }
+): number {
+  if (replyDepth <= 0) return evaluate(end.snapshot.state, variant, aiPlayer, center, timer);
   return minimaxTurns(
     variant,
     end.snapshot,
@@ -440,7 +466,6 @@ function scoreRootEnd(
     Infinity,
     replyBranch,
     aiPlayer,
-    deadlineMs,
     center,
     timer,
   );
@@ -449,10 +474,10 @@ function scoreRootEnd(
 function endScore(
   end: TurnEnd,
   snapshotState: GameState,
-  result: MinimaxResult,
+  searchScore: number,
   positionHistory?: Record<string, number>,
 ): number {
-  let score = result.score + pathCaptureCount(snapshotState, end.path) * 0.05;
+  let score = searchScore + pathCaptureCount(snapshotState, end.path) * 0.05;
   score -= repetitionPenaltyForPosition(
     end.snapshot.state,
     end.snapshot.chainPieceId,
@@ -461,24 +486,13 @@ function endScore(
   return score;
 }
 
-function normalizeOptions(budgetMsOrOptions: number | SelectAiOptions): Required<SelectAiOptions> {
-  if (typeof budgetMsOrOptions === 'number') {
-    return {
-      budgetMs: budgetMsOrOptions,
-      rng: Math.random,
-      easySoftMissRate: EASY_SOFT_MISS_RATE,
-      mediumSoftMissRate: MEDIUM_SOFT_MISS_RATE,
-      center: { centerRule: 'off' },
-      timer: TIMER_OFF,
-    };
-  }
+function normalizeOptions(options: SelectAiOptions): Required<SelectAiOptions> {
   return {
-    budgetMs: budgetMsOrOptions.budgetMs ?? 1500,
-    rng: budgetMsOrOptions.rng ?? Math.random,
-    easySoftMissRate: budgetMsOrOptions.easySoftMissRate ?? EASY_SOFT_MISS_RATE,
-    mediumSoftMissRate: budgetMsOrOptions.mediumSoftMissRate ?? MEDIUM_SOFT_MISS_RATE,
-    center: budgetMsOrOptions.center ?? { centerRule: 'off' },
-    timer: budgetMsOrOptions.timer ?? TIMER_OFF,
+    rng: options.rng ?? Math.random,
+    easySoftMissRate: options.easySoftMissRate ?? EASY_SOFT_MISS_RATE,
+    mediumSoftMissRate: options.mediumSoftMissRate ?? MEDIUM_SOFT_MISS_RATE,
+    center: options.center ?? { centerRule: 'off' },
+    timer: options.timer ?? TIMER_OFF,
   };
 }
 
@@ -523,93 +537,11 @@ function softMissPath(ends: TurnEnd[], snapshotState: GameState, rng: () => numb
   return pickRandomEnd(ends, rng);
 }
 
-/** Expert: extend think time up to this cap so depth-2 never falls back. */
-const MAX_DEPTH2_SEARCH_MS = 45_000;
-
-function maxSearchBudgetMs(): number {
-  return MAX_DEPTH2_SEARCH_MS;
-}
-
-function searchLayerAtExactDepth(
-  variant: BoardVariant,
-  snapshot: {
-    state: GameState;
-    chainPieceId: number | null;
-    positionHistory?: Record<string, number>;
-  },
-  ends: TurnEnd[],
-  reply: number,
-  replyBranch: number,
-  aiPlayer: Player,
-  deadlineMs: number,
-  center: AiCenterContext | undefined,
-  timer: AiTimerContext | undefined,
-): { best: TurnEnd[]; completeCount: number } {
-  const positionHistory = snapshot.positionHistory;
-  if (reply <= 0) {
-    let best: TurnEnd[] = [];
-    let bestScore = -Infinity;
-    for (const end of ends) {
-      const score = endScore(
-        end,
-        snapshot.state,
-        {
-          score: evaluate(end.snapshot.state, variant, aiPlayer, center, timer),
-          complete: true,
-        },
-        positionHistory,
-      );
-      if (score > bestScore) {
-        bestScore = score;
-        best = [end];
-      } else if (score === bestScore) {
-        best.push(end);
-      }
-    }
-    return { best: best.length ? best : [ends[0]!], completeCount: ends.length };
-  }
-
-  let bestIdx: number[] = [];
-  let bestScore = -Infinity;
-  let completeCount = 0;
-
-  // Exact speed-up (same chosen move set): score captures first, and give each reply search the
-  // best score found so far as its alpha bound. A move whose true score would be below the best is
-  // cut off early (returns a value <= alpha, so it can never tie or win); a move that ties or beats
-  // the best is searched exactly because alpha sits just below the score it needs.
-  const order = capturesFirstIndexes(snapshot.state, ends);
-  for (const idx of order) {
-    const end = ends[idx]!;
-    const adjust = endScore(end, snapshot.state, { score: 0, complete: true }, positionHistory);
-    const alpha = Number.isFinite(bestScore) ? bestScore - adjust - 1e-6 : -Infinity;
-    const result = scoreRootEnd(
-      variant,
-      snapshot.state,
-      end,
-      reply,
-      replyBranch,
-      aiPlayer,
-      deadlineMs,
-      center,
-      timer,
-      alpha,
-    );
-    if (!result.complete) continue;
-    completeCount += 1;
-    const score = endScore(end, snapshot.state, result, positionHistory);
-    if (score > bestScore) {
-      bestScore = score;
-      bestIdx = [idx];
-    } else if (score === bestScore) {
-      bestIdx.push(idx);
-    }
-  }
-
-  // Keep the original move order among ties so seeded/deterministic picks are unchanged.
-  bestIdx.sort((a, b) => a - b);
-  return { best: bestIdx.map((i) => ends[i]!), completeCount };
-}
-
+/**
+ * Score every root move with the full reply search and return the best ones (original order among
+ * ties). One pass, no time windows: a time limit would force a weaker answer, so speed comes only from
+ * exact pruning (alpha bound, captures first, geometry indexes) — see GPT_PROJECT_AUDIT_05P.md.
+ */
 function searchBestAtExactDepth(
   variant: BoardVariant,
   snapshot: {
@@ -621,58 +553,55 @@ function searchBestAtExactDepth(
   reply: number,
   replyBranch: number,
   aiPlayer: Player,
-  startBudgetMs: number,
   center: AiCenterContext | undefined,
   timer: AiTimerContext | undefined,
-): { best: TurnEnd[]; achievedReplyPlies: number; completeAtAchievedDepth: number } {
-  const maxBudget = Math.max(startBudgetMs, maxSearchBudgetMs());
-  let budgetMs = startBudgetMs;
-
-  while (budgetMs <= maxBudget) {
-    const deadlineMs = Date.now() + budgetMs;
-    const layer = searchLayerAtExactDepth(
-      variant,
-      snapshot,
-      ends,
-      reply,
-      replyBranch,
-      aiPlayer,
-      deadlineMs,
-      center,
-      timer,
-    );
-    if (layer.completeCount === ends.length && layer.best.length) {
-      return {
-        best: layer.best,
-        achievedReplyPlies: reply,
-        completeAtAchievedDepth: layer.completeCount,
-      };
+): TurnEnd[] {
+  const positionHistory = snapshot.positionHistory;
+  if (reply <= 0) {
+    let best: TurnEnd[] = [];
+    let bestScore = -Infinity;
+    for (const end of ends) {
+      const score = endScore(
+        end,
+        snapshot.state,
+        evaluate(end.snapshot.state, variant, aiPlayer, center, timer),
+        positionHistory,
+      );
+      if (score > bestScore) {
+        bestScore = score;
+        best = [end];
+      } else if (score === bestScore) {
+        best.push(end);
+      }
     }
-    const nextBudgetMs = Math.min(maxBudget, Math.round(budgetMs * 1.6));
-    // Once budgetMs is pinned at maxBudget, nextBudgetMs === budgetMs forever —
-    // without this break the loop condition never goes false and this retries
-    // the same maxBudget-length window indefinitely instead of falling through
-    // to the unlimited-deadline attempt below.
-    if (nextBudgetMs === budgetMs) break;
-    budgetMs = nextBudgetMs;
+    return best;
   }
 
-  const layer = searchLayerAtExactDepth(
-    variant,
-    snapshot,
-    ends,
-    reply,
-    replyBranch,
-    aiPlayer,
-    Infinity,
-    center,
-    timer,
-  );
-  return {
-    best: layer.best.length ? layer.best : [ends[0]!],
-    achievedReplyPlies: reply,
-    completeAtAchievedDepth: layer.completeCount,
-  };
+  let bestIdx: number[] = [];
+  let bestScore = -Infinity;
+
+  // Exact speed-up (same chosen move set): score captures first, and give each reply search the
+  // best score found so far as its alpha bound. A move whose true score would be below the best is
+  // cut off early (returns a value <= alpha, so it can never tie or win); a move that ties or beats
+  // the best is searched exactly because alpha sits just below the score it needs.
+  const order = capturesFirstIndexes(snapshot.state, ends);
+  for (const idx of order) {
+    const end = ends[idx]!;
+    const adjust = endScore(end, snapshot.state, 0, positionHistory);
+    const alpha = Number.isFinite(bestScore) ? bestScore - adjust - 1e-6 : -Infinity;
+    const searched = scoreRootEnd(variant, end, reply, replyBranch, aiPlayer, center, timer, alpha);
+    const score = endScore(end, snapshot.state, searched, positionHistory);
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = [idx];
+    } else if (score === bestScore) {
+      bestIdx.push(idx);
+    }
+  }
+
+  // Keep the original move order among ties so seeded/deterministic picks are unchanged.
+  bestIdx.sort((a, b) => a - b);
+  return bestIdx.map((i) => ends[i]!);
 }
 
 function pickRandomEnd(ends: TurnEnd[], rng: () => number): Move[] {
@@ -686,7 +615,7 @@ function pickRandomEnd(ends: TurnEnd[], rng: () => number): Move[] {
  * - Medium: 1 opponent complete-turn reply + full eval (incl. center when on);
  *   ~20% soft-miss so Medium feels softer than Hard on small boards.
  * - Hard: 2 opponent complete-turn replies + full eval (incl. center when on);
- *   0% soft-miss; extends think time until full depth-2 completes (no depth-1 fallback).
+ *   0% soft-miss; always the full depth-2 search (no time limit, no depth-1 fallback).
  */
 function steerCapturePoolByRepetition(
   pool: TurnEnd[],
@@ -724,16 +653,10 @@ export function selectAiTurnPath(
     positionHistory?: Record<string, number>;
   },
   aiPlayer: Player = 'BLUE',
-  budgetMsOrOptions: number | SelectAiOptions = 1500,
+  options: SelectAiOptions = {},
 ): Move[] | null {
-  const opts = normalizeOptions(budgetMsOrOptions);
-  const ends = generateTurnEnds(
-    variant,
-    snapshot,
-    aiPlayer,
-    Number.POSITIVE_INFINITY,
-    Date.now() + opts.budgetMs,
-  );
+  const opts = normalizeOptions(options);
+  const ends = generateTurnEnds(variant, snapshot, aiPlayer, Number.POSITIVE_INFINITY);
   if (!ends.length) return null;
 
   if (level <= 1) {
@@ -752,58 +675,18 @@ export function selectAiTurnPath(
     return softMissPath(ends, snapshot.state, opts.rng);
   }
 
-  const reply = aiOpponentReplyPlies(level);
-  const replyBranch = replyBranchForLevel(level);
-  const { best } = searchBestAtExactDepth(
+  const best = searchBestAtExactDepth(
     variant,
     snapshot,
     ends,
-    reply,
-    replyBranch,
+    aiOpponentReplyPlies(level),
+    replyBranchForLevel(level),
     aiPlayer,
-    opts.budgetMs,
     opts.center,
     opts.timer,
   );
 
   return best[Math.floor(opts.rng() * best.length)]!.path;
-}
-
-/** Test/diagnostic: did depth-N search finish cleanly for this position? */
-export function probeSearchCompletion(
-  variant: BoardVariant,
-  level: AiLevel,
-  snapshot: { state: GameState; chainPieceId: number | null },
-  aiPlayer: Player = 'BLUE',
-  budgetMsOrOptions: number | SelectAiOptions = 1500,
-): SearchCompletionReport {
-  const opts = normalizeOptions(budgetMsOrOptions);
-  const ends = generateTurnEnds(
-    variant,
-    snapshot,
-    aiPlayer,
-    Number.POSITIVE_INFINITY,
-    Date.now() + opts.budgetMs,
-  );
-  const reply = aiOpponentReplyPlies(level);
-  const replyBranch = replyBranchForLevel(level);
-  const { achievedReplyPlies, completeAtAchievedDepth } = searchBestAtExactDepth(
-    variant,
-    snapshot,
-    ends,
-    reply,
-    replyBranch,
-    aiPlayer,
-    opts.budgetMs,
-    opts.center,
-    opts.timer,
-  );
-  return {
-    targetReplyPlies: reply,
-    achievedReplyPlies,
-    rootMoveCount: ends.length,
-    completeAtAchievedDepth,
-  };
 }
 
 /** When the human offers resignation in PvE, AI accepts a draw unless clearly ahead. */
@@ -816,15 +699,4 @@ export function shouldAcceptResignationDraw(
 ): boolean {
   const score = evaluate(snapshot.state, variant, aiPlayer, center, timer);
   return score <= 0;
-}
-
-/** Think budget by difficulty; larger boards get more time so depth-2 can finish. */
-export function thinkBudgetForLevel(level: AiLevel, variant?: BoardVariant): number {
-  let base: number;
-  if (level <= 1) base = 250;
-  else if (level === 2) base = 800;
-  else base = 3200;
-
-  const mult = variant ? (BOARD_THINK_MULTIPLIER[variant] ?? 1) : 1;
-  return Math.round(base * mult);
 }

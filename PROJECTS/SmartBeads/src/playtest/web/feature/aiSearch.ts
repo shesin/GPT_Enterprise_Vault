@@ -10,7 +10,6 @@ export interface AiPlanRequest {
   level: AiLevel;
   snap: { state: GameState; chainPieceId: number | null; positionHistory?: Record<string, number> };
   aiPlayer: Player;
-  budgetMs: number;
   center: AiCenterContext;
   timer: AiTimerContext;
 }
@@ -18,7 +17,6 @@ export interface AiPlanRequest {
 /** Pure search step: main thread in tests/fallback, inside the AI Web Worker in the browser. */
 export function searchAiPath(req: AiPlanRequest): Move[] | null {
   return selectAiTurnPath(req.variant, req.level, req.snap, req.aiPlayer, {
-    budgetMs: req.budgetMs,
     center: req.center,
     timer: req.timer,
   });

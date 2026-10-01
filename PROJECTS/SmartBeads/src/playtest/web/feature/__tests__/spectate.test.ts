@@ -8,7 +8,6 @@ import {
   spectateInterMoveDelayMs,
 } from '../GameFeatureSettings';
 import { planAiTurnPath } from '../../PlayController';
-import { thinkBudgetForLevel } from '../HonestAi';
 
 describe('Coach watch (AI vs AI)', () => {
   it('exports 8-bead default board and board-sized Watch AI inter-move pause', () => {
@@ -31,7 +30,6 @@ describe('Coach watch (AI vs AI)', () => {
     });
     const session = new FeatureSession('8x4x6', settings);
     expect(session.getSettings().mode).toBe('spectate');
-    expect(thinkBudgetForLevel(3)).toBeGreaterThan(thinkBudgetForLevel(2));
 
     const redPath = planAiTurnPath(session, 'RED');
     expect(redPath?.length).toBeGreaterThan(0);

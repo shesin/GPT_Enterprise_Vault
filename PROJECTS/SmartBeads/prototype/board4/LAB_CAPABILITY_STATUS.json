@@ -19,7 +19,7 @@
   ],
   "whatLabCanDoNow": [
     "Measure standard 16-bead Sholo Guti game quality metrics under comparisonProtocol",
-    "Compare ladder candidates (4/5/6/7/8/10-bead) via evaluate-ladder-lab.cjs",
+    "Compare ladder candidates (4/5/6/7/8/10-bead): metrics only via compare-sholo-*-vs-16-lab.cjs (evaluate-ladder-lab.cjs retired 2026-10-01)",
     "Evaluate active 4×4 playable SHOLO_GUTI_6_BEAD_4x4_WITH_FEATURE.html (fullBoxCross)",
     "Refuse unsafe metric compares",
     "Run Feature Test batches on registered KEEP boards (evaluate-feature-test-lab.cjs)"

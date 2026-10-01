@@ -31,7 +31,6 @@ const {
   EASY_SOFT_MISS_RATE,
   MEDIUM_SOFT_MISS_RATE,
   aiOpponentReplyPlies,
-  thinkBudgetForLevel,
 } = await import(
   pathToFileURL(path.join(root, 'PROJECTS/SmartBeads/src/playtest/web/feature/HonestAi.ts')).href
 );
@@ -92,7 +91,6 @@ function applyPath(engine, pathMoves) {
 function playMatch(engineVariant, level, seed) {
   const engine = new SmartBeadsEngine(engineVariant);
   const rng = makeRng(seed);
-  const budgetMs = thinkBudgetForLevel(level, engineVariant);
   const softMiss =
     level === 1
       ? { easySoftMissRate: EASY_SOFT_MISS_RATE, mediumSoftMissRate: 0 }
@@ -109,7 +107,6 @@ function playMatch(engineVariant, level, seed) {
   while (!engine.getState().gameOver && ply < hardStop) {
     const player = engine.getState().currentPlayer;
     const turnPath = selectAiTurnPath(engineVariant, level, engine.exportSnapshot(), player, {
-      budgetMs,
       easySoftMissRate: softMiss.easySoftMissRate,
       mediumSoftMissRate: softMiss.mediumSoftMissRate,
       rng,
@@ -208,7 +205,6 @@ const report = {
     levels: [1, 2, 3],
     gamesByLevel,
     seedBase: baseSeed,
-    budgetMsByLevelNote: 'thinkBudgetForLevel(level, variant) — same function production PvE uses',
     note: 'Both sides play at the SAME AI level per match (board-fairness read, not AI-difficulty separation). D2 is primary per VISION_05P.md; D1 is a sanity check; D3 is secondary long-horizon evidence only — never ranked.',
   },
   boards: {},

@@ -27,13 +27,13 @@ The standard 16-bead game is a **healthy reference board** for Web calibration. 
 
 | Fix | Status |
 |-----|--------|
-| One authoritative verdict (`evaluate-ladder-lab.cjs`) | Applied — compare scripts metrics-only |
+| One authoritative verdict (`evaluate-ladder-lab.cjs`, RETIRED 2026-10-01) | Applied — compare scripts metrics-only |
 | One canonical N=30 (`sholo-lab-protocol.cjs`) | Applied |
 | Playable L1/L2/L3 ≠ Web D1/D2/D3 documented | Applied — `LAB_TERMINOLOGY_05P.md` |
 
 **Playable vs Web:** Browser Level 2 uses static eval with **zero** opponent reply plies (human P1 vs AI P2). Web D2 uses **one** opponent complete-turn reply in symmetric AI-vs-AI. **Never equate Web D2 metrics with browser Level 2.**
 
-**Verdict path:** `selectionVerdict` from `evaluate-ladder-lab.cjs` only. Compare scripts emit metrics for G9 and gate inputs.
+**Verdict path:** `selectionVerdict` from `evaluate-ladder-lab.cjs` only (evaluator RETIRED 2026-10-01). Compare scripts emit metrics for G9 and gate inputs.
 
 ---
 

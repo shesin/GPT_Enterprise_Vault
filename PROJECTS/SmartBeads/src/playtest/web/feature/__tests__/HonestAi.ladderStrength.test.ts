@@ -2,7 +2,7 @@ import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
 import { BoardVariant } from '../../../../config/BoardConfig';
 import { Move, Player } from '../../../../models/GameState';
 import { AiLevel } from '../GameFeatureSettings';
-import { generateTurnEnds, selectAiTurnPath, thinkBudgetForLevel } from '../HonestAi';
+import { generateTurnEnds, selectAiTurnPath } from '../HonestAi';
 
 /**
  * Difficulty ladder regression guard: a stronger level must clearly beat the weaker one.
@@ -55,7 +55,6 @@ function playGame(
     const p = engine.getState().currentPlayer;
     const level = p === strongColor ? strong : weak;
     const path = selectAiTurnPath(variant, level, engine.exportSnapshot(), p, {
-      budgetMs: thinkBudgetForLevel(level, variant),
       rng,
     });
     if (!path) break;

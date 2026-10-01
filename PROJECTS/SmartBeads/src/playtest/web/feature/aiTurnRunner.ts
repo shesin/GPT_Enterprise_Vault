@@ -7,7 +7,7 @@ import {
 } from './GameFeatureSettings';
 import { applyAiHops, AiHopRecord } from './aiTurnPath';
 import { FeatureSession } from './FeatureSession';
-import { AiCenterContext, AiTimerContext, thinkBudgetForLevel } from './HonestAi';
+import { AiCenterContext, AiTimerContext } from './HonestAi';
 import { AiPlanRequest, searchAiPath } from './aiSearch';
 
 export type { AiPlanRequest };
@@ -56,7 +56,6 @@ export function buildAiPlanRequest(session: FeatureSession, actingPlayer?: Playe
     level,
     snap: session.getEngine().exportSnapshot(),
     aiPlayer,
-    budgetMs: thinkBudgetForLevel(level, variant),
     center: aiCenterFromSession(session),
     timer: aiTimerFromSession(session),
   };

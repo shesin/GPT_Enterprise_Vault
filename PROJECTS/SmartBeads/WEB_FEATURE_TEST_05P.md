@@ -31,7 +31,7 @@
 |-------|-------|
 | **Status** | **COMPLETE** |
 | **Boards tested** | **4** |
-| **Web board G1–G9 verdicts** | **Unchanged** (human KEEP is product sign-off, not a re-run of `evaluate-ladder-lab.cjs`) |
+| **Web board G1–G9 verdicts** | **Unchanged** (human KEEP is product sign-off, not a re-run of `evaluate-ladder-lab.cjs`, which was RETIRED 2026-10-01) |
 
 ---
 

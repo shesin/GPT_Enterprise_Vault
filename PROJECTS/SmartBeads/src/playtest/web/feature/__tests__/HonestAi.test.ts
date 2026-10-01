@@ -1,6 +1,6 @@
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
 import { CENTER_EVAL_WEIGHT, evaluate, generateTurnEnds, selectAiTurnPath } from '../HonestAi';
-import { honestAiTestOpts, honestAiTurnEndsDeadlineMs } from './honestAiTestBudget';
+import { honestAiTestOpts } from './honestAiTestOpts';
 
 describe('HonestAi generateTurnEnds (capture optionality)', () => {
   jest.setTimeout(15_000);
@@ -22,7 +22,6 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
       engine.exportSnapshot(),
       'BLUE',
       32,
-      honestAiTurnEndsDeadlineMs(5_000),
     );
     const from = id('A00');
     const stop = ends.find(

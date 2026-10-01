@@ -348,12 +348,12 @@ From validated 16-bead reference (`LAB_16_BEAD_REFERENCE_VALIDATION.json`):
 
 #### Aliveness floor (G3/G4) — from shared gate module, not compare scripts
 
-`sholo-lab-gates.cjs` (used only by `evaluate-ladder-lab.cjs` and `evaluate-cursor-index-lab.cjs`) encodes evidence-based **REJECT triggers**:
+`sholo-lab-gates.cjs` (was used by `evaluate-ladder-lab.cjs` — RETIRED 2026-10-01 — and is still used by `evaluate-cursor-index-lab.cjs`) encodes evidence-based **REJECT triggers**:
 
 - **REJECT:** D1 and D2 both avgCaptures < 2 — no contested play.
 - **REJECT:** D2 avgLength < 5 — games end almost immediately.
 
-Compare scripts (`compare-sholo-*-vs-16-lab.cjs`) emit **metrics and geometry evidence only**. They must **not** emit KEEP / REJECT / NEEDS FURTHER TESTING. Run `evaluate-ladder-lab.cjs` for the authoritative G1–G9 **selectionVerdict**.
+Compare scripts (`compare-sholo-*-vs-16-lab.cjs`) emit **metrics and geometry evidence only**. They must **not** emit KEEP / REJECT / NEEDS FURTHER TESTING. The Sholo G1–G9 evaluator `evaluate-ladder-lab.cjs` was **RETIRED 2026-10-01** (it crashed: it required the missing `sholo-8-bead-fullturn-engine.cjs`); existing verdicts in `LADDER_LAB_EVALUATION.json` are historical evidence only.
 
 **G2 fairness failure** → authoritative evaluator emits **REJECT** with reject trigger `g2_fairness_fail` (not NEEDS FURTHER TESTING).
 
@@ -399,7 +399,7 @@ Any one of these → **REJECT** (stop ladder promotion; fix or abandon):
 Use a **decision table**, not a leaderboard:
 
 1. Run **validate-lab-16-bead-reference** (once per instrument change).
-2. For each candidate: geometry guards + same-protocol compare batch (metrics only) → run **evaluate-ladder-lab.cjs** for PASS / REJECT / NEEDS FURTHER TESTING.
+2. For each candidate: geometry guards + same-protocol compare batch (metrics only) → (the former step 'run evaluate-ladder-lab.cjs' is **RETIRED 2026-10-01**; no automated Sholo ladder verdict exists any more — decide with metrics + human sign-off).
 3. Eliminate all **REJECT** boards from KEEP consideration.
 4. Among **PASS** boards, compare **relative strengths** in prose:
    - **Session length** (D1 avgLength, D2 move-cap profile)
@@ -479,7 +479,7 @@ Rules and geometry must match between browser playable and headless Lab. **AI de
 
 | Script | May emit board verdict? |
 |--------|-------------------------|
-| `evaluate-ladder-lab.cjs` | **Yes** — sole Sholo ladder `selectionVerdict` |
+| `evaluate-ladder-lab.cjs` | **RETIRED 2026-10-01** (was the sole Sholo ladder `selectionVerdict`) |
 | `evaluate-cursor-index-lab.cjs` | **Yes** — sole Cursor Index `selectionVerdict` |
 | `compare-sholo-*-vs-16-lab.cjs` | **No** — metrics, diffs, geometry guards only |
 | `sholo-lab-gates.cjs` | Internal gate logic only (imported by evaluators) |
@@ -499,7 +499,7 @@ Single source: **`sholo-lab-protocol.cjs`**
 - Games per board: **270**
 - Games per compare run (candidate + reference): **540**
 
-Reference validation, compare scripts, and `evaluate-ladder-lab.cjs` G9 must all read this module. No hardcoded competing N values.
+Reference validation and compare scripts (and, before its 2026-10-01 retirement, `evaluate-ladder-lab.cjs` G9) must all read this module. No hardcoded competing N values.
 
 **Cursor Index 4×4 (2026-08-15):** Uses the **same** `sholo-lab-protocol.cjs` batch (N=30, move-cap 120, seeds 101/202/303, D1/D2/D3) via `evaluate-cursor-index-lab.cjs`. Legacy `cursor-index-lab-protocol.cjs` (N=50, move-cap 40) is **not** the authoritative path for current playables.
 
@@ -540,7 +540,7 @@ Reference validation, compare scripts, and `evaluate-ladder-lab.cjs` G9 must all
 | `validate-lab-16-bead-reference.cjs` | Reference validation + baseline batch |
 | `sholo-lab-protocol.cjs` | Canonical N/seeds/depths + playable-vs-Lab depth documentation |
 | `sholo-lab-gates.cjs` | Shared G1–G9 gate logic + authoritative `ladderVerdict()` |
-| `evaluate-ladder-lab.cjs` | Authoritative Sholo ladder G1–G9 **selectionVerdict** |
+| `evaluate-ladder-lab.cjs` | **RETIRED 2026-10-01** — was the authoritative Sholo ladder G1–G9 **selectionVerdict** |
 | `evaluate-cursor-index-lab.cjs` | Authoritative Cursor Index G1–G9 **selectionVerdict** (active playable; audit in combined JSON) |
 | `cursor-index-fullturn-engine.cjs` | 4×4 headless engine (`rays` audit / `fullBoxCross` active) |
 | `CURSOR_INDEX_LAB_EVALUATION.json` | Combined Cursor Index verdicts + audit trail |

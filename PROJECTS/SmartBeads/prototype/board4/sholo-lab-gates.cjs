@@ -41,7 +41,7 @@ function checkRejectTriggers(d1, d2, geoOk, crash) {
   return t;
 }
 
-/** Authoritative board selection verdict — evaluate-ladder-lab.cjs only. */
+/** Board selection verdict helper. (Its only caller, evaluate-ladder-lab.cjs, was retired 2026-10-01.) */
 function ladderVerdict(allPass, rejectTriggers, failedGates) {
   if (rejectTriggers.length) return 'REJECT';
   if (allPass) return 'NEEDS FURTHER TESTING';
