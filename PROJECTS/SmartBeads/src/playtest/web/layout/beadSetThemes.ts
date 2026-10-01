@@ -2,6 +2,7 @@
 
 import { LOVABLE_BEAD_SETS, type BeadSetId, type LovableBeadSetTokens } from './lovableOklchTokens';
 import type { BeadShade } from './playShellThemes';
+import { PLAY_BOARD_LOOK_STORAGE_KEY, readStored } from './safeStorage';
 
 export type { BeadSetId };
 
@@ -37,11 +38,6 @@ export const BEAD_SET_THEMES: Record<BeadSetId, BeadSetTheme> = Object.fromEntri
   LOVABLE_BEAD_SETS.map((t) => [t.id, toBeadSetTheme(t)]),
 ) as Record<BeadSetId, BeadSetTheme>;
 
-// Duplicated from playShellThemes.ts (not imported) to avoid a circular
-// dependency — playShellThemes.ts already imports BEAD_SET_THEMES from this
-// file at runtime, so importing back from it here would create a cycle.
-const PLAY_BOARD_LOOK_STORAGE_KEY = 'sb-play-board-look';
-
 /**
  * Bead set is fully automatic per board (2026-09-21, per human request — the
  * manual "Bead set" dropdown was removed entirely, no explicit override
@@ -69,8 +65,7 @@ const DEFAULT_BEAD_SET_BY_BOARD: Record<string, BeadSetId> = {
 const FALLBACK_BEAD_SET_ID: BeadSetId = 'white-black';
 
 export function readBeadSetId(): BeadSetId {
-  if (typeof localStorage === 'undefined') return FALLBACK_BEAD_SET_ID;
-  const stored = localStorage.getItem(PLAY_BOARD_LOOK_STORAGE_KEY);
+  const stored = readStored(PLAY_BOARD_LOOK_STORAGE_KEY);
   const byBoard = stored ? DEFAULT_BEAD_SET_BY_BOARD[stored] : undefined;
   return byBoard ?? FALLBACK_BEAD_SET_ID;
 }

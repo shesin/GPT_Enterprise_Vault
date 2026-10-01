@@ -58,45 +58,48 @@ export interface BgmTrack {
 export const BGM_TRACKS: BgmTrack[] = [
   {
     label: 'Bubble Gum Puzzler',
-    url: 'http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler.mp3',
   },
   {
     label: 'Bubble Gum Puzzler 2',
-    url: 'http://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler-2.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/08/Bubble-Gum-Puzzler-2.mp3',
   },
   {
     label: 'Cool Puzzler',
-    url: 'http://soundimage.org/wp-content/uploads/2017/07/Cool-Puzzler.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/07/Cool-Puzzler.mp3',
   },
-  { label: 'Sky Puzzle', url: 'http://soundimage.org/wp-content/uploads/2017/06/Sky-Puzzle.mp3' },
-  { label: 'Mind Bender', url: 'http://soundimage.org/wp-content/uploads/2017/06/Mind-Bender.mp3' },
+  { label: 'Sky Puzzle', url: 'https://soundimage.org/wp-content/uploads/2017/06/Sky-Puzzle.mp3' },
+  {
+    label: 'Mind Bender',
+    url: 'https://soundimage.org/wp-content/uploads/2017/06/Mind-Bender.mp3',
+  },
   {
     label: 'Puzzle Dreams',
-    url: 'http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams.mp3',
   },
   {
     label: 'Puzzle Dreams 3',
-    url: 'http://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams-3.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/05/Puzzle-Dreams-3.mp3',
   },
   {
     label: 'Mysterious Puzzle',
-    url: 'http://soundimage.org/wp-content/uploads/2014/10/Mysterious-Puzzle.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2014/10/Mysterious-Puzzle.mp3',
   },
   {
     label: '8-Bit Puzzler',
-    url: 'http://soundimage.org/wp-content/uploads/2017/03/8-Bit-Puzzler.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/03/8-Bit-Puzzler.mp3',
   },
   {
     label: 'Puzzle Game 5',
-    url: 'http://soundimage.org/wp-content/uploads/2014/12/Puzzle-Game-5.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2014/12/Puzzle-Game-5.mp3',
   },
   {
     label: 'Happy Puzzler',
-    url: 'http://soundimage.org/wp-content/uploads/2017/09/Happy-Puzzler.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/09/Happy-Puzzler.mp3',
   },
   {
     label: 'Puzzle Action',
-    url: 'http://soundimage.org/wp-content/uploads/2017/08/Puzzle-Action.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/08/Puzzle-Action.mp3',
   },
   {
     label: 'Puzzle Technica',
@@ -112,23 +115,23 @@ export const BGM_TRACKS: BgmTrack[] = [
   },
   {
     label: 'Drifting Things',
-    url: 'http://soundimage.org/wp-content/uploads/2018/01/Drifting-Things.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2018/01/Drifting-Things.mp3',
   },
   {
     label: 'Wind Up Things',
-    url: 'http://soundimage.org/wp-content/uploads/2018/01/Wind-Up-Things.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2018/01/Wind-Up-Things.mp3',
   },
   {
     label: 'Carnival Games',
-    url: 'http://soundimage.org/wp-content/uploads/2018/07/Carnival-Games.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2018/07/Carnival-Games.mp3',
   },
   {
     label: 'Far Away Puzzle Places',
-    url: 'http://soundimage.org/wp-content/uploads/2018/07/Far-Away-Puzzle-Places.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2018/07/Far-Away-Puzzle-Places.mp3',
   },
   {
     label: 'Thought Puzzles',
-    url: 'http://soundimage.org/wp-content/uploads/2017/09/Thought-Puzzles.mp3',
+    url: 'https://soundimage.org/wp-content/uploads/2017/09/Thought-Puzzles.mp3',
   },
 ];
 

@@ -12,6 +12,7 @@ import {
   wirePlayLookPreviewSetting,
 } from './layout/playShellThemes';
 import { getActiveBeadSet } from './layout/beadSetThemes';
+import { readStored, writeStored } from './layout/safeStorage';
 
 export type HubLaunchAction = 'play' | 'coach' | 'spectate';
 
@@ -226,7 +227,7 @@ const HUB_PAGE_LOOK_STORAGE_KEY = 'sb-hub-page-look';
 const HUB_PAGE_LOOK_VALUES: ReadonlyArray<HubPageLook> = ['green', 'black'];
 
 function readStoredHubPageLook(): HubPageLook {
-  const stored = localStorage.getItem(HUB_PAGE_LOOK_STORAGE_KEY);
+  const stored = readStored(HUB_PAGE_LOOK_STORAGE_KEY);
   return (HUB_PAGE_LOOK_VALUES as ReadonlyArray<string>).includes(stored ?? '')
     ? (stored as HubPageLook)
     : 'green';
@@ -250,7 +251,7 @@ function wireHubPageLookPicker(): void {
     btn.classList.toggle('is-active', isActive);
     btn.setAttribute('aria-checked', String(isActive));
     btn.addEventListener('click', () => {
-      localStorage.setItem(HUB_PAGE_LOOK_STORAGE_KEY, look);
+      writeStored(HUB_PAGE_LOOK_STORAGE_KEY, look);
       applyHubPageLook(look);
       for (const b of buttons) {
         const bLook = b.getAttribute('data-hub-page-look-btn') as HubPageLook;

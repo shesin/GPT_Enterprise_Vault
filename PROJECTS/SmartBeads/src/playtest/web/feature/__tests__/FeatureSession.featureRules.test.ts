@@ -79,6 +79,67 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     expect(session.getDisplayedReason()).toContain('center');
   });
 
+  it('safety-cap centre tiebreak never shows the raw engine code to the player', () => {
+    const session = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame', timer: '15' });
+    clearOccupants(session);
+    setOcc(session, 'A21', 'RED');
+    setOcc(session, 'A00', 'RED');
+    setOcc(session, 'A40', 'BLUE');
+    const st = session.getEngine().getState();
+    st.currentPlayer = 'RED';
+    st.moveCount = 119;
+    const from = st.board.intersections.find((n) => n.label === 'A00')!.id;
+    session.applyMove(
+      session
+        .getEngine()
+        .getLegalMoves()
+        .find((m) => m.from === from)!,
+    );
+    expect(session.getDisplayedReason()).not.toContain('safety_cap');
+    expect(session.getDisplayedReason()).toContain('Move limit reached');
+  });
+
+  it('stalemate stays a stalemate win even when captures are tied and the centre rule is on', () => {
+    const session = new FeatureSession('16', { ...base, centerRule: 'endgame', timer: '15' });
+    clearOccupants(session);
+    setOcc(session, 'A22', 'RED');
+    for (const label of [
+      'A11',
+      'A12',
+      'A13',
+      'A21',
+      'A23',
+      'A31',
+      'A32',
+      'A33',
+      'A00',
+      'A02',
+      'A04',
+      'A20',
+      'A24',
+      'A40',
+      'A42',
+      'A44',
+      'LT',
+    ]) {
+      setOcc(session, label, 'BLUE');
+    }
+    const board = session.getEngine().getState().board;
+    const id = (label: string) => board.intersections.find((n) => n.label === label)!.id;
+    session.getEngine().getState().currentPlayer = 'BLUE';
+    session.applyMove({ from: id('LT'), to: id('LM') });
+    expect(session.getEngine().getState().endReason).toBe('stalemate');
+    expect(session.getDisplayedWinner()).toBe('BLUE');
+    expect(session.getDisplayedReason()).not.toContain('center');
+  });
+
+  it('timer expiry with everything tied reads as a sentence', () => {
+    const session = new FeatureSession('6x3x5', { ...base, timer: '2' });
+    session.evaluateScoreAndEnd('Timer expired.');
+    expect(session.getDisplayedWinner()).toBe('DRAW');
+    expect(session.getDisplayedReason()).toBe('Timer expired. Draw.');
+  });
+
   it('engine safety cap: tied captures + centre off -> draw', () => {
     const session = new FeatureSession('6x3x5', { ...base, centerRule: 'off' });
     clearOccupants(session);

@@ -153,6 +153,10 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **AI search engine mode (2026-10-01):** `SmartBeadsEngine` has a search mode (`loadForSearch`, `exportSearchSnapshot`, `applyLegalMoveWithUndo` / `undoLastMove`) used only by `HonestAi`: shared repetition history + numeric path instead of copying the history per node. Guarded by `HonestAi.turnEndsEquivalence.test.ts`. The AI search has no time limit or budget.
 - **AI Web Worker (2026-10-01):** the browser runs the AI search in `feature/aiSearchWorker.ts` (Vite `?worker` import in `main.ts`, typed by `vite-worker.d.ts`) through `AiSearchClient`; `bootstrapPlayShell(onReady, { aiSearchClient })`. Tests/Node pass no client and use the same search synchronously (`planAiTurnPath`). If the worker fails, the AI retries the same full-strength search on the main thread and logs the error.
 - **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.
+- **`feature/resultText.ts`** — player-facing end-of-game wording (`composeResultDescription`, `drawScoreLine`); engine reason codes never shown raw.
+- **`feature/undoController.ts`** — Undo stack; Undo never refunds clocks, is disabled after a clock loss, and asks the shell to resume the AI (`resumeAutomatedPlay`).
+- **`layout/safeStorage.ts`** — never-throwing localStorage helpers + the single `PLAY_BOARD_LOOK_STORAGE_KEY` definition.
+- **`globalErrorBanner.ts`** — installed by `main.ts`: logs uncaught errors / rejections and shows one reload bar.
 - **`audio/SoundEffects.ts`** — fetches eight named WAV files from repo-root `public/audio/` via `SoundManifest.ts`; **default muted**; start overlay unlock; end celebration audio. Regenerate: `node scripts/generate-sfx-wavs.mjs`.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).
 - **`feature/pveTiming.ts`** — human animation vs AI reply delay; tests must sample the human ply first.

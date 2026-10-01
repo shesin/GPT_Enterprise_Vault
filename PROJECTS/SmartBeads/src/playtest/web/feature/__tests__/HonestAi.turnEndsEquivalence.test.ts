@@ -49,7 +49,12 @@ function endSignature(end: TurnEnd): string {
 }
 
 /** Replay a path on a plain engine that starts from `from` (full history, side forced to `player`). */
-function replay(v: BoardVariant, from: ReturnType<SmartBeadsEngine['exportSnapshot']>, player: Player, path: Move[]) {
+function replay(
+  v: BoardVariant,
+  from: ReturnType<SmartBeadsEngine['exportSnapshot']>,
+  player: Player,
+  path: Move[],
+) {
   const e = new SmartBeadsEngine(v);
   e.loadSnapshot({
     ...from,
@@ -69,7 +74,9 @@ function shuffledEngine(v: BoardVariant, seed: number, plies: number): SmartBead
     const p = e.getState().currentPlayer;
     const ends = generateTurnEnds(v, e.exportSnapshot(), p, Infinity);
     if (!ends.length) break;
-    let pick = ends.filter((x) => x.path.length === 1 && x.snapshot.state.captures[p] === e.getState().captures[p]);
+    let pick = ends.filter(
+      (x) => x.path.length === 1 && x.snapshot.state.captures[p] === e.getState().captures[p],
+    );
     if (!pick.length) pick = ends;
     const prev = last[p];
     if (prev) {
@@ -85,38 +92,41 @@ function shuffledEngine(v: BoardVariant, seed: number, plies: number): SmartBead
 }
 
 describe('search-mode turn ends equal full-engine replays', () => {
-  it.each(['6', '7', '6x3x5'] as BoardVariant[])('%s: shuffled games incl. repetition draws', (v) => {
-    let compared = 0;
-    let repetitions = 0;
-    for (let seed = 0; seed < 40; seed += 1) {
-      for (const plies of [8, 12, 16]) {
-        const e = shuffledEngine(v, 1000 + seed, plies);
-        if (e.getState().gameOver) continue;
-        const snap = e.exportSnapshot();
-        const side = e.getState().currentPlayer;
-        const level1 = generateTurnEnds(v, snap, side, Infinity);
-        for (const end of level1) {
-          expect(endSignature(end)).toBe(signature(replay(v, snap, side, end.path)));
-          compared += 1;
-          if (end.snapshot.state.endReason === 'repetition') repetitions += 1;
-        }
-        // one level deeper: replies are computed from search-line snapshots
-        for (const end of level1.slice(0, 4)) {
-          if (end.snapshot.state.gameOver) continue;
-          const other: Player = side === 'RED' ? 'BLUE' : 'RED';
-          const base = replay(v, snap, side, end.path);
-          const baseSnap = base.exportSnapshot();
-          for (const reply of generateTurnEnds(v, end.snapshot, other, 80)) {
-            expect(endSignature(reply)).toBe(signature(replay(v, baseSnap, other, reply.path)));
+  it.each(['6', '7', '6x3x5'] as BoardVariant[])(
+    '%s: shuffled games incl. repetition draws',
+    (v) => {
+      let compared = 0;
+      let repetitions = 0;
+      for (let seed = 0; seed < 40; seed += 1) {
+        for (const plies of [8, 12, 16]) {
+          const e = shuffledEngine(v, 1000 + seed, plies);
+          if (e.getState().gameOver) continue;
+          const snap = e.exportSnapshot();
+          const side = e.getState().currentPlayer;
+          const level1 = generateTurnEnds(v, snap, side, Infinity);
+          for (const end of level1) {
+            expect(endSignature(end)).toBe(signature(replay(v, snap, side, end.path)));
             compared += 1;
-            if (reply.snapshot.state.endReason === 'repetition') repetitions += 1;
+            if (end.snapshot.state.endReason === 'repetition') repetitions += 1;
+          }
+          // one level deeper: replies are computed from search-line snapshots
+          for (const end of level1.slice(0, 4)) {
+            if (end.snapshot.state.gameOver) continue;
+            const other: Player = side === 'RED' ? 'BLUE' : 'RED';
+            const base = replay(v, snap, side, end.path);
+            const baseSnap = base.exportSnapshot();
+            for (const reply of generateTurnEnds(v, end.snapshot, other, 80)) {
+              expect(endSignature(reply)).toBe(signature(replay(v, baseSnap, other, reply.path)));
+              compared += 1;
+              if (reply.snapshot.state.endReason === 'repetition') repetitions += 1;
+            }
           }
         }
       }
-    }
-    expect(compared).toBeGreaterThan(500);
-    expect(repetitions).toBeGreaterThan(0);
-  });
+      expect(compared).toBeGreaterThan(500);
+      expect(repetitions).toBeGreaterThan(0);
+    },
+  );
 
   it.each(['8x4x6', '16'] as BoardVariant[])('%s: seeded mid-game positions', (v) => {
     for (let seed = 0; seed < 6; seed += 1) {

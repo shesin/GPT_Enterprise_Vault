@@ -63,6 +63,7 @@ import { renderCoachPanelHtml } from './feature/coachPanelRender';
 import { CoachVoice } from './feature/CoachVoice';
 import { FeatureSession } from './feature/FeatureSession';
 import { shellTimerShouldSkip } from './feature/clockPolicy';
+import { composeResultDescription, drawScoreLine } from './feature/resultText';
 import { createStartBannerController } from './feature/startBannerController';
 import { createResignationController } from './feature/resignationController';
 import { createUndoController } from './feature/undoController';
@@ -197,8 +198,12 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       getBoardDisplayName: () => getCatalogEntry(currentBoardId)?.displayName ?? 'SMARTBEADS',
     },
   );
-  const { emitCelebrationSparkles, triggerStartBanner, dismissStartBanner, triggerCoachSegmentBanner } =
-    startBannerCtl;
+  const {
+    emitCelebrationSparkles,
+    triggerStartBanner,
+    dismissStartBanner,
+    triggerCoachSegmentBanner,
+  } = startBannerCtl;
 
   const resignationCtl = createResignationController(
     { resignOfferModal, resignOfferDesc },
@@ -241,6 +246,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       startTimersIfNotGameOver: () => {
         if (!session.isGameOver()) startTimers();
       },
+      resumeAutomatedPlay: () => maybeScheduleAutomatedTurn(),
       updateUI: () => updateUI(),
     },
   );
@@ -879,24 +885,6 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     return player === 'RED' ? creamPlayerLabel() : blackPlayerLabel();
   }
 
-  /** Avoid duplicating capture win on the modal when scoreLine already states the margin. */
-  function composeResultDescription(scoreLine: string, reason: string | undefined): string {
-    if (!reason || reason === 'Normal') return scoreLine;
-    const skipEngineCodes = new Set([
-      'elimination',
-      'stalemate',
-      'repetition',
-      'ply_limit_captures',
-      'ply_limit_center',
-      'ply_limit_draw',
-    ]);
-    if (skipEngineCodes.has(reason)) return scoreLine;
-    if (/won on captures/i.test(reason) && /won by \d+ bead/i.test(scoreLine)) return scoreLine;
-    if (/won on captures/i.test(reason) && /\bYou won\b/i.test(scoreLine)) return scoreLine;
-    if (/won on captures/i.test(reason) && /\bWON!/i.test(scoreLine)) return scoreLine;
-    return `${scoreLine} • ${reason.trim()}`;
-  }
-
   function syncModeUi(): void {
     const settings = session.getSettings();
     const coachWatch = settings.mode === 'spectate';
@@ -1207,7 +1195,11 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       shotActiveBlue,
     );
 
-    if (session.isGameOver() && resignationCtl.getPendingResignPlayer() === null && !isCoachMode()) {
+    if (
+      session.isGameOver() &&
+      resignationCtl.getPendingResignPlayer() === null &&
+      !isCoachMode()
+    ) {
       const winner = session.getDisplayedWinner();
       const redCaps = state.captures.RED;
       const blueCaps = state.captures.BLUE;
@@ -1219,7 +1211,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       if (winner === 'DRAW') {
         resultTitle.textContent = "WELL PLAYED! IT'S A DRAW";
         resultTitle.classList.add('draw');
-        scoreLine = `Tied in captures (${redCaps} vs ${blueCaps} beads)`;
+        scoreLine = drawScoreLine(redCaps, blueCaps);
       } else if (winner === 'RED') {
         const diff = redCaps - blueCaps;
         if (isHumanVsAiMode(settings.mode)) {
@@ -1336,8 +1328,29 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     }, 1000);
   }
 
+  /** The pulsing turn-start rings (match start, nothing picked yet) are the only thing on the board that moves without a game event. */
+  function turnStartRingsPulsing(): boolean {
+    return (
+      session.shouldShowTurnStartRings() &&
+      session.getSelectedId() === null &&
+      session.getLegalTargetIds().length === 0
+    );
+  }
+
+  /** Nothing moves while idle, so the board is repainted this often at most (keeps the cross-tab look sync in drawBoard). */
+  const IDLE_REPAINT_MS = 1000;
+  let lastRepaintMs = 0;
+  /** Players who ask for reduced motion get static rings (no pulsing). */
+  const reducedMotion =
+    typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)')
+      : null;
+
   function loopPulse(ts: number): void {
-    turnPulse = ts / 280;
+    // Request the next frame first: a draw that throws must not stop the loop for good.
+    pulseRaf = requestAnimationFrame(loopPulse);
+    const still = reducedMotion?.matches === true;
+    turnPulse = still ? 0 : ts / 280;
     const now = performance.now();
     for (let i = capturePulseStarts.length - 1; i >= 0; i -= 1) {
       if (now - capturePulseStarts[i]!.startMs >= CAPTURE_PULSE_MS) {
@@ -1345,8 +1358,15 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       }
     }
     const pulsesActive = capturePulseStarts.length > 0;
-    if (!animating || pulsesActive) drawBoard();
-    pulseRaf = requestAnimationFrame(loopPulse);
+    if (animating && !pulsesActive) return;
+    if (
+      pulsesActive ||
+      (!still && turnStartRingsPulsing()) ||
+      now - lastRepaintMs >= IDLE_REPAINT_MS
+    ) {
+      lastRepaintMs = now;
+      drawBoard();
+    }
   }
 
   function afterHumanOrAiTurn(): void {
@@ -1558,17 +1578,16 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       (err: unknown) => {
         if (err instanceof AiSearchCancelled || runId !== aiRunId) return;
         // Worker unavailable/crashed: same full-strength search on the main thread (page may pause).
-        console.error('[AI] worker search failed; retrying at full strength on the main thread.', err);
+        console.error(
+          '[AI] worker search failed; retrying at full strength on the main thread.',
+          err,
+        );
         continueAutomatedTurn(runId, actingPlayer, planAiTurnPath(session, planFor));
       },
     );
   }
 
-  function continueAutomatedTurn(
-    runId: number,
-    actingPlayer: Player,
-    path: Move[] | null,
-  ): void {
+  function continueAutomatedTurn(runId: number, actingPlayer: Player, path: Move[] | null): void {
     if (runId !== aiRunId) return;
     const settings = session.getSettings();
     if (!path?.length) {
@@ -1832,8 +1851,12 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     }
   });
 
-  const settingsToggleBtn = document.getElementById('settings-toggle-btn') as HTMLButtonElement | null;
-  const settingsCloseBtn = document.getElementById('settings-close-btn') as HTMLButtonElement | null;
+  const settingsToggleBtn = document.getElementById(
+    'settings-toggle-btn',
+  ) as HTMLButtonElement | null;
+  const settingsCloseBtn = document.getElementById(
+    'settings-close-btn',
+  ) as HTMLButtonElement | null;
   function setSettingsOpen(open: boolean): void {
     document.getElementById('play-shell')?.classList.toggle('is-settings-open', open);
     settingsToggleBtn?.setAttribute('aria-expanded', String(open));

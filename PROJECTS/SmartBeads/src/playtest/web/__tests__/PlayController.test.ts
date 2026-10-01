@@ -131,7 +131,9 @@ describe('PlayController.runAiTurn (live hop loop, no renderer)', () => {
     // Medium search returns a legal BLUE hop from the hanging reply position
     const eng = session.getEngine();
     expect(eng.getState().currentPlayer).toBe('BLUE');
-    const legal = eng.getLegalMoves().some((m) => m.from === path![0]!.from && m.to === path![0]!.to);
+    const legal = eng
+      .getLegalMoves()
+      .some((m) => m.from === path![0]!.from && m.to === path![0]!.to);
     expect(legal).toBe(true);
   });
 

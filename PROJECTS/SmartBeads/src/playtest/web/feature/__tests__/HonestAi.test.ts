@@ -17,12 +17,7 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
     board.intersections.find((p) => p.label === 'A03')!.occupant = 'RED';
     engine.getState().currentPlayer = 'BLUE';
 
-    const ends = generateTurnEnds(
-      '16',
-      engine.exportSnapshot(),
-      'BLUE',
-      32,
-    );
+    const ends = generateTurnEnds('16', engine.exportSnapshot(), 'BLUE', 32);
     const from = id('A00');
     const stop = ends.find(
       (e) => e.path.length === 1 && e.path[0]!.from === from && e.path[0]!.to === id('A02'),

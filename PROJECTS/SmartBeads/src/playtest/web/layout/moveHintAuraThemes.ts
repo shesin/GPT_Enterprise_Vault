@@ -4,6 +4,8 @@
  * choice were both dropped; "on" always auto-picks the right gold variant
  * for whichever board is active). */
 
+import { PLAY_BOARD_LOOK_STORAGE_KEY, readStored, writeStored } from './safeStorage';
+
 export type MoveHintAuraStyle = 'off' | 'gold-fill' | 'black-gold-fill';
 export type MoveHintAuraToggle = 'off' | 'on';
 
@@ -22,28 +24,22 @@ function normalizeStoredToggle(value: string | null | undefined): MoveHintAuraTo
   return value === 'off' ? 'off' : 'on';
 }
 
-// Duplicated from playShellThemes.ts (not imported) to avoid a circular
-// dependency — same pattern already used in beadSetThemes.ts.
-const PLAY_BOARD_LOOK_STORAGE_KEY = 'sb-play-board-look';
 // Boards with a light canvas need Black Gold instead of plain Gold for
 // contrast, even though they're "complete" boards, not the old
 // charcoal-paired light row (removed 2026-09-21) — see beadSetThemes.ts.
 const LIGHT_BOARD_LOOK_IDS = new Set(['23', '24', '25', '26']);
 
 function isStoredBoardLookLight(): boolean {
-  if (typeof localStorage === 'undefined') return false;
-  const stored = localStorage.getItem(PLAY_BOARD_LOOK_STORAGE_KEY);
+  const stored = readStored(PLAY_BOARD_LOOK_STORAGE_KEY);
   return stored !== null && LIGHT_BOARD_LOOK_IDS.has(stored);
 }
 
 export function readMoveHintAuraToggle(): MoveHintAuraToggle {
-  if (typeof localStorage === 'undefined') return 'on';
-  return normalizeStoredToggle(localStorage.getItem(MOVE_HINT_AURA_STORAGE_KEY));
+  return normalizeStoredToggle(readStored(MOVE_HINT_AURA_STORAGE_KEY));
 }
 
 export function writeMoveHintAuraToggle(toggle: MoveHintAuraToggle): void {
-  if (typeof localStorage === 'undefined') return;
-  localStorage.setItem(MOVE_HINT_AURA_STORAGE_KEY, toggle);
+  writeStored(MOVE_HINT_AURA_STORAGE_KEY, toggle);
 }
 
 /** Resolves a toggle value to the style the renderer actually draws — off, or

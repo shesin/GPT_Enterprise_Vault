@@ -70,7 +70,7 @@ function wordsFromPositionKey(key: string): number[] {
   const words: number[] = [];
   let word = 0;
   let inWord = 0;
-  for (let i = 0; i < occ.length; ) {
+  for (let i = 0; i < occ.length;) {
     let code = 0;
     if (occ[i] === 'R') {
       code = 1;

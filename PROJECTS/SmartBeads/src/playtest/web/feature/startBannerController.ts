@@ -30,12 +30,19 @@ export function createStartBannerController(
   elements: StartBannerElements,
   deps: StartBannerDeps,
 ): StartBannerController {
-  const { celebrationFx, celebrationParticles, startBanner, startBannerTitle, startBannerSubtitle } =
-    elements;
+  const {
+    celebrationFx,
+    celebrationParticles,
+    startBanner,
+    startBannerTitle,
+    startBannerSubtitle,
+  } = elements;
   let bannerTimer: number | null = null;
   let bannerPhase2Timer: number | null = null;
 
-  function emitCelebrationSparkles(targetContainer: HTMLElement | null = celebrationParticles): void {
+  function emitCelebrationSparkles(
+    targetContainer: HTMLElement | null = celebrationParticles,
+  ): void {
     if (!targetContainer) return;
     targetContainer.innerHTML = '';
 
@@ -178,5 +185,10 @@ export function createStartBannerController(
     }, remainingMs);
   }
 
-  return { emitCelebrationSparkles, triggerStartBanner, dismissStartBanner, triggerCoachSegmentBanner };
+  return {
+    emitCelebrationSparkles,
+    triggerStartBanner,
+    dismissStartBanner,
+    triggerCoachSegmentBanner,
+  };
 }

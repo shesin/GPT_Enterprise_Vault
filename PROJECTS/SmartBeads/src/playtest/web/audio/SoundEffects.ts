@@ -220,6 +220,8 @@ export class SoundEffects {
       timestamp: Date.now(),
     };
     this.dispatchedEvents.push(event);
+    // Kept for tests / listeners only: never let it grow for the whole session.
+    if (this.dispatchedEvents.length > 200) this.dispatchedEvents.shift();
     for (const listener of this.eventListeners) {
       try {
         listener(event);

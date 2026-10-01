@@ -24,7 +24,7 @@ describe('HonestAi test audit', () => {
     const src = fs.readFileSync(honestAiTestPath, 'utf8');
     expect(src).not.toMatch(/selectAiTurnPath\(\s*'16',\s*2/);
     expect(src).toMatch(/selectAiTurnPath\(\s*'6x3x5'/);
-    expect(src).toMatch(/generateTurnEnds[\s\S]*,\s*32,/);
+    expect(src).toMatch(/generateTurnEnds[\s\S]*,\s*32\s*[,)]/);
   });
 
   it('fast-path AI tests use deterministic options when calling level 2 on 16-bead', () => {

@@ -1,6 +1,7 @@
 /** Canvas layout + centre decoration — ported from prototype/board4 SHOLO_GUTI_*_WITH_FEATURE.html. */
 
-export type ProjectionKind = 'sholo16' | 'square5' | 'grid-stretch' | 'square-fit' | 'square-stretch' | 'portrait45';
+export type ProjectionKind =
+  'sholo16' | 'square5' | 'grid-stretch' | 'square-fit' | 'square-stretch' | 'portrait45';
 
 export interface LatticePoint {
   x: number;

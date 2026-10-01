@@ -41,7 +41,10 @@ export function createResignationController(
     if (session.isGameOver() || deps.isAnimating() || deps.isAiThinking()) return false;
     if (pendingResignPlayer !== null) return false;
     // Only the side to move may resign (PvE: human only on cream's turn).
-    if (session.getSettings().mode === 'pve' && session.getEngine().getState().currentPlayer !== 'RED') {
+    if (
+      session.getSettings().mode === 'pve' &&
+      session.getEngine().getState().currentPlayer !== 'RED'
+    ) {
       return false;
     }
     return true;

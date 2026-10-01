@@ -1357,6 +1357,7 @@ canvas {
     --side-columns-width: 0px;
     --shell-gutter-h: 16px;
     --stack-chrome: 200px;
+    --board-area-h: max(300px, calc(100dvh - var(--body-pad-v) - var(--stack-chrome)));
   }
   #play-shell .card.left,
   #play-shell .play-panel,
@@ -1364,7 +1365,7 @@ canvas {
     display: contents;
   }
   #play-shell .play-block-ai { order: 1; }
-  #play-shell .board-frame { order: 2; width: 100%; }
+  #play-shell .board-frame { order: 2; width: min(100%, var(--frame-w)); margin-inline: auto; }
   #play-shell .play-block-human { order: 3; }
   /* Bottom stack pinned to the screen: Resign row directly above the ad banner.
      No page scroll is needed — Settings opens as a full-screen panel from the gear. */
@@ -1433,5 +1434,35 @@ canvas {
   #play-shell .play-block-row:has(#top-p2-beads) { display: none; }
   .play-block-row { gap: 6px; }
   .play-block-row:has(.shot-ring.off),
-  .play-block-row-timer:has(.match-ring.off) { display: none; }
+  .play-block-row-timer:has(.match-timer-mmss.off) { display: none; }
+}
+
+/* Global error banner (globalErrorBanner.ts) — shown once if the page hits an uncaught error. */
+.sb-error-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 8px 12px;
+  text-align: center;
+  background: #7a1f1f;
+  color: #fff;
+  font-weight: 600;
+}
+.sb-error-banner button {
+  margin-left: 8px;
+  padding: 2px 10px;
+}
+
+/* Reduced motion: the page's CSS animations / transitions are shortened to nothing (the canvas ring pulse is handled in PlayController). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

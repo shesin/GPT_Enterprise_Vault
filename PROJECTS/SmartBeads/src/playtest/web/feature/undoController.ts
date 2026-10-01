@@ -17,6 +17,8 @@ export interface UndoDeps {
   hideResignOfferModal: () => void;
   clearPendingResignPlayer: () => void;
   startTimersIfNotGameOver: () => void;
+  /** Undo can land on a position where the AI is to move (it opened the game): the shell must schedule it again. */
+  resumeAutomatedPlay: () => void;
   updateUI: () => void;
 }
 
@@ -40,6 +42,8 @@ export function createUndoController(elements: UndoElements, deps: UndoDeps): Un
 
   function undo(): void {
     if (deps.isAnimating() || deps.isAiThinking() || undoStack.length === 0) return;
+    // A game lost on a clock is final: Undo must not reopen it or give time back.
+    if (deps.getSession().endedByClock()) return;
     deps.cancelAiWork();
     deps.clearAnim();
     deps.resetTurnCaptures();
@@ -55,9 +59,9 @@ export function createUndoController(elements: UndoElements, deps: UndoDeps): Un
       uiState !== 'chain'
     ) {
       undoStack.pop();
-      session.loadSnapshot(undoStack.pop()!);
+      session.loadSnapshot(undoStack.pop()!, { keepClocks: true });
     } else {
-      session.loadSnapshot(undoStack.pop()!);
+      session.loadSnapshot(undoStack.pop()!, { keepClocks: true });
     }
 
     deps.hideResultModal();
@@ -66,6 +70,7 @@ export function createUndoController(elements: UndoElements, deps: UndoDeps): Un
     undoBtn.disabled = undoStack.length === 0;
     deps.startTimersIfNotGameOver();
     deps.updateUI();
+    deps.resumeAutomatedPlay();
   }
 
   function reset(): void {
@@ -74,9 +79,13 @@ export function createUndoController(elements: UndoElements, deps: UndoDeps): Un
   }
 
   function syncButtonState(): void {
-    const settings = deps.getSession().getSettings();
+    const session = deps.getSession();
     undoBtn.disabled =
-      undoStack.length === 0 || deps.isAnimating() || deps.isAiThinking() || settings.mode === 'spectate';
+      undoStack.length === 0 ||
+      deps.isAnimating() ||
+      deps.isAiThinking() ||
+      session.getSettings().mode === 'spectate' ||
+      session.endedByClock();
   }
 
   return { pushSnapshot, undo, reset, syncButtonState };

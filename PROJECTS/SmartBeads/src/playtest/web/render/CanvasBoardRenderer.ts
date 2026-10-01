@@ -373,7 +373,14 @@ export function drawCanvasBoard(canvas: HTMLCanvasElement, view: CanvasBoardView
   for (const conn of board.connections) {
     const from = board.intersections[conn.from];
     const to = board.intersections[conn.to];
-    if (!from || !to || from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined)
+    if (
+      !from ||
+      !to ||
+      from.x === undefined ||
+      from.y === undefined ||
+      to.x === undefined ||
+      to.y === undefined
+    )
       continue;
     const fromPt = project(from);
     const toPt = project(to);

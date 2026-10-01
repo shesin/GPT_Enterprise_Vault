@@ -1,5 +1,6 @@
 import { bootstrapPlayHub } from './PlayHub';
 import { bootstrapPlayShell } from './PlayController';
+import { installGlobalErrorBanner } from './globalErrorBanner';
 import { AiSearchClient, type AiWorkerLike } from './feature/aiSearchClient';
 import AiSearchWorker from './feature/aiSearchWorker?worker';
 import type { ProductBoardId } from '../../config/BoardCatalog';
@@ -81,6 +82,8 @@ function boot(): void {
     { aiSearchClient },
   );
 }
+
+installGlobalErrorBanner();
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   boot();

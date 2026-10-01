@@ -39,6 +39,8 @@ export interface SessionSnapshot {
 export interface FeatureGameOver {
   winner: Player | 'DRAW';
   reason: string;
+  /** Set when the game ended because a clock (shot clock, tournament or match timer) ran out. */
+  byClock?: true;
 }
 
 function opponentOf(player: Player): Player {
@@ -135,7 +137,11 @@ export class FeatureSession {
     };
   }
 
-  loadSnapshot(snap: SessionSnapshot): void {
+  /**
+   * `keepClocks` (Undo): take the position back but never give time back — the match / tournament
+   * clocks keep what is left now, and the side to move starts with a full shot clock.
+   */
+  loadSnapshot(snap: SessionSnapshot, opts: { keepClocks?: boolean } = {}): void {
     this.boardVariant = snap.boardVariant;
     this.engine.loadSnapshot(snap.engineSnap);
     this.settings = { ...snap.settings };
@@ -143,14 +149,17 @@ export class FeatureSession {
     this.selectedId = snap.selectedId;
     this.turnStartRingsPending =
       snap.turnStartRingsPending ?? (snap.selectedId === null && snap.uiState === 'idle');
-    this.p1Clock = snap.p1Clock;
-    this.p2Clock = snap.p2Clock;
-    this.globalMatchRemaining = snap.globalMatchRemaining;
-    this.shotRemaining = snap.shotRemaining;
+    if (!opts.keepClocks) {
+      this.p1Clock = snap.p1Clock;
+      this.p2Clock = snap.p2Clock;
+      this.globalMatchRemaining = snap.globalMatchRemaining;
+      this.shotRemaining = snap.shotRemaining;
+    }
     this.p1CenterScore = snap.p1CenterScore ?? 0;
     this.p2CenterScore = snap.p2CenterScore ?? 0;
     this.featureOver = snap.featureOver ?? null;
     this.shotLimit = parseShotLimit(this.settings.shotClock);
+    if (opts.keepClocks) this.shotRemaining = this.shotLimit;
   }
 
   getEngine(): SmartBeadsEngine {
@@ -179,6 +188,11 @@ export class FeatureSession {
 
   isGameOver(): boolean {
     return this.engine.getState().gameOver || this.featureOver !== null;
+  }
+
+  /** True when the game was lost on a clock — such a result is final (no Undo). */
+  endedByClock(): boolean {
+    return this.featureOver?.byClock === true;
   }
 
   getDisplayedWinner(): Player | 'DRAW' | undefined {
@@ -442,16 +456,15 @@ export class FeatureSession {
   }
 
   /**
-   * When the engine ends with tied captures and center rule is on, apply center tiebreak
-   * (independent of match timer — user-selected center rule always affects outcome here).
+   * Engine safety cap with tied captures: apply the centre tiebreak (same one the match timer uses).
+   * Every other engine ending stays as the engine decided it — elimination, stalemate (the side
+   * that moved wins) and 3-fold repetition (draw) are never overridden by the centre rule.
    */
   private maybeApplyCenterTiebreakAfterEngineEnd(): void {
     if (this.featureOver) return;
     const state = this.engine.getState();
     if (!state.gameOver || this.activeCenterRule() === 'off') return;
-    // Draws stay draws (3-fold repetition) except the engine safety cap with tied captures,
-    // which falls through to the same centre tiebreak the match timer uses.
-    if (state.winner === 'DRAW' && state.endReason !== 'safety_cap') return;
+    if (state.endReason !== 'safety_cap') return;
     if (state.captures.RED !== state.captures.BLUE) return;
 
     let c1: number;
@@ -464,7 +477,7 @@ export class FeatureSession {
       c2 = countCenterOccupancy(state.board, 'BLUE');
     }
 
-    const prefix = state.endReason ? `${state.endReason} — ` : '';
+    const prefix = 'Move limit reached — ';
     if (c1 > c2) {
       this.endGameByFeature(
         'RED',
@@ -549,12 +562,12 @@ export class FeatureSession {
     const redPieces = this.engine.countPieces('RED');
     const bluePieces = this.engine.countPieces('BLUE');
     if (redPieces === bluePieces) {
-      this.endGameByFeature('DRAW', `${prefixReason} draw.`);
+      this.endGameByFeature('DRAW', `${prefixReason} Draw.`);
       return;
     }
     this.endGameByFeature(
       redPieces > bluePieces ? 'RED' : 'BLUE',
-      `${prefixReason} piece-count tiebreak.`,
+      `${prefixReason} Won on beads left.`,
     );
   }
 
@@ -566,6 +579,7 @@ export class FeatureSession {
       if (this.shotRemaining <= 0) {
         const loser = this.engine.getState().currentPlayer;
         this.endGameByFeature(opponentOf(loser), 'Shot clock expired.');
+        this.markEndedByClock();
         // Shot clock, tournament timer, and shared timer are independent settings
         // that can all be active together — without this return, a tournament/
         // shared-timer expiry in the same tick would silently overwrite the
@@ -581,6 +595,7 @@ export class FeatureSession {
         this.endGameByFeature('BLUE', `${beadSideLabel('RED')} ran out of time.`);
       else if (this.p2Clock <= 0)
         this.endGameByFeature('RED', `${beadSideLabel('BLUE')} ran out of time.`);
+      this.markEndedByClock();
       return;
     }
 
@@ -588,8 +603,13 @@ export class FeatureSession {
       this.globalMatchRemaining -= 1;
       if (this.globalMatchRemaining <= 0) {
         this.evaluateScoreAndEnd('Timer expired.');
+        this.markEndedByClock();
       }
     }
+  }
+
+  private markEndedByClock(): void {
+    if (this.featureOver) this.featureOver.byClock = true;
   }
 
   resetTurnClock(): void {

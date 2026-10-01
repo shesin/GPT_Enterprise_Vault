@@ -380,7 +380,6 @@ describe('HonestAi production strength gates (6x3x5)', () => {
     }
     expect(hardWins).toBeGreaterThan(mediumWins);
   });
-
 });
 
 describe('HonestAi strength gates (8x4x6 — human-reported Medium≈Hard board)', () => {

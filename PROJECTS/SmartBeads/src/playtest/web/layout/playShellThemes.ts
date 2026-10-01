@@ -7,6 +7,7 @@
  * history around this date for the full story). Lovable OKLCH. */
 
 import { BEAD_SET_THEMES } from './beadSetThemes';
+import { PLAY_BOARD_LOOK_STORAGE_KEY } from './safeStorage';
 import {
   LOVABLE_COMPLETE_BOARD_THEMES,
   LOVABLE_SHELL,
@@ -251,7 +252,7 @@ export const HUB_CENTRE_PALETTES: Record<BoardLookThemeId, HubCentrePalette> = {
 };
 
 export const PLAY_THEME_STORAGE_KEY = 'sb-play-theme-v2';
-export const PLAY_BOARD_LOOK_STORAGE_KEY = 'sb-play-board-look';
+export { PLAY_BOARD_LOOK_STORAGE_KEY };
 export const PLAY_SIDE_LOOK_STORAGE_KEY = 'sb-play-side-look-v3';
 const LEGACY_PLAY_THEME_STORAGE_KEY = 'sb-play-theme';
 
@@ -345,7 +346,8 @@ export function syncThemeSwatchActive(
   for (const root of roots) {
     for (const swatch of root.querySelectorAll<HTMLButtonElement>('.play-theme-swatch')) {
       const id = swatch.dataset.playTheme;
-      const active = id === boardLookId && sideLookId === boardLookId && isCompleteLookId(boardLookId);
+      const active =
+        id === boardLookId && sideLookId === boardLookId && isCompleteLookId(boardLookId);
       swatch.classList.toggle('is-active', Boolean(active));
       // Swatches sit in role="radiogroup" containers as role="radio" buttons —
       // selection was CSS-only (.is-active), invisible to assistive tech

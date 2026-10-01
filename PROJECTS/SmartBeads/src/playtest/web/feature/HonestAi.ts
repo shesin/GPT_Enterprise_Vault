@@ -395,7 +395,17 @@ function minimaxTurns(
 ): number {
   if (depth === 0) return evaluate(snapshot.state, variant, aiPlayer, center, timer);
   if (depth === 1) {
-    return leafSearch(variant, snapshot, maximizing, alpha, beta, branchCap, aiPlayer, center, timer);
+    return leafSearch(
+      variant,
+      snapshot,
+      maximizing,
+      alpha,
+      beta,
+      branchCap,
+      aiPlayer,
+      center,
+      timer,
+    );
   }
 
   const player = maximizing ? aiPlayer : opponentOf(aiPlayer);
