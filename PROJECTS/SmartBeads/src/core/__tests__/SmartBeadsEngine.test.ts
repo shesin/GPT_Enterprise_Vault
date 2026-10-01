@@ -1,4 +1,9 @@
-import { ENGINE_SAFETY_MAX_PLIES, SmartBeadsEngine } from '../SmartBeadsEngine';
+import {
+  ENGINE_SAFETY_MAX_PLIES,
+  ENGINE_SAFETY_MAX_PLIES_LARGE,
+  engineSafetyCapForVariant,
+  SmartBeadsEngine,
+} from '../SmartBeadsEngine';
 import { listBoardVariants, resolveBoard } from '../../config/BoardConfig';
 import { Board4 } from '../../boards/Board4';
 import { Board5 } from '../../boards/Board5';
@@ -242,6 +247,36 @@ describe('SmartBeadsEngine', () => {
     expect(engine.getState().gameOver).toBe(true);
     expect(engine.getState().winner).toBe('DRAW');
     expect(engine.getState().endReason).toBe('safety_cap');
+  });
+
+  it('safety cap: small boards 120 turns total, larger boards 240 (120 per side)', () => {
+    for (const v of ['6', '6x3x5', '7'] as const) {
+      expect(engineSafetyCapForVariant(v)).toBe(ENGINE_SAFETY_MAX_PLIES);
+    }
+    for (const v of ['8x4x6', '10x5', '12x6x5', '16'] as const) {
+      expect(engineSafetyCapForVariant(v)).toBe(ENGINE_SAFETY_MAX_PLIES_LARGE);
+    }
+    expect(ENGINE_SAFETY_MAX_PLIES_LARGE).toBe(ENGINE_SAFETY_MAX_PLIES * 2);
+  });
+
+  it('safety cap: a large board is NOT ended at the small-board cap', () => {
+    const engine = new SmartBeadsEngine('16');
+    engine.getState().moveCount = ENGINE_SAFETY_MAX_PLIES - 1;
+    engine.applyMove(engine.getLegalMoves()[0]!);
+    if (engine.getChainPieceId() !== null) engine.endTurn();
+    expect(engine.getState().gameOver).toBe(false);
+  });
+
+  it('safety cap: the side with more captures wins instead of a draw', () => {
+    const engine = new SmartBeadsEngine('16');
+    engine.getState().captures.BLUE = 3;
+    engine.getState().captures.RED = 1;
+    engine.getState().moveCount = ENGINE_SAFETY_MAX_PLIES_LARGE - 1;
+    engine.applyMove(engine.getLegalMoves()[0]!);
+    if (engine.getChainPieceId() !== null) engine.endTurn();
+    expect(engine.getState().gameOver).toBe(true);
+    expect(engine.getState().winner).toBe('BLUE');
+    expect(engine.getState().endReason).toBe('safety_cap_captures');
   });
 
   it('does not end the game when maxPlies is 0 (unlimited)', () => {

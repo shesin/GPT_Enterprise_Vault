@@ -13,8 +13,22 @@ import {
 } from '../models/GameState';
 import { buildPositionKey, isThreefoldRepetition } from './positionKey';
 
-/** Last-resort draw when unlimited boards (`maxPlies: null`) exceed this many completed plies (Lab-aligned). */
+/**
+ * Last-resort end for unlimited boards (`maxPlies: null`) after this many completed turns.
+ * Small boards (6-bead x2, 7-bead): 120 turns total. Larger boards: 120 per side = 240 total.
+ * At the cap the side with more captures wins; only tied captures draw (centre rule, when on,
+ * breaks that tie in FeatureSession).
+ */
 export const ENGINE_SAFETY_MAX_PLIES = 120;
+export const ENGINE_SAFETY_MAX_PLIES_LARGE = 240;
+
+const SMALL_BOARD_VARIANTS: readonly BoardVariant[] = ['4', '5', '6', '6x3x5', '7'];
+
+export function engineSafetyCapForVariant(variant: BoardVariant): number {
+  return SMALL_BOARD_VARIANTS.includes(variant)
+    ? ENGINE_SAFETY_MAX_PLIES
+    : ENGINE_SAFETY_MAX_PLIES_LARGE;
+}
 
 export type EngineSnapshot = {
   state: GameState;
@@ -259,9 +273,14 @@ export class SmartBeadsEngine {
     }
     if (
       this.currentState.board.maxPlies == null &&
-      this.currentState.moveCount >= ENGINE_SAFETY_MAX_PLIES
+      this.currentState.moveCount >= engineSafetyCapForVariant(this.variant)
     ) {
-      this.endGame('DRAW', 'safety_cap');
+      const { RED, BLUE } = this.currentState.captures;
+      if (RED !== BLUE) {
+        this.endGame(RED > BLUE ? 'RED' : 'BLUE', 'safety_cap_captures');
+      } else {
+        this.endGame('DRAW', 'safety_cap');
+      }
       return true;
     }
     return false;

@@ -34,11 +34,14 @@ import {
 import {
   aiCenterFromSession,
   aiTimerFromSession,
+  buildAiPlanRequest,
   completeAiTurnIfChainOpen,
+  emergencyLegalPath,
   planAiTurnPath,
   runAiTurn,
   shouldContinueAiTurn,
 } from './feature/aiTurnRunner';
+import { AiSearchCancelled, type AiSearchClient } from './feature/aiSearchClient';
 import {
   buildCoachLessonSettings,
   COACH_POST_DEMO_PAUSE_MS,
@@ -93,7 +96,13 @@ export {
   shouldContinueAiTurn,
 };
 
-export function bootstrapPlayShell(onReady?: () => void): void {
+export interface PlayShellDeps {
+  /** Runs AI searches in a Web Worker so the page never freezes while the AI thinks. Omitted in tests. */
+  aiSearchClient?: AiSearchClient;
+}
+
+export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {}): void {
+  const aiSearchClient = deps.aiSearchClient;
   let currentBoardId: ProductBoardId = DEFAULT_PRODUCT_BOARD;
 
   function createSession(boardId: ProductBoardId, settings?: GameFeatureSettings): FeatureSession {
@@ -942,6 +951,7 @@ export function bootstrapPlayShell(onReady?: () => void): void {
   function cancelAiWork(): void {
     aiRunId += 1;
     aiThinking = false;
+    aiSearchClient?.cancel();
   }
 
   function applyShellBoardClass(): void {
@@ -1523,12 +1533,44 @@ export function bootstrapPlayShell(onReady?: () => void): void {
       return;
     }
 
-    let path: Move[] | null = null;
-    try {
-      path = planAiTurnPath(session, settings.mode === 'spectate' ? actingPlayer : undefined);
-    } catch {
-      path = session.getEngine().getLegalMoves().slice(0, 1);
+    const planFor = settings.mode === 'spectate' ? actingPlayer : undefined;
+    if (!aiSearchClient) {
+      continueAutomatedTurn(runId, actingPlayer, planAiTurnPath(session, planFor));
+      return;
     }
+    // Browser: search runs in a Web Worker so the page stays responsive while the AI thinks.
+    let req: ReturnType<typeof buildAiPlanRequest>;
+    try {
+      req = buildAiPlanRequest(session, planFor);
+    } catch (err) {
+      continueAutomatedTurn(runId, actingPlayer, emergencyLegalPath(session, err));
+      return;
+    }
+    aiSearchClient.plan(req).then(
+      (planned) => {
+        if (runId !== aiRunId) return;
+        continueAutomatedTurn(
+          runId,
+          actingPlayer,
+          planned?.length ? planned : emergencyLegalPath(session, 'worker returned an empty path'),
+        );
+      },
+      (err: unknown) => {
+        if (err instanceof AiSearchCancelled || runId !== aiRunId) return;
+        // Worker unavailable/crashed: same full-strength search on the main thread (page may pause).
+        console.error('[AI] worker search failed; retrying at full strength on the main thread.', err);
+        continueAutomatedTurn(runId, actingPlayer, planAiTurnPath(session, planFor));
+      },
+    );
+  }
+
+  function continueAutomatedTurn(
+    runId: number,
+    actingPlayer: Player,
+    path: Move[] | null,
+  ): void {
+    if (runId !== aiRunId) return;
+    const settings = session.getSettings();
     if (!path?.length) {
       if (isHumanVsAiMode(settings.mode)) {
         session.endGameByFeature('RED', 'AI has no legal moves.');
@@ -1788,6 +1830,18 @@ export function bootstrapPlayShell(onReady?: () => void): void {
     if (!soundEffects.isMuted()) {
       soundEffects.playButtonTap();
     }
+  });
+
+  const settingsToggleBtn = document.getElementById('settings-toggle-btn') as HTMLButtonElement | null;
+  const settingsCloseBtn = document.getElementById('settings-close-btn') as HTMLButtonElement | null;
+  function setSettingsOpen(open: boolean): void {
+    document.getElementById('play-shell')?.classList.toggle('is-settings-open', open);
+    settingsToggleBtn?.setAttribute('aria-expanded', String(open));
+  }
+  settingsToggleBtn?.addEventListener('click', () => setSettingsOpen(true));
+  settingsCloseBtn?.addEventListener('click', () => setSettingsOpen(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setSettingsOpen(false);
   });
 
   coachPlayBtn?.addEventListener('click', () => {

@@ -1,5 +1,5 @@
 import { SmartBeadsEngine } from '../../../../core/SmartBeadsEngine';
-import { generateTurnEnds, selectAiTurnPath } from '../HonestAi';
+import { CENTER_EVAL_WEIGHT, evaluate, generateTurnEnds, selectAiTurnPath } from '../HonestAi';
 import { honestAiTestOpts, honestAiTurnEndsDeadlineMs } from './honestAiTestBudget';
 
 describe('HonestAi generateTurnEnds (capture optionality)', () => {
@@ -43,5 +43,43 @@ describe('HonestAi generateTurnEnds (capture optionality)', () => {
     expect(path?.length).toBeGreaterThan(0);
     engine.applyMove(path![0]!);
     expect(engine.getState().board.intersections[path![0]!.to]?.occupant).toBe('BLUE');
+  });
+});
+
+describe('HonestAi centre rule never outweighs material (2026-10-01 regression guard)', () => {
+  function position(blue: string[], red: string[]) {
+    const engine = new SmartBeadsEngine('6x3x5');
+    for (const point of engine.getState().board.intersections) point.occupant = undefined;
+    const board = engine.getState().board;
+    for (const l of blue) board.intersections.find((p) => p.label === l)!.occupant = 'BLUE';
+    for (const l of red) board.intersections.find((p) => p.label === l)!.occupant = 'RED';
+    return engine.getState();
+  }
+
+  it('centre weight is a tie-breaker, far below one piece', () => {
+    expect(CENTER_EVAL_WEIGHT).toBeGreaterThan(0);
+    // 4 centre seats is the most any board has; even all four must stay under one piece (48).
+    expect(CENTER_EVAL_WEIGHT * 4).toBeLessThan(48);
+  });
+
+  it.each(['endgame', 'cumulative'] as const)(
+    'being a piece up beats holding the centre (%s rule)',
+    (rule) => {
+      const center = { centerRule: rule, cumulativeRed: 0, cumulativeBlue: 0 };
+      // BLUE a piece up, RED sits on the centre seat A21
+      const pieceUp = evaluate(position(['A00', 'A40'], ['A21']), '6x3x5', 'BLUE', center);
+      // Material level, BLUE sits on the centre seat
+      const centreOnly = evaluate(position(['A21'], ['A00']), '6x3x5', 'BLUE', center);
+      expect(pieceUp).toBeGreaterThan(centreOnly);
+    },
+  );
+
+  it('centre still breaks a tie when material and mobility are level', () => {
+    const center = { centerRule: 'endgame' as const };
+    const withCentre = evaluate(position(['A21'], ['A00']), '6x3x5', 'BLUE', center);
+    const withoutRule = evaluate(position(['A21'], ['A00']), '6x3x5', 'BLUE', {
+      centerRule: 'off' as const,
+    });
+    expect(withCentre).toBeGreaterThan(withoutRule);
   });
 });

@@ -1,5 +1,7 @@
 import { bootstrapPlayHub } from './PlayHub';
 import { bootstrapPlayShell } from './PlayController';
+import { AiSearchClient, type AiWorkerLike } from './feature/aiSearchClient';
+import AiSearchWorker from './feature/aiSearchWorker?worker';
 import type { ProductBoardId } from '../../config/BoardCatalog';
 import type { GameFeatureSettings } from './feature/GameFeatureSettings';
 import type { HubLaunchAction } from './PlayHub';
@@ -39,32 +41,45 @@ function testApi():
   ).__SB_TEST__;
 }
 
+/** AI search runs in a Web Worker so the page never freezes while the AI thinks (no worker support -> undefined -> main-thread search). */
+function createAiSearchClient(): AiSearchClient | undefined {
+  if (typeof Worker === 'undefined') return undefined;
+  return new AiSearchClient(() => new AiSearchWorker() as unknown as AiWorkerLike);
+}
+
 function boot(): void {
+  const aiSearchClient = createAiSearchClient();
   const coachParam = new URLSearchParams(window.location.search).get('coach');
 
   if (isDirectPlayBoard()) {
     showPlayShell();
-    bootstrapPlayShell(() => {
-      if (coachParam === 'start' || coachParam === '1') {
-        testApi()?.launchCoachLesson?.();
-      }
-    });
+    bootstrapPlayShell(
+      () => {
+        if (coachParam === 'start' || coachParam === '1') {
+          testApi()?.launchCoachLesson?.();
+        }
+      },
+      { aiSearchClient },
+    );
     return;
   }
 
   document.body.classList.add('hub-page');
 
-  bootstrapPlayShell(() => {
-    bootstrapPlayHub((boardId, mode, action) => {
-      showPlayShell();
-      testApi()?.enterFromHub?.(boardId, mode, action);
-    });
-    if (coachParam === 'start' || coachParam === '1') {
-      document
-        .getElementById('hub-section-lesson')
-        ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-  });
+  bootstrapPlayShell(
+    () => {
+      bootstrapPlayHub((boardId, mode, action) => {
+        showPlayShell();
+        testApi()?.enterFromHub?.(boardId, mode, action);
+      });
+      if (coachParam === 'start' || coachParam === '1') {
+        document
+          .getElementById('hub-section-lesson')
+          ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    },
+    { aiSearchClient },
+  );
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {

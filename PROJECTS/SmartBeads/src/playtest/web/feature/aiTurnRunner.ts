@@ -3,12 +3,15 @@ import {
   aiLevelForActingPlayer,
   effectiveCenterRule,
   isHumanVsAiMode,
-  isTournamentTimerActive,
   parseTimerSeconds,
 } from './GameFeatureSettings';
 import { applyAiHops, AiHopRecord } from './aiTurnPath';
 import { FeatureSession } from './FeatureSession';
-import { selectAiTurnPath, thinkBudgetForLevel, AiCenterContext, AiTimerContext } from './HonestAi';
+import { AiCenterContext, AiTimerContext, thinkBudgetForLevel } from './HonestAi';
+import { AiPlanRequest, searchAiPath } from './aiSearch';
+
+export type { AiPlanRequest };
+export { searchAiPath };
 
 /** After a hop lands, the live AI loop continues only while a chain is still open. */
 export function shouldContinueAiTurn(chainPieceId: number | null, hopsRemaining: number): boolean {
@@ -37,44 +40,53 @@ export function aiCenterFromSession(session: FeatureSession): AiCenterContext {
 }
 
 export function aiTimerFromSession(session: FeatureSession): AiTimerContext {
-  const settings = session.getSettings();
-  const tournament = isTournamentTimerActive(settings);
-  const timerLimitSec = parseTimerSeconds(tournament ? settings.tournamentTimer : settings.timer);
   return {
-    timerLimitSec,
+    timerLimitSec: parseTimerSeconds(session.getSettings().timer),
     globalRemainingSec: session.getGlobalMatchRemaining(),
-    redRemainingSec: session.getP1Clock(),
-    blueRemainingSec: session.getP2Clock(),
-    usePerSideClocks: tournament,
   };
+}
+
+export function buildAiPlanRequest(session: FeatureSession, actingPlayer?: Player): AiPlanRequest {
+  const settings = session.getSettings();
+  const aiPlayer = actingPlayer ?? session.getAiPlayer();
+  const level = aiLevelForActingPlayer(settings, aiPlayer);
+  const variant = session.getBoardVariant();
+  return {
+    variant,
+    level,
+    snap: session.getEngine().exportSnapshot(),
+    aiPlayer,
+    budgetMs: thinkBudgetForLevel(level, variant),
+    center: aiCenterFromSession(session),
+    timer: aiTimerFromSession(session),
+  };
+}
+
+/**
+ * Last resort when the search itself failed or returned nothing: first legal hop.
+ * Never silent — the failure is always logged so a real search bug cannot hide as "weak AI".
+ */
+export function emergencyLegalPath(session: FeatureSession, reason: unknown): Move[] | null {
+  const legal = session.getEngine().getLegalMoves();
+  if (!legal.length) return null; // genuinely no moves — not a failure
+  console.error('[AI] search failed or returned no move; using emergency first legal hop.', reason);
+  return [legal[0]!];
 }
 
 /**
  * Choose an AI path without throwing.
  * Never silently downgrade Hard/Medium to Easy — that broke the difficulty contract.
- * Only emergency fallback: first legal hop if search returns empty.
+ * Only emergency fallback (logged): first legal hop if search throws or returns empty.
  * Center + match timer rules are passed so eval matches session scoring.
  */
 export function planAiTurnPath(session: FeatureSession, actingPlayer?: Player): Move[] | null {
-  const settings = session.getSettings();
-  const aiPlayer = actingPlayer ?? session.getAiPlayer();
-  const level = aiLevelForActingPlayer(settings, aiPlayer);
-  const variant = session.getBoardVariant();
-  const snap = session.getEngine().exportSnapshot();
-  const center = aiCenterFromSession(session);
-  const timer = aiTimerFromSession(session);
   try {
-    const planned = selectAiTurnPath(variant, level, snap, aiPlayer, {
-      budgetMs: thinkBudgetForLevel(level, variant),
-      center,
-      timer,
-    });
+    const planned = searchAiPath(buildAiPlanRequest(session, actingPlayer));
     if (planned?.length) return planned;
-  } catch {
-    /* fall through to emergency legal hop — do not substitute Easy search */
+    return emergencyLegalPath(session, 'search returned an empty path');
+  } catch (err) {
+    return emergencyLegalPath(session, err);
   }
-  const legal = session.getEngine().getLegalMoves();
-  return legal.length ? [legal[0]!] : null;
 }
 
 /**

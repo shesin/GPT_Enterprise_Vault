@@ -469,7 +469,7 @@ Rules and geometry must match between browser playable and headless Lab. **AI de
 | Level 2 / D2 | Static eval after own turn only (**0** opponent replies) | **1** opponent complete-turn reply |
 | Level 3 / D3 | One opponent complete-turn reply | **2** opponent complete-turn replies |
 | Randomness | Unseeded `Math.random()` tie-breaks | Seeded per game |
-| Repetition / move-cap | **Production V1:** 3-fold draw + 120-ply `safety_cap` on unlimited boards; HonestAi soft repetition steer. No product move-limit (`maxPlies: null`). | 3-fold repetition draw + move-cap 120 (harness) |
+| Repetition / move-cap | **Production V1:** 3-fold draw + `safety_cap` on unlimited boards (120 turns total on 6x4 / 6x3x5 / 7x4x5, 240 on larger boards; captures decide, then centre, then draw); HonestAi soft repetition steer. No product move-limit (`maxPlies: null`). | 3-fold repetition draw + move-cap 120 (harness) |
 
 **Reporting rule:** Never imply Lab D2 metrics describe browser Level 2 human-vs-AI strength or game length. Canonical source: `sholo-lab-protocol.cjs` → `PLAYABLE_VS_LAB_DEPTH`.
 

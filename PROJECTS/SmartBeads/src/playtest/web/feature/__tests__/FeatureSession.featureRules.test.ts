@@ -54,6 +54,61 @@ describe('FeatureSession center / timer (runtime rules)', () => {
     expect(session.getDisplayedReason()).toContain('center');
   });
 
+  it('engine safety cap: tied captures + centre rule on -> centre decides, not a draw', () => {
+    const session = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame' });
+    clearOccupants(session);
+    setOcc(session, 'A21', 'RED');
+    setOcc(session, 'A00', 'RED');
+    setOcc(session, 'A40', 'BLUE');
+    const st = session.getEngine().getState();
+    st.currentPlayer = 'RED';
+    st.moveCount = 119;
+    const move = session
+      .getEngine()
+      .getLegalMoves()
+      .find(
+        (m) =>
+          m.from ===
+          session
+            .getEngine()
+            .getState()
+            .board.intersections.find((n) => n.label === 'A00')!.id,
+      )!;
+    session.applyMove(move);
+    expect(session.isGameOver()).toBe(true);
+    expect(session.getDisplayedWinner()).toBe('RED');
+    expect(session.getDisplayedReason()).toContain('center');
+  });
+
+  it('engine safety cap: tied captures + centre off -> draw', () => {
+    const session = new FeatureSession('6x3x5', { ...base, centerRule: 'off' });
+    clearOccupants(session);
+    setOcc(session, 'A21', 'RED');
+    setOcc(session, 'A00', 'RED');
+    setOcc(session, 'A40', 'BLUE');
+    const st = session.getEngine().getState();
+    st.currentPlayer = 'RED';
+    st.moveCount = 119;
+    session.applyMove(session.getEngine().getLegalMoves()[0]!);
+    expect(session.isGameOver()).toBe(true);
+    expect(session.getDisplayedWinner()).toBe('DRAW');
+  });
+
+  it('engine safety cap: more captures wins, regardless of centre', () => {
+    const session = new FeatureSession('6x3x5', { ...base, centerRule: 'endgame' });
+    clearOccupants(session);
+    setOcc(session, 'A21', 'RED');
+    setOcc(session, 'A00', 'RED');
+    setOcc(session, 'A40', 'BLUE');
+    const st = session.getEngine().getState();
+    st.currentPlayer = 'RED';
+    st.captures.BLUE = 3;
+    st.captures.RED = 1;
+    st.moveCount = 119;
+    session.applyMove(session.getEngine().getLegalMoves()[0]!);
+    expect(session.getDisplayedWinner()).toBe('BLUE');
+  });
+
   it('cumulative center accrues occupancy across multiple completed turns', () => {
     const session = new FeatureSession('6x3x5', {
       ...base,

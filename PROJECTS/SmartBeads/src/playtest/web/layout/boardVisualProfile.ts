@@ -75,10 +75,10 @@ const PROFILES: Record<string, BoardVisualProfile> = {
   },
 };
 
-/** Phones: boards drawn in 'square-fit' would leave empty rows in a portrait screen, so they
- * switch to 'square-stretch' (same axes as 'square-fit', stretched) on a taller canvas (same approach the 16-bead board already uses). */
+/** Phones: every board is drawn on a taller canvas to use the portrait screen; 'square-fit'
+ * boards switch to 'square-stretch' (same axes, stretched), the rest already stretch. */
 const PHONE_QUERY = '(max-width: 980px)';
-const PHONE_STRETCH_CANVAS = { canvasWidth: 560, canvasHeight: 800 } as const;
+const PHONE_STRETCH_CANVAS = { canvasWidth: 560, canvasHeight: 900 } as const;
 
 function isPhoneWidth(): boolean {
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -88,10 +88,9 @@ function isPhoneWidth(): boolean {
 
 export function getBoardVisualProfile(boardName: string): BoardVisualProfile {
   const base = PROFILES[boardName] ?? { projection: 'grid-stretch', ...SQUARE_CANVAS };
-  if (base.projection === 'square-fit' && isPhoneWidth()) {
-    return { ...base, projection: 'square-stretch', ...PHONE_STRETCH_CANVAS };
-  }
-  return base;
+  if (!isPhoneWidth()) return base;
+  const projection = base.projection === 'square-fit' ? 'square-stretch' : base.projection;
+  return { ...base, projection, ...PHONE_STRETCH_CANVAS };
 }
 
 export function getBoardCanvasSize(boardName: string): { width: number; height: number } {

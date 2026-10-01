@@ -22,8 +22,14 @@ export const EASY_SOFT_MISS_RATE = 0.3;
  */
 export const MEDIUM_SOFT_MISS_RATE = 0.2;
 
-/** Weight for center seats in static eval when centerRule is on. */
-export const CENTER_EVAL_WEIGHT = 28;
+/**
+ * Weight for center seats in static eval when centerRule is on.
+ * Centre only breaks a captures tie (timer expiry / safety cap), so it must stay a tie-breaker far below
+ * one piece (48). At 28 the AI traded material for centre and Expert lost to Standard on timed games
+ * (7-bead 18-11 vs 25-0 with centre off). 1 restores parity (25-2). Near timer expiry the urgency boost
+ * in centerEvalWeight still makes centre decisive. See GPT_PROJECT_AUDIT_05P.md "AI review 2026-10-01".
+ */
+export const CENTER_EVAL_WEIGHT = 1;
 
 export interface AiCenterContext {
   centerRule: CenterRule;
@@ -35,30 +41,13 @@ export interface AiCenterContext {
 /** Timer state for AI eval — shot clock intentionally omitted (AI moves too fast). */
 export interface AiTimerContext {
   timerLimitSec: number;
-  /** Shared countdown (PvE, spectate, HvH with Timer on); 0 when per-side clocks are used. */
+  /** Shared countdown (PvE, spectate, HvH with Timer on). 0 = timer off. */
   globalRemainingSec: number;
-  redRemainingSec: number;
-  blueRemainingSec: number;
-  /**
-   * Tournament timer — chess clocks in HvH only.
-   * Currently always `false` when the AI actually evaluates a position: the AI
-   * only moves in pve/coach/spectate (`isHumanVsAiMode` + spectate), and
-   * `isTournamentTimerActive` only returns true for `mode === 'pvp'` — the two
-   * conditions can't hold at once under today's product rules. The
-   * `usePerSideClocks` branches in `timerUrgency`/`timerEvalAdjust` below are
-   * kept as the intended seam for a future "AI under tournament rules" mode
-   * (analysis/lab tooling, or an eventual AI opponent in HvH-style formats),
-   * but are unreachable — and therefore untested — in the shipped product today.
-   */
-  usePerSideClocks: boolean;
 }
 
 export const TIMER_OFF: AiTimerContext = {
   timerLimitSec: 0,
   globalRemainingSec: 0,
-  redRemainingSec: 0,
-  blueRemainingSec: 0,
-  usePerSideClocks: false,
 };
 
 export interface SelectAiOptions {
@@ -136,17 +125,8 @@ export function timerActive(timer: AiTimerContext | undefined): timer is AiTimer
 }
 
 /** 0 = plenty of time, 1 = critical (timer about to force score/end). */
-function timerUrgency(timer: AiTimerContext | undefined, aiPlayer: Player): number {
+function timerUrgency(timer: AiTimerContext | undefined): number {
   if (!timerActive(timer)) return 0;
-
-  if (timer.usePerSideClocks) {
-    const aiSec = aiPlayer === 'RED' ? timer.redRemainingSec : timer.blueRemainingSec;
-    const limit = timer.timerLimitSec;
-    if (aiSec <= 0) return 1;
-    const frac = aiSec / limit;
-    if (frac >= 0.2) return 0;
-    return 1 - frac / 0.2;
-  }
 
   const frac = timer.globalRemainingSec / timer.timerLimitSec;
   if (frac >= 0.12) return 0;
@@ -162,7 +142,7 @@ function centerEvalWeight(
   if (!center || center.centerRule === 'off') return 0;
 
   let weight = CENTER_EVAL_WEIGHT;
-  const urgency = timerUrgency(timer, aiPlayer);
+  const urgency = timerUrgency(timer);
   if (urgency > 0) {
     const capDiff = Math.abs(state.captures.RED - state.captures.BLUE);
     if (capDiff <= 1) weight += Math.round(urgency * 42);
@@ -178,18 +158,8 @@ function timerEvalAdjust(
 ): number {
   if (!timerActive(timer)) return 0;
   const human = opponentOf(aiPlayer);
-  const urgency = timerUrgency(timer, aiPlayer);
+  const urgency = timerUrgency(timer);
   let adj = 0;
-
-  if (timer.usePerSideClocks) {
-    const aiSec = aiPlayer === 'RED' ? timer.redRemainingSec : timer.blueRemainingSec;
-    const oppSec = aiPlayer === 'RED' ? timer.blueRemainingSec : timer.redRemainingSec;
-    const lead = aiSec - oppSec;
-    if (lead > 45) adj += 10;
-    else if (lead < -45) adj -= 12;
-    else if (lead < -20) adj -= 6;
-    return adj;
-  }
 
   if (urgency > 0) {
     const capLead = state.captures[aiPlayer] - state.captures[human];

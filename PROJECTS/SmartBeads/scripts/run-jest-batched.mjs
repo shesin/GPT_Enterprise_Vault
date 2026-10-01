@@ -70,6 +70,7 @@ const BATCHES = [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.coach.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/clockPolicy.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/aiTurnPath.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/aiSearchWorker.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.repetitionSteer.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.testAudit.test.ts',
@@ -115,6 +116,16 @@ const BATCHES = [
     testTimeoutMs: 120_000,
     files: [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.difficultyTiers.test.ts',
+    ],
+  },
+  {
+    id: 'slow-ai-ladder',
+    label: 'AI difficulty ladder strength guard (slow)',
+    slow: true,
+    timeoutMs: 900_000,
+    testTimeoutMs: 600_000,
+    files: [
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.ladderStrength.test.ts',
     ],
   },
   {

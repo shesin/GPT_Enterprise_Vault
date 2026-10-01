@@ -126,7 +126,7 @@ budgetMs = nextBudgetMs;
 ```
 Verified against the real file: full `HonestAi` test suite, 41/41 pass, no regressions.
 
-**Status:** level 4 design/implementation on hold — human deferred to later (2026-09-28). Live open item: `GPT_PROJECT_PENDING_01P.md` §8.
+**Status:** CLOSED 2026-10-01 — level 4 dropped completely (see "A18 — AI level 4 — CLOSED, dropped completely" below).
 
 ---
 
@@ -141,3 +141,9 @@ The old PENDING doc had two conflicting statements about the board-fixed HvH tim
 Shekhar raised that the standard 16-bead board has 4 big X's (diagonals at r+c-even points only) while the code has an X in every cell. Evaluated in a scratch copy; full record in `GPT_PROJECT_AUDIT_05P.md` § "A18 / A19 — full evaluation record".
 
 **Closed with no change. Reasons:** (1) the fairness gain did not reproduce on the production engine (first-mover win 46.2% current vs 56.0% standard; lab engine said the opposite) — no proven improvement; (2) high cost and risk: the change makes a new, uncertified board — opening moves 13→9, playable HTMLs and prototype engine would need changing, official trust gate gains 3 failures, lab results and ★ tiers would need re-labelling; (3) the standard layout is confirmed only by Shekhar's drawing, no published source found; (4) no other board can be altered (own designs; 12-bead cannot be made 180°-symmetric). Reopen only if a real board source shows the current layout is wrong and Shekhar orders it.
+
+---
+
+## A18 — AI level 4 — CLOSED, dropped completely (2026-10-01)
+
+Level 4 (3 opponent replies, depth 3) was evaluated on the small boards. Strength was fine, but timing was not safe enough: on 8x4x6 it exceeded the think budget, and the AI search runs on the main thread, so a slow move freezes the page. 7x4x5 passed on this PC, but its margin on slower devices is unknown, and no risk was accepted. **Decision (Shekhar, 2026-10-01): drop level 4 on all boards, no implementation, A18 closed.** Nothing was changed in `src/`. Full run, numbers, and reasons: `GPT_PROJECT_AUDIT_05P.md` § "A18 — AI level 4 extensive small-board run (2026-10-01)". The earlier hang-bug fix in `searchBestAtExactDepth` stays in place.

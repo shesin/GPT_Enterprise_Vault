@@ -39,6 +39,10 @@ SmartBeads/
 │   │   │   │   ├── HonestAi.ts        # Easy/Medium/Hard contract; center-aware eval
 │   │   │   │   ├── clockPolicy.ts     # Shell timers tick during AI think
 │   │   │   │   ├── aiTurnPath.ts
+│   │   │   │   ├── aiTurnRunner.ts    # buildAiPlanRequest / planAiTurnPath (logged emergency fallback)
+│   │   │   │   ├── aiSearch.ts        # AiPlanRequest + searchAiPath (leaf module, shared by worker + tests)
+│   │   │   │   ├── aiSearchWorker.ts  # Web Worker entry — AI search off the main thread
+│   │   │   │   ├── aiSearchClient.ts  # AiSearchClient: plan()/cancel() over the worker (injected from main.ts)
 │   │   │   │   ├── firstMoveInvariants.ts  # Isolated human-ply occupancy
 │   │   │   │   ├── pveTiming.ts       # Slide/jump anim, AI reply delay, think budget
 │   │   │   │   ├── centerScoring.ts
@@ -144,8 +148,9 @@ Browser-based **shared play shell** rendered via Vite + TypeScript + canvas (`np
 - **`feature/CoachVideoScript.ts`** — Video 1 on **7-bead** (~**1:53**): basics + **WIN** / **RESIGN** / **DRAW** appendix; amber/lime highlights; scripted cues and TTS speeches.
 - **`feature/CoachVideoPlayer.ts`** — drives playback time, keyframe snaps, move animations, voice cues.
 - **`feature/CoachVoice.ts`** — browser TTS; mute and replay per segment.
-- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. **Match termination** (3-fold draw, 120-ply `safety_cap`) → `SmartBeadsEngine`; **AI repetition steer** → `HonestAi.ts` (`GPT_PROJECT_DECISIONS_05P.md` §4).
-- **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy + center tie-break), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center + timer in eval when rules on.
+- **`feature/FeatureSession.ts`** — wraps `SmartBeadsEngine` with per-board `GameFeatureSettings`; turn interaction enforces selectable own beads, inert opponent beads, and landing-square capture execution. **Match termination** (3-fold draw, per-board `safety_cap` — captures, then centre tiebreak in `FeatureSession`) → `SmartBeadsEngine`; **AI repetition steer** → `HonestAi.ts` (`GPT_PROJECT_DECISIONS_05P.md` §4).
+- **`feature/HonestAi.ts`** — Easy (~30% soft-miss, capture-greedy + center tie-break), Medium (~20% soft-miss + 1-ply), Hard (0% soft-miss + 2-ply); center + timer in eval when rules on (`CENTER_EVAL_WEIGHT = 1`: centre is a tie-breaker, never worth a piece).
+- **AI Web Worker (2026-10-01):** the browser runs the AI search in `feature/aiSearchWorker.ts` (Vite `?worker` import in `main.ts`, typed by `vite-worker.d.ts`) through `AiSearchClient`; `bootstrapPlayShell(onReady, { aiSearchClient })`. Tests/Node pass no client and use the same search synchronously (`planAiTurnPath`). If the worker fails, the AI retries the same full-strength search on the main thread and logs the error.
 - **`feature/clockPolicy.ts`** — shell interval must tick during `aiThinking` / animation.
 - **`audio/SoundEffects.ts`** — fetches eight named WAV files from repo-root `public/audio/` via `SoundManifest.ts`; **default muted**; start overlay unlock; end celebration audio. Regenerate: `node scripts/generate-sfx-wavs.mjs`.
 - **`feature/firstMoveInvariants.ts`** — isolated human-ply occupancy (session/app contract; Jest + live shell).

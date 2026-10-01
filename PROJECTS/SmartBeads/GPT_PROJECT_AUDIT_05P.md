@@ -236,7 +236,7 @@ Trigger: human reported board grid lines fading and colour smearing across the b
 
 ### Documented, not changed (judgment call — flagging per Rule - Doubt)
 
-- `HonestAi.ts`'s `usePerSideClocks` eval branch (`timerUrgency`, `timerEvalAdjust`) is confirmed unreachable in the shipped product today (tournament timer is pvp-only; the AI never moves in pvp mode) — kept in place as a plausible seam for a future "AI under tournament rules" mode rather than deleted, since deletion would touch ~8 test fixtures for a purely cosmetic gain. Now documented in-code so it doesn't read as an oversight.
+- `HonestAi.ts`'s `usePerSideClocks` eval branch (`timerUrgency`, `timerEvalAdjust`) is confirmed unreachable in the shipped product today (tournament timer is pvp-only; the AI never moves in pvp mode) — kept in place as a plausible seam for a future "AI under tournament rules" mode rather than deleted, since deletion would touch ~8 test fixtures for a purely cosmetic gain. Now documented in-code so it doesn't read as an oversight. **Superseded 2026-10-01:** the branch was removed (only 3 test fixtures needed changing); see § "AI review 2026-10-01".
 
 ### Weak tests strengthened (passed, but wouldn't have caught a real regression)
 
@@ -329,6 +329,62 @@ Production `HonestAi` with a level-4 shim (`aiOpponentReplyPlies` level ≥4 →
 **Strength, level 4 vs level 3, alternating colour and opener:** 6x4 32 games 23W/0L/9D, L4 ahead on pieces 28, avg +2.81, worst L4 move 0.6s · 10x5 12 games 4W/0L/8D, ahead 11, +3.08, worst 7.8s · 16-bead 7 games (stopped, partial) 1W/0L/6D, ahead 7, +4.43, worst L4 move 66s (three games >39s).
 **Finding:** isolated-position timing understated real play on 16-bead (max 10s vs 66s in games). Level 4 is stronger than level 3 and never lost, but is too slow on 10-, 12- and 16-bead.
 **Decision (Shekhar, 2026-09-30):** no level 4 for big boards; small boards only (6x4, 6x3x5, 7x4x5, 8x4x6). Level 4 stays ON HOLD until those boards are tested properly (see PENDING A18).
+
+### A18 — AI level 4 extensive small-board run (2026-10-01, Claude; report only, no repo code changed)
+Scratch copy of committed repo outside the vault; level 4 = 3 opponent replies via shim (`aiOpponentReplyPlies` level ≥4 → 3), Expert think budget per board. 100 games per board, level 4 vs level 3, alternating colour, 2 seeded random opening turns; 200 capture-biased/random mid-game positions per board. 1,200 jobs, 5 in parallel (timings inflated by load; over-budget positions re-timed one at a time). 0 hangs, 0 errors, every position reached full depth 3.
+
+| Board | L4 W/L/D | Piece margin | Worst L4 game move | Over budget | Verdict |
+|---|---|---|---|---|---|
+| 6x4 | 68/8/24 | +1.97 | 1.6s (budget 3.2s) | 0 | GO |
+| 6x3x5 | 46/3/51 | +1.65 | 1.2s (3.2s) | 0 | GO |
+| 7x4x5 | 62/2/36 | +2.55 | 2.8s (3.4s) | 0 positions after serial re-time (11 flagged under load, worst 2.2s alone) | GO |
+| 8x4x6 | 41/1/58 | +2.20 | 25.8s under load (3.5s) | 10 of 117 flagged positions still over budget when timed alone, worst 9s | NO-GO |
+
+**Why 8x4x6 is NO-GO:** Expert never exceeds the budget there (worst 2.1s); level 4 does (under load 23% of moves, 118 over 10s). The AI search runs on the main thread (no Worker in PlayController/aiTurnRunner), so a long move freezes the page. Strength is not the issue (41W/1L). Level 4 is not downgraded when slow: the search extends time to full depth 3, and moves get faster late in the game.
+**Losses:** level 4 lost 14 of 400 games, all genuine eliminations, replayed deterministically. Pass bar used: no more losses than wins, within budget, full depth, no hangs.
+**Not covered:** human playtest, phone timing, serial re-run of 8-bead games, AI clock use with a game timer on. Verdicts are machine-verified only; PENDING A18 unchanged until Shekhar decides.
+**Closed (Shekhar, 2026-10-01):** level 4 dropped on all boards, including 7x4x5, because device speed varies and no timing risk is accepted. A18 moved to CLOSED_ISSUES; PENDING A18 removed. The two broken lab scripts noted earlier stay open as their own note in PENDING and are not part of this closure.
+
+## AI review 2026-10-01 (Claude; Shekhar asked for a deep AI audit and fixes; level 4 / A18 was closed first)
+
+All lab runs used a scratch copy inside the vault (`PROJECTS/SmartBeads/_lab_scratch_ai/`, hidden from git via `.git/info/exclude`, no test files copied). Production `HonestAi` + real `FeatureSession`/`SmartBeadsEngine`; both sides play 2 seeded random opening turns, colours alternate. Raw results (`results_*.jsonl`) stay in that folder.
+
+### 1. Ladder (centre off, no timer)
+Expert (L3) vs Standard (L2), 520 games: 486 W / 2 L / 32 D (6x4 99/0, 6x3x5 97/1, 7x4x5 97/0, 8x4x6 95/1, 10x5 54/0, 12x6x5 25/0, 16 19/0). Standard vs Casual 169/180 wins; Expert vs Casual 60/60. No inversion on any board. In this setting Expert does not lose to Standard.
+
+### 2. Flat 120-turn cap drew games the AI was winning (FIXED)
+Every draw in section 1 was `safety_cap`; on 16-bead 9 of 11 draws had Expert ahead ~7.3 v 3.1 pieces. Uncapped, 40 games (10 each on 16, 12x6x5, 10x5, 8x4x6): all 40 ended by elimination, none drawn. Game length (turns) uncapped: 16-bead 92-186 (median 138); 12x6x5 53-131 (76); 10x5 42-249 (65); 8x4x6 32-78 (45). **Fix (Shekhar, 2026-10-01):** cap kept; 120 turns total on 6x4 / 6x3x5 / 7x4x5, 240 (120 per side) on 8x4x6 / 10x5 / 12x6x5 / 16; at the cap more captures wins, centre rule (when on) breaks a captures tie, else draw. `engineSafetyCapForVariant`, `FeatureSession.maybeApplyCenterTiebreakAfterEngineEnd`. DECISIONS (line "Engine safety cap") updated.
+
+### 3. AI search froze the page (FIXED)
+`PlayController.runAutomatedTurn` called the synchronous search on the main thread; no Web Worker existed. Expert think times seen serially on big boards (other jobs were running, so inflated): 16-bead worst 41.0 s (12 of 669 moves over the 4.96 s budget), 12x6x5 9.8 s (9/401 over 4.16 s), 8x4x6 18.5 s (5/242 over 3.52 s), 10x5 2.2 s (0/419). **Fix:** `feature/aiSearchWorker.ts` + `AiSearchClient` + `main.ts` (`?worker` import, `vite-worker.d.ts`); `bootstrapPlayShell(onReady, { aiSearchClient })`; tests/Node keep the synchronous path. Verified in the browser (dev server and a production `vite build`): worker created and replying, game progressing, longest frame gap 54-90 ms during Expert-vs-Expert 16-bead. Worker failure falls back to the same full-strength search on the main thread, logged. The existing comment "clocks must keep running during AI think" is now actually true. **Not changed:** the search itself still retries to 45 s then runs unbounded (no downgrade by design) — the page no longer freezes, but a pathological position can still make the AI think for a long time. Phone / Android WebView not tested.
+
+### 4. Silent first-legal-move fallback (FIXED)
+`PlayController` and `planAiTurnPath` swallowed search errors and played the first legal move. Now `emergencyLegalPath` logs `[AI] search failed…` (no log when there are genuinely no legal moves). Tested.
+
+### 5. Centre rule made Expert LOSE material (FIXED)
+`CENTER_EVAL_WEIGHT = 28` (about half a piece) was applied from move 1 although the centre rule only breaks a captures tie. Real `FeatureSession` games, timer 2 min at 6 s/turn:
+- Centre-aware vs centre-blind Expert (aware wins / blind wins): 7-bead 5/24, 16-bead 0/15, 12x6x5 1/12. Centre-only awareness reproduces it; timer-only awareness is neutral (7: 6/6, 16: 7/9, 12: 6/5).
+- Expert vs Standard, both aware, centre endgame: 7-bead 18-11 (centre OFF baseline 25-0); 8x4x6 17-2, 12x6x5 13-3, 16 11-3.
+- Weight sweep (aware/blind, centre-only): 28 → 5/24 on 7; 8 → 5/16; 3 → 9/11; 1 → 15/6 (7 endgame), 27/3 (7 cumulative), 19/11 (6x3x5 cumulative), 8/8 on 16 and 12x6x5; 0 → parity (harness check: 6/6, 8/8).
+- At weight 1, Expert vs Standard: 7-bead 25-2, 8x4x6 16-3, 12x6x5 12-2, 16 7-8 (n=16; centre-off baseline 8-5).
+- No timer, centre on, long games: Expert 58/58 at weights 28 and 3.
+- One-turn-left decision test (clock leaves exactly one turn, 50-100 positions per board/rule): aware vs blind essentially identical at weight 1 and 28 (a handful of positions differ either way).
+**Fix:** `CENTER_EVAL_WEIGHT = 1` (tie-breaker); the timer-urgency boost near expiry is unchanged. Guarded by `HonestAi.test.ts` ("centre rule never outweighs material"); mutation-checked (fails at 28). Samples are small (16-30 games per cell); the 7-bead effect is large and consistent across runs.
+
+### 6. Dead per-side clock code (REMOVED)
+`usePerSideClocks`, `redRemainingSec`, `blueRemainingSec` in `AiTimerContext` / `timerUrgency` / `timerEvalAdjust` / `aiTimerFromSession` were unreachable (tournament timer is pvp-only, AI never moves in pvp). Removed with 3 test fixtures; an unused `aiPlayer` parameter of `timerUrgency` removed too. This supersedes the earlier "kept as a seam" note.
+
+### 7. Regression guard added
+`HonestAi.ladderStrength.test.ts` (slow batch `slow-ai-ladder`): 12 games per board, Expert vs Standard on 6x4 / 6x3x5 / 7x4x5 (must win >=75%, lose <=1) and Standard vs Casual on 6x4.
+
+### Verification
+`tsc --noEmit` 0 errors; all 7 Jest batches PASS (678 tests, 61+ files incl. slow tiers/ladder/search-completion); ESLint 0 errors (1 pre-existing unused-import warning in `HonestAi.difficultyTiers.test.ts`); `vite build` OK. **UNCONFIRMED:** the Playwright live gates in `npm test` (`m2-2step-npm-gate.mjs`) cannot run here — Playwright's browser is not installed (`npx playwright install` needed, a download, not done). No commit or push made.
+
+### Not done / open
+- Human playtest of the changed AI feel (centre rule, timed games); Android WebView / phone check of the worker.
+- Search retry still unbounded after 45 s (see 3).
+- The two broken lab scripts remain open in PENDING.
+- No other flaw found in these conditions; "no flaw at all" cannot be proven by any finite test.
 
 ---
 

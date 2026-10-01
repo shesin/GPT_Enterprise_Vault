@@ -449,7 +449,9 @@ export class FeatureSession {
     if (this.featureOver) return;
     const state = this.engine.getState();
     if (!state.gameOver || this.activeCenterRule() === 'off') return;
-    if (state.winner === 'DRAW') return;
+    // Draws stay draws (3-fold repetition) except the engine safety cap with tied captures,
+    // which falls through to the same centre tiebreak the match timer uses.
+    if (state.winner === 'DRAW' && state.endReason !== 'safety_cap') return;
     if (state.captures.RED !== state.captures.BLUE) return;
 
     let c1: number;

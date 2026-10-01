@@ -177,8 +177,6 @@ VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Sto
 | Deploy client + API + DB | Implementer | Blocked on A7 + A9 + host choice |
 | Live smoke vs local | Shekhar | Blocked on deploy |
 
-### A18. AI level 4 — ON HOLD - see at bottom
-
 ---
 
 # PART B — APP (Android)
@@ -263,23 +261,7 @@ Owner: Shekhar confirms. Especially 16-bead (37 nodes, tight spacing) — can st
 
 ---
 
-## A18 — detail (moved here from Part A, 2026-09-29; Part A keeps the heading only)
+## Lab-script defects (found during A18, still open — needs a fix decision)
 
-### A18. AI level 4 — ON HOLD
+`evaluate-ladder-lab.cjs` requires a non-existent `sholo-8-bead-fullturn-engine.cjs`; `final-validate-sholo-lab.cjs` is NOT READY on unmodified main while the committed trust JSON (2026-08-14) says READY. Context: `GPT_PROJECT_AUDIT_05P.md` § "A18 / A19 — full evaluation record".
 
-Depth-3 search timing looked safe on a limited test sample (28 runs, all boards, all completed under 3.1s). A real hang bug was found and fixed in the shared search retry logic along the way (affected Expert today, unrelated to level 4 — fixed, 41/41 tests pass). **Not resumed** — human deferred to later; needs a wider timing sample before it can be called safe. Full investigation history: `GPT_PROJECT_CLOSED_ISSUES_05P.md` §AI level 4.
-
-**Earlier decision 2026-09-29 (Shekhar):** not pursued unless a strong benefit is shown — currently the benefit is unclear and the risk (search hangs, timing on slow boards such as 12-bead) is real. Stays ON HOLD indefinitely; do not start without an explicit go.
-
-**Decision 2026-09-30 (Shekhar):** level 4 for **small boards only — 6-bead 4×4 (6x4), 6-bead 3×5 (6x3x5), 7-bead (7x4x5), 8-bead (8x4x6)**. **Not for 10-, 12- or 16-bead** (depth-3 too slow: single positions up to 15s / 59s / 10s; real 16-bead games up to 66s per move; 12-bead beat the 45s ceiling). Do not implement until the small boards are tested properly. Evidence so far: `GPT_PROJECT_AUDIT_05P.md` § "A18 / A19 — full evaluation record". A19 (16-bead geometry) is closed with no change, so the 16-bead timings above stay valid: `GPT_PROJECT_CLOSED_ISSUES_05P.md` § A19.
-
-**Test properly before implementing (scratch copy, no repo changes):**
-1. Level 4 vs level 3, ≥60 games per board on 6x3x5, 7x4x5, 8x4x6 (6x4 has 32 games already; top up to ≥60), alternating colour and opener, several seeds. Record wins/losses/draws, piece margin, worst and average L4 move time in real games, count over the think budget.
-2. Hang check: 45s retry loop with level 4 enabled; hard time cap with a defined fallback.
-3. Wider positions than the hand-built sample: capture-heavy and randomly generated mid-game positions.
-4. Human playtest of how level 4 plays.
-5. UI/catalog: level 4 offered only on these four boards.
-
-**Proposed pass bar (for Shekhar to confirm):** level 4 loses no more games than it wins against level 3; worst real-game L4 move within the board's think budget (no over-45s); every position reaches full depth 3; no hangs.
-
-**Also found on the way (needs a fix decision):** `evaluate-ladder-lab.cjs` requires a non-existent `sholo-8-bead-fullturn-engine.cjs`; `final-validate-sholo-lab.cjs` is NOT READY on unmodified main while the committed trust JSON (2026-08-14) says READY.

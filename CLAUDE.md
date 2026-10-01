@@ -11,7 +11,7 @@ Only this repo (`Gpt_Enterprise_Vault`). Never create, edit, move, or delete any
 ## Mode (check before every message)
 - **Suggest / explain / discuss** → words only. No file edits, ever.
 - **Do / go / implement** (a specific, scoped ask) → edit only after posting the STOP block below.
-- If one message mixes a suggest/explain ask with other content, do only the suggest/explain part.
+- If one message mixes a suggest/explain ask with a do/go/implement ask, do BOTH in that response: answer the explain part in words, and perform the edit only if the literal word do/go/implement is present. Never drop the explain part and never drop the do part. If the exact content to be written was already posted in the previous message, a plain go/do approves exactly that content — write it without asking again.
 - Only the literal words **do / go / implement** authorize an edit. Approval-sounding phrases ("looks ok", "sure", silence, frustration) are not a go.
 - **push to git/ push to git good** - push all files to git / push all files to git with remark good
 
