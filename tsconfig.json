@@ -10,5 +10,5 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["jest", "node"]
   },
-  "include": ["PROJECTS/SmartBeads/src/**/*.ts", "SHARED/**/*.ts"]
+  "include": ["PROJECTS/SmartBeads/src/**/*.ts", "PROJECTS/SmartBeads/server/**/*.ts"]
 }

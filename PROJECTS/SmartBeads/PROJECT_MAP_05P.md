@@ -91,27 +91,13 @@ SmartBeads/
 ├── scripts/                           # Browser verification (repo: PROJECTS/SmartBeads/scripts/)
 │   ├── run-jest-batched.mjs           # Jest batches — 50 test files, coverage audit gate
 │   ├── m1-browser-verify.mjs
-│   ├── m2-browser-verify.mjs          # 16-bead feature shell
 │   ├── m2-2step-observe.mjs           # two-click occupancy gate (all V1 boards; 16 = A41→A42)
 │   ├── m2-2step-npm-gate.mjs          # boots Vite once, runs both live gates for `npm test`
 │   ├── m2-capture-geometry-browser.mjs # real-click captures, 16 junction both ways, chain, optional stop
-│   ├── m2-gameplay-verify.mjs         # prototype-pixel + isolated first ply
-│   ├── m2-all-boards-visual-verify.mjs
+│   ├── m3-flow-gate.mjs               # real-browser flow gate: Undo x clocks, resign, phone layout, tap targets, keyboard play (Chromium + WebKit)
 │   ├── lib/live-ply.mjs               # live snapshot / isolated ply helpers
 │   ├── lib/play-shell-setup.mjs       # playShellUrl, waitForPlayShell, resetBoardViaTestApi
 │   ├── lib/project-node.mjs           # Playwright canvas click by node
-│   ├── m2-6x4-browser-verify.mjs
-│   ├── m2-6x3x5-browser-verify.mjs
-│   ├── m2-10x5-browser-verify.mjs
-│   ├── m2-12x6x5-browser-verify.mjs
-│   ├── m2-8x4x6-browser-verify.mjs
-│   ├── m2-7x4x5-browser-verify.mjs
-│   ├── m2-catalog-settings-verify.mjs
-│   ├── m2-look-preview-verify.mjs     # Look preview rows + swatch clicks (Playwright)
-│   ├── m2-look-preview-drift-verify.mjs # theme stable idle / reload
-│   ├── m2-look-preview-gameplay-verify.mjs # 130s theme stability + DOM drift injection
-│   ├── m2-board-lines-live-verify.mjs # Live canvas gold-line + single swatch (Playwright)
-│   ├── m2-walnut-130s-verify.mjs    # Warm Walnut 130s line/theme stability (Playwright)
 │   └── lab-ai-difficulty-eval.mjs     # Production HonestAi Lab (not prototype .cjs)
 │
 ├── prototype/                         # Design/UX prototypes (outside production src/)

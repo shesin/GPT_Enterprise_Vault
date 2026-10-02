@@ -14,18 +14,24 @@
     "web:smartbeads": "vite",
     "build:smartbeads": "vite build",
     "preview:smartbeads": "vite preview",
-    "lint": "eslint \"PROJECTS/SmartBeads/src/**/*.ts\" \"SHARED/**/*.ts\"",
-    "lint:fix": "eslint \"PROJECTS/SmartBeads/src/**/*.ts\" \"SHARED/**/*.ts\" --fix",
-    "format": "prettier --write \"PROJECTS/SmartBeads/src/**/*.ts\" \"SHARED/**/*.ts\"",
-    "format:check": "prettier --check \"PROJECTS/SmartBeads/src/**/*.ts\" \"SHARED/**/*.ts\""
+    "lint": "eslint \"PROJECTS/SmartBeads/{src,server}/**/*.ts\"",
+    "lint:fix": "eslint \"PROJECTS/SmartBeads/{src,server}/**/*.ts\" --fix",
+    "format": "prettier --write \"PROJECTS/SmartBeads/{src,server}/**/*.ts\"",
+    "format:check": "prettier --check \"PROJECTS/SmartBeads/{src,server}/**/*.ts\"",
+    "server": "tsx PROJECTS/SmartBeads/server/main.ts",
+    "build:server": "esbuild PROJECTS/SmartBeads/server/main.ts --bundle --platform=node --target=node20 --outfile=server-dist/main.js --external:ws",
+    "start": "node server-dist/main.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.25.12",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.5.2",
     "msedge-tts": "^2.0.7",
     "playwright": "^1.62.1",
     "prettier": "^3.9.8",
@@ -34,5 +40,8 @@
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.70.1",
     "vite": "^5.4.0"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
   }
 }

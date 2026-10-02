@@ -179,6 +179,21 @@ VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Sto
 | Deploy client + API + DB | Implementer | Blocked on A7 + A9 + host choice |
 | Live smoke vs local | Shekhar | Blocked on deploy |
 
+### A18. Music — replace the current soundimage.org tracks (Shekhar's call)
+
+Shekhar finds the present music weak. YouTube songs cannot be used (copyright). Options, any one:
+1. **Free licensed libraries (credit line needed):** Pixabay Music, Incompetech, Free Music Archive. Claude shortlists by mood; Shekhar listens and picks; Claude reads each licence and updates `public/credits.html`.
+2. **AI-generated:** Suno, Udio, Stable Audio, ElevenLabs Music. Needs a paid plan with commercial use (check the terms and keep the receipt); AI music has weak copyright protection; some stores want AI use disclosed. Claude writes the prompts and wires the finished files in.
+3. **Buy a licence or commission** a composer.
+
+**Wanted style (Shekhar, 2026-10-02):** instrumental, piano with flute (bansuri), veena and tabla. Plan: 3–4 loopable tracks (2–4 min) plus one short menu track.
+
+**Also decided 2026-10-02:** the first online boards are 6x4, 8x4x6 and 16 (A9/A10); the other four open after those are stable.
+
+### A19. Shekhar-only items (everything Claude cannot do)
+
+One list, nothing else is Claude's: (1) game look decisions; (2) music selection (A18); (3) review/finish `public/privacy.html`, `terms.html`, `credits.html` and give a support e-mail; (4) confirm the source and licence of the sound effects in `public/audio`; (5) decide whether to host the soundimage.org music yourself (or drop it with A18); (6) create the Google and Facebook developer apps and give Claude the client IDs when ready; (7) create the Razorpay account and give the keys when ready; (8) company e-mail (A14) for sending magic links; (9) upload the server to Hostinger and run the two-browser test (Claude gives the steps); (10) buy the VPS only at the A16 trigger; (11) A11/A12 playtests and real-phone checks (A13, B6); (12) Android items B5, B7, B8; (13) ad / consent flow decision, and the hub items still "coming soon".
+
 ---
 
 ### W1–W8. Whole-code audit 2026-10-01 — open items (evidence: `GPT_PROJECT_AUDIT_05P.md` § 13)

@@ -243,6 +243,10 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
 
     <main class="main">
       <span id="turn-count" hidden aria-hidden="true">0</span>
+      <div id="online-bar" class="online-bar" hidden>
+        <span id="online-bar-text" role="status" aria-live="polite"></span>
+        <button type="button" id="online-copy-btn" class="online-copy-btn">Copy code</button>
+      </div>
       <div class="board-frame">
         <canvas id="board" width="500" height="680" tabindex="0" role="application" aria-label="Smart Bead Chess board. Arrow keys move around the board, Enter or Space picks a bead and places it." aria-describedby="board-status"></canvas>
         <div id="board-status" class="sr-only" aria-live="polite"></div>
@@ -376,6 +380,29 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
       <div class="modal-actions">
         <button type="button" id="result-view-board-btn" class="result-view-board-btn">View board</button>
         <button type="button" id="play-again-btn" class="play-again-btn">↻ PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="online-lobby" role="dialog" aria-modal="true" aria-labelledby="online-lobby-title" style="display:none">
+    <div class="modal-card online-lobby-card">
+      <div class="modal-badge">PLAY ONLINE</div>
+      <h3 id="online-lobby-title" class="result-title">Play a friend online</h3>
+      <div class="online-lobby-section">
+        <h4>Start a new game</h4>
+        <label>Board <select id="online-board-select"></select></label>
+        <label>Match timer <select id="online-timer-select"></select></label>
+        <label>Turn shot clock <select id="online-shot-select"></select></label>
+        <button type="button" id="online-create-btn" class="play-again-btn">Create room</button>
+      </div>
+      <div class="online-lobby-section">
+        <h4>Join a friend</h4>
+        <label>Room code <input id="online-code-input" type="text" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"></label>
+        <button type="button" id="online-join-btn" class="play-again-btn">Join room</button>
+      </div>
+      <p id="online-lobby-error" class="online-lobby-error" role="alert"></p>
+      <div class="modal-actions">
+        <button type="button" id="online-cancel-btn" class="result-view-board-btn">Cancel</button>
       </div>
     </div>
   </div>

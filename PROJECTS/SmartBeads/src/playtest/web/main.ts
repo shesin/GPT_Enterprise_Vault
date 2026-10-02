@@ -1,11 +1,9 @@
 import { bootstrapPlayHub } from './PlayHub';
 import { bootstrapPlayShell } from './PlayController';
 import { installGlobalErrorBanner } from './globalErrorBanner';
+import { wireOnlineLobby } from './online/onlineLobby';
 import { AiSearchClient, type AiWorkerLike } from './feature/aiSearchClient';
 import AiSearchWorker from './feature/aiSearchWorker?worker';
-import type { ProductBoardId } from '../../config/BoardCatalog';
-import type { GameFeatureSettings } from './feature/GameFeatureSettings';
-import type { HubLaunchAction } from './PlayHub';
 
 function isDirectPlayBoard(): boolean {
   if (new URLSearchParams(window.location.search).get('play') === '1') return true;
@@ -16,30 +14,6 @@ function showPlayShell(): void {
   document.getElementById('play-hub')?.classList.add('is-hidden');
   document.getElementById('play-shell')?.classList.remove('is-hidden');
   document.body.classList.remove('hub-page');
-}
-
-function testApi():
-  | {
-      enterFromHub?: (
-        boardId: ProductBoardId,
-        mode: GameFeatureSettings['mode'],
-        action: HubLaunchAction,
-      ) => void;
-      launchCoachLesson?: () => void;
-    }
-  | undefined {
-  return (
-    window as unknown as {
-      __SB_TEST__?: {
-        enterFromHub?: (
-          boardId: ProductBoardId,
-          mode: GameFeatureSettings['mode'],
-          action: HubLaunchAction,
-        ) => void;
-        launchCoachLesson?: () => void;
-      };
-    }
-  ).__SB_TEST__;
 }
 
 /** AI search runs in a Web Worker so the page never freezes while the AI thinks (no worker support -> undefined -> main-thread search). */
@@ -55,9 +29,9 @@ function boot(): void {
   if (isDirectPlayBoard()) {
     showPlayShell();
     bootstrapPlayShell(
-      () => {
+      (launcher) => {
         if (coachParam === 'start' || coachParam === '1') {
-          testApi()?.launchCoachLesson?.();
+          launcher.launchCoachLesson();
         }
       },
       { aiSearchClient },
@@ -68,11 +42,18 @@ function boot(): void {
   document.body.classList.add('hub-page');
 
   bootstrapPlayShell(
-    () => {
-      bootstrapPlayHub((boardId, mode, action) => {
+    (launcher) => {
+      const lobby = wireOnlineLobby((game) => {
         showPlayShell();
-        testApi()?.enterFromHub?.(boardId, mode, action);
+        launcher.enterOnline(game);
       });
+      bootstrapPlayHub(
+        (boardId, mode, action) => {
+          showPlayShell();
+          launcher.enterFromHub(boardId, mode, action);
+        },
+        (boardId) => lobby.open(boardId),
+      );
       if (coachParam === 'start' || coachParam === '1') {
         document
           .getElementById('hub-section-lesson')

@@ -1,3 +1,4 @@
+import { TEST_HOOKS_ENABLED } from '../testHooks';
 import { Player } from '../../../models/GameState';
 import { FeatureSession } from './FeatureSession';
 import { aiCenterFromSession, aiTimerFromSession } from './aiTurnRunner';
@@ -77,7 +78,7 @@ export function createResignationController(
     if (!confirmed) return;
 
     if (settings.mode === 'pve') {
-      const testOverride = sessionStorage.getItem('sb-test-resign-ai');
+      const testOverride = TEST_HOOKS_ENABLED ? sessionStorage.getItem('sb-test-resign-ai') : null;
       let acceptDraw: boolean;
       if (testOverride === 'accept') {
         acceptDraw = true;

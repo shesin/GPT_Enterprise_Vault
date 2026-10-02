@@ -86,6 +86,11 @@ import {
   LastMoveHighlight,
   CapturePulse,
 } from './render/CanvasBoardRenderer';
+import { TEST_HOOKS_ENABLED } from './testHooks';
+import type { Intent, RoomView } from '../../../server/protocol';
+import type { OnlineClient, OnlineSession } from './online/OnlineClient';
+import type { OnlineGame } from './online/onlineLobby';
+import { snapshotFromView } from './online/applyOnlineView';
 import { projectIntersectionOnCanvas } from './layout/boardProjection';
 import { describeNode, isArrowKey, nextNodeInDirection, ScreenNode } from './render/keyboardNav';
 import { updateMatchRing, updatePlayerTimerMmss, updateShotRing } from './render/timerDisplay';
@@ -105,7 +110,21 @@ export interface PlayShellDeps {
   aiSearchClient?: AiSearchClient;
 }
 
-export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {}): void {
+/** What the page shell (main.ts) uses to start a game: a real code path, not a test hook. */
+export interface PlayShellLauncher {
+  enterFromHub: (
+    boardId: ProductBoardId,
+    mode: GameFeatureSettings['mode'],
+    action: 'play' | 'coach' | 'spectate',
+  ) => void;
+  launchCoachLesson: () => void;
+  enterOnline: (game: OnlineGame) => void;
+}
+
+export function bootstrapPlayShell(
+  onReady?: (launcher: PlayShellLauncher) => void,
+  deps: PlayShellDeps = {},
+): void {
   const aiSearchClient = deps.aiSearchClient;
   let currentBoardId: ProductBoardId = DEFAULT_PRODUCT_BOARD;
 
@@ -121,6 +140,8 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
   let anim: BoardAnimState | null = null;
   let animating = false;
   let aiThinking = false;
+  /** Online play (A4): the server holds the real game; this shell mirrors it and sends intents. */
+  let online: { client: OnlineClient; session: OnlineSession; view: RoomView | null } | null = null;
   let turnPulse = 0;
   let timerId: ReturnType<typeof setInterval> | null = null;
   let pulseRaf = 0;
@@ -765,6 +786,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
   }
 
   function returnToHub(): void {
+    leaveOnline();
     if (timerId) clearInterval(timerId);
     timerId = null;
     cancelAiWork();
@@ -868,6 +890,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       return `Watch AI · ${formatAiLevelLabel(aiLevelForActingPlayer(settings, 'RED'))}`;
     }
     if (settings.mode === 'coach' || settings.mode === 'pve') return 'You';
+    if (online) return online.session.seat === 'RED' ? 'You (Cream)' : 'Friend (Cream)';
     const name = creamNameInput?.value.trim();
     return name || 'Cream side';
   }
@@ -880,6 +903,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     if (settings.mode === 'coach' || settings.mode === 'pve') {
       return `AI · ${formatAiLevelLabel(settings.aiLevel)}`;
     }
+    if (online) return online.session.seat === 'BLUE' ? 'You (Black)' : 'Friend (Black)';
     const name = blackNameInput?.value.trim();
     return name || 'Black side';
   }
@@ -1134,7 +1158,9 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     }
 
     undoCtl.syncButtonState();
-    resignBtn.disabled = !canOfferResignation();
+    resignBtn.disabled = online ? !onlineMyTurn() : !canOfferResignation();
+    if (online) undoBtn.disabled = true;
+    renderOnlineBar();
 
     syncModeUi();
 
@@ -1302,6 +1328,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     const owed = wallClockTicks(nowMs - lastClockMs, clockCarryMs);
     lastClockMs = nowMs;
     clockCarryMs = owed.carryMs;
+    if (online) return; // the server owns the clocks and pushes them every second
     if (
       shellTimerShouldSkip({
         gameOver: session.isGameOver(),
@@ -1684,11 +1711,131 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     playNext();
   }
 
+  // ---- Online play (A4) ----
+  const onlineBar = document.getElementById('online-bar') as HTMLDivElement | null;
+  const onlineBarText = document.getElementById('online-bar-text');
+  const onlineCopyBtn = document.getElementById('online-copy-btn') as HTMLButtonElement | null;
+  let onlineNotice = '';
+
+  function onlineSettings(): GameFeatureSettings {
+    const base = getPlayConfig(currentBoardId).defaultSettings;
+    return { ...base, mode: 'pvp', ...online!.session.settings };
+  }
+
+  function onlineMyTurn(): boolean {
+    const v = online?.view;
+    return (
+      !!online &&
+      !!v &&
+      v.started &&
+      !v.gameOver &&
+      v.pendingResign === null &&
+      v.currentPlayer === online.session.seat
+    );
+  }
+
+  function renderOnlineBar(): void {
+    if (!onlineBar || !onlineBarText) return;
+    onlineBar.hidden = online === null;
+    if (!online) return;
+    const v = online.view;
+    const you = online.session.seat === 'RED' ? 'Cream' : 'Black';
+    const code = online.session.code;
+    let text: string;
+    if (!v || !v.started) text = `Room ${code} · you are ${you} · waiting for your friend to join`;
+    else if (v.gameOver) text = `Room ${code} · game over`;
+    else if (v.pendingResign) text = `Room ${code} · resignation offer waiting for an answer`;
+    else
+      text = `Room ${code} · you are ${you} · ${onlineMyTurn() ? 'your turn' : 'friend is thinking'}`;
+    if (online.client.getStatus() === 'polling') text += ' · slow connection';
+    if (onlineNotice) text += ` · ${onlineNotice}`;
+    if (onlineBarText.textContent !== text) onlineBarText.textContent = text;
+  }
+
+  async function sendOnline(intent: Intent): Promise<void> {
+    if (!online) return;
+    const r = await online.client.sendIntent(intent);
+    if ('error' in r) {
+      onlineNotice = r.error;
+      renderOnlineBar();
+    }
+  }
+
+  function applyOnlineView(view: RoomView): void {
+    if (!online) return;
+    const prev = online.view;
+    online.view = view;
+    onlineNotice = '';
+    session.loadSnapshot(snapshotFromView(session.exportSnapshot(), view));
+    if (prev && view.moveCount !== prev.moveCount && view.chainPieceId === null) {
+      session.clearArmedSelection();
+    }
+    if (view.pendingResign && view.pendingResign !== online.session.seat && !view.gameOver) {
+      resignOfferDesc.textContent = `${sideDisplayName(view.pendingResign)} offers resignation. Agree to a draw?`;
+      resignOfferModal.style.display = 'flex';
+    } else if (resignOfferModal.style.display !== 'none') {
+      resignOfferModal.style.display = 'none';
+    }
+    if (view.started && !prev?.started) {
+      triggerStartBanner();
+      soundEffects.playGameStart();
+    }
+    updateUI();
+  }
+
+  function leaveOnline(): void {
+    if (!online) return;
+    online.client.close();
+    online = null;
+    resignOfferModal.style.display = 'none';
+    renderOnlineBar();
+  }
+
+  /** New game / Play again online: there is no local restart, so go back to the start page (asks first mid-game). */
+  function leaveOnlineGame(): void {
+    if (online && !online.view?.gameOver && !window.confirm('Leave this online game?')) return;
+    returnToHub();
+  }
+
+  function enterOnline(game: OnlineGame): void {
+    leaveOnline();
+    syncPlayShellThemeFromStorage();
+    online = { client: game.client, session: game.session, view: null };
+    currentBoardId = game.session.boardId;
+    boardSelect.value = currentBoardId;
+    syncBoardTitle();
+    if (hubModeSelect) hubModeSelect.value = 'pvp';
+    stopCoachVideo();
+    startScreenOverlay?.classList.add('hidden');
+    resetGame();
+    game.client.onView = applyOnlineView;
+    game.client.onError = (message) => {
+      onlineNotice = message;
+      renderOnlineBar();
+    };
+    game.client.onStatus = () => renderOnlineBar();
+    game.client.connect();
+    renderOnlineBar();
+  }
+
+  onlineCopyBtn?.addEventListener('click', () => {
+    if (!online) return;
+    const code = online.session.code;
+    void navigator.clipboard?.writeText(code).then(
+      () => {
+        onlineNotice = 'code copied';
+        renderOnlineBar();
+      },
+      () => {},
+    );
+  });
+
   function handleCanvasClick(ev: MouseEvent): void {
     if (isAwaitingStart()) return;
     dismissStartBanner();
     if (session.isGameOver() || aiThinking || animating) return;
     if (!session.canHumanAct()) return;
+    if (online && !onlineMyTurn()) return;
 
     const nodeId = hitTestNode(
       canvas,
@@ -1712,6 +1859,12 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       return;
     }
     if (click.kind === 'move') {
+      if (online) {
+        void sendOnline({ type: 'move', from: click.move.from, to: click.move.to });
+        session.clearArmedSelection();
+        updateUI();
+        return;
+      }
       undoCtl.pushSnapshot();
       executeMoveAnimated(click.move, state.currentPlayer);
     }
@@ -1771,6 +1924,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       if (isAwaitingStart()) return;
       dismissStartBanner();
       if (session.isGameOver() || aiThinking || animating || !session.canHumanAct()) return;
+      if (online && !onlineMyTurn()) return;
       activateNode(keyboardFocusId);
       announceKeyboardFocus();
     }
@@ -1806,11 +1960,13 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       session.reset();
       initCoachVideoPlayer(false);
     } else {
-      const settings = readSettings();
+      const settings = online ? onlineSettings() : readSettings();
       session = createSession(currentBoardId, settings);
       session.reset();
     }
-    if (isAwaitingStart()) {
+    if (online) {
+      ensureHumanOpensStartScreen();
+    } else if (isAwaitingStart()) {
       ensureHumanOpensStartScreen();
     } else if (wasCoach) {
       ensureHumanOpensStartScreen();
@@ -1827,7 +1983,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     updateUI();
     undoBtn.disabled = true;
     pulseRaf = requestAnimationFrame(loopPulse);
-    if (!isAwaitingStart()) {
+    if (!isAwaitingStart() && !online) {
       startTimers();
       if (!wasCoach) {
         maybeScheduleAutomatedTurn();
@@ -1852,13 +2008,33 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     switchBoard(startBoardSelect.value as ProductBoardId);
   });
 
-  resignBtn.addEventListener('click', beginResignation);
+  resignBtn.addEventListener('click', () => {
+    if (online) {
+      if (
+        onlineMyTurn() &&
+        window.confirm('Offer resignation? Your friend can accept a draw or claim the win.')
+      )
+        void sendOnline({ type: 'resign' });
+      return;
+    }
+    beginResignation();
+  });
   resignAgreeBtn.addEventListener('click', () => {
+    if (online) {
+      resignOfferModal.style.display = 'none';
+      void sendOnline({ type: 'resignRespond', acceptDraw: true });
+      return;
+    }
     const resigning = resignationCtl.getPendingResignPlayer();
     if (resigning === null) return;
     finishResignation(resigning, true);
   });
   resignDeclineBtn.addEventListener('click', () => {
+    if (online) {
+      resignOfferModal.style.display = 'none';
+      void sendOnline({ type: 'resignRespond', acceptDraw: false });
+      return;
+    }
     const resigning = resignationCtl.getPendingResignPlayer();
     if (resigning === null) return;
     finishResignation(resigning, false);
@@ -2011,6 +2187,10 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     if (isAwaitingStart() || animating || aiThinking || session.isGameOver()) return;
     if (isCoachMode()) return;
     if (session.getEngine().getChainPieceId() === null || !session.canHumanAct()) return;
+    if (online) {
+      if (onlineMyTurn()) void sendOnline({ type: 'finishChain' });
+      return;
+    }
     undoCtl.pushSnapshot();
     soundEffects.playButtonTap();
     session.finishChain();
@@ -2020,6 +2200,10 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
 
   restartBtn.addEventListener('click', () => {
     soundEffects.playButtonTap();
+    if (online) {
+      leaveOnlineGame();
+      return;
+    }
     resetGame();
   });
   document.getElementById('home-btn')?.addEventListener('click', () => {
@@ -2037,6 +2221,10 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
   }
 
   playAgainBtn.addEventListener('click', () => {
+    if (online) {
+      leaveOnlineGame();
+      return;
+    }
     resetGame();
   });
   installModalFocus(resultModal, { onEscape: dismissResultModal });
@@ -2211,6 +2399,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     if (!playShell) return;
     playShell.classList.toggle('shell--ads-on', !isPremium);
     playShell.classList.toggle('shell--no-ads', isPremium);
+    if (!TEST_HOOKS_ENABLED) return; // production: premium comes from the account server, never from localStorage
     try {
       localStorage.setItem('sb-premium', isPremium ? '1' : '0');
     } catch {
@@ -2221,7 +2410,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
   if (playShell) {
     let savedPremium: boolean;
     try {
-      savedPremium = localStorage.getItem('sb-premium') === '1';
+      savedPremium = TEST_HOOKS_ENABLED && localStorage.getItem('sb-premium') === '1';
     } catch {
       savedPremium = false;
     }
@@ -2235,30 +2424,31 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
   updateSfxButton();
   resetGame();
 
-  (window as unknown as { __SB_TEST__?: unknown }).__SB_TEST__ = {
-    // switchBoard/resetGame rebind `session`; a captured value would hand browser
-    // gates a dead session while snapshot() reported the live one.
-    get session() {
-      return session;
-    },
-    updateUI,
-    afterHumanOrAiTurn,
-    snapshot: () => buildLiveSnap(),
-    lastHumanPlySnap: null as ReturnType<typeof buildLiveSnap> | null,
-    /** Browser gates: deterministic cream-first without consuming alternation counter. */
-    forceStarter: (player: Player) => {
-      cancelAiWork();
-      aiThinking = false;
-      session.setStartingPlayer(player);
-      updateUI();
-    },
-    setPremium: (isPremium: boolean) => {
-      applyPremiumShell(isPremium);
-    },
-    switchBoard,
-    enterFromHub,
-    launchCoachLesson,
-  };
+  if (TEST_HOOKS_ENABLED)
+    (window as unknown as { __SB_TEST__?: unknown }).__SB_TEST__ = {
+      // switchBoard/resetGame rebind `session`; a captured value would hand browser
+      // gates a dead session while snapshot() reported the live one.
+      get session() {
+        return session;
+      },
+      updateUI,
+      afterHumanOrAiTurn,
+      snapshot: () => buildLiveSnap(),
+      lastHumanPlySnap: null as ReturnType<typeof buildLiveSnap> | null,
+      /** Browser gates: deterministic cream-first without consuming alternation counter. */
+      forceStarter: (player: Player) => {
+        cancelAiWork();
+        aiThinking = false;
+        session.setStartingPlayer(player);
+        updateUI();
+      },
+      setPremium: (isPremium: boolean) => {
+        applyPremiumShell(isPremium);
+      },
+      switchBoard,
+      enterFromHub,
+      launchCoachLesson,
+    };
 
-  onReady?.();
+  onReady?.({ enterFromHub, launchCoachLesson, enterOnline });
 }

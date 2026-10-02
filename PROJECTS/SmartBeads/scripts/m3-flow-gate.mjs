@@ -5,6 +5,7 @@
  * layout, render-loop survival, blocked storage.
  * Requires the dev server (m2-2step-npm-gate.mjs starts it) and Playwright's Chromium.
  */
+import { spawn } from 'child_process';
 import { chromium, firefox, webkit } from 'playwright';
 import { playShellUrl } from './lib/play-shell-setup.mjs';
 import { clickNode } from './lib/project-node.mjs';
@@ -66,6 +67,36 @@ async function startPvp(page, extra = {}) {
   await page.waitForTimeout(300);
   await page.evaluate(() => window.__SB_TEST__.forceStarter('RED'));
   await page.waitForTimeout(150);
+}
+
+
+/** Online play needs the game server; the Vite dev server proxies /api and /ws to it on port 3001. */
+async function ensureGameServer() {
+  const up = async () => {
+    try {
+      const r = await fetch('http://127.0.0.1:3001/api/nothing');
+      return r.status === 404;
+    } catch {
+      return false;
+    }
+  };
+  if (await up()) return null;
+  const child = spawn('npx', ['tsx', 'PROJECTS/SmartBeads/server/main.ts'], {
+    shell: true,
+    env: { ...process.env, PORT: '3001' },
+    stdio: 'ignore',
+  });
+  for (let i = 0; i < 60; i++) {
+    if (await up()) return child;
+    await sleep(500);
+  }
+  throw new Error('game server did not start on port 3001');
+}
+
+function stopGameServer(child) {
+  if (!child) return;
+  if (process.platform === 'win32') spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+  else child.kill();
 }
 
 async function main() {
@@ -203,6 +234,96 @@ async function main() {
         `focus=${focusVisible} reachedFrom=${reachedFrom} selected=${selected} reachedTo=${reachedTo} moves ${before}->${after.moveCount} spoken="${spoken}"`,
       );
       await ctx.close();
+    }
+
+    // 1e. Phone landscape (W1): the board fills the height, nothing scrolls, every control stays on screen.
+    {
+      const sizes = [[740, 360], [667, 375], [844, 390]];
+      const problems = [];
+      for (const [w, h] of sizes) {
+        const { ctx, page } = await open(browser, { viewport: { width: w, height: h } });
+        await startPvp(page);
+        await page.waitForTimeout(300);
+        const m = await page.evaluate(() => {
+          const b = document.getElementById('board').getBoundingClientRect();
+          const ids = ['resign-btn', 'undo-btn', 'restart-btn', 'sfx-mute-btn', 'home-btn'];
+          const off = ids.filter((id) => {
+            const r = document.getElementById(id).getBoundingClientRect();
+            return r.left < 0 || r.top < 0 || r.right > innerWidth || r.bottom > innerHeight;
+          });
+          return { boardH: b.height, scrollH: document.documentElement.scrollHeight, scrollW: document.documentElement.scrollWidth, off };
+        });
+        if (m.scrollH > h || m.scrollW > w) problems.push(`${w}x${h} scrolls (${m.scrollW}x${m.scrollH})`);
+        if (m.boardH < h * 0.8) problems.push(`${w}x${h} board only ${m.boardH.toFixed(0)} px tall`);
+        if (m.off.length) problems.push(`${w}x${h} off screen: ${m.off.join(',')}`);
+        await ctx.close();
+      }
+      record('Phone landscape: board uses at least 80% of the height, no scrolling, all controls on screen (740x360, 667x375, 844x390)', problems.length === 0, problems.join('; '));
+    }
+
+    // 1f. Online play (A4/A9): two real browsers play one game through the server, with resignation.
+    {
+      const gameServer = await ensureGameServer();
+      try {
+        const hubUrl = URL.replace(/[?&]play=1/, '');
+        const a = await open(browser);
+        await a.page.goto(hubUrl, { waitUntil: 'networkidle' });
+        await a.page.locator('.hub-mode-tile[data-hub-mode="pvp-online"]').click();
+        const lobbyShown = await a.page.locator('#online-lobby').isVisible();
+        await a.page.selectOption('#online-board-select', '6x4');
+        await a.page.locator('#online-create-btn').click();
+        await a.page.waitForFunction(() => /Room [A-Z2-9]{5}/.test(document.getElementById('online-bar-text')?.textContent ?? ''), null, { timeout: 8000 });
+        const barA1 = await a.page.locator('#online-bar-text').textContent();
+        const code = /Room ([A-Z2-9]{5})/.exec(barA1 ?? '')?.[1] ?? '';
+        const waiting = /waiting for your friend/.test(barA1 ?? '');
+
+        const b = await open(browser);
+        await b.page.goto(hubUrl, { waitUntil: 'networkidle' });
+        await b.page.locator('.hub-mode-tile[data-hub-mode="pvp-online"]').click();
+        await b.page.fill('#online-code-input', code);
+        await b.page.locator('#online-join-btn').click();
+        await b.page.waitForFunction(() => /friend is thinking|your turn/.test(document.getElementById('online-bar-text')?.textContent ?? ''), null, { timeout: 8000 });
+        await a.page.waitForFunction(() => /your turn/.test(document.getElementById('online-bar-text')?.textContent ?? ''), null, { timeout: 8000 });
+
+        // B (black) cannot move on cream's turn: clicks do nothing
+        const mvB = await b.page.evaluate(() => {
+          const m = window.__SB_TEST__.session.getEngine().getLegalMoves()[0];
+          return { from: m.from, to: m.to };
+        });
+        await clickNode(b.page, '6x4', mvB.from);
+        await clickNode(b.page, '6x4', mvB.to);
+        await sleep(300);
+        const bCannot = (await snap(b.page)).moveCount === 0;
+
+        // A (cream) plays a real move with two clicks; B sees it
+        const mvA = await a.page.evaluate(() => {
+          const m = window.__SB_TEST__.session.getEngine().getLegalMoves()[0];
+          return { from: m.from, to: m.to };
+        });
+        await clickNode(a.page, '6x4', mvA.from);
+        await clickNode(a.page, '6x4', mvA.to);
+        const bSees = await waitFor(b.page, () => window.__SB_TEST__.snapshot().moveCount === 1 && window.__SB_TEST__.snapshot().currentPlayer === 'BLUE', undefined, 8000);
+        const bTurn = await waitFor(b.page, () => /your turn/.test(document.getElementById('online-bar-text')?.textContent ?? ''), undefined, 8000);
+
+        // B resigns on its turn; A is asked and declines: B loses, both screens show the end
+        b.page.once('dialog', (d) => d.accept());
+        await b.page.locator('#resign-btn').click();
+        const offerShown = await waitFor(a.page, () => getComputedStyle(document.getElementById('resign-offer-modal')).display !== 'none', undefined, 8000);
+        await a.page.locator('#resign-decline-btn').click();
+        const aOver = await waitFor(a.page, () => window.__SB_TEST__.session.isGameOver(), undefined, 8000);
+        const bOver = await waitFor(b.page, () => window.__SB_TEST__.session.isGameOver(), undefined, 8000);
+        const winner = await a.page.evaluate(() => window.__SB_TEST__.session.getDisplayedWinner());
+
+        record(
+          'Online: two browsers play through the server (create, join by code, turn lock, move sync, resignation)',
+          lobbyShown && waiting && code.length === 5 && bCannot && bSees && bTurn && offerShown && aOver && bOver && winner === 'RED',
+          `lobby=${lobbyShown} waiting=${waiting} code=${code} bCannot=${bCannot} bSees=${bSees} bTurn=${bTurn} offer=${offerShown} aOver=${aOver} bOver=${bOver} winner=${winner}`,
+        );
+        await a.ctx.close();
+        await b.ctx.close();
+      } finally {
+        stopGameServer(gameServer);
+      }
     }
 
     // 2. Undo after the AI opened must not leave the game stuck.

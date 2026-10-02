@@ -16,21 +16,21 @@ import { readStored, writeStored } from './layout/safeStorage';
 
 export type HubLaunchAction = 'play' | 'coach' | 'spectate';
 
-/** Hub mode tile values — `pvp-online` is not a live engine mode until Phase 2. */
+/** Hub mode tile values — `pvp-online` opens the online lobby instead of starting a local game. */
 export type HubModeValue = 'pve' | 'spectate' | 'pvp' | 'pvp-online';
 
 const HUB_MODE_TILES: ReadonlyArray<{ value: HubModeValue; label: string; disabled?: boolean }> = [
   { value: 'pve', label: 'Play vs AI' },
   { value: 'spectate', label: 'Watch AI vs AI' },
   { value: 'pvp', label: 'Play vs Friend – Same Device' },
-  { value: 'pvp-online', label: 'Play vs Friend – Online', disabled: true },
+  { value: 'pvp-online', label: 'Play vs Friend – Online' },
 ];
 
 const HUB_MODE_HELP_LINES = [
   'Play vs AI — You vs the computer. Pick the board above; set the difficulty on the next page.',
   'Watch AI vs AI — Two AIs play; you watch. Good for learning pace and rules.',
   'Play with a Friend (Same Device) — Pass the phone after each turn. No room code needed.',
-  'Play with a Friend (Online) — Create or join a room on another device. Coming soon until Phase 2.',
+  'Play with a Friend (Online) — Create a room and share the 5-letter code, or join with the code a friend gives you.',
 ] as const;
 
 export const HUB_MODE_HELP_ALL = HUB_MODE_HELP_LINES.join('\n\n');
@@ -139,7 +139,7 @@ function populateHubModeGrid(grid: HTMLElement, onLaunch: (hubMode: HubModeValue
     btn.textContent = '';
     btn.disabled = tile.disabled === true;
     if (tile.disabled) {
-      btn.title = 'Online play coming soon';
+      btn.title = 'Coming soon';
     }
     const icon = document.createElement('span');
     icon.className = 'hub-mode-tile-icon';
@@ -276,6 +276,7 @@ export function bootstrapPlayHub(
     mode: GameFeatureSettings['mode'],
     action: HubLaunchAction,
   ) => void,
+  openOnlineLobby?: (boardId: ProductBoardId) => void,
 ): void {
   const boardSelect = document.getElementById('hub-board-select') as HTMLSelectElement | null;
   const modeSelect = document.getElementById('hub-mode-select') as HTMLSelectElement | null;
@@ -296,7 +297,10 @@ export function bootstrapPlayHub(
   }
 
   function launchHubMode(hubMode: HubModeValue): void {
-    if (hubMode === 'pvp-online') return;
+    if (hubMode === 'pvp-online') {
+      openOnlineLobby?.(selectedBoardId);
+      return;
+    }
     modeSelect!.value = hubMode;
     const mode = resolveEngineMode(hubMode);
     const action: HubLaunchAction = mode === 'spectate' ? 'spectate' : 'play';

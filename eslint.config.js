@@ -10,7 +10,7 @@ module.exports = tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['PROJECTS/SmartBeads/src/**/*.ts', 'SHARED/**/*.ts'],
+    files: ['PROJECTS/SmartBeads/src/**/*.ts', 'PROJECTS/SmartBeads/server/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
