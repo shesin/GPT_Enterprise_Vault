@@ -28,6 +28,7 @@ Only this repo (`Gpt_Enterprise_Vault`). Never create, edit, move, or delete any
 If the user says this (or equivalent — you're visibly failing/repeating a mistake), immediately: (1) stop all edits/pushes, (2) re-read this file fresh from disk (not from memory), (3) name explicitly which rule(s) were broken in recent actions, (4) only then resume.
 
 ## Always
+- **Docs, code, comments, tests and earlier audits are the subject of an audit, never its proof.** Verify by running (real browser, failing-then-passing test, measured numbers); read `PROJECTS/SmartBeads/GPT_PROJECT_AUDIT_05P.md` § Trust rules and disaster ledger + § Audit register before planning an audit.
 - **Say = do** — check the actual code first whenever there's the slightest doubt, and only report an outcome after it's been tested/confirmed (tests run, browser observed, or code read). Mark **UNCONFIRMED** otherwise.
 - **Verify side effects, not just the target.** Changing one property (size, color, a var) can change computed layout/behavior elsewhere (a shrunk child can shrink its parent's auto-sized box, a shared var can move on other elements). Before claiming a change is done, check the actual computed result on the element touched AND anything that depends on it — not just the one property edited.
 - **Revert = pull the exact prior value, never reconstruct from memory.** When told to revert/restore/"as it was before," get the literal prior value from git (`git diff`/`git show`) or a live measurement — don't guess from memory of what was probably there.

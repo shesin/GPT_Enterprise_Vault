@@ -51,13 +51,16 @@ describe('Undo and the clocks', () => {
     expect(session.getGlobalMatchRemaining()).toBe(110);
   });
 
-  it('Undo never gives time back (tournament clocks)', () => {
-    const { session, undo, play } = setup({ tournamentTimer: '2' });
+  it('chess-clock (tournament) games have no Undo: taking moves back would defeat the clocks', () => {
+    const { session, undoBtn, undo, play } = setup({ tournamentTimer: '2' });
     play();
     for (let i = 0; i < 7; i += 1) session.timerTick();
     const p1 = session.getP1Clock();
     const p2 = session.getP2Clock();
+    undo.syncButtonState();
+    expect(undoBtn.disabled).toBe(true);
     undo.undo();
+    expect(session.getMoveCount()).toBe(1);
     expect(session.getP1Clock()).toBe(p1);
     expect(session.getP2Clock()).toBe(p2);
   });

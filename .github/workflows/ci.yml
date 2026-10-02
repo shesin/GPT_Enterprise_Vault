@@ -19,11 +19,21 @@ jobs:
       - run: npm run typecheck
       - run: npm run format:check
       - run: npm run lint
-      # Fast Jest batches only (--skip-slow) — the full suite also includes a
-      # AI-difficulty-tier batches (about 20 s since the 2026-10-01 speed-up, was ~5 min) and a separate Playwright browser gate
-      # (npm test) that launches a real headless browser against a live dev
-      # server; both are too slow/heavy to run on every push and, per the
-      # 2026-09-22 audit, the Playwright gate is flaky under concurrent file
-      # I/O even locally. Run those manually / on a schedule if needed, not
-      # as a required check here.
+      # Fast Jest batches (--skip-slow; the slow AI batches take about 20 s and run with `npm run test:jest`).
+      # The real-browser gates run in the separate browser-gates job below.
       - run: npm run test:jest:fast
+
+  # Real-browser gates (Chromium, real clicks): two-click captures on all 7 boards plus the
+  # flow gate (Undo x clocks / AI, setting-change confirm, resign, phone layout, render loop,
+  # blocked storage). Passed 3 of 3 local runs on 2026-10-02; the GitHub run is UNCONFIRMED until seen green.
+  browser-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node PROJECTS/SmartBeads/scripts/m2-2step-npm-gate.mjs

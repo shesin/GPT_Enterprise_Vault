@@ -1955,22 +1955,62 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
   boardSelect.addEventListener('change', () => {
     switchBoard(boardSelect.value as ProductBoardId);
   });
-  centerRuleSelect.addEventListener('change', resetGame);
-  timerSelect.addEventListener('change', () => {
-    if (timerSelect.value !== 'off') {
-      tournamentTimerSelect.value = 'off';
+  /** A match is under way: a setting change would throw it away. */
+  function matchInProgress(): boolean {
+    return (
+      !isAwaitingStart() && !isCoachMode() && !session.isGameOver() && session.getMoveCount() > 0
+    );
+  }
+
+  /** Put every setting dropdown back to what the running match uses. */
+  function restoreSettingSelects(): void {
+    const s = session.getSettings();
+    timerSelect.value = s.timer;
+    tournamentTimerSelect.value = s.tournamentTimer;
+    shotClockSelect.value = s.shotClock;
+    centerRuleSelect.value = s.centerRule;
+    if (s.mode === 'spectate') {
+      aiLevelSelect.value = String(s.coachBlueLevel ?? s.aiLevel);
+      if (coachLevelSelect) coachLevelSelect.value = String(s.coachRedLevel ?? 3);
+    } else {
+      aiLevelSelect.value = String(s.aiLevel);
     }
     boardSettingsPanel.syncTimerSettingLocks();
-    resetGame();
-  });
-  tournamentTimerSelect.addEventListener('change', () => {
-    if (tournamentTimerSelect.value !== 'off') {
-      timerSelect.value = 'off';
-      centerRuleSelect.value = 'off';
+  }
+
+  /**
+   * Every setting change starts a new match. With a match under way, ask first;
+   * Cancel puts the dropdown back and the match carries on untouched.
+   */
+  function changeSettingAndRestart(apply?: () => void): void {
+    if (matchInProgress()) {
+      const ok = window.confirm('Changing this setting starts a new game. Continue?');
+      if (!ok) {
+        restoreSettingSelects();
+        return;
+      }
     }
+    apply?.();
     boardSettingsPanel.syncTimerSettingLocks();
     resetGame();
-  });
+  }
+
+  centerRuleSelect.addEventListener('change', () => changeSettingAndRestart());
+  timerSelect.addEventListener('change', () =>
+    changeSettingAndRestart(() => {
+      if (timerSelect.value !== 'off') {
+        tournamentTimerSelect.value = 'off';
+      }
+    }),
+  );
+  tournamentTimerSelect.addEventListener('change', () =>
+    changeSettingAndRestart(() => {
+      if (tournamentTimerSelect.value !== 'off') {
+        timerSelect.value = 'off';
+        centerRuleSelect.value = 'off';
+      }
+    }),
+  );
   for (const { btn, text } of settingHelpPairs) {
     if (!btn || !text) continue;
     btn.addEventListener('click', (event) => {
@@ -1978,9 +2018,9 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       toggleSettingHelp(btn, text);
     });
   }
-  shotClockSelect.addEventListener('change', resetGame);
-  aiLevelSelect.addEventListener('change', resetGame);
-  coachLevelSelect?.addEventListener('change', resetGame);
+  shotClockSelect.addEventListener('change', () => changeSettingAndRestart());
+  aiLevelSelect.addEventListener('change', () => changeSettingAndRestart());
+  coachLevelSelect?.addEventListener('change', () => changeSettingAndRestart());
   canvas.addEventListener('click', handleCanvasClick);
 
   bgmAudio.volume = parseFloat(bgmVol.value) || DEFAULT_BGM_VOLUME;

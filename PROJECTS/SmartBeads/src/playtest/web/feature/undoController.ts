@@ -1,5 +1,5 @@
 import { FeatureSession, SessionSnapshot } from './FeatureSession';
-import { isHumanVsAiMode } from './GameFeatureSettings';
+import { isHumanVsAiMode, isTournamentTimerActive } from './GameFeatureSettings';
 
 export interface UndoElements {
   undoBtn: HTMLButtonElement;
@@ -44,6 +44,8 @@ export function createUndoController(elements: UndoElements, deps: UndoDeps): Un
     if (deps.isAnimating() || deps.isAiThinking() || undoStack.length === 0) return;
     // A game lost on a clock is final: Undo must not reopen it or give time back.
     if (deps.getSession().endedByClock()) return;
+    // Chess-clock (tournament) games: taking moves back would defeat the clocks.
+    if (isTournamentTimerActive(deps.getSession().getSettings())) return;
     deps.cancelAiWork();
     deps.clearAnim();
     deps.resetTurnCaptures();
@@ -85,6 +87,7 @@ export function createUndoController(elements: UndoElements, deps: UndoDeps): Un
       deps.isAnimating() ||
       deps.isAiThinking() ||
       session.getSettings().mode === 'spectate' ||
+      isTournamentTimerActive(session.getSettings()) ||
       session.endedByClock();
   }
 

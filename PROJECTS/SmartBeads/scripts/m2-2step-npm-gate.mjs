@@ -2,6 +2,7 @@
  * npm-test live gates, run against one Vite boot:
  *  - m2-2step-observe: 16-bead A41→A42 two-click occupancy.
  *  - m2-capture-geometry-browser: real-click captures, junction, chain, optional stop.
+ *  - m3-flow-gate: Undo x clocks / AI, setting-change confirm, resign, phone layout, render-loop survival, blocked storage.
  * Starts Vite only if http://localhost:5173/ is not already up.
  * Play shell gates use index.html?play=1 (direct board shell — same as production verify scripts).
  */
@@ -17,6 +18,7 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const GATES = [
   path.join(SCRIPT_DIR, 'm2-2step-observe.mjs'),
   path.join(SCRIPT_DIR, 'm2-capture-geometry-browser.mjs'),
+  path.join(SCRIPT_DIR, 'm3-flow-gate.mjs'),
 ];
 
 function sleep(ms) {

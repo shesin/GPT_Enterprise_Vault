@@ -8,6 +8,89 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 
 ---
 
+## Trust rules and disaster ledger (written 2026-10-02 — Shekhar: "docs and code are what you are auditing, how can you trust them")
+
+### Trust rules (apply to every audit, every agent)
+1. **Docs, code comments, existing tests, CI-green and earlier audit conclusions are CLAIMS under audit, never evidence.** The disasters live exactly there. An audit may not write "OK" because a doc, a comment, a test name or a previous audit says so.
+2. **Evidence that counts, in this order:** (a) behaviour observed in a real browser with real clicks (and, for rules, an independent reference); (b) a test that was seen FAILING on the old code and PASSING on the new; (c) measured numbers with the sample size and the machine state written next to them. Everything else is marked UNCONFIRMED.
+3. **A "finite" or "completes eventually" result is not a result.** Ask: how long, how often, on the worst input, with two features switched on together.
+4. **Test the combinations, not the features:** Undo x clock, Undo x AI to move, centre rule x stalemate, timer x phone layout, settings x running game.
+5. **The auditor is also a claim.** This audit's own slips are recorded below (rings "every turn", sound buffers "4 of 8", "11 files unformatted"): each was caught only by running the thing.
+6. **No audit closes a finding without a regression guard** at the level where the bug lived (unit test, or a scenario in `scripts/m3-flow-gate.mjs`).
+
+### Disaster ledger — shipped defects that several audits walked past
+| Defect | How it hid | Found by |
+|---|---|---|
+| AI waited up to 45 s, restarted its search from zero up to 6 times, then ran with no limit | STATUS/PENDING described "up to ~45 s" as a feature; the test only checked that the search finishes; tails sampled on 120 positions | AI pass 2 (13,759 positions, per-function cost) |
+| AI level 3 (Expert) lost to level 2 in timed centre games | Centre weight 28 applied from move 1; audits measured only centre-off ladders | AI pass 1 (centre-aware vs blind games) |
+| AI froze the whole page while thinking | No worker; frame gaps never measured | AI pass 1 |
+| Undo reopened a game lost on time and refunded the clock | Undo tested alone, clocks tested alone | § 13 (browser) |
+| Undo left the game frozen when the AI was to move (needed New game) | No test drove Undo after the AI's opening move | § 13 (browser) |
+| Centre rule overrode a stalemate win | Tests used timer-expiry positions only | § 13 (test built from the engine's own stalemate) |
+| Shared match timer invisible on phones; board squashed on short screens | Desktop-only checks; phone layout verified on one board, no timer | § 13 (375x812, 740x360) |
+| Raw engine codes and false "Tied in captures" text in the result box | Nobody forced a safety-cap or repetition end in the UI | § 13 |
+| CI failing on 31 unformatted files, lint "non-blocking" for errors that no longer existed | Nobody read the CI | § 13 |
+| One draw error killed the render loop for good; blocked storage broke drawing; no global handler | No fault injection | § 12 / § 13 |
+| Idle redraw 33 times per second | CPU never measured at rest | § 12 |
+| Earlier cycles: repetition rule removed -> infinite Watch-AI loop; render crash on a captured bead; 85 hidden type errors; double game-over on one tick; two silently dead tests; Hard silently downgraded to Easy; timers frozen during AI think | "Jest green" and gap lists without failing tests | 4th and 5th cycles |
+
+### Record of this audit's own errors (so the next auditor distrusts it too)
+- Section 12 first said the turn-start rings pulse every turn; they exist only from game start to the first pick (read the code again, then measured).
+- A truncated file listing looked like "only 4 of 8 sounds decoded"; a network capture showed all 8 (no bug).
+- An older line said "11 files not formatted"; the command said 31.
+- The first fix for the Prettier change broke a test that matched source text (`HonestAi.testAudit.test.ts`): tests that read source code are claims too.
+---
+
+## Audit register and plan (maintained from 2026-10-02 — read this BEFORE planning any audit)
+
+**Rule.** Every audit starts by reading this register, names the lens it uses and the lenses it does NOT cover, and ends by adding its row below. A new audit must pick at least one lens that no earlier audit has used, or re-run an old lens on code that changed since. "Audit everything" is not a lens: it produced shallow passes.
+
+Audits do catch serious problems (the 2026-10-01 AI audits found a 45-second search; the whole-code audit found Undo reopening lost games). The register exists so the next one aims where nothing has looked yet. The automated net (gates run on every push) is the second half: it keeps a fixed problem from coming back; it does not replace audits.
+
+### A. What each audit looked at, and what it found
+
+| # | Date | Lens (what it examined) | Serious finds | Could not see |
+|---|------|--------------------------|---------------|---------------|
+| 1 | 2026-08-27 (4th cycle) | Failure record: prototype rules ported without approval, audits that create false confidence | Unapproved repetition rule; "audits" that only grepped; half-wired features | Behaviour in a real browser |
+| 2 | 2026-09-14/15 (5th cycle) | Five risk areas at depth: render corruption, AI tiers, timers, dead tests, type safety | Render crash on captured bead; 85 hidden type errors; double game-over on one tick; two dead tests | Accessibility, phone, audio, anything not sampled |
+| 3 | 2026-09-22 / 23 / 29 | Type strictness, file split; board fairness numbers; dead-code and doc-mismatch scan of `src/` | 505 index-access errors; stale docs; non-clean `tsc` | User flows; interaction between features |
+| 4 | 2026-09-29/30 (A18/A19) | Evaluation of AI level 4 and the 16-bead layout | Tooling defects in lab scripts | Everything outside the AI/boards |
+| 5 | 2026-10-01 AI pass 1 | AI strength ladder, centre rule vs material, page freeze, caps | Centre weight made Expert lose; AI froze the page; draws that were wins | Worst-case time per move (sampled 120 positions) |
+| 6 | 2026-10-01 AI pass 2 | Worst-case time per function, 13,759 positions, adversarial search, CPU throttle | 45 s retry loop, restart from zero up to 6 times, engine copying history | Anything not the AI |
+| 7 | 2026-10-01 § 12 | Four named questions: idle CPU, innerHTML, error handling, memory | Idle redraw, render loop dies on one error | Everything else |
+| 8 | 2026-10-01 § 13 | Whole code except the AI, driven in a real browser: feature interactions, clocks, Undo, result text, phone, CI, storage | Undo reopens lost games and refunds clocks; stuck game after Undo; stalemate overridden; timer invisible on phone; board distorted; CI red | Real phones; Firefox; long sessions; security of a hosted version |
+
+### B. Defect class x lens (which lens finds which class)
+
+| Defect class | Needs this lens | Covered by | Gap today |
+|---|---|---|---|
+| Wrong rule / wrong winner | Rule review against VISION + tests built from real positions | #2, #8 (stalemate) | Chain, repetition and safety-cap rules were read, not fuzzed against an independent reference |
+| Feature A x feature B (Undo x clock x AI) | Scenario matrix in a real browser | #8, now `m3-flow-gate.mjs` | Matrix covers 14 scenarios; grow it with every new feature |
+| Time / speed | Worst case, thousands of cases, throttle | #6 | Non-AI code paths measured only lightly (render loop, clocks) |
+| Layout / phone / viewport | Real browser at 5+ viewports | #8 | Real devices, iOS Safari quirks, notch/safe-area, keyboard |
+| Robustness (storage, errors, offline, autoplay) | Fault injection | #7, #8 | Offline, slow network, blocked audio |
+| Memory / long session | Soak run (hours), hidden tab | #7 (60 games) | Hours-long session; hidden-tab clock (PENDING W5) |
+| Docs / CI / config drift | Mechanical scan | #3, #8 | Re-run after every doc-heavy change |
+| Security | Input paths, dependencies, hosting headers | #7 (innerHTML, npm audit) | Accounts, payments, ads, multiplayer server do not exist yet: audit them when built |
+| Accessibility | Keyboard-only, real screen reader | #8 (partial) | Board unplayable without mouse/touch (PENDING W3) |
+| Cross-browser | Same gates in Chromium, WebKit, Firefox | `m3-flow-gate.mjs`: Chromium 14/14, WebKit 14/14 | Firefox does not launch on the dev PC ("spawn UNKNOWN"): UNCONFIRMED |
+
+### C. Plan for the next audits (in this order; pick by what changed)
+
+1. **Real-device audit (before any store release):** two Android phones + one iPhone, the PENDING A12/B6 list, plus the m3 scenarios by hand. Nothing else can replace it.
+2. **Rule-fuzz audit:** an independent reference implementation of the rules (a few dozen lines, written from VISION, not from the engine) compared with the engine on 100k random positions and moves: captures, chains, stalemate, repetition, safety cap. Finds rule bugs the example-based tests cannot.
+3. **Soak and hidden-tab audit:** a 2-hour Watch-AI run plus a 10-minute hidden-tab clock test (W5); measure heap, intervals, frame gaps.
+4. **Hosting and delivery audit (when the site is deployed):** https only, headers, caching of `dist/`, font and BGM failures offline, blocked third-party calls, ads script. Redo the security lens on the real URL.
+5. **Account / multiplayer / payments audit:** only when A7/A9 exist (auth, rate limits, cheating, data deletion).
+6. **Accessibility audit with a real screen reader and keyboard-only play** once W3 is built.
+7. **Content audit:** coach video script and voice against the real rules; every UI string for wording consistency ("side" vs "bead").
+
+### D. The standing net (runs without anyone asking)
+
+On every push (`.github/workflows/ci.yml`): `tsc`, Prettier, ESLint, fast Jest, and the `browser-gates` job (real Chromium: all-board capture gates + the 14-scenario flow gate). Locally: `npm test` (all Jest + the same gates), `SB_BROWSER=webkit node PROJECTS/SmartBeads/scripts/m3-flow-gate.mjs` for Safari's engine. **Rule for every bug fix from now on:** the fix ships with a failing-then-passing test at the level where the bug lived (unit if it is logic, `m3-flow-gate` scenario if it is an interaction or layout). A bug fixed without such a test is not closed.
+
+---
+
 ## Test catalog & how to run (2026-09-03)
 
 **Repo root:** `d:\Business Idea\Gpt_Enterprise_Vault`  
@@ -525,6 +608,12 @@ Acceptance (< 3 s at 5x slowdown, i.e. < ~0.6 s desktop): met on all 7 boards (w
 - **UNCONFIRMED:** real phones (only Chrome emulation); the GitHub Actions run; the Playwright live gates in `npm test` (browser not installed); the hidden-tab clock slow-down (W5); behaviour with a real screen reader; the Android WebView; and whether Shekhar accepts the two rule decisions in DECISIONS § 4 (Undo never refunds time, stalemate stays decisive).
 
 **13.6 Final verification (final code).** `tsc --noEmit` exit 0; `npm run lint` exit 0; `npm run format:check` exit 0; `node PROJECTS/SmartBeads/scripts/run-jest-batched.mjs`: 7 of 7 batches PASS, 730 tests (708 before this section); `vite build` into a scratch folder OK (main 131 kB, worker 28 kB); browser re-checks after the last code change: 21 launches with 0 errors, the Undo-stuck repro fixed, idle redraw 8 per 4 s.
+
+### 14. Follow-up the same day (2026-10-02, Claude; Shekhar: "decide yourself, do what is needed")
+- **Decisions taken:** Undo stays (the three Undo defects are fixed and covered); Undo is switched off in tournament (chess-clock) games, where taking moves back defeats the clocks; changing a setting while a game is under way now asks first (Cancel restores the dropdown and the game carries on). DECISIONS § 4 updated.
+- **Why the UI had no automated tests, and what changed:** the engine and the AI were unit-testable pure code and got heavy tests; `PlayController` is a 2,100-line closure over the DOM, the Playwright gates that could cover it were not installed on this PC and ran only two capture scenarios, and CI never ran them. Now: Playwright Chromium and WebKit installed; new `scripts/m3-flow-gate.mjs` (14 real-click scenarios: Undo x clocks, Undo x AI, setting-change confirm, tournament Undo, phone timer and overflow, landscape shape, idle redraw, render-loop survival, blocked storage, PvE/PvP resign, 7 boards x 3 modes); chained into `npm test` and into a `browser-gates` CI job. Mutation check: with the Undo guards and the confirm removed the gate failed 3 of 14, restored it passes 14 of 14. Stability: the whole gate chain passed 3 of 3 consecutive runs (178 confirmations each). WebKit 14/14. Firefox does not launch on this PC (spawn UNKNOWN): UNCONFIRMED.
+- **Legacy browser scripts:** the other 20 `m2-*-verify` scripts are not part of `npm test`; 3 of the 3 tried at the previous commit already failed (stale selectors, old opener assumptions), so they are not a regression. PENDING W9.
+- **Dead files deleted:** root `sound-preview.html` (identical copy in `public/`), `black-shade-samples.html`, `PROJECT_SNAPSHOT.txt`.
 
 ### Not done / open
 - Whole-code audit leftovers: PENDING W1-W8 (landscape layout, setting-change confirm, keyboard play, tap targets, clock vs wall time, production test hooks, repo clean-up, test holes); see § 13.4.

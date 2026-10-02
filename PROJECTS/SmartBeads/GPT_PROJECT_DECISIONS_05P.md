@@ -62,6 +62,8 @@ Draw is legitimate — not a failure to engineer away.
 
 **Clocks and Undo (2026-10-01, Claude — Shekhar to confirm):** Undo takes the move back but never gives time back (match / tournament clocks keep what is left now; the side to move gets a full shot clock). A game lost on a clock (shot clock, tournament clock, match timer) is final — Undo is disabled. (Before this Undo reopened a game lost on time and refunded the clock.)
 
+**Undo is off in tournament (chess-clock) games and a setting change asks first (2026-10-02, Claude, Shekhar delegated the call):** with per-player clocks, taking moves back would defeat the clocks, so Undo is disabled there. Changing any setting dropdown while a match with at least one move is running asks "Changing this setting starts a new game. Continue?"; Cancel restores the dropdown and the match carries on.
+
 **Three-fold repetition:** same position (board occupancies + side to move + open chain state) occurring three times ends the match in a draw. Applies uniformly to PvE, PvP, and Watch AI vs AI.
 
 **Engine safety cap (unlimited mode only) — changed 2026-10-01 (Shekhar):** when board `maxPlies` is null, a game with no other end condition stops after **120 completed turns total on the small boards (6x4, 6x3x5, 7x4x5)** and **240 total (120 per side) on the larger boards (8x4x6, 10x5, 12x6x5, 16)** (`engineSafetyCapForVariant`). At the cap the side with **more captures wins** (`safety_cap_captures`); if captures are tied, the **centre rule (when on) decides**; only if still tied is it a **draw** (`safety_cap`). Same order as match-timer expiry. Previously: a flat 120-ply draw even when one side was far ahead (evidence: `GPT_PROJECT_AUDIT_05P.md` § "AI review 2026-10-01"). Last-resort belt — **not** the product move-limit mode and **not** timer-based.
@@ -225,3 +227,9 @@ Central 5×5 matches 10-bead width prominence (~70% vertical play height). Wing 
 3. Update `GPT_PROJECT_STATUS_01P.md` integrity row — point to this section; do not restate full recipe.
 
 Forbidden without human approval: new draw rules beyond those locked above, silent AI strength changes, prototype Lab rules ported to production.
+
+---
+
+## Audit principles (locked 2026-10-02, Shekhar)
+
+Docs, code, comments, existing tests and earlier audit conclusions are the things being audited and are never accepted as proof. Evidence = real-browser behaviour, a test seen failing then passing, or measured numbers with sample size. Every audit reads the register and the disaster ledger in `GPT_PROJECT_AUDIT_05P.md` first, names the lenses it does not cover, and closes no finding without a regression guard. Full text: `GPT_PROJECT_AUDIT_05P.md` § Trust rules and disaster ledger.
