@@ -1,4 +1,4 @@
-import { shellTimerShouldSkip } from '../clockPolicy';
+import { shellTimerShouldSkip, wallClockTicks } from '../clockPolicy';
 import { FeatureSession } from '../FeatureSession';
 import { GameFeatureSettings } from '../GameFeatureSettings';
 import { runAiTurn } from '../../PlayController';
@@ -190,5 +190,37 @@ describe('AI turn completes under shot clock pressure', () => {
     const hops = runAiTurn(session);
     expect(hops.length).toBeGreaterThan(0);
     expect(session.getEngine().getState().currentPlayer).toBe('RED');
+  });
+});
+
+describe('wallClockTicks (clocks follow real time, W5)', () => {
+  it('a normal 1000 ms callback is one tick', () => {
+    expect(wallClockTicks(1000, 0)).toEqual({ ticks: 1, carryMs: 0 });
+  });
+
+  it('a throttled hidden-tab callback owes every missed second', () => {
+    expect(wallClockTicks(60_000, 0).ticks).toBe(60);
+  });
+
+  it('timer jitter neither drops nor doubles a tick', () => {
+    let carry = 0;
+    let ticks = 0;
+    for (const dt of [990, 1012, 1003, 988, 1007]) {
+      const r = wallClockTicks(dt, carry);
+      ticks += r.ticks;
+      carry = r.carryMs;
+    }
+    expect(ticks).toBe(5);
+    expect(Math.abs(carry)).toBeLessThan(500);
+  });
+
+  it('a callback that fires early owes nothing and keeps the time', () => {
+    const r = wallClockTicks(300, 0);
+    expect(r.ticks).toBe(0);
+    expect(r.carryMs).toBe(300);
+  });
+
+  it('never goes negative if the clock source steps back', () => {
+    expect(wallClockTicks(-5000, 0).ticks).toBe(0);
   });
 });

@@ -169,6 +169,8 @@ Human buys: (1) domain — **DONE**; (2) host with Node + DB support — **confi
 
 VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Store side (Part B). The real gate is the web engineering work: buying a VPS now means paying for a live server with nothing to deploy to it, since the account system (A7) + multiplayer server (A9) don't exist yet. **Buy VPS when the implementer is actually ready to deploy client+API+DB to staging** — i.e., once A7/A9 are substantially built, not before.
 
+**Exact trigger (2026-10-02):** buy the VPS only when (1) the A9 game server runs locally with two browsers playing one authoritative game, and (2) the A7 account API passes its tests locally. The Hostinger plan already covers the static build and the account API (Node + MySQL); only the A9 WebSocket server needs the VPS. Build A9 first, locally.
+
 ### A17. Choose host, deploy, and go live (remaining web checklist rows)
 
 | Task | Owner | Status / Notes |

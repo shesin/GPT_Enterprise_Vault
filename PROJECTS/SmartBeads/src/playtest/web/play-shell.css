@@ -540,6 +540,11 @@ body {
   line-height: 1;
   cursor: pointer;
 }
+/* W4: the "?" stays a small circle, its tap area is 44 px on touch-sized screens. */
+@media (max-width: 980px) {
+  .setting-help-btn { position: relative; }
+  .setting-help-btn::after { content: ''; position: absolute; inset: -14px; } /* 16 px padding box + 28 = 44 */
+}
 .setting-help-btn:hover,
 .setting-help-btn.is-open {
   color: var(--text);
@@ -1356,7 +1361,7 @@ canvas {
     gap: 6px;
     --side-columns-width: 0px;
     --shell-gutter-h: 16px;
-    --stack-chrome: 200px;
+    --stack-chrome: 214px; /* was 200px; W4 44 px buttons add 14 px */
     --board-area-h: max(300px, calc(100dvh - var(--body-pad-v) - var(--stack-chrome)));
   }
   #play-shell .card.left,
@@ -1418,6 +1423,13 @@ canvas {
     border-radius: 0;
   }
   .settings-toggle-btn { display: inline-block; margin-left: auto; padding: 0 8px; height: 24px; line-height: 1; }
+  /* W4: finger-sized tap targets (44 px minimum, WCAG 2.5.5 / Apple HIG). */
+  #resign-btn,
+  #sfx-mute-btn,
+  #undo-btn,
+  #restart-btn,
+  #home-btn,
+  .settings-toggle-btn { min-width: 44px; min-height: 44px; }
   .settings-close-btn { display: block; margin-bottom: 10px; }
   .play-block {
     flex-direction: row;

@@ -25,7 +25,7 @@ jobs:
 
   # Real-browser gates (Chromium, real clicks): two-click captures on all 7 boards plus the
   # flow gate (Undo x clocks / AI, setting-change confirm, resign, phone layout, render loop,
-  # blocked storage). Passed 3 of 3 local runs on 2026-10-02; the GitHub run is UNCONFIRMED until seen green.
+  # blocked storage). Passed 3 of 3 local runs on 2026-10-02; GitHub run 36996520017 (68a03ae) seen green on 2026-10-02.
   browser-gates:
     runs-on: ubuntu-latest
     steps:

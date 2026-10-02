@@ -62,7 +62,7 @@ import { CoachVideoPlayer } from './feature/CoachVideoPlayer';
 import { renderCoachPanelHtml } from './feature/coachPanelRender';
 import { CoachVoice } from './feature/CoachVoice';
 import { FeatureSession } from './feature/FeatureSession';
-import { shellTimerShouldSkip } from './feature/clockPolicy';
+import { shellTimerShouldSkip, wallClockTicks } from './feature/clockPolicy';
 import { composeResultDescription, drawScoreLine } from './feature/resultText';
 import { createStartBannerController } from './feature/startBannerController';
 import { createResignationController } from './feature/resignationController';
@@ -86,6 +86,8 @@ import {
   LastMoveHighlight,
   CapturePulse,
 } from './render/CanvasBoardRenderer';
+import { projectIntersectionOnCanvas } from './layout/boardProjection';
+import { describeNode, isArrowKey, nextNodeInDirection, ScreenNode } from './render/keyboardNav';
 import { updateMatchRing, updatePlayerTimerMmss, updateShotRing } from './render/timerDisplay';
 import { soundEffects } from './audio/SoundEffects';
 
@@ -1042,6 +1044,7 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       capturePulses: activeCapturePulses(),
       coachGlowNodeIds: session.getCoachGlowNodeIds(),
       moveHintAura: readMoveHintAuraFromUi(),
+      keyboardFocusId: document.activeElement === canvas ? keyboardFocusId : null,
     });
   }
 
@@ -1290,44 +1293,62 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     drawBoard();
   }
 
+  let lastClockMs = performance.now();
+  let clockCarryMs = 0;
+
+  /** Clocks follow real time: a throttled or hidden tab owes the ticks it missed. */
+  function runClockTick(): void {
+    const nowMs = performance.now();
+    const owed = wallClockTicks(nowMs - lastClockMs, clockCarryMs);
+    lastClockMs = nowMs;
+    clockCarryMs = owed.carryMs;
+    if (
+      shellTimerShouldSkip({
+        gameOver: session.isGameOver(),
+        aiThinking,
+        animating,
+      })
+    )
+      return;
+    if (owed.ticks === 0) return;
+    // Clocks must keep running during AI think and piece animation.
+    // Freezing on aiThinking made Ebony immune to shot clock in PvE.
+    for (let i = 0; i < owed.ticks && !session.isGameOver(); i++) session.timerTick();
+    const shotRem = session.getShotRemaining();
+    const timerRem = session.getGlobalMatchRemaining();
+    const shotLimit = session.getShotLimit();
+    const settingsNow = session.getSettings();
+    const timerLimit = parseTimerSeconds(
+      isTournamentTimerActive(settingsNow) ? settingsNow.tournamentTimer : settingsNow.timer,
+    );
+    const tournamentActive = isTournamentTimerActive(settingsNow);
+    const currentPlayer = session.getEngine().getState().currentPlayer;
+    const lowTimerRem = tournamentActive
+      ? currentPlayer === 'RED'
+        ? session.getP1Clock()
+        : session.getP2Clock()
+      : timerRem;
+    if (
+      (shotLimit > 0 && shotRem <= 3 && shotRem > 0) ||
+      (timerLimit > 0 && !tournamentActive && timerRem <= 5 && timerRem > 0) ||
+      (timerLimit > 0 && tournamentActive && lowTimerRem <= 5 && lowTimerRem > 0)
+    ) {
+      soundEffects.playTimerWarning();
+    }
+    updateUI();
+  }
+
   function startTimers(): void {
     if (timerId) clearInterval(timerId);
-    timerId = setInterval(() => {
-      if (
-        shellTimerShouldSkip({
-          gameOver: session.isGameOver(),
-          aiThinking,
-          animating,
-        })
-      )
-        return;
-      // Clocks must keep running during AI think and piece animation.
-      // Freezing on aiThinking made Ebony immune to shot clock in PvE.
-      session.timerTick();
-      const shotRem = session.getShotRemaining();
-      const timerRem = session.getGlobalMatchRemaining();
-      const shotLimit = session.getShotLimit();
-      const settingsNow = session.getSettings();
-      const timerLimit = parseTimerSeconds(
-        isTournamentTimerActive(settingsNow) ? settingsNow.tournamentTimer : settingsNow.timer,
-      );
-      const tournamentActive = isTournamentTimerActive(settingsNow);
-      const currentPlayer = session.getEngine().getState().currentPlayer;
-      const lowTimerRem = tournamentActive
-        ? currentPlayer === 'RED'
-          ? session.getP1Clock()
-          : session.getP2Clock()
-        : timerRem;
-      if (
-        (shotLimit > 0 && shotRem <= 3 && shotRem > 0) ||
-        (timerLimit > 0 && !tournamentActive && timerRem <= 5 && timerRem > 0) ||
-        (timerLimit > 0 && tournamentActive && lowTimerRem <= 5 && lowTimerRem > 0)
-      ) {
-        soundEffects.playTimerWarning();
-      }
-      updateUI();
-    }, 1000);
+    lastClockMs = performance.now();
+    clockCarryMs = 0;
+    timerId = setInterval(runClockTick, 1000);
   }
+
+  // A returning hidden tab settles the ticks it missed at once, not up to a second later.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) runClockTick();
+  });
 
   /** The pulsing turn-start rings (match start, nothing picked yet) are the only thing on the board that moves without a game event. */
   function turnStartRingsPulsing(): boolean {
@@ -1403,6 +1424,8 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       boardName: state.board.name,
       uiState: session.getUiState(),
       chainPieceId: session.getEngine().getChainPieceId(),
+      keyboardFocusId,
+      screenNodes: screenNodes(),
       occupants: state.board.intersections.map((n) => ({
         id: n.id,
         label: n.label,
@@ -1674,7 +1697,11 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       ev.clientY,
     );
     if (nodeId < 0) return;
+    activateNode(nodeId);
+  }
 
+  /** Pick or place on a node: the one path shared by mouse / touch and the keyboard. */
+  function activateNode(nodeId: number): void {
     const state = session.getEngine().getState();
 
     const click = session.interpretClick(nodeId);
@@ -1689,6 +1716,73 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
       executeMoveAnimated(click.move, state.currentPlayer);
     }
   }
+
+  // Keyboard play (W3): Tab to the board, arrows move the focus ring, Enter / Space pick and place.
+  let keyboardFocusId: number | null = null;
+
+  function screenNodes(): ScreenNode[] {
+    const board = session.getEngine().getState().board;
+    const out: ScreenNode[] = [];
+    for (const n of board.intersections) {
+      if (n.x === undefined || n.y === undefined) continue;
+      const p = projectIntersectionOnCanvas(n, canvas.width, canvas.height, board);
+      out.push({ id: n.id, x: p.x, y: p.y });
+    }
+    return out;
+  }
+
+  function announceKeyboardFocus(): void {
+    const el = document.getElementById('board-focus-status');
+    if (!el || keyboardFocusId === null) return;
+    const node = session.getEngine().getState().board.intersections[keyboardFocusId];
+    if (!node) return;
+    el.textContent = describeNode({
+      label: node.label ?? String(node.id),
+      occupant: node.occupant,
+      selected: session.getSelectedId() === node.id,
+      legalTarget: session.getLegalTargetIds().includes(node.id),
+    });
+  }
+
+  /** First focus: the picked bead, else the first bead that can move, else the first node. */
+  function startingKeyboardNode(): number {
+    const selected = session.getSelectedId();
+    if (selected !== null) return selected;
+    const first = session.getEngine().getLegalMoves()[0];
+    return first ? first.from : 0;
+  }
+
+  function handleCanvasKeydown(ev: KeyboardEvent): void {
+    if (ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    if (isArrowKey(ev.key)) {
+      ev.preventDefault();
+      if (keyboardFocusId === null) keyboardFocusId = startingKeyboardNode();
+      else {
+        const next = nextNodeInDirection(screenNodes(), keyboardFocusId, ev.key);
+        if (next !== null) keyboardFocusId = next;
+      }
+      announceKeyboardFocus();
+      drawBoard();
+      return;
+    }
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      ev.preventDefault();
+      if (keyboardFocusId === null) keyboardFocusId = startingKeyboardNode();
+      if (isAwaitingStart()) return;
+      dismissStartBanner();
+      if (session.isGameOver() || aiThinking || animating || !session.canHumanAct()) return;
+      activateNode(keyboardFocusId);
+      announceKeyboardFocus();
+    }
+  }
+
+  canvas.addEventListener('keydown', handleCanvasKeydown);
+  canvas.addEventListener('focus', () => {
+    if (keyboardFocusId === null) keyboardFocusId = startingKeyboardNode();
+    announceKeyboardFocus();
+    drawBoard();
+  });
+  canvas.addEventListener('blur', () => drawBoard());
 
   function resetGame(): void {
     if (timerId) clearInterval(timerId);

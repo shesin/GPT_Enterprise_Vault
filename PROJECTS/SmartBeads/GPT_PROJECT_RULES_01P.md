@@ -173,6 +173,15 @@ An audit is NOT done when you only list gaps. For every defect affecting shipped
 
 Roughly every 1-2 days of active work (not literally calendar-daily if idle), review test coverage and source quality in the area just touched: are tests actually exercising the real behaviour (not a duplicated/stale table), is anything unreachable, is anything under-tested. Report findings; don't silently fix without approval.
 
+### Standing audit duties (moved verbatim from CLAUDE.md, 2026-10-02)
+
+- **Docs, code, comments, tests and earlier audits are the subject of an audit, never its proof.** Verify by running (real browser, failing-then-passing test, measured numbers); read `PROJECTS/SmartBeads/GPT_PROJECT_AUDIT_05P.md` § Trust rules and disaster ledger + § Audit register before planning an audit.
+- **Investigate before asking.** You have direct file/code access — when something looks wrong, read and cross-check every related file yourself before asking a clarifying question. Only ask if the code truly can't resolve the ambiguity, and ask once, not iteratively.
+- **"Complete audit" means checking for structural duplication, not just the flagged area.** Systematically scan for parallel/duplicate entry points, configs, or files serving the same purpose (multiple HTML pages, multiple config blocks, etc.) as a standing audit category — not only after being pointed at one instance.
+- No duplicate, contradictory, or dead code/doc lines are acceptable as "known issues" — if found, they get flagged and fixed, not just documented as a gotcha to work around.
+- Before implementing anything non-trivial, check whether the change touches a place where two sources of truth might exist (e.g. a value defined in more than one file) — don't assume a single edit covers the real behaviour.
+- If something is duplicated, wrong, low-quality, or an existing approach could be meaningfully better — say so and propose a fix, but wait for explicit approval before editing, same as any other change under Mode above.
+
 ---
 
 ## Rule - Code–Doc Integrity (No Contradiction Ship)
@@ -275,6 +284,19 @@ Group related verification into a single command block.
 - No doc sync, cleanup, or “fix stale refs” on PENDING without explicit **Go — PENDING**.
 
 If a task seems to need a PENDING change → **stop and ask** the human.
+
+---
+
+## Rule - Autonomous mode (2026-10-02)
+
+- **Trigger:** the user types "autonomous" plus a scope (a list of items, or one audit lens). Outside that scope, the normal rules apply.
+- **Allowed inside the scope, with no questions:** read, edit, run tests and browser gates, add guard tests, fix, improve and suggest-and-implement. This overrides "do only what is explicitly asked" for the stated scope only. PENDING may be rewritten (user approved 2026-10-02); the exact new text is still shown in chat first.
+- **Never:** `git commit` / `git push`, buying or signing up for anything, editing outside the vault, product decisions, deleting data, edits outside the scope.
+- **Per item:** failing test, fix, pass, mutation check (break the fix once, the test must fail), then the browser gate. No evidence means UNCONFIRMED.
+- **Blocked:** write the question in `PROJECTS/SmartBeads/AUTONOMOUS_LOG.md`, then move to the next item.
+- **Stop when:** the scope is done, 3 items in a row fail, or an item needs a decision.
+- **End of run:** the log lists each item as done / blocked / needs the user, with evidence (test names, gate counts, measured numbers).
+- **Decisions already given (2026-10-02):** delete `SHARED/engine` and `hub-theme-mockup.html` (edit tsconfig and ESLint globs to match); test hooks and premium flag behind a build flag; Node + WebSocket server; players log in with social sign-in plus e-mail; all 7 boards online; the game is free and ads are removed by a paid purchase; coach video polish (A1) waits for a discussion.
 
 ---
 

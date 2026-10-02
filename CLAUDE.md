@@ -10,14 +10,13 @@ Only this repo (`Gpt_Enterprise_Vault`). Never create, edit, move, or delete any
 
 ## Mode (check before every message)
 - **Suggest / explain / discuss** → words only. No file edits, ever.
-- **Do / go / implement** (a specific, scoped ask) → edit only after posting the STOP block below.
+- **Do / go / implement** (a specific, scoped ask) → do it now (see "Go = do it now" below).
 - If one message mixes a suggest/explain ask with a do/go/implement ask, do BOTH in that response: answer the explain part in words, and perform the edit only if the literal word do/go/implement is present. Never drop the explain part and never drop the do part. If the exact content to be written was already posted in the previous message, a plain go/do approves exactly that content — write it without asking again.
 - Only the literal words **do / go / implement** authorize an edit. Approval-sounding phrases ("looks ok", "sure", silence, frustration) are not a go.
 - **push to git/ push to git good** - push all files to git / push all files to git with remark good
 
-## STOP (before any Write / Edit / Delete)
-1. Quote the ask — one line.
-2. `Go — <task>` + **Files:** (exact paths) + **Out:** (exclusions, or "NONE").
+## Go = do it now (no STOP block, no second confirmation)
+`go` / `do` / `implement` + a task means do the task immediately in that same response. No pre-edit STOP block, no "are you sure", no options. Name the files touched in the closing Summary. Only PENDING edits show the exact content first (see PENDING section).
 
 ## PENDING doc — specific rules (2026-09-29)
 - Plain **`go`** / **`do`** alone (no file path, no need to type "PENDING") is sufficient authorization for any edit in this vault, including `GPT_PROJECT_PENDING_01P.md` — overrides the literal `Go — PENDING` phrasing required elsewhere in this file/RULES doc.
@@ -28,13 +27,12 @@ Only this repo (`Gpt_Enterprise_Vault`). Never create, edit, move, or delete any
 If the user says this (or equivalent — you're visibly failing/repeating a mistake), immediately: (1) stop all edits/pushes, (2) re-read this file fresh from disk (not from memory), (3) name explicitly which rule(s) were broken in recent actions, (4) only then resume.
 
 ## Always
-- **Docs, code, comments, tests and earlier audits are the subject of an audit, never its proof.** Verify by running (real browser, failing-then-passing test, measured numbers); read `PROJECTS/SmartBeads/GPT_PROJECT_AUDIT_05P.md` § Trust rules and disaster ledger + § Audit register before planning an audit.
 - **Say = do** — check the actual code first whenever there's the slightest doubt, and only report an outcome after it's been tested/confirmed (tests run, browser observed, or code read). Mark **UNCONFIRMED** otherwise.
 - **Verify side effects, not just the target.** Changing one property (size, color, a var) can change computed layout/behavior elsewhere (a shrunk child can shrink its parent's auto-sized box, a shared var can move on other elements). Before claiming a change is done, check the actual computed result on the element touched AND anything that depends on it — not just the one property edited.
 - **Revert = pull the exact prior value, never reconstruct from memory.** When told to revert/restore/"as it was before," get the literal prior value from git (`git diff`/`git show`) or a live measurement — don't guess from memory of what was probably there.
 - **Verified facts don't change with tone.** A measured value (a computed size, an exact color) is reported the same whether the user is calm or frustrated. Don't hedge, backpedal, or guess faster under pressure — check first, then answer.
 - **Same complaint twice = last fix missed scope.** Don't just re-attempt — restate the rule/requirement in one line and confirm it before claiming "fixed" again; a second "fixed" needs a new test pass or screen confirm, not a repeat of the same unverified claim.
-- **Show the exact content before writing it — every time, code or docs.** A STOP block naming files/scope is not enough on its own; paste the literal diff/text to be written and wait for go/do/implement before the Write/Edit call.
+- **Show the exact content before writing it only for PENDING** (see PENDING section). For every other file, don't show the diff unless the user asks to see it; a go/do/implement means do it now, in that same response, with no second confirmation. A message with explain + go/do is answered and executed in one response.
 - `git commit` / `git push` only when explicitly asked.
 - **Do only what is explicitly asked.** Never take proactive side-actions (writing memory files, extra docs, cleanup, anything not requested) without asking first. If something seems urgently needed, ask permission — don't just do it.
 - **Testing scope:** after a change, run only the test file(s) relevant to it by default — not the full suite. Run the full suite only when explicitly asked, *except* when there's real doubt the change could affect other parts of the codebase (e.g. it touches a shared token/type other boards or modules also read) — then run the full suite anyway without waiting to be asked.
@@ -45,9 +43,11 @@ If the user says this (or equivalent — you're visibly failing/repeating a mist
 ## Response format
 - End every response with a 2-line **Summary** (what changed) and **Action items** (what's outstanding / what the user needs to do), unless the response is a single short answer with nothing to summarize.
 
-## Ongoing audit duty
-- **Investigate before asking.** You have direct file/code access — when something looks wrong, read and cross-check every related file yourself before asking a clarifying question. Only ask if the code truly can't resolve the ambiguity, and ask once, not iteratively.
-- **"Complete audit" means checking for structural duplication, not just the flagged area.** Systematically scan for parallel/duplicate entry points, configs, or files serving the same purpose (multiple HTML pages, multiple config blocks, etc.) as a standing audit category — not only after being pointed at one instance.
-- No duplicate, contradictory, or dead code/doc lines are acceptable as "known issues" — if found, they get flagged and fixed, not just documented as a gotcha to work around.
-- Before implementing anything non-trivial, check whether the change touches a place where two sources of truth might exist (e.g. a value defined in more than one file) — don't assume a single edit covers the real behaviour.
-- If something is duplicated, wrong, low-quality, or an existing approach could be meaningfully better — say so and propose a fix, but wait for explicit approval before editing, same as any other change under Mode above.
+## Autonomous mode
+- Only when the user says "autonomous" + a scope: do every in-scope item with no questions, no commits/pushes, no product decisions; log each item (evidence, tests, open questions) in `PROJECTS/SmartBeads/AUTONOMOUS_LOG.md`.
+- Full rules and stop conditions: `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md` § Autonomous mode.
+
+## Audit duty
+- Investigate before asking (read the code yourself; ask once, only if the code can't answer). Audits verify by running; docs, tests, green CI and earlier audits are claims, never proof.
+- Check for duplicate / dead / contradictory code, docs and second sources of truth; flag them and propose a fix, but edit only on go.
+- Full rules: `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md` § Audit Completeness (standing audit duties) and `GPT_PROJECT_AUDIT_05P.md` § Trust rules.

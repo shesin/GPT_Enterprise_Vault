@@ -93,6 +93,118 @@ async function main() {
       await ctx.close();
     }
 
+    // 1b. Clocks follow real time: one throttled callback after a long gap (a hidden tab) still ends the game.
+    {
+      const { ctx, page } = await open(browser, { clock: true });
+      await startPvp(page, { timer: '2' });
+      await humanMove(page, '6x4');
+      await page.clock.fastForward(130_000); // fires each timer at most once, like a throttled hidden tab
+      await page.waitForTimeout(300);
+      const over = await sess(page, () => window.__SB_TEST__.session.isGameOver());
+      const reason = await sess(page, () => window.__SB_TEST__.session.getDisplayedReason());
+      record(
+        'Clocks: 130 s of real time passing in one throttled callback still expires the 2-minute timer',
+        over && /Timer expired/.test(reason ?? ''),
+        `over=${over} reason=${reason}`,
+      );
+      await ctx.close();
+    }
+
+    // 1c. Phone tap targets (W4): every visible control can be hit by a 44 x 44 px finger area, on the start page and in the game.
+    {
+      const tapAudit = () =>
+        document.evaluate
+          ? [...document.querySelectorAll('button, a[href], select, input:not([type=hidden]), summary, [role=button]')]
+              .filter((el) => {
+                const r = el.getBoundingClientRect();
+                const c = getComputedStyle(el);
+                return r.width > 4 && r.height > 4 && c.visibility !== 'hidden' && c.display !== 'none' && !el.disabled;
+              })
+              .filter((el) => {
+                const r = el.getBoundingClientRect();
+                if (r.width >= 43.5 && r.height >= 43.5) return false;
+                const cx = r.left + r.width / 2;
+                const cy = r.top + r.height / 2;
+                // the 4 corners of a 44 px box around the centre must still land on this control
+                return ![[-21, -21], [21, -21], [-21, 21], [21, 21]].every(([dx, dy]) => {
+                  const hit = document.elementFromPoint(cx + dx, cy + dy);
+                  return hit && (hit === el || el.contains(hit));
+                });
+              })
+              .map((el) => `${el.tagName}#${el.id}.${String(el.className).slice(0, 30)} ${el.getBoundingClientRect().width.toFixed(0)}x${el.getBoundingClientRect().height.toFixed(0)}`)
+          : [];
+      const { ctx, page } = await open(browser, { viewport: { width: 375, height: 812 } });
+      await page.goto(URL.replace(/[?&]play=1/, ''), { waitUntil: 'networkidle' }); // the real start page (hub)
+      await page.waitForTimeout(300);
+      const hubSmall = await page.evaluate(tapAudit);
+      await page.goto(URL, { waitUntil: 'networkidle' });
+      await page.waitForSelector('#board');
+      await page.selectOption('#hub-mode-select', 'pvp', { force: true });
+      await page.locator('#restart-btn').click();
+      await page.waitForTimeout(500);
+      const gameSmall = await page.evaluate(tapAudit);
+      record(
+        'Phone tap targets: no control smaller than a 44 px finger area (start page and in game)',
+        hubSmall.length === 0 && gameSmall.length === 0,
+        `hub=${JSON.stringify(hubSmall)} game=${JSON.stringify(gameSmall)}`,
+      );
+      await ctx.close();
+    }
+
+    // 1d. Keyboard play (W3): a whole move with Tab / arrows / Enter, no mouse.
+    {
+      const { ctx, page } = await open(browser);
+      await startPvp(page);
+      const mv = await page.evaluate(() => {
+        const m = window.__SB_TEST__.session.getEngine().getLegalMoves()[0];
+        return { from: m.from, to: m.to };
+      });
+      const before = (await snap(page)).moveCount;
+      await page.focus('#board');
+      const focusVisible = await page.evaluate(() => document.activeElement?.id === 'board');
+      const focusAt = async () => (await snap(page)).keyboardFocusId;
+      const dist = async (id, target) => {
+        const sn = (await snap(page)).screenNodes;
+        const a = sn.find((n) => n.id === id);
+        const b = sn.find((n) => n.id === target);
+        return Math.hypot(a.x - b.x, a.y - b.y);
+      };
+      // walk the focus ring to a node using only arrow keys (hill-climb on screen distance)
+      const walkTo = async (target) => {
+        for (let i = 0; i < 80 && (await focusAt()) !== target; i++) {
+          const cur = await focusAt();
+          const d0 = await dist(cur, target);
+          let moved = false;
+          for (const key of ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp']) {
+            await page.keyboard.press(key);
+            const now = await focusAt();
+            if (now === cur) continue;
+            if ((await dist(now, target)) < d0) {
+              moved = true;
+              break;
+            }
+            await page.keyboard.press({ ArrowRight: 'ArrowLeft', ArrowLeft: 'ArrowRight', ArrowDown: 'ArrowUp', ArrowUp: 'ArrowDown' }[key]);
+          }
+          if (!moved) return false;
+        }
+        return (await focusAt()) === target;
+      };
+      const reachedFrom = await walkTo(mv.from);
+      await page.keyboard.press('Enter');
+      const selected = (await snap(page)).selectedId === mv.from;
+      const reachedTo = await walkTo(mv.to);
+      await page.keyboard.press('Space');
+      await sleep(700);
+      const after = await snap(page);
+      const spoken = await page.evaluate(() => document.getElementById('board-focus-status')?.textContent ?? '');
+      record(
+        'Keyboard: Tab-focus the board, arrows reach a bead, Enter picks it, arrows + Space place it',
+        focusVisible && reachedFrom && selected && reachedTo && after.moveCount === before + 1 && spoken.length > 0,
+        `focus=${focusVisible} reachedFrom=${reachedFrom} selected=${selected} reachedTo=${reachedTo} moves ${before}->${after.moveCount} spoken="${spoken}"`,
+      );
+      await ctx.close();
+    }
+
     // 2. Undo after the AI opened must not leave the game stuck.
     {
       const { ctx, page } = await open(browser);

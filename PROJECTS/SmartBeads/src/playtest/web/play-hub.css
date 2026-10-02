@@ -871,10 +871,15 @@ body.hub-page {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  /* Squeeze "Choose board look" ~15% smaller on mobile (2026-09-29, human request). */
+  /* Was ~15% smaller on mobile (2026-09-29); W4 (2026-10-02) needs 44 px tap targets. */
   #hub-section-look .play-theme-swatch {
-    width: 34px;
-    height: 24px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .hub-page-look-swatch {
+    width: 44px;
+    height: 44px;
   }
 
   .hub-board-preview-grid {
@@ -949,6 +954,18 @@ body.hub-page {
   }
   .hub-sidebar-link {
     padding: 8px 6px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hub-mode-tile {
+    min-height: 44px;
+  }
+  /* W4: legal links are finger-sized on phones. */
+  .hub-legal-links a {
+    display: inline-block;
+    padding: 14px 6px;
   }
   .hub-ad-side {
     min-height: 56px;

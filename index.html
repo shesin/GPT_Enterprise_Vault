@@ -244,8 +244,9 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
     <main class="main">
       <span id="turn-count" hidden aria-hidden="true">0</span>
       <div class="board-frame">
-        <canvas id="board" width="500" height="680" role="img" aria-label="Smart Bead Chess board" aria-describedby="board-status"></canvas>
+        <canvas id="board" width="500" height="680" tabindex="0" role="application" aria-label="Smart Bead Chess board. Arrow keys move around the board, Enter or Space picks a bead and places it." aria-describedby="board-status"></canvas>
         <div id="board-status" class="sr-only" aria-live="polite"></div>
+        <div id="board-focus-status" class="sr-only" aria-live="polite"></div>
         <div id="board-celebration-fx" class="board-celebration-fx">
           <div id="celebration-halo" class="celebration-halo"></div>
           <div id="celebration-particles" class="celebration-particles"></div>

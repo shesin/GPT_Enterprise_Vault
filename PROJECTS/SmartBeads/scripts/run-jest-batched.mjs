@@ -112,6 +112,7 @@ const BATCHES = [
       'PROJECTS/SmartBeads/src/playtest/web/render/__tests__/CanvasBoardRenderer.moveFeedback.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/render/__tests__/CanvasBoardRenderer.boardLines.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/render/__tests__/timerDisplay.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/render/__tests__/keyboardNav.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/audio/__tests__/SoundEffects.test.ts',
     ],
   },

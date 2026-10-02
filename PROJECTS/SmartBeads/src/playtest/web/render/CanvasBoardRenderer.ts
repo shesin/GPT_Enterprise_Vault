@@ -45,6 +45,8 @@ export interface CanvasBoardView {
   coachGlowNodeIds?: readonly number[];
   /** off = no glow; gold-fill/black-gold-fill = gold glow, auto-resolved per board. */
   moveHintAura?: MoveHintAuraStyle;
+  /** Keyboard focus marker (W3): drawn as a dashed ring while the board has keyboard focus. */
+  keyboardFocusId?: number | null;
 }
 
 // Board geometry (intersection x/y/id) is fixed per board name — only
@@ -444,6 +446,24 @@ export function drawCanvasBoard(canvas: HTMLCanvasElement, view: CanvasBoardView
       if (showOccupiedAura) {
         drawBeadMoveHintAura(ctx, x, y, r, moveHintAura);
       }
+    }
+  }
+
+  if (view.keyboardFocusId != null) {
+    const focusNode = board.intersections[view.keyboardFocusId];
+    if (focusNode && focusNode.x !== undefined && focusNode.y !== undefined) {
+      const pt = project(focusNode);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, BEAD_RADIUS + 7, 0, Math.PI * 2);
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+      ctx.lineDashOffset = 4.5;
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.stroke();
+      ctx.restore();
     }
   }
 
