@@ -1,0 +1,10 @@
+{
+  "name": "Smart Bead Chess",
+  "short_name": "Bead Chess",
+  "description": "A bead strategy board game.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b3d24",
+  "theme_color": "#0b3d24",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

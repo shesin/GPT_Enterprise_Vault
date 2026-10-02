@@ -193,6 +193,14 @@ VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Sto
 
 ---
 
+### U1–U12. UI look and portal audit 2026-10-02 — status (evidence and wording: `GPT_PROJECT_AUDIT_05P.md` § 15 and § 16)
+
+- **Done 2026-10-02 (browser-verified, covered by `m3-flow-gate.mjs`):** U3 phone start page shows the Play buttons on the first screen; U4 fonts self-hosted; U6 star legend + accessible star text; U7 mode help text; U8 Warm Walnut panel contrast (all 9 looks now measured at 4.5:1 or better); U9 dialog focus, Tab trap, Escape; U10 Menu button in the game; U12 favicon, meta description, share card, manifest, no-JavaScript message; U1/U2 draft Privacy, Terms and Credits pages, footer links, music credit.
+- **Declined:** U5 (the whole start page deliberately uses the system font; tiles were not inconsistent); U11 (live board in the look preview: Shekhar removed the preview lines on 2026-09-24).
+- **Still open (needs the owner):** (a) review and finish the Privacy and Terms drafts and add a support e-mail address (`public/privacy.html`, `terms.html`); (b) confirm the source and licence of the sound effects in `public/audio` and state it on the Credits page; (c) read the soundimage.org licence and host the music files yourself (they are still hot-linked); (d) ad / consent flow when real ads are added; (e) hub items that are not built (Community, Tournament, Review, Online play) still show "coming soon"; (f) first-run sound hint (sound is off by default); (g) Firefox cannot be launched on the dev PC, so it is untested.
+
+---
+
 # PART B — APP (Android)
 
 ## Claude task 

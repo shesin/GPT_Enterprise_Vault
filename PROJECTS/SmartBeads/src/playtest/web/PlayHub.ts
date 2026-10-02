@@ -27,7 +27,7 @@ const HUB_MODE_TILES: ReadonlyArray<{ value: HubModeValue; label: string; disabl
 ];
 
 const HUB_MODE_HELP_LINES = [
-  'Play vs AI — You vs the computer. Pick board and difficulty on the board page.',
+  'Play vs AI — You vs the computer. Pick the board above; set the difficulty on the next page.',
   'Watch AI vs AI — Two AIs play; you watch. Good for learning pace and rules.',
   'Play with a Friend (Same Device) — Pass the phone after each turn. No room code needed.',
   'Play with a Friend (Online) — Create or join a room on another device. Coming soon until Phase 2.',
@@ -108,6 +108,14 @@ function populateHubBoardGrid(
       btn.append(badge);
     }
     btn.append(icon, label, sub);
+    // The stars are decoration for sighted players; say the same thing in words for everyone else.
+    btn.title = starCount
+      ? `${entry.displayName} — recommended (${starCount} of 3 stars)`
+      : entry.displayName;
+    btn.setAttribute(
+      'aria-label',
+      `${primary}, ${secondary}${starCount ? `, recommended ${starCount} of 3 stars` : ''}`,
+    );
     btn.addEventListener('click', () => onSelect(entry.id));
     grid.appendChild(btn);
   });
@@ -284,6 +292,7 @@ export function bootstrapPlayHub(
     selectedBoardId = boardId;
     boardSelect!.value = boardId;
     syncBoardTileSelection(boardGrid!, boardId);
+    syncCurrentBoardLine(boardId);
   }
 
   function launchHubMode(hubMode: HubModeValue): void {
@@ -293,6 +302,14 @@ export function bootstrapPlayHub(
     const action: HubLaunchAction = mode === 'spectate' ? 'spectate' : 'play';
     enterPlay(selectedBoardId, mode, action);
   }
+
+  /** Names the chosen board right above the Play buttons (they sit above the board picker on phones). */
+  function syncCurrentBoardLine(boardId: ProductBoardId): void {
+    const line = document.getElementById('hub-current-board');
+    const entry = listProductBoards().find((e) => e.id === boardId);
+    if (line && entry) line.textContent = `Board: ${entry.displayName}`;
+  }
+  syncCurrentBoardLine(selectedBoardId);
 
   populateHubBoardSelect(boardSelect, selectedBoardId);
   populateHubBoardGrid(boardGrid, boardSelect, selectedBoardId, setSelectedBoard);

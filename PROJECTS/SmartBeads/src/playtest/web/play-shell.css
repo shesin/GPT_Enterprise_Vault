@@ -1466,3 +1466,28 @@ canvas {
     scroll-behavior: auto !important;
   }
 }
+
+/* UI audit 2026-10-02 (AUDIT § 15): Menu button, music credit, legal links. */
+#home-btn {
+  background: transparent;
+  color: var(--gold);
+  border: 2px solid var(--gold);
+  font-weight: 600;
+}
+#home-btn:hover {
+  box-shadow: inset 0 0 0 999px rgba(212, 168, 75, 0.14);
+}
+#home-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.bgm-credit,
+.settings-legal {
+  margin: 10px 2px 0;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.bgm-credit a,
+.settings-legal a {
+  color: inherit;
+}

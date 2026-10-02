@@ -292,6 +292,149 @@ async function main() {
       record('All 7 boards x 3 modes launch without page errors', bad.length === 0 && errors.length === 0, `bad=${bad.join(',')} errors=${errors.slice(0, 2).join('|')}`);
       await ctx.close();
     }
+
+    // 11. Dialogs manage focus: focus moves in, Tab stays inside, Escape closes the result box, focus returns.
+    {
+      const { ctx, page } = await open(browser);
+      await startPvp(page);
+      page.once('dialog', (d) => d.accept());
+      await page.locator('#resign-btn').click();
+      await page.waitForSelector('#resign-offer-modal', { state: 'visible', timeout: 5000 });
+      await page.waitForTimeout(150);
+      const inside = () =>
+        page.evaluate(() => document.getElementById('resign-offer-modal').contains(document.activeElement));
+      const focusMoved = await inside();
+      let trapped = true;
+      for (let i = 0; i < 6; i += 1) {
+        await page.keyboard.press('Tab');
+        if (!(await inside())) trapped = false;
+      }
+      await page.keyboard.press('Shift+Tab');
+      if (!(await inside())) trapped = false;
+      await page.locator('#resign-agree-btn').click();
+      await page.waitForSelector('#result-modal', { state: 'visible', timeout: 5000 });
+      await page.waitForTimeout(150);
+      const resultFocus = await page.evaluate(() => document.getElementById('result-modal').contains(document.activeElement));
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+      const closed = !(await page.locator('#result-modal').isVisible());
+      record('Dialogs: focus moves in, Tab stays inside, Escape closes the result box', focusMoved && trapped && resultFocus && closed, `moved=${focusMoved} trapped=${trapped} resultFocus=${resultFocus} closed=${closed}`);
+      await ctx.close();
+    }
+
+    // 12. Menu button: asks when a game is under way, then returns to the start page.
+    {
+      const { ctx, page } = await open(browser);
+      await startPvp(page);
+      await humanMove(page, '6x4');
+      page.once('dialog', (d) => d.dismiss());
+      await page.locator('#home-btn').click();
+      await page.waitForTimeout(300);
+      const stayed = await page.locator('#play-shell').isVisible();
+      page.once('dialog', (d) => d.accept());
+      await page.locator('#home-btn').click();
+      await page.waitForTimeout(400);
+      const atHub = await page.locator('#play-hub').isVisible();
+      record('Menu button: Cancel stays in the game, OK returns to the start page', stayed && atHub, `stayed=${stayed} atHub=${atHub}`);
+      await ctx.close();
+    }
+
+    // 13. Hub: first screen on a phone shows the Play buttons; board names carry the star meaning; no Google requests.
+    for (const vp of [{ width: 375, height: 812 }, { width: 360, height: 640 }]) {
+      const reqs = [];
+      const ctx = await browser.newContext({ viewport: vp });
+      const page = await ctx.newPage();
+      page.on('request', (r) => reqs.push(r.url()));
+      await page.goto(URL.replace(/[?&]play=1/, ''), { waitUntil: 'networkidle' });
+      await page.waitForSelector('.hub-mode-tile');
+      const top = await page.evaluate(() => {
+        const b = [...document.querySelectorAll('.hub-mode-tile')].find((t) => t.dataset.hubMode === 'pve').getBoundingClientRect();
+        return { top: Math.round(b.top), bottom: Math.round(b.bottom), ih: innerHeight };
+      });
+      const info = await page.evaluate(() => ({
+        legend: !!document.getElementById('hub-star-legend')?.offsetParent,
+        starLabel: document.querySelector('.hub-board-tile[data-board-id="6x4"]')?.getAttribute('aria-label') ?? '',
+        board: document.getElementById('hub-current-board')?.textContent ?? '',
+      }));
+      const google = reqs.filter((u) => /googleapis|gstatic/.test(u)).length;
+      record(
+        `Hub ${vp.width}x${vp.height}: Play vs AI visible on the first screen, star legend, accessible star text, no Google requests`,
+        top.bottom <= top.ih && info.legend && /recommended 3 of 3/.test(info.starLabel) && /6-bead/.test(info.board) && google === 0,
+        `playButton=${JSON.stringify(top)} ${JSON.stringify(info)} google=${google}`,
+      );
+      await ctx.close();
+    }
+
+    // 14. Contrast of small text in every look (WCAG AA 4.5:1), measured on the real page.
+    // Uses the start page (the swatches are only wired there; with ?play=1 a click does nothing, which would make this check vacuous).
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      const page = await ctx.newPage();
+      await page.goto(URL.replace(/[?&]play=1/, ''), { waitUntil: 'networkidle' });
+      await page.waitForSelector('.hub-mode-tile');
+      const low = await page.evaluate(async () => {
+        const cv = document.createElement('canvas');
+        cv.width = cv.height = 1;
+        const cx = cv.getContext('2d', { willReadFrequently: true });
+        const parse = (c) => {
+          cx.clearRect(0, 0, 1, 1);
+          cx.globalCompositeOperation = 'copy';
+          cx.fillStyle = c;
+          cx.fillRect(0, 0, 1, 1);
+          const d = cx.getImageData(0, 0, 1, 1).data;
+          return [d[0], d[1], d[2], d[3] / 255];
+        };
+        const lum = ([r, g, b]) => {
+          const f = (v) => ((v /= 255) <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+          return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        };
+        const over = (fg, bg) => [0, 1, 2].map((i) => fg[i] * fg[3] + bg[i] * (1 - fg[3]));
+        const effBg = (el) => {
+          const layers = [];
+          for (let e = el; e; e = e.parentElement) {
+            const b = parse(getComputedStyle(e).backgroundColor);
+            if (b[3] > 0) layers.push(b);
+            if (b[3] >= 0.99) break;
+          }
+          let base = parse(getComputedStyle(document.body).backgroundColor).slice(0, 3);
+          if (layers.length && layers[layers.length - 1][3] >= 0.99) base = layers.pop().slice(0, 3);
+          for (const l of layers.reverse()) base = over(l, base);
+          return base;
+        };
+        const ratio = (el) => {
+          const fg0 = parse(getComputedStyle(el).color);
+          const bg = effBg(el);
+          const a = lum(over(fg0, bg));
+          const b = lum(bg);
+          return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        };
+        const sels = ['.play-label', '#settings-panel h2', '.play-block-row .val', '#cream-panel-name', '.tiny'];
+        const out = [];
+        const seen = new Set();
+        const swatches = [...document.querySelectorAll('#hub-play-theme-setting .play-theme-swatch')];
+        for (const sw of swatches) {
+          // Pick the look on the start page, enter a game (which applies the stored look), measure, go back.
+          sw.click();
+          const looked = document.querySelector('#hub-play-theme-setting .play-theme-swatch.is-active')?.getAttribute('aria-label');
+          seen.add(looked);
+          [...document.querySelectorAll('.hub-mode-tile')].find((t) => t.dataset.hubMode === 'pvp').click();
+          await new Promise((r) => setTimeout(r, 500));
+          for (const s of sels) {
+            const el = [...document.querySelectorAll(s)].find((e) => e.offsetParent);
+            if (el) {
+              const r = ratio(el);
+              if (r < 4.5) out.push(`${sw.getAttribute('aria-label')} ${s} ${r.toFixed(2)}`);
+            }
+          }
+          document.getElementById('home-btn').click();
+          await new Promise((r) => setTimeout(r, 300));
+        }
+        if (seen.size < 9) out.push(`only ${seen.size} distinct looks were applied`);
+        return out;
+      });
+      record('All 9 looks are applied and their small panel text meets 4.5:1 contrast', low.length === 0, low.join('; '));
+      await ctx.close();
+    }
   } finally {
     await browser.close();
   }

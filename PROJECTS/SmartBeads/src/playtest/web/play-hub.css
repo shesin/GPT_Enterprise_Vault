@@ -433,8 +433,9 @@ body.hub-page {
   font-size: 0.72rem;
   font-weight: 600;
   padding: 9px 6px;
-  cursor: not-allowed;
-  opacity: 0.75;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
 }
 
 .hub-main {
@@ -561,6 +562,7 @@ body.hub-page {
   color: var(--hub-centre-text, var(--hub-text));
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  font: inherit;
 }
 
 .hub-board-tile-badge {
@@ -891,5 +893,70 @@ body.hub-page {
 
   .hub-content {
     padding: 14px 14px 10px;
+  }
+}
+
+/* UI audit 2026-10-02 (AUDIT § 15): star legend, current-board line, legal links, phone first screen. */
+.hub-star-legend {
+  margin: 8px 2px 0;
+  font-size: 0.72rem;
+  color: var(--hub-centre-muted, var(--hub-muted));
+}
+
+.hub-current-board {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--hub-centre-muted, var(--hub-muted));
+  text-align: right;
+}
+
+.hub-legal-links {
+  display: none;
+  margin: 14px 0 4px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--hub-centre-muted, var(--hub-muted));
+}
+
+.hub-legal-links a {
+  color: inherit;
+}
+
+@media (max-width: 860px) {
+  /* Phone / tablet first screen: how-to-play row, then the Play buttons with the chosen board named
+     right above them, then the board and look pickers (the board is preselected, so Play works at once). */
+  #hub-section-mode {
+    grid-row: 2 / span 1 !important;
+  }
+  #hub-section-mode-tiles {
+    grid-row: 3 / span 2 !important;
+  }
+  #hub-section-board {
+    grid-row: 5 / span 5 !important;
+  }
+  #hub-section-look {
+    grid-row: 10 / span 5 !important;
+  }
+  .hub-rail--left {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  .hub-rail--left .hub-brand-block,
+  .hub-rail--left .hub-sidebar-link--active,
+  .hub-rail--left .hub-sidebar-spacer,
+  .hub-rail--left .hub-rail-foot {
+    display: none;
+  }
+  .hub-sidebar-link {
+    padding: 8px 6px;
+  }
+  .hub-ad-side {
+    min-height: 56px;
+  }
+  .hub-hero {
+    margin-bottom: 10px;
+  }
+  .hub-legal-links {
+    display: block;
   }
 }

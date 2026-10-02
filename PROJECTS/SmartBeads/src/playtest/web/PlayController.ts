@@ -78,6 +78,7 @@ import {
   writeMoveHintAuraToggle,
 } from './layout/moveHintAuraThemes';
 import { populateBgmSelect, populateBoardSelect } from './layout/selectPopulators';
+import { installModalFocus } from './layout/modalFocus';
 import {
   BoardAnimState,
   drawCanvasBoard,
@@ -1927,6 +1928,12 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
     soundEffects.playButtonTap();
     resetGame();
   });
+  document.getElementById('home-btn')?.addEventListener('click', () => {
+    if (matchInProgress() && !window.confirm('Leave this game and go back to the start page?'))
+      return;
+    soundEffects.playButtonTap();
+    returnToHub();
+  });
   function dismissResultModal(): void {
     if (!session.isGameOver() || resignationCtl.getPendingResignPlayer() !== null || isCoachMode())
       return;
@@ -1938,6 +1945,8 @@ export function bootstrapPlayShell(onReady?: () => void, deps: PlayShellDeps = {
   playAgainBtn.addEventListener('click', () => {
     resetGame();
   });
+  installModalFocus(resultModal, { onEscape: dismissResultModal });
+  installModalFocus(resignOfferModal);
   resultViewBoardBtn.addEventListener('click', () => {
     soundEffects.playButtonTap();
     dismissResultModal();

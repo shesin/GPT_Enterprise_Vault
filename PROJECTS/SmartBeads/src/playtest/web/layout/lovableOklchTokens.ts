@@ -64,8 +64,12 @@ export const LOVABLE_COMPLETE_BOARD_THEMES: readonly LovableBoardTokens[] = [
     // distinct frame colours already set it apart from the pale pastel light
     // boards; reads better grouped with the other matched dark/medium boards.
     label: 'Warm Walnut',
-    surface: 'oklch(0.55 0.075 55)',
-    shadow: 'oklch(0.42 0.07 52)',
+    // Side panels and page are darker than the board (2026-10-02, UI audit § 15 item 8): the panel text
+    // measured 3.3:1 on the old 0.55 panel. The board canvas keeps its original walnut via boardSurface / boardShadow.
+    surface: 'oklch(0.40 0.07 54)',
+    shadow: 'oklch(0.30 0.065 52)',
+    boardSurface: 'oklch(0.55 0.075 55)',
+    boardShadow: 'oklch(0.42 0.07 52)',
     frameOuter: 'oklch(0.32 0.06 50)',
     frameInner: 'oklch(0.18 0.045 48)',
     lines: 'oklch(0.76 0.055 80)',
