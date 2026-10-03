@@ -6,10 +6,13 @@
  * Requires the dev server (m2-2step-npm-gate.mjs starts it) and Playwright's Chromium.
  */
 import { spawn } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { chromium, firefox, webkit } from 'playwright';
 import { playShellUrl } from './lib/play-shell-setup.mjs';
 import { clickNode } from './lib/project-node.mjs';
 
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const URL = playShellUrl();
 const ENGINES = { chromium, firefox, webkit };
 const ENGINE = process.env.SB_BROWSER || 'chromium';
@@ -84,6 +87,7 @@ async function ensureGameServer() {
   };
   if (await up()) return null;
   const child = spawn('npx', ['tsx', 'PROJECTS/SmartBeads/server/main.ts'], {
+    cwd: REPO_ROOT,
     shell: true,
     env: { ...process.env, PORT: '3001' },
     stdio: 'ignore',

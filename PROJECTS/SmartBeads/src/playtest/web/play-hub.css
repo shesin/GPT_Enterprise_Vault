@@ -964,8 +964,10 @@ body.hub-page {
   }
   /* W4: legal links are finger-sized on phones. */
   .hub-legal-links a {
-    display: inline-block;
-    padding: 14px 6px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 6px;
   }
   .hub-ad-side {
     min-height: 56px;
