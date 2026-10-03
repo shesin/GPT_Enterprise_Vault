@@ -209,3 +209,94 @@ describe('WebSocket', () => {
     blue.ws.close();
   });
 });
+
+describe('presence over the wire', () => {
+  it('tells the other player when a socket closes and when it comes back', async () => {
+    const { code, red, blue } = await newGame();
+    const a = listen(code, red.token as string);
+    const b = listen(code, blue.token as string);
+    await Promise.all([a.opened, b.opened]);
+    await a.until((m) => m.type === 'state');
+    a.messages.length = 0;
+    b.ws.close();
+    await a.until((m) => m.type === 'state' && !m.view.opponentOnline);
+    a.messages.length = 0;
+    const b2 = listen(code, blue.token as string);
+    await a.until((m) => m.type === 'state' && m.view.opponentOnline);
+    a.ws.close();
+    b2.ws.close();
+  });
+
+  it('terminates a connection that stops answering pings, so the other side sees it gone', async () => {
+    const quiet = await startApp({ port: 0, now: () => clock.t, tickMs: 50, pingMs: 60 });
+    try {
+      const mk = async (p: string, body: unknown) =>
+        (await (
+          await fetch(`http://127.0.0.1:${quiet.port}${p}`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+        ).json()) as Record<string, string>;
+      const made = await mk('/api/rooms', { boardId: '6x4' });
+      const joined = await mk(`/api/rooms/${made.code}/join`, {});
+      const a = new WebSocket(
+        `ws://127.0.0.1:${quiet.port}/ws?code=${made.code}&token=${made.token}`,
+      );
+      const seen: boolean[] = [];
+      a.on('message', (d) => {
+        const m = JSON.parse(String(d)) as ServerMessage;
+        if (m.type === 'state') seen.push(m.view.opponentOnline);
+      });
+      const b = new WebSocket(
+        `ws://127.0.0.1:${quiet.port}/ws?code=${made.code}&token=${joined.token}`,
+      );
+      await new Promise<void>((r) => b.on('open', () => r()));
+      b.pause(); // the socket stays open but its pongs are never read: a dead connection
+      (b as unknown as { _socket: { pause(): void } })._socket.pause();
+      const end = Date.now() + 3000;
+      while (!seen.includes(false) && Date.now() < end) await new Promise((r) => setTimeout(r, 50));
+      expect(seen).toContain(false);
+      b.terminate();
+      a.close();
+    } finally {
+      await quiet.close();
+    }
+  });
+
+  it('a connection that keeps answering pings stays online however long it is open', async () => {
+    const t = { v: 7_000_000 };
+    const live = await startApp({ port: 0, now: () => t.v, tickMs: 50, pingMs: 60 });
+    try {
+      const mk = async (p: string, body: unknown) =>
+        (await (
+          await fetch(`http://127.0.0.1:${live.port}${p}`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+        ).json()) as Record<string, string>;
+      const made = await mk('/api/rooms', { boardId: '6x4' });
+      const joined = await mk(`/api/rooms/${made.code}/join`, {});
+      const open = (token: string) =>
+        new WebSocket(`ws://127.0.0.1:${live.port}/ws?code=${made.code}&token=${token}`);
+      const a = open(made.token as string);
+      const seen: boolean[] = [];
+      a.on('message', (d) => {
+        const m = JSON.parse(String(d)) as ServerMessage;
+        if (m.type === 'state') seen.push(m.view.opponentOnline);
+      });
+      const b = open(joined.token as string);
+      await new Promise<void>((r) => b.on('open', () => r()));
+      for (let i = 0; i < 3; i++) {
+        t.v += 15_000; // each step is under the 20 s limit, the total is far over it
+        await new Promise((r) => setTimeout(r, 300)); // several pings and pongs happen
+      }
+      expect(seen).not.toContain(false);
+      a.close();
+      b.close();
+    } finally {
+      await live.close();
+    }
+  });
+});

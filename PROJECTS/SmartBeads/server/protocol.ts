@@ -52,6 +52,10 @@ export interface RoomView {
   winner: Player | 'DRAW' | null;
   reason: string | null;
   pendingResign: Player | null;
+  /** False while the other player has not been heard from (closed tab, lost connection). A disconnect never loses the game by itself. */
+  opponentOnline: boolean;
+  /** Both players are signed in, so this game changes their ratings. */
+  rated: boolean;
 }
 
 export type ServerMessage = { type: 'state'; view: RoomView } | { type: 'error'; message: string };

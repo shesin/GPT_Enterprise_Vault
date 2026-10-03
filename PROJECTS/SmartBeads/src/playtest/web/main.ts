@@ -2,6 +2,8 @@ import { bootstrapPlayHub } from './PlayHub';
 import { bootstrapPlayShell } from './PlayController';
 import { installGlobalErrorBanner } from './globalErrorBanner';
 import { createBrowserOnlineClient, wireOnlineLobby } from './online/onlineLobby';
+import { wireAccountPanel } from './account/accountPanel';
+import { wireTournamentPanel } from './tournament/tournamentPanel';
 import { resumeOnlineGame } from './online/onlineResume';
 import { AiSearchClient, type AiWorkerLike } from './feature/aiSearchClient';
 import AiSearchWorker from './feature/aiSearchWorker?worker';
@@ -45,6 +47,11 @@ function boot(): void {
   bootstrapPlayShell(
     (launcher) => {
       const lobby = wireOnlineLobby((game) => {
+        showPlayShell();
+        launcher.enterOnline(game);
+      });
+      wireAccountPanel();
+      wireTournamentPanel((game) => {
         showPlayShell();
         launcher.enterOnline(game);
       });

@@ -17,6 +17,19 @@ import { ONLINE_BOARDS, type Intent, type RoomSettings, type RoomView } from './
 /** A resignation offer nobody answers lapses after this long, so a silent opponent cannot freeze a game. */
 export const RESIGN_OFFER_LAPSE_MS = 2 * 60 * 1000;
 
+/** A player counts as connected while they were heard from (socket pong, poll, or action) this recently. */
+export const PRESENCE_MS = 20_000;
+
+/** What a finished game reports once, so ratings (and tournaments) can use it. */
+export interface GameResult {
+  code: string;
+  boardId: string;
+  winner: Player | 'DRAW';
+  moveCount: number;
+  reason: string | null;
+  users: Partial<Record<Player, string>>;
+}
+
 export type ActResult = { ok: true } | { ok: false; error: string };
 
 export class GameRoom {
@@ -32,6 +45,16 @@ export class GameRoom {
   private resignOfferedAtMs = 0;
   private lastTickMs: number;
   private carryMs = 0;
+  private lastSeen: Partial<Record<Player, number>> = {};
+  private presenceKey = '';
+  /** Signed-in account behind each seat (a rated game needs both). */
+  private users: Partial<Record<Player, string>> = {};
+  private resultReported = false;
+  /** Tournament room: both seats belong to named players; each claims theirs when they arrive. */
+  private reserved = false;
+  private claimed = new Set<Player>();
+  /** Called once, when the game ends. */
+  onFinished: ((result: GameResult) => void) | undefined;
   /** Last time anyone touched the room (cleanup of abandoned rooms). */
   lastActivityMs: number;
 
@@ -90,19 +113,59 @@ export class GameRoom {
   }
 
   /** Takes the next free seat (RED first). Returns the seat and its secret token. */
-  join(): { seat: Player; token: string } | null {
+  join(userId?: string): { seat: Player; token: string } | null {
+    if (this.reserved) return null;
     const seat: Player | null = !this.tokens.RED ? 'RED' : !this.tokens.BLUE ? 'BLUE' : null;
     if (!seat) return null;
     const token = randomBytes(18).toString('base64url');
     this.tokens[seat] = token;
-    if (this.tokens.RED && this.tokens.BLUE && !this.started) {
-      this.started = true;
-      this.lastTickMs = this.now();
-      this.carryMs = 0;
-      this.session.resetTurnClock();
-    }
+    if (userId) this.users[seat] = userId;
+    if (this.tokens.RED && this.tokens.BLUE) this.startGame();
+    this.markSeen(seat);
+    this.presenceKey = this.presenceNow();
     this.touch();
     return { seat, token };
+  }
+
+  private startGame(): void {
+    if (this.started) return;
+    this.started = true;
+    this.lastTickMs = this.now();
+    this.carryMs = 0;
+    this.session.resetTurnClock();
+  }
+
+  /** Tournament room: names the two players. Nobody else can sit down. */
+  reserve(redUserId: string, blueUserId: string): void {
+    this.reserved = true;
+    this.users = { RED: redUserId, BLUE: blueUserId };
+    this.tokens = {
+      RED: randomBytes(18).toString('base64url'),
+      BLUE: randomBytes(18).toString('base64url'),
+    };
+  }
+
+  /** A reserved player arrives (asks for their seat). The game starts when both have. */
+  claim(userId: string): { seat: Player; token: string } | null {
+    if (!this.reserved) return null;
+    const seat: Player | null =
+      this.users.RED === userId ? 'RED' : this.users.BLUE === userId ? 'BLUE' : null;
+    if (!seat) return null;
+    this.claimed.add(seat);
+    if (this.claimed.size === 2) this.startGame();
+    this.markSeen(seat);
+    this.presenceKey = this.presenceNow();
+    this.touch();
+    return { seat, token: this.tokens[seat]! };
+  }
+
+  /** Which of the reserved players have arrived (for no-show decisions). */
+  claimedUserIds(): string[] {
+    return [...this.claimed].map((seat) => this.users[seat]!);
+  }
+
+  get hasStarted(): boolean {
+    return this.started;
   }
 
   seatFor(token: string | null | undefined): Player | null {
@@ -110,6 +173,25 @@ export class GameRoom {
     if (this.tokens.RED === token) return 'RED';
     if (this.tokens.BLUE === token) return 'BLUE';
     return null;
+  }
+
+  /** The seat was just heard from (does not change the game, so it does not bump the version). */
+  markSeen(seat: Player): void {
+    this.lastSeen[seat] = this.now();
+  }
+
+  /** The seat's last connection closed: it counts as disconnected at once. */
+  markGone(seat: Player): void {
+    delete this.lastSeen[seat];
+  }
+
+  private isOnline(seat: Player): boolean {
+    const t = this.lastSeen[seat];
+    return t !== undefined && this.now() - t < PRESENCE_MS;
+  }
+
+  private presenceNow(): string {
+    return `${this.isOnline('RED')}${this.isOnline('BLUE')}`;
   }
 
   getVersion(): number {
@@ -122,6 +204,31 @@ export class GameRoom {
   }
 
   act(seat: Player, intent: Intent): ActResult {
+    const result = this.actInner(seat, intent);
+    this.reportIfFinished();
+    return result;
+  }
+
+  private reportIfFinished(): void {
+    if (this.resultReported || !this.started || !this.session.isGameOver()) return;
+    this.resultReported = true;
+    const winner = this.session.getDisplayedWinner();
+    this.onFinished?.({
+      code: this.code,
+      boardId: this.boardId,
+      winner: winner === 'RED' || winner === 'BLUE' ? winner : 'DRAW',
+      moveCount: this.session.getMoveCount(),
+      reason: this.session.getDisplayedReason() ?? null,
+      users: { ...this.users },
+    });
+  }
+
+  /** Both seats belong to signed-in players, so the game counts for ratings. */
+  get rated(): boolean {
+    return !!this.users.RED && !!this.users.BLUE && this.users.RED !== this.users.BLUE;
+  }
+
+  private actInner(seat: Player, intent: Intent): ActResult {
     if (!this.started) return { ok: false, error: 'Waiting for the second player.' };
     this.tick(); // settle the clocks up to now before judging the action
     if (this.session.isGameOver()) return { ok: false, error: 'The game is over.' };
@@ -177,8 +284,24 @@ export class GameRoom {
     return { ok: false, error: 'Unknown action.' };
   }
 
-  /** Clock authority: apply the whole seconds of real time that passed. Returns true when anything changed. */
+  /** Clocks and presence up to now. Returns true when anything changed (so the transport pushes). */
   tick(): boolean {
+    const clocks = this.tickClocks();
+    this.reportIfFinished();
+    let presence = false;
+    if (this.started && !this.session.isGameOver()) {
+      const key = this.presenceNow();
+      if (key !== this.presenceKey) {
+        this.presenceKey = key;
+        this.version += 1;
+        presence = true;
+      }
+    }
+    return clocks || presence;
+  }
+
+  /** Clock authority: apply the whole seconds of real time that passed. Returns true when anything changed. */
+  private tickClocks(): boolean {
     if (!this.started || this.session.isGameOver()) {
       this.lastTickMs = this.now();
       return false;
@@ -211,7 +334,9 @@ export class GameRoom {
       version: this.version,
       boardId: this.boardId,
       settings: this.settings,
-      seats: { RED: !!this.tokens.RED, BLUE: !!this.tokens.BLUE },
+      seats: this.reserved
+        ? { RED: this.claimed.has('RED'), BLUE: this.claimed.has('BLUE') }
+        : { RED: !!this.tokens.RED, BLUE: !!this.tokens.BLUE },
       you: viewer,
       started: this.started,
       currentPlayer: state.currentPlayer,
@@ -235,6 +360,8 @@ export class GameRoom {
       winner: over ? (this.session.getDisplayedWinner() ?? null) : null,
       reason: over ? (this.session.getDisplayedReason() ?? null) : null,
       pendingResign: this.pendingResign,
+      opponentOnline: this.isOnline(viewer === 'RED' ? 'BLUE' : 'RED'),
+      rated: this.rated,
     };
   }
 }

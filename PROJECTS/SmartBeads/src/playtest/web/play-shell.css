@@ -1572,3 +1572,5 @@ canvas {
 .settings-legal a {
   color: inherit;
 }
+
+#account-facebook:not([hidden]) { display: block; text-align: center; text-decoration: none; padding: 12px 0; }

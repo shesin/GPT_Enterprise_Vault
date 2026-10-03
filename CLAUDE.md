@@ -44,7 +44,9 @@ If the user says this (or equivalent — you're visibly failing/repeating a mist
 - End every response with a 2-line **Summary** (what changed) and **Action items** (what's outstanding / what the user needs to do), unless the response is a single short answer with nothing to summarize.
 
 ## Autonomous mode
-- Only when the user says "autonomous" + a scope: do every in-scope item with no questions, no commits/pushes, no product decisions; log each item (evidence, tests, open questions) in `PROJECTS/SmartBeads/AUTONOMOUS_LOG.md`.
+- Only when the user says "autonomous" + a scope: do every in-scope item with no questions, no commits/pushes; decide only what an in-scope item cannot finish without, and tag it (next bullet); log each item (evidence, tests, open questions) in `PROJECTS/SmartBeads/AUTONOMOUS_LOG.md`.
+- **Tag every decision and every PENDING item Claude writes** (in `GPT_PROJECT_DECISIONS_05P.md` and `GPT_PROJECT_PENDING_01P.md`) with **(Claude)** until Shekhar has reviewed it; once he has, change the tag to **(Claude & reviewed)**. No tag = Shekhar's own decision. An older "Claude — Shekhar to confirm" counts as (Claude).
+- **Done items leave PENDING:** when finished, remove the item from `GPT_PROJECT_PENDING_01P.md` and move it to `AUTONOMOUS_LOG.md` with evidence; verify zero net loss, show the new PENDING text first, don't renumber.
 - Full rules and stop conditions: `PROJECTS/SmartBeads/GPT_PROJECT_RULES_01P.md` § Autonomous mode.
 
 ## Audit duty

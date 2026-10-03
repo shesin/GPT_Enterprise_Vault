@@ -34,7 +34,7 @@
         
         
         
-      <button type="button" class="hub-sidebar-link hub-sidebar-link--active" aria-current="page" disabled="">smartbeadchess.com</button><span class="hub-sidebar-link hub-sidebar-spacer" aria-hidden="true"></span><button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="community">Community</button><button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="tournaments">Tournament</button><label for="hub-review-toggle" class="hub-sidebar-link hub-sidebar-link--soon hub-review-trigger" role="button" tabindex="0">Review</label></nav>
+      <button type="button" class="hub-sidebar-link hub-sidebar-link--active" aria-current="page" disabled="">smartbeadchess.com</button><span class="hub-sidebar-link hub-sidebar-spacer" aria-hidden="true"></span><button type="button" id="hub-account-btn" class="hub-sidebar-link">Sign in</button><button type="button" class="hub-sidebar-link hub-sidebar-link--soon" data-hub-nav="community">Community</button><button type="button" id="hub-tournament-btn" class="hub-sidebar-link">Tournament</button><label for="hub-review-toggle" class="hub-sidebar-link hub-sidebar-link--soon hub-review-trigger" role="button" tabindex="0">Review</label></nav>
       <div class="hub-review-panel" id="hub-review-panel">
         <div class="hub-review-panel-head">
           <span class="hub-rail-title">Player reviews</span>
@@ -247,6 +247,10 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
         <span id="online-bar-text" role="status" aria-live="polite"></span>
         <button type="button" id="online-copy-btn" class="online-copy-btn">Copy code</button>
       </div>
+      <div id="watch-idle-bar" class="online-bar" role="status" hidden>
+        <span>Still watching?</span>
+        <button type="button" id="watch-idle-btn" class="online-copy-btn">Tap to continue</button>
+      </div>
       <div class="board-frame">
         <canvas id="board" width="500" height="680" tabindex="0" role="application" aria-label="Smart Bead Chess board. Arrow keys move around the board, Enter or Space picks a bead and places it." aria-describedby="board-status"></canvas>
         <div id="board-status" class="sr-only" aria-live="polite"></div>
@@ -403,6 +407,57 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
       <p id="online-lobby-error" class="online-lobby-error" role="alert"></p>
       <div class="modal-actions">
         <button type="button" id="online-cancel-btn" class="result-view-board-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="account-dialog" role="dialog" aria-modal="true" aria-labelledby="account-title" style="display:none">
+    <div class="modal-card online-lobby-card">
+      <div class="modal-badge">ACCOUNT</div>
+      <h3 id="account-title" class="result-title">Your account</h3>
+      <div id="account-signed-out" class="online-lobby-section">
+        <p>Type your e-mail address and we send you a link that signs you in. No password.</p>
+        <label>E-mail <input id="account-email" type="email" autocomplete="email" spellcheck="false" placeholder="you@example.com" style="text-transform:none;letter-spacing:normal;font-size:1rem;text-align:left"></label>
+        <button type="button" id="account-send-btn" class="play-again-btn">Send me a sign-in link</button>
+        <div id="account-google" hidden></div>
+        <a id="account-facebook" class="result-view-board-btn" href="/api/auth/facebook/start" hidden>Continue with Facebook</a>
+      </div>
+      <div id="account-sent" class="online-lobby-section" hidden>
+        <p>We sent a sign-in link to <strong id="account-sent-to"></strong>. Open it on this device. It works once and expires in 15 minutes. Check your spam folder if it does not arrive.</p>
+      </div>
+      <div id="account-signed-in" class="online-lobby-section" hidden>
+        <p>Signed in as <strong id="account-who"></strong>.</p>
+        <label>Player name <input id="account-name" type="text" maxlength="24" autocomplete="nickname" spellcheck="false" style="text-transform:none;letter-spacing:normal;font-size:1rem;text-align:left"></label>
+        <button type="button" id="account-save-btn" class="play-again-btn">Save name</button>
+        <ul id="account-ratings" aria-label="Your ratings" style="margin:0;padding-left:1.2em;text-align:left"></ul>
+        <button type="button" id="account-remove-ads-btn" class="play-again-btn" hidden></button>
+        <p id="account-ads-status" hidden>Ads are removed on your account. Thank you.</p>
+        <button type="button" id="account-signout-btn" class="result-view-board-btn">Sign out</button>
+      </div>
+      <p id="account-message" class="online-lobby-error" role="status"></p>
+      <div class="modal-actions">
+        <button type="button" id="account-close-btn" class="result-view-board-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="tournament-dialog" role="dialog" aria-modal="true" aria-labelledby="tournament-title" style="display:none">
+    <div class="modal-card online-lobby-card" style="max-height:calc(100dvh - 32px);overflow-y:auto">
+      <div class="modal-badge">TOURNAMENTS</div>
+      <h3 id="tournament-title" class="result-title">Tournaments</h3>
+      <div id="tournament-list"></div>
+      <div id="tournament-admin" class="online-lobby-section" hidden>
+        <h4>Organiser: new event</h4>
+        <label>Name <input id="tournament-name" type="text" maxlength="60" style="text-transform:none;letter-spacing:normal;font-size:1rem;text-align:left"></label>
+        <label>Board <select id="tournament-board"></select></label>
+        <label>Match timer <select id="tournament-timer"></select></label>
+        <p style="margin:0;font-size:0.85rem">The shot clock is fixed for each board: 6-bead 60 s, 8-bead 90 s, 16-bead 120 s.</p>
+        <label>Sign-up closes in (minutes) <input id="tournament-minutes" type="number" min="1" max="86400" value="60" style="text-transform:none;letter-spacing:normal;font-size:1rem;text-align:left"></label>
+        <button type="button" id="tournament-create-btn" class="play-again-btn">Create event</button>
+      </div>
+      <p id="tournament-message" class="online-lobby-error" role="status"></p>
+      <div class="modal-actions">
+        <button type="button" id="tournament-close-btn" class="result-view-board-btn">Close</button>
       </div>
     </div>
   </div>

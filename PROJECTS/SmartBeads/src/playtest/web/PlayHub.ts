@@ -37,7 +37,6 @@ export const HUB_MODE_HELP_ALL = HUB_MODE_HELP_LINES.join('\n\n');
 
 const HUB_RAIL_NOTICES: Record<string, string> = {
   community: 'Community — forums, clubs, and friends list coming soon.',
-  tournaments: 'Tournaments — online brackets coming after play with a friend online.',
 };
 
 function boardTileLabel(entry: BoardCatalogEntry): { primary: string; secondary: string } {

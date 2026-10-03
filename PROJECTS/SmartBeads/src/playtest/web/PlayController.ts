@@ -1,3 +1,4 @@
+import { WatchLimit } from './feature/watchLimit';
 import {
   DEFAULT_PRODUCT_BOARD,
   getCatalogEntry,
@@ -952,8 +953,20 @@ export function bootstrapPlayShell(
     return false;
   }
 
+  const watchLimit = new WatchLimit();
+  const watchIdleBar = document.getElementById('watch-idle-bar') as HTMLDivElement | null;
+  document.getElementById('watch-idle-btn')?.addEventListener('click', () => {
+    watchLimit.continueWatching();
+    if (watchIdleBar) watchIdleBar.hidden = true;
+    maybeScheduleAutomatedTurn();
+  });
+
   function maybeScheduleAutomatedTurn(): void {
     if (!shouldScheduleAutomatedTurn()) return;
+    if (session.getSettings().mode === 'spectate' && watchLimit.expired()) {
+      if (watchIdleBar) watchIdleBar.hidden = false;
+      return;
+    }
     const runId = aiRunId;
     aiThinking = true;
     const delay = interMoveDelayMs();
@@ -1786,9 +1799,18 @@ export function bootstrapPlayShell(
     let text: string;
     if (!v || !v.started) text = `Room ${code} · you are ${you} · waiting for your friend to join`;
     else if (v.gameOver) text = `Room ${code} · game over`;
-    else if (v.pendingResign) text = `Room ${code} · resignation offer waiting for an answer`;
+    else if (v.opponentOnline === false) {
+      const timed =
+        v.settings.timer !== 'off' ||
+        v.settings.tournamentTimer !== 'off' ||
+        v.settings.shotClock !== 'off';
+      text = `Room ${code} · Opponent disconnected — ${
+        timed ? 'they can rejoin, the clock keeps running' : 'waiting for them to come back'
+      }`;
+    } else if (v.pendingResign) text = `Room ${code} · resignation offer waiting for an answer`;
     else
       text = `Room ${code} · you are ${you} · ${onlineMyTurn() ? 'your turn' : 'friend is thinking'}`;
+    if (v?.rated && v.started && !v.gameOver) text += ' · rated game';
     if (online.client.getStatus() === 'polling') text += ' · slow connection';
     if (onlineNotice) text += ` · ${onlineNotice}`;
     if (onlineBarText.textContent !== text) onlineBarText.textContent = text;
@@ -1983,6 +2005,8 @@ export function bootstrapPlayShell(
   canvas.addEventListener('blur', () => drawBoard());
 
   function resetGame(): void {
+    watchLimit.reset();
+    if (watchIdleBar) watchIdleBar.hidden = true;
     if (timerId) clearInterval(timerId);
     stopPulseLoop();
     cancelAnimationFrame(animRaf);
@@ -2450,6 +2474,11 @@ export function bootstrapPlayShell(
       /* storage unavailable */
     }
   }
+
+  // A paid account has no ads (A20). The account panel announces it; the server is the only source.
+  window.addEventListener('sb-account', (e) => {
+    applyPremiumShell((e as CustomEvent<{ adsRemoved: boolean }>).detail.adsRemoved);
+  });
 
   if (playShell) {
     let savedPremium: boolean;

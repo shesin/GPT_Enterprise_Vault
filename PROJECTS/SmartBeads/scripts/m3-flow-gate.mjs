@@ -147,6 +147,36 @@ async function main() {
       await ctx.close();
     }
 
+    // 1b2. Watch AI stops by itself after 3 minutes of real time and asks "Still watching?" (A23).
+    {
+      const { ctx, page } = await open(browser, {
+        init: () => {
+          const real = Date.now.bind(Date);
+          window.__timeJump = 0;
+          Date.now = () => real() + window.__timeJump;
+        },
+      });
+      await page.evaluate(() => window.__SB_TEST__.enterFromHub('6x4', 'spectate', 'spectate'));
+      const moves = () => page.evaluate(() => window.__SB_TEST__.session.getMoveCount());
+      const barShown = () => page.evaluate(() => !document.getElementById('watch-idle-bar').hidden);
+      const moving = await waitFor(page, () => window.__SB_TEST__.session.getMoveCount() > 0, undefined, 15_000);
+      const barEarly = await barShown();
+      await page.evaluate(() => { window.__timeJump = 190_000; }); // 3 minutes 10 s pass
+      const barLate = await waitFor(page, () => !document.getElementById('watch-idle-bar').hidden, undefined, 15_000);
+      const stopped = await moves();
+      await sleep(6000);
+      const stillStopped = (await moves()) === stopped;
+      if (barLate) await page.locator('#watch-idle-btn').click();
+      const resumed = await waitFor(page, (n) => window.__SB_TEST__.session.getMoveCount() > n, stopped, 15_000);
+      const barGone = !(await barShown());
+      record(
+        'Watch AI: moves, then after 3 minutes shows "Still watching?" and stops; Tap to continue resumes',
+        moving && !barEarly && barLate && stillStopped && resumed && barGone,
+        `moving=${moving} barEarly=${barEarly} barLate=${barLate} stillStopped=${stillStopped} resumed=${resumed} barGone=${barGone}`,
+      );
+      await ctx.close();
+    }
+
     // 1c. Phone tap targets (W4): every visible control can be hit by a 44 x 44 px finger area, on the start page and in the game.
     {
       const tapAudit = () =>
@@ -331,6 +361,36 @@ async function main() {
         );
         await a.ctx.close();
         await b.ctx.close();
+        // 1g. A closed browser is "Opponent disconnected", never a loss; coming back clears it (A23).
+        {
+                const a = await open(browser);
+        await a.page.goto(hubUrl, { waitUntil: 'networkidle' });
+        await a.page.locator('.hub-mode-tile[data-hub-mode="pvp-online"]').click();
+        await a.page.selectOption('#online-board-select', '6x4');
+        await a.page.locator('#online-create-btn').click();
+        await a.page.waitForFunction(() => /Room [A-Z2-9]{5}/.test(document.getElementById('online-bar-text')?.textContent ?? ''), null, { timeout: 8000 });
+        const code = /Room ([A-Z2-9]{5})/.exec((await a.page.locator('#online-bar-text').textContent()) ?? '')?.[1] ?? '';
+        const b = await open(browser);
+        await b.page.goto(hubUrl, { waitUntil: 'networkidle' });
+        await b.page.locator('.hub-mode-tile[data-hub-mode="pvp-online"]').click();
+        await b.page.fill('#online-code-input', code);
+        await b.page.locator('#online-join-btn').click();
+        await a.page.waitForFunction(() => /your turn/.test(document.getElementById('online-bar-text')?.textContent ?? ''), null, { timeout: 8000 });
+        const onlineBefore = !/disconnected/.test((await a.page.locator('#online-bar-text').textContent()) ?? '');
+        await b.page.close();
+        const showsGone = await waitFor(a.page, () => /Opponent disconnected/.test(document.getElementById('online-bar-text')?.textContent ?? ''), undefined, 10000);
+        const notOver = !(await a.page.evaluate(() => window.__SB_TEST__.session.isGameOver()));
+        const b2 = await b.ctx.newPage();
+        await b2.goto(hubUrl, { waitUntil: 'domcontentloaded' });
+        const backShown = await waitFor(a.page, () => !/disconnected/.test(document.getElementById('online-bar-text')?.textContent ?? '') && /your turn/.test(document.getElementById('online-bar-text')?.textContent ?? ''), undefined, 10000);
+        record(
+          'Online: a closed browser shows "Opponent disconnected" (game not lost); rejoining clears it',
+          code.length === 5 && onlineBefore && showsGone && notOver && backShown,
+          `code=${code} onlineBefore=${onlineBefore} showsGone=${showsGone} notOver=${notOver} backShown=${backShown}`,
+        );
+        await a.ctx.close();
+        await b.ctx.close();
+        }
       } finally {
         stopGameServer(gameServer);
       }

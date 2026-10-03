@@ -272,3 +272,107 @@ describe('GameRoom unanswered resignation offer', () => {
     expect(room.act('RED', { type: 'move', from: first.from, to: first.to })).toEqual({ ok: true });
   });
 });
+
+describe('GameRoom presence (a disconnect is never a loss by itself)', () => {
+  it('shows the opponent as online right after both players join', () => {
+    const { room } = startedRoom();
+    expect(room.view('RED').opponentOnline).toBe(true);
+    expect(room.view('BLUE').opponentOnline).toBe(true);
+  });
+
+  it('shows the opponent as offline after 20 s of silence, and back online when they are heard', () => {
+    const { room, clock } = startedRoom();
+    room.markSeen('RED'); // only RED keeps talking
+    clock.t += 21_000;
+    room.markSeen('RED');
+    expect(room.view('RED').opponentOnline).toBe(false);
+    expect(room.view('BLUE').opponentOnline).toBe(true);
+    room.markSeen('BLUE');
+    expect(room.view('RED').opponentOnline).toBe(true);
+  });
+
+  it('a closed connection counts as offline at once', () => {
+    const { room } = startedRoom();
+    room.markGone('BLUE');
+    expect(room.view('RED').opponentOnline).toBe(false);
+  });
+
+  it('tick reports a presence change so the other player is told, and bumps the version', () => {
+    const { room } = startedRoom();
+    room.tick();
+    const v = room.getVersion();
+    room.markGone('BLUE');
+    expect(room.tick()).toBe(true);
+    expect(room.getVersion()).toBeGreaterThan(v);
+    expect(room.tick()).toBe(false); // nothing new
+    room.markSeen('BLUE');
+    expect(room.tick()).toBe(true);
+  });
+
+  it('an untimed game with a silent opponent never ends', () => {
+    const { room, clock } = startedRoom();
+    clock.t += 6 * 3600_000;
+    room.markSeen('RED');
+    room.tick();
+    expect(room.view('RED').gameOver).toBe(false);
+    expect(room.view('RED').opponentOnline).toBe(false);
+  });
+});
+
+describe('GameRoom reserved seats (tournament rooms)', () => {
+  function reserved() {
+    const clock = { t: 2_000_000 };
+    const room = new GameRoom('TOURN', '6x4', OFF, () => clock.t);
+    room.reserve('ann', 'bob');
+    return { room, clock };
+  }
+
+  it('nobody can join a reserved room by code', () => {
+    const { room } = reserved();
+    expect(room.join('cy')).toBeNull();
+    expect(room.join()).toBeNull();
+  });
+
+  it('only the two named players can claim a seat, each their own', () => {
+    const { room } = reserved();
+    expect(room.claim('cy')).toBeNull();
+    expect(room.claim('ann')!.seat).toBe('RED');
+    expect(room.claim('bob')!.seat).toBe('BLUE');
+  });
+
+  it('the game starts only when both have arrived, and the clock starts then', () => {
+    const { room, clock } = reserved();
+    room.claim('ann');
+    expect(room.view('RED').started).toBe(false);
+    expect(room.view('RED').seats).toEqual({ RED: true, BLUE: false });
+    clock.t += 90_000;
+    room.claim('bob');
+    expect(room.view('RED').started).toBe(true);
+    expect(room.view('RED').seats).toEqual({ RED: true, BLUE: true });
+    expect(room.hasStarted).toBe(true);
+  });
+
+  it('claiming twice returns the same secret token (a reload keeps the seat)', () => {
+    const { room } = reserved();
+    const a = room.claim('ann')!;
+    expect(room.claim('ann')!.token).toBe(a.token);
+    expect(room.seatFor(a.token)).toBe('RED');
+  });
+
+  it('reports who has arrived, and the game counts as rated', () => {
+    const { room } = reserved();
+    expect(room.claimedUserIds()).toEqual([]);
+    room.claim('bob');
+    expect(room.claimedUserIds()).toEqual(['bob']);
+    expect(room.rated).toBe(true);
+  });
+
+  it('a seat cannot move before the game has started', () => {
+    const { room } = reserved();
+    const a = room.claim('ann')!;
+    expect(room.act(a.seat, { type: 'finishChain' })).toEqual({
+      ok: false,
+      error: 'Waiting for the second player.',
+    });
+  });
+});

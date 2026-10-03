@@ -291,8 +291,10 @@ If a task seems to need a PENDING change → **stop and ask** the human.
 
 - **Trigger:** the user types "autonomous" plus a scope (a list of items, or one audit lens). Outside that scope, the normal rules apply.
 - **Allowed inside the scope, with no questions:** read, edit, run tests and browser gates, add guard tests, fix, improve and suggest-and-implement. This overrides "do only what is explicitly asked" for the stated scope only. PENDING may be rewritten (user approved 2026-10-02); the exact new text is still shown in chat first.
-- **Never:** `git commit` / `git push`, buying or signing up for anything, editing outside the vault, product decisions, deleting data, edits outside the scope.
+- **Never:** `git commit` / `git push`, buying or signing up for anything, editing outside the vault, product decisions that the in-scope item does not need (a needed one is allowed but must be tagged, see Marking), deleting data, edits outside the scope.
 - **Per item:** failing test, fix, pass, mutation check (break the fix once, the test must fail), then the browser gate. No evidence means UNCONFIRMED.
+- **Marking (2026-10-03, Shekhar):** every decision Claude makes, and every PENDING item Claude writes, carries **(Claude)** in `GPT_PROJECT_DECISIONS_05P.md` / `GPT_PROJECT_PENDING_01P.md` until Shekhar has reviewed it. After his review the tag becomes **(Claude & reviewed)**. No tag means Shekhar's own decision. `GPT_PROJECT_DECISIONS_05P.md` §15 is the running review list. An older "Claude — Shekhar to confirm" counts as (Claude).
+- **Done items leave PENDING (2026-10-03, Shekhar):** when an item is finished, remove it from `GPT_PROJECT_PENDING_01P.md` and move it to `AUTONOMOUS_LOG.md` with its evidence, tests and open questions. PENDING keeps only open items; do not renumber. Before writing, confirm every removed item has a destination in the log (zero net loss) and show the exact new PENDING text in chat first.
 - **Blocked:** write the question in `PROJECTS/SmartBeads/AUTONOMOUS_LOG.md`, then move to the next item.
 - **Stop when:** the scope is done, 3 items in a row fail, or an item needs a decision.
 - **End of run:** the log lists each item as done / blocked / needs the user, with evidence (test names, gate counts, measured numbers).

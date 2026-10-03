@@ -1,6 +1,6 @@
 /** All live rooms: create, find, join by code, expire abandoned ones. */
 import { randomInt } from 'crypto';
-import { GameRoom } from './GameRoom';
+import { GameRoom, type GameResult } from './GameRoom';
 import type { RoomSettings } from './protocol';
 
 /** No 0/O/1/I/L: codes are read aloud and typed on phones. */
@@ -32,6 +32,7 @@ export class RoomManager {
   create(
     boardId: unknown,
     settings: Partial<RoomSettings> | undefined,
+    userId?: string,
   ): { room: GameRoom; seat: 'RED' | 'BLUE'; token: string } | { error: string } {
     this.sweep();
     if (this.rooms.size >= MAX_ROOMS) return { error: SERVER_BUSY };
@@ -39,18 +40,43 @@ export class RoomManager {
     if (typeof checked === 'string') return { error: checked };
     const room = new GameRoom(this.newCode(), checked.boardId, checked.settings, this.now);
     this.rooms.set(room.code, room);
-    const seat = room.join()!;
+    room.onFinished = this.onFinished;
+    const seat = room.join(userId)!;
     return { room, seat: seat.seat, token: seat.token };
+  }
+
+  /** Set by the app: told once about every finished game (ratings, tournaments). */
+  onFinished: ((result: GameResult) => void) | undefined;
+
+  /** A tournament room: both seats are reserved for the named players. */
+  createReserved(
+    boardId: unknown,
+    settings: Partial<RoomSettings>,
+    redUserId: string,
+    blueUserId: string,
+  ): { room: GameRoom } | { error: string } {
+    this.sweep();
+    if (this.rooms.size >= MAX_ROOMS) return { error: SERVER_BUSY };
+    const checked = GameRoom.validate(boardId, settings);
+    if (typeof checked === 'string') return { error: checked };
+    const room = new GameRoom(this.newCode(), checked.boardId, checked.settings, this.now);
+    room.reserve(redUserId, blueUserId);
+    room.onFinished = this.onFinished;
+    this.rooms.set(room.code, room);
+    return { room };
   }
 
   get(code: string): GameRoom | undefined {
     return this.rooms.get(String(code).toUpperCase());
   }
 
-  join(code: string): { room: GameRoom; seat: 'RED' | 'BLUE'; token: string } | { error: string } {
+  join(
+    code: string,
+    userId?: string,
+  ): { room: GameRoom; seat: 'RED' | 'BLUE'; token: string } | { error: string } {
     const room = this.get(code);
     if (!room) return { error: 'No room with that code.' };
-    const seat = room.join();
+    const seat = room.join(userId);
     if (!seat) return { error: 'That room is already full.' };
     return { room, seat: seat.seat, token: seat.token };
   }

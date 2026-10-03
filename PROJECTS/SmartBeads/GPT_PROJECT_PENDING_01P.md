@@ -70,7 +70,7 @@ Tutorial — Coach lesson launches from Page 1; on completion, returns to Page 1
 - Hub left-rail account row (Sign Up / Log In / Help & Support / Player Profile) — visual placeholders already shipped 2026-09-20, but disabled, "coming soon," no backend behind any of them yet.
 - The planned Review feature (A8 below) needs at least lightweight identity to prevent spam before it can go live past its current placeholder.
 
-**Status:** not started. No implementation has begun — this is pure backlog right now.
+**Status (Claude, 2026-10-03):** built and verified: e-mail login link, Google and Facebook sign-in (both off until their keys exist), profile name, ratings list (details: `AUTONOMOUS_LOG.md` Run 3). Still open: real e-mail sending on Hostinger (needs the `SMTP_*` variables, A19-6), the Google and Facebook keys (A19-7/8), then a real-account test on the hosted site.
 
 ### A8. Player reviews — product requirement for when Review ships
 
@@ -113,7 +113,7 @@ Needs its own design pass once accounts (A7) land — reviews need at least ligh
 
 ### A10. Tournament plan (Phase 3)
 
-**V1 scope:** single elimination, fixed board+preset per event (host-configured); player registers before start window, bracket generated at close; each pairing = auto-assigned online room, winner advances; disconnect = loss if clock expired, else admin replay (kept minimal for V1).
+**Status (Claude, 2026-10-03):** V1 built and tested (single elimination, byes, seeding by rating, replay after a draw, walkover after 5 minutes, organiser dialog; Run 3). Open: a real playtest with 4+ people on the hosted site, and Shekhar's review of the rules in DECISIONS C34–C38. Not in V1: Swiss/round-robin, prizes, cross-region latency guarantees.
 
 **Not in V1:** Swiss/round-robin, cash prizes/payment, cross-region latency guarantees.
 
@@ -199,7 +199,7 @@ Shekhar finds the present music weak. YouTube songs cannot be used (copyright). 
 3. **Privacy, Terms and Credits review.** Review/finish `public/privacy.html`, `terms.html`, `credits.html` and give the support e-mail. Unblocks: final legal pages.
 4. **Sound effects.** Confirm the source and licence of the files in `public/audio`. Unblocks: Credits page.
 5. **soundimage.org music.** Decide: host the files yourself, or drop them with A18.
-6. **Company e-mail on the domain `smartbeadchess.com` (A14).** hPanel → Emails → Email Accounts: create `support@smartbeadchess.com` (shown on the legal pages, contact of the Google/Facebook apps) and `noreply@smartbeadchess.com` (sends login links). Give Claude the SMTP host, port and user name from the same panel (usually smtp.hostinger.com, port 465). The password goes only into the server's environment variables on Hostinger, never in chat or the repo. Also add the SPF/DKIM records the panel shows so mails do not land in spam. Unblocks: A7 e-mail login, legal pages.
+6. **Company e-mail.** `info@smartbeadchess.com` exists (Shekhar, 2026-10-03) and is used as contact, sender and reply address. Still needed: the SMTP host, port and user name from hPanel (usually smtp.hostinger.com, port 465); the password only as the Hostinger variable `SMTP_PASS`, never in chat or the repo; the SPF/DKIM records the panel shows so mails do not land in spam. Unblocks: real sign-in e-mails, legal pages.
 7. **Google developer app (Google sign-in).** console.cloud.google.com → new project "Smart Bead Chess" → APIs & Services → OAuth consent screen (External; app name; support e-mail; authorised domain `smartbeadchess.com`; privacy and terms URLs; scopes openid, email, profile only) → Credentials → Create credentials → OAuth client ID → Web application → authorised JavaScript origins `https://smartbeadchess.com` and `http://localhost:5173`. Send Claude the Client ID (public); keep the Client secret private (server environment). Move the consent screen from Testing to In production before launch, or only test users can sign in. Unblocks: Google login.
 8. **Facebook developer app (Facebook sign-in).** developers.facebook.com → log in → My Apps → Create App → use case "Authenticate and request data from users with Facebook Login" → App settings → Basic: app domain `smartbeadchess.com`, privacy and terms URLs, category Games → Facebook Login → Settings → Valid OAuth Redirect URIs (Claude gives the exact URL when A7 is built). Send Claude the App ID (public); keep the App Secret private. Switch the app from Development to Live (basic e-mail and public profile need no review). Unblocks: Facebook login.
 9. **Razorpay account (A20).** razorpay.com → sign up → business KYC (PAN, bank account, GST if any; takes days). Start with Test mode keys; Key Secret stays private. Unblocks: ad-removal payment.
@@ -211,16 +211,16 @@ Shekhar finds the present music weak. YouTube songs cannot be used (copyright). 
 
 ### A20. Ad-removal payment (do last)
 
-The game is free with ads; a paid purchase removes them. Build on the account server (A7) behind a payment switch. Needs the Razorpay account (A19 item 9); on Android also a Play Store payment profile (B8).
+Built behind a switch (Razorpay orders, signature check, webhook; Run 3). Off until `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` and `AD_REMOVAL_PRICE_PAISE` are set. Open: Shekhar creates the Razorpay account (A19-9) and picks the price; Claude then runs a test-mode payment. On Android also a Play Store payment profile (B8).
 
 ### A21. Online play, to discuss
 
-Missing: ratings, tournaments (A10), and the other four boards online. Reconnect after a closed browser is done (A23). Open a board online only after the human playtest (A11) covers it.
+Missing: the other four boards online (after the human playtest A11 covers each). Ratings and tournaments are built (Run 3).
 
 ### A22. Claude items waiting on something (dependency map, 2026-10-03)
 
 - **Waiting on A19:** A7 accounts (e-mail login: item 6; Google login: 7; Facebook login: 8) · A20 payment (A7 + 9) · hosted online play and the VPS decision (10, then 11) · music wiring (2) · final legal pages (3, 6) · look changes (1) · more online boards (12) · A10 tournaments (A7 + stable A9) · A1 coach video polish (needs the discussion).
-- **Claude, next:** start A7 with the e-mail login once A19 items 6 and 8 are done. CI is green (runs 49 to 55, including Firefox and WebKit).
+- **Claude, next:** nothing in the web list is waiting on Claude; open items need Shekhar (A19) or real devices and people (A11–A13).
 - **Done 2026-10-02/03 (first run in `AUTONOMOUS_LOG.md`, audits in `GPT_PROJECT_AUDIT_05P.md` rows 10 to 12):** W1, W3–W9, A3 server clocks, A4 online lobby and room screen, A9 first online server, reconnect after a closed browser, AI draw-valuation fix, server crash fixes, rate limits, compression and ranges, idle CPU fix, accessibility labels, font consolidation, Firefox and WebKit CI job.
 
 ---
@@ -247,14 +247,11 @@ Missing: ratings, tournaments (A10), and the other four boards online. Reconnect
 
 ### A23. Disconnects and idle (Shekhar, 2026-10-03)
 
-- **Disconnect is never a loss by itself.** The player gets the chance to reconnect; only the clock running out loses. Tournament shot clocks (A10): 16, 12, 10-bead = 120 s; 8, 7-bead = 90 s; 6-bead = 60 s. In untimed games nobody loses: the other player sees "Opponent disconnected" and waits.
-- **Reconnect (done 2026-10-03):** the seat code is now saved in both the tab and the browser (`localStorage`) for 3 hours, the same time the server keeps an idle room. A refresh, a closed tab or a relaunched browser rejoins the same seat and game. Leaving the game clears it. Tournament players will also rejoin through their account (A7) once accounts exist.
-- **Watch AI time limit:** Watch AI stops by itself after a fixed time, 2 or 3 minutes (Shekhar to pick; Claude suggests 3), then shows "Still watching? Tap to continue". Music is separate and keeps playing if on. Not built.
-- **Long-session checks Claude will run:** a 2-hour idle and hidden-tab run, random-click ("monkey") play, and CPU throttled 4x and 6x. A real phone getting hot only Shekhar can check (A12, A13).
+Open: a real phone getting hot after a long Watch AI or online session (Shekhar, A12, A13). Everything else in this section is done (Run 3).
 
-### A24. On Shekhar from the 2026-10-03 audit work, and Claude's own choices to confirm
+### A24. On Shekhar from the 2026-10-03 audit work, and Claude's own choices to confirm (Claude)
 
-Items 8 to 14 below: Shekhar accepted them in chat on 2026-10-03. They are recorded in `GPT_PROJECT_DECISIONS_05P.md` §15 marked (Claude).
+Items 8 to 13 below: Shekhar accepted them in chat on 2026-10-03, so they are (Claude & reviewed); they are recorded in `GPT_PROJECT_DECISIONS_05P.md` §15. Item 14 is still (Claude).
 
 **Decisions only you can make**
 1. **Frame embedding:** may other websites (game portals) show the game inside their page? Claude suggests yes for the game page, and no for login and payment pages when they are built (A7, A20). Needed before the Content-Security-Policy is added.
@@ -268,15 +265,15 @@ Items 8 to 14 below: Shekhar accepted them in chat on 2026-10-03. They are recor
 7. **Privacy and Terms review (A19-3):** the Privacy page now includes online play.
 
 **Claude's own choices, to confirm or change** (all already in code)
-8. **Rate limits:** 20 room creations per 10 minutes and 30 join attempts per minute per client address; 429 beyond that.
-9. **Resignation offer lapses after 2 minutes** unanswered and play continues. This is a new rule, not in `DECISIONS`, and resignation is locked, so it needs your yes.
-10. **Seat code kept 3 hours** in the browser (same as the server's idle limit).
-11. **Board repaint:** every 5 seconds when idle, and about 30 per second for the opening rings (was 60 per second).
-12. **Shot clock correction in `DECISIONS` §6** (10-bead 120 s, 7-bead 90 s). Not implemented in code until tournaments.
-13. **Playwright Firefox reinstalled on this PC** (outside the repo, about 120 MB). A CI job now runs Firefox and WebKit.
-14. **Audit probe scripts** (rules reference check, AI oracle, soak, CPU) live only in a temporary folder. Claude suggests saving them under `PROJECTS/SmartBeads/scripts/audit-tools/` so the evidence can be re-run. Waiting for your yes.
+8. **(Claude & reviewed) Rate limits:** 20 room creations per 10 minutes and 30 join attempts per minute per client address; 429 beyond that.
+9. **(Claude & reviewed) Resignation offer lapses after 2 minutes** unanswered and play continues. This is a new rule, not in `DECISIONS`, and resignation is locked, so it needs your yes.
+10. **(Claude & reviewed) Seat code kept 3 hours** in the browser (same as the server's idle limit).
+11. **(Claude & reviewed) Board repaint:** every 5 seconds when idle, and about 30 per second for the opening rings (was 60 per second).
+12. **(Claude & reviewed) Shot clock correction in `DECISIONS` §6** (10-bead 120 s, 7-bead 90 s). Not implemented in code until tournaments.
+13. **(Claude & reviewed) Playwright Firefox reinstalled on this PC** (outside the repo, about 120 MB). A CI job now runs Firefox and WebKit.
+14. **(Claude) Audit probe scripts** (rules reference check, AI oracle, soak, CPU) live only in a temporary folder. Claude suggests saving them under `PROJECTS/SmartBeads/scripts/audit-tools/` so the evidence can be re-run. Waiting for your yes.
 
-### A25. Review of Claude's decisions with Shekhar
+### A25. Review of Claude's decisions with Shekhar (Claude)
 
 `GPT_PROJECT_DECISIONS_05P.md` §15 lists every decision Claude made since autonomous mode started (2026-10-02), each marked (Claude), with where it lives and whether Shekhar has accepted it. Go through it with Claude when there is time; anything Shekhar changes becomes a normal decision in the right section.
 

@@ -17,7 +17,6 @@ function mountHub(): void {
       <p id="hub-current-board"></p>
       <div id="hub-rail-notice" class="is-hidden"><span id="hub-rail-notice-text"></span><button id="hub-rail-notice-dismiss" type="button">x</button></div>
       <button class="hub-sidebar-link" data-hub-nav="community" type="button">Community</button>
-      <button class="hub-sidebar-link" data-hub-nav="tournaments" type="button">Tournaments</button>
     </div>`;
 }
 

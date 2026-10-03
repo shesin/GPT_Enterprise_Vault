@@ -189,6 +189,8 @@ describe('snapshotFromView (server state mirrored into the local session)', () =
       winner: null,
       reason: null,
       pendingResign: null,
+      opponentOnline: true,
+      rated: false,
       ...overrides,
     };
   }
