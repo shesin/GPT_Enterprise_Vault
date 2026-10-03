@@ -37,3 +37,23 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: node PROJECTS/SmartBeads/scripts/m2-2step-npm-gate.mjs
+
+  # The same gates in Firefox and WebKit (Safari's engine). Firefox does not start on the owner's Windows PC,
+  # so these runs are where Firefox is confirmed. The m2 runner starts Vite; the flow gate reads SB_BROWSER.
+  browser-gates-other-engines:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium ${{ matrix.browser }}
+      - run: node PROJECTS/SmartBeads/scripts/m2-2step-npm-gate.mjs
+        env:
+          SB_BROWSER: ${{ matrix.browser }}
