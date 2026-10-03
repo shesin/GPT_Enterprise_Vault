@@ -43,11 +43,11 @@ Depends on A11. Failing test before fix, per standing rule.
 
 **Historical — superseded split:** the current board-fixed table (locked, `GPT_PROJECT_DECISIONS_05P.md` §13a) supersedes an earlier draft that used a 90s shot clock for 16/12/10-bead and 60s for 8/7/6-bead — that split no longer applies.
 
-**Work remaining (not started):** dual-clock UI, authoritative server-side clock sync for online play, preset wiring on Page 2 for online setup only. PvE stays frozen — do not touch (already locked in `GPT_PROJECT_DECISIONS_05P.md` §6).
+**Status (2026-10-03):** the server owns the match, tournament and shot clocks for online games and pushes them every second (A9, first version). Still to do: the fixed shot-clock values (`DECISIONS` §6, corrected 2026-10-03) apply only when tournaments (A10) are built; the online lobby uses the normal menus today. PvE stays frozen — do not touch (locked in `GPT_PROJECT_DECISIONS_05P.md` §6).
 
-### A4. Page 1 UI — HvH Online mode fields (not yet built)
+### A4. Page 1 UI — HvH Online mode fields (first version built 2026-10-02)
 
-When Human vs Human (Online) is selected on Page 1: time preset (A3), center rule, Create room / Join room, then Start match on Page 2 once connected.
+When Human vs Human (Online) is selected on Page 1: time preset (A3), center rule, Create room / Join room, then Start match on Page 2 once connected. Built: hub tile "Play vs Friend — Online", a lobby (create a room with board, timer, shot clock and centre rule, or join with the code) and a room bar with the code and a Copy button.
 
 Tutorial — Coach lesson launches from Page 1; on completion, returns to Page 1 hub.
 
@@ -87,7 +87,7 @@ Needs its own design pass once accounts (A7) land — reviews need at least ligh
 **Goals:**
 - Two humans, two browsers, one authoritative game.
 - Moves, captures, chains, resignation, and both timer layers stay in sync.
-- Reconnect within a grace window (e.g. 60s) without corrupting state.
+- Reconnect without corrupting state: done 2026-10-03 (the seat code is kept 3 hours in the browser; a refresh, a closed tab or a relaunched browser rejoins; only the clock running out loses, see A23).
 
 **Recommended stack:**
 
@@ -215,13 +215,13 @@ The game is free with ads; a paid purchase removes them. Build on the account se
 
 ### A21. Online play, to discuss
 
-Missing: ratings, a reconnect grace rule, tournaments (A10), and the other four boards online. Open a board online only after the human playtest (A11) covers it.
+Missing: ratings, tournaments (A10), and the other four boards online. Reconnect after a closed browser is done (A23). Open a board online only after the human playtest (A11) covers it.
 
 ### A22. Claude items waiting on something (dependency map, 2026-10-03)
 
 - **Waiting on A19:** A7 accounts (e-mail login: item 6; Google login: 7; Facebook login: 8) · A20 payment (A7 + 9) · hosted online play and the VPS decision (10, then 11) · music wiring (2) · final legal pages (3, 6) · look changes (1) · more online boards (12) · A10 tournaments (A7 + stable A9) · A1 coach video polish (needs the discussion).
-- **Claude, next:** confirm CI green for `14119a6`; then start A7 with the e-mail login.
-- **Done 2026-10-02/03 (details in `AUTONOMOUS_LOG.md`):** W1, W3–W9, A3 server clocks, A4 online lobby and room screen, A9 first online server, reload rejoin.
+- **Claude, next:** start A7 with the e-mail login once A19 items 6 and 8 are done. CI is green (runs 49 to 55, including Firefox and WebKit).
+- **Done 2026-10-02/03 (first run in `AUTONOMOUS_LOG.md`, audits in `GPT_PROJECT_AUDIT_05P.md` rows 10 to 12):** W1, W3–W9, A3 server clocks, A4 online lobby and room screen, A9 first online server, reconnect after a closed browser, AI draw-valuation fix, server crash fixes, rate limits, compression and ranges, idle CPU fix, accessibility labels, font consolidation, Firefox and WebKit CI job.
 
 ---
 
@@ -229,13 +229,13 @@ Missing: ratings, a reconnect grace rule, tournaments (A10), and the other four 
 
 - **W1. Phone landscape.** The board no longer distorts (fixed), but the layout is portrait-only: at 740×360 the board is about 270 px tall and the page scrolls. A real landscape layout (board on the left, bars and controls on the right) is a design job.
 - **W2. (done 2026-10-02)** Changing a setting mid-game now asks first; covered by `m3-flow-gate.mjs`.
-- **W3. Keyboard / screen-reader play.** The board is a canvas (`role="img"`): no way to select or move a bead without mouse or touch.
-- **W4. Phone tap targets under 44 px:** settings gear 30×24, Resign / Sound / New game about 30 px high, hub look swatches 22–34 px.
-- **W5. Clocks count one per interval tick, not wall-clock time.** Fine on a visible tab (9.0 s real = 9 ticks, also with the main thread blocked for 2 s); Chrome slows timers in hidden tabs (about 1 tick per minute after roughly 5 minutes hidden), so a hidden tab slows the clocks. UNCONFIRMED (needs a 5+ minute hidden-tab test). Fix: compute remaining time from `performance.now()`.
-- **W6. Test hooks and the premium flag ship in production:** `window.__SB_TEST__` (full session access, `setPremium`), `sessionStorage 'sb-test-resign-ai'`, and the ad-free flag is a plain `localStorage 'sb-premium'` that anyone can set. Decide before ads / accounts (A7): build flag or server-side. The Playwright gates use these hooks, so they stay for now.
-- **W7. Repo clean-up (done 2026-10-02 for the dead files):** deleted root `sound-preview.html` (identical copy stays in `public/`), `black-shade-samples.html` (no references) and `PROJECT_SNAPSHOT.txt` (stale 2026-08-20 export); recoverable from git. Still open: `SHARED/engine/*.ts` (4 unused interface stubs, wired into tsconfig / ESLint globs, so removing them needs those edited too) and `hub-theme-mockup.html` (referenced once in DECISIONS).
-- **W8. Test coverage holes (partly closed 2026-10-02):** the real-browser flow gate `m3-flow-gate.mjs` (14 scenarios, Chromium + WebKit, in `npm test` and CI) now covers the `PlayController` flows. Still without direct tests: `resignationController` and `startBannerController` internals, `boardSettingsPanel`, `PlayHub`; `processRegressionGuards.test.ts` asserts on source text. Firefox cannot be launched on this PC (UNCONFIRMED). The GitHub `browser-gates` job is UNCONFIRMED until seen green.
-- **W9. Legacy `m2-*-verify.mjs` scripts (20, not in `npm test`):** the 3 tried (resignation, gameplay, catalog-settings) fail at the previous commit too (hidden-selector clicks, old opener assumptions). Repair the ones still wanted or delete them; `m3-flow-gate.mjs` covers resign and gameplay flows.
+- **W3. (done 2026-10-02) Keyboard play:** Tab focuses the board, arrows reach a bead, Enter picks, arrows + Space place; gate scenario "Keyboard". A real screen reader test is still open (A19-12).
+- **W4. (done 2026-10-02) Phone tap targets:** every control is at least 44 px; gate scenario "Phone tap targets".
+- **W5. (done 2026-10-02) Clocks follow real time:** a hidden or throttled tab settles the missed seconds at once (a 130 s callback still expires a 2-minute timer); unit tests and a gate scenario. A 5-minute hidden-tab test on a real phone is still open.
+- **W6. (done 2026-10-02) Test hooks and the premium flag are compiled out of production builds** (`__SB_TEST_HOOKS__`; gate `m3-prod-build-gate.mjs`). Premium has no production source until accounts (A7), so production always shows ads.
+- **W7. (done 2026-10-02) Repo clean-up:** dead files, `SHARED/engine` and `hub-theme-mockup.html` deleted (recoverable from git).
+- **W8. (done 2026-10-02/03) Test coverage:** the real-browser flow gate has 27 scenario checks plus 6 production-build checks, in Chromium and WebKit locally and in Firefox and WebKit in CI (job `browser-gates-other-engines`, green run 53); jsdom tests cover the resignation controller, start banner, settings panel and PlayHub. `processRegressionGuards.test.ts` still asserts on source text. Firefox cannot start on this PC.
+- **W9. (done 2026-10-02) Legacy scripts:** 17 broken `m2-*` verify scripts deleted; the one that works is used by the gate.
 
 ---
 
@@ -251,6 +251,34 @@ Missing: ratings, a reconnect grace rule, tournaments (A10), and the other four 
 - **Reconnect (done 2026-10-03):** the seat code is now saved in both the tab and the browser (`localStorage`) for 3 hours, the same time the server keeps an idle room. A refresh, a closed tab or a relaunched browser rejoins the same seat and game. Leaving the game clears it. Tournament players will also rejoin through their account (A7) once accounts exist.
 - **Watch AI time limit:** Watch AI stops by itself after a fixed time, 2 or 3 minutes (Shekhar to pick; Claude suggests 3), then shows "Still watching? Tap to continue". Music is separate and keeps playing if on. Not built.
 - **Long-session checks Claude will run:** a 2-hour idle and hidden-tab run, random-click ("monkey") play, and CPU throttled 4x and 6x. A real phone getting hot only Shekhar can check (A12, A13).
+
+### A24. On Shekhar from the 2026-10-03 audit work, and Claude's own choices to confirm
+
+Items 8 to 14 below: Shekhar accepted them in chat on 2026-10-03. They are recorded in `GPT_PROJECT_DECISIONS_05P.md` §15 marked (Claude).
+
+**Decisions only you can make**
+1. **Frame embedding:** may other websites (game portals) show the game inside their page? Claude suggests yes for the game page, and no for login and payment pages when they are built (A7, A20). Needed before the Content-Security-Policy is added.
+2. **Music sites (A18):** send the sites or files. The Content-Security-Policy must list them, or you host the music yourself (A19-5). Claude builds the CSP after this.
+3. **Watch AI time limit:** 2 or 3 minutes (see A23). Claude suggests 3.
+4. **"Claim win" button:** in untimed online games, after the opponent has been away a few minutes, should the player who stayed get a "Claim win" button? Claude suggests yes. Not built.
+
+**Things only you can do**
+5. **Deployment:** set `TRUST_PROXY=1` on Hostinger when the site sits behind its proxy (A15, A17). Without it, the per-client rate limits treat all players as one client. Also ask the host or CDN for a firewall rate limit, because a distributed attack cannot be stopped in the game code.
+6. **Real-phone heat check (A12, A13):** play 10 minutes or more on a phone and note whether it warms. Claude's measured proxy: idle CPU 4.2% down to 1.0%, random play 33.8% down to 14.2%.
+7. **Privacy and Terms review (A19-3):** the Privacy page now includes online play.
+
+**Claude's own choices, to confirm or change** (all already in code)
+8. **Rate limits:** 20 room creations per 10 minutes and 30 join attempts per minute per client address; 429 beyond that.
+9. **Resignation offer lapses after 2 minutes** unanswered and play continues. This is a new rule, not in `DECISIONS`, and resignation is locked, so it needs your yes.
+10. **Seat code kept 3 hours** in the browser (same as the server's idle limit).
+11. **Board repaint:** every 5 seconds when idle, and about 30 per second for the opening rings (was 60 per second).
+12. **Shot clock correction in `DECISIONS` §6** (10-bead 120 s, 7-bead 90 s). Not implemented in code until tournaments.
+13. **Playwright Firefox reinstalled on this PC** (outside the repo, about 120 MB). A CI job now runs Firefox and WebKit.
+14. **Audit probe scripts** (rules reference check, AI oracle, soak, CPU) live only in a temporary folder. Claude suggests saving them under `PROJECTS/SmartBeads/scripts/audit-tools/` so the evidence can be re-run. Waiting for your yes.
+
+### A25. Review of Claude's decisions with Shekhar
+
+`GPT_PROJECT_DECISIONS_05P.md` §15 lists every decision Claude made since autonomous mode started (2026-10-02), each marked (Claude), with where it lives and whether Shekhar has accepted it. Go through it with Claude when there is time; anything Shekhar changes becomes a normal decision in the right section.
 
 ---
 

@@ -238,3 +238,43 @@ Forbidden without human approval: new draw rules beyond those locked above, sile
 ## Audit principles (locked 2026-10-02, Shekhar)
 
 Docs, code, comments, existing tests and earlier audit conclusions are the things being audited and are never accepted as proof. Evidence = real-browser behaviour, a test seen failing then passing, or measured numbers with sample size. Every audit reads the register and the disaster ledger in `GPT_PROJECT_AUDIT_05P.md` first, names the lenses it does not cover, and closes no finding without a regression guard. Full text: `GPT_PROJECT_AUDIT_05P.md` § Trust rules and disaster ledger.
+
+---
+
+## 15. Claude's decisions since 2026-10-02 — for review with Shekhar
+
+Autonomous mode started on 2026-10-02 (`GPT_PROJECT_RULES_01P.md` § Autonomous mode, commit `87121d0`). Everything below was decided by **(Claude)**, not by Shekhar, and is listed so Shekhar can review it with Claude when there is time. Change a row and it becomes a normal decision in the right section above.
+
+**Decided by Shekhar, not in this list:** delete `SHARED/engine` and `hub-theme-mockup.html`; test hooks and the premium flag stay out of production (build flag); Node + WebSocket server; social sign-in plus e-mail; all 7 boards online eventually, first online boards 6x4, 8x4x6 and 16; free game with ads removed by a paid purchase; coach video polish waits for a discussion (2026-10-02). Shot clocks 16, 12, 10-bead = 120 s, 8, 7-bead = 90 s, 6-bead = 60 s; a disconnect never loses by itself, only the clock running out loses; Watch AI to stop after a fixed 2 or 3 minutes; default clocks off (2026-10-03). Earlier entries already marked "Claude — Shekhar to confirm" stay in §4 and §6 (stalemate decisive, Undo and clocks, Undo off in tournament games and the setting-change prompt).
+
+Status: **Accepted** = Shekhar said yes in chat. **Review** = not yet discussed.
+
+| # | Decision (Claude) | Date | Where | Status |
+|---|---|---|---|---|
+| C1 | Room codes are 5 characters from 31 letters and digits without 0, O, 1, I, L (read aloud, typed on phones) | 2026-10-02 | `server/RoomManager.ts` | Review |
+| C2 | The server holds the only copy of an online game; browsers send intents; the server owns every clock and they follow real time | 2026-10-02 | `server/GameRoom.ts` | Review |
+| C3 | The creator is the Cream (RED) seat and moves first; the second player is Black (BLUE); play starts when both are seated | 2026-10-02 | `server/GameRoom.ts` | Review |
+| C4 | A room is deleted after 3 hours without activity; at most 2,000 rooms at once | 2026-10-02 | `server/RoomManager.ts` | Review |
+| C5 | One Node app serves the site and the game; WebSocket for live play with automatic polling every second as fallback (a "slow connection" notice shows) | 2026-10-02 | `server/app.ts`, `online/OnlineClient.ts` | Review |
+| C6 | Online room rules: the creator picks board, match timer or tournament timer (not both), shot clock and centre rule from the normal menus; the centre rule needs a match timer | 2026-10-02 | `server/GameRoom.ts` | Review |
+| C7 | Online resignation: the offer goes to the opponent, who may accept a draw or decline (the resigner then loses); one offer at a time; no moves while an offer is open | 2026-10-02 | `server/GameRoom.ts` | Review |
+| C8 | Online screens: hub tile "Play vs Friend — Online", a lobby (create or join by code), a room bar with the code and Copy; New game, Play again and Menu return to the start page | 2026-10-02 | `online/onlineLobby.ts`, `PlayController.ts` | Review |
+| C9 | A refreshed page rejoins its online room; since 2026-10-03 the seat code is kept 3 hours in the browser, so a closed tab or relaunched browser rejoins too; leaving the game clears it | 2026-10-02/03 | `online/onlineResume.ts` | Accepted 2026-10-03 |
+| C10 | Keyboard play: Tab to the board, arrows move between beads, Enter picks, arrows then Space place | 2026-10-02 | `render/keyboardNav.ts` | Review |
+| C11 | Every control is at least 44 px on phones | 2026-10-02 | `play-shell.css`, `play-hub.css` | Review |
+| C12 | Clocks follow real time: a hidden or throttled tab settles the missed seconds at once | 2026-10-02 | `feature/clockPolicy.ts` | Review |
+| C13 | Phone landscape layout: board at least 80% of the height, controls and ad stacked on the right | 2026-10-02 | `play-shell.css` | Review |
+| C14 | Test-hook build flag named `__SB_TEST_HOOKS__` (`SB_TEST_HOOKS=1` keeps hooks in a build); the start page launches games through the shell, not a test hook (Shekhar decided hooks stay out of production) | 2026-10-02 | `vite.config.ts`, `testHooks.ts` | Review |
+| C15 | 17 broken legacy `m2-*` verify scripts deleted; `jest-environment-jsdom` added as a dev tool for DOM tests | 2026-10-02 | `scripts/`, `package.json` | Review |
+| C16 | The AI values a finished game by its result: draw 0, win +10000, loss −10000. It now declines a repetition draw when ahead and takes one when behind (before, any game-ending move scored as a win) | 2026-10-03 | `feature/HonestAi.ts` | Review |
+| C17 | One bad request never ends the server (4 crash paths fixed; faults are logged and the server keeps running); a full room table answers 503 | 2026-10-03 | `server/app.ts`, `server/main.ts` | Review |
+| C18 | Rate limits per client address: 20 room creations per 10 minutes, 30 join attempts per minute, then 429. Behind a proxy set `TRUST_PROXY=1`, otherwise `X-Forwarded-For` is ignored | 2026-10-03 | `server/app.ts` | Accepted 2026-10-03 |
+| C19 | An unanswered resignation offer lapses after 2 minutes and play continues (a new rule; belongs in §3 Resignation once reviewed) | 2026-10-03 | `server/GameRoom.ts` | Accepted 2026-10-03 |
+| C20 | Static files: gzip or brotli, byte ranges, ETag with 304, nosniff, hashed assets cached one year, pages revalidated | 2026-10-03 | `server/app.ts` | Review |
+| C21 | Six controls got accessible names; the developer-only `sound-preview.html` is not shipped in a production build | 2026-10-03 | `index.html`, `vite.config.ts` | Review |
+| C22 | Fonts: one variable font file per family (4 files, was 10 identical copies); weights above 700 still show as 700 | 2026-10-03 | `public/fonts/` | Review |
+| C23 | The empty 5-bead board variant was removed | 2026-10-03 | `config/BoardConfig.ts` | Review |
+| C24 | The Privacy page describes online play (draft, owner review still needed) | 2026-10-03 | `public/privacy.html` | Review |
+| C25 | CI also runs the browser gates in Firefox and WebKit (Firefox cannot start on Shekhar's PC) | 2026-10-03 | `.github/workflows/ci.yml` | Review |
+| C26 | Board repainting: display-rate frames only while the opening rings or a capture pulse animate (rings about 30 per second, was 60); otherwise a safety repaint every 5 seconds; a look changed in another tab shows at once | 2026-10-03 | `PlayController.ts` | Accepted 2026-10-03 |
+| C27 | Shot clock table in §6 laid out per board with Shekhar's values; not implemented in code until tournaments exist | 2026-10-03 | this file | Accepted 2026-10-03 |
