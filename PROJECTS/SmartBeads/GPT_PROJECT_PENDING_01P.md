@@ -22,6 +22,8 @@ When an item here ships and is verified: remove it from here, log it in STATUS (
 
 ### A1. Coach video polish — optional, needs your explicit go
 
+**Owner: Claude, after Shekhar's go**
+
 1. Highlight active panel bullet during playback.
 2. ~2s hold after each demo move before the next snap.
 
@@ -29,11 +31,15 @@ Video 2 (timers, shot clock, centre rules) — planned, not started.
 
 ### A2. Bugs from playtest
 
+**Owner: Claude, after Shekhar's playtest (A11)**
+
 Depends on A11. Failing test before fix, per standing rule.
 
 **Bigger web build-out — accounts, multiplayer, tournament (after game stability confirmed):**
 
 ### A3. Timers (Human vs Human) — engineering detail
+
+**Owner: Claude**
 
 **Layer A — Match clock (Chess.com model):** each player has their own bank; ticks only on that player's turn; reach 0:00 → lose on time; UI shows two clocks (opponent top, you bottom), active one highlighted.
 
@@ -43,9 +49,11 @@ Depends on A11. Failing test before fix, per standing rule.
 
 **Historical — superseded split:** the current board-fixed table (locked, `GPT_PROJECT_DECISIONS_05P.md` §13a) supersedes an earlier draft that used a 90s shot clock for 16/12/10-bead and 60s for 8/7/6-bead — that split no longer applies.
 
-**Status (2026-10-03):** the server owns the match, tournament and shot clocks for online games and pushes them every second (A9, first version). Still to do: the fixed shot-clock values (`DECISIONS` §6, corrected 2026-10-03) apply only when tournaments (A10) are built; the online lobby uses the normal menus today. PvE stays frozen — do not touch (locked in `GPT_PROJECT_DECISIONS_05P.md` §6).
+**Status (2026-10-03):** the server owns the match, tournament and shot clocks for online games and pushes them every second (A9, first version). Tournament games use the fixed shot-clock values (built, C37); the online lobby uses the normal menus. PvE stays frozen — do not touch (locked in `GPT_PROJECT_DECISIONS_05P.md` §6).
 
 ### A4. Page 1 UI — HvH Online mode fields (first version built 2026-10-02)
+
+**Owner: Claude**
 
 When Human vs Human (Online) is selected on Page 1: time preset (A3), center rule, Create room / Join room, then Start match on Page 2 once connected. Built: hub tile "Play vs Friend — Online", a lobby (create a room with board, timer, shot clock and centre rule, or join with the code) and a room bar with the code and a Copy button.
 
@@ -53,15 +61,21 @@ Tutorial — Coach lesson launches from Page 1; on completion, returns to Page 1
 
 ### A5. Web-side gap noticed, not previously tracked (flagging for your call)
 
+**Owner: Shekhar (decides the Privacy and Terms text)**
+
 - **Privacy policy / Terms of Service for the web app itself** — currently only tracked for the Android Play Store listing (Part B); but the web app also collects account signup data, so it likely needs its own privacy policy/ToS page before public launch, not just an app-store listing.
 
 ### A6. Hosting — deploy pipeline detail
+
+**Owner: Claude, with Shekhar for the Hostinger settings**
 
 **We deploy:** `vite build` static assets → CDN or Nginx; game server container/process → same provider; env secrets (DB URL, JWT/session secret, CORS origin); CI runs the Jest suite on push, deploys on tagged release (human approves).
 
 **Environments:** Production (public URL) and Staging (same stack, separate DB) — staging used for online/timer QA before prod.
 
 ### A7. Full account system (signup / login / profile) — HARD BLOCKER
+
+**Owner: Claude; needs Shekhar for A19 items 6–8**
 
 **Why non-negotiable:** human decision, 2026-09-19 — *"will not go to market without the full account system — not optional, not deferrable to a later phase."* Not a feature nice-to-have: the product vision explicitly rejects a guest-only / room-code-only launch. Every other web checklist item can be finished and it still wouldn't matter — this is a hard gate on launch itself.
 
@@ -74,6 +88,8 @@ Tutorial — Coach lesson launches from Page 1; on completion, returns to Page 1
 
 ### A8. Player reviews — product requirement for when Review ships
 
+**Owner: Claude, when Review ships**
+
 Human wants the Review feature itself to be the ongoing signal for whether a board feels fair (not a one-off formal playtest) — AI self-play stats can suggest a fairness read but not confirm it; real players actually using the product is the ground truth. For that to work, when Review ships past its current disabled placeholder it needs to be:
 
 1. **Visible** — not buried; easy to find and use from the hub, not a disabled "coming soon" button.
@@ -84,10 +100,12 @@ Needs its own design pass once accounts (A7) land — reviews need at least ligh
 
 ### A9. Online multiplayer server (required, not static-only) — HARD BLOCKER
 
+**Owner: Claude**
+
 **Goals:**
 - Two humans, two browsers, one authoritative game.
 - Moves, captures, chains, resignation, and both timer layers stay in sync.
-- Reconnect without corrupting state: done 2026-10-03 (the seat code is kept 3 hours in the browser; a refresh, a closed tab or a relaunched browser rejoins; only the clock running out loses, see A23).
+- Reconnect without corrupting state: done 2026-10-03 (the seat code is kept 3 hours in the browser; a refresh, a closed tab or a relaunched browser rejoins; only the clock running out loses, see DECISIONS C31).
 
 **Recommended stack:**
 
@@ -109,9 +127,11 @@ Needs its own design pass once accounts (A7) land — reviews need at least ligh
 - **Phase 2b (polish):** reconnect, rematch, basic stats, report/abandon, all boards + all presets.
 - **Phase 3 (tournament):** scheduled events, single-elimination bracket, server-enforced clocks, DB schema for `tournaments`/`entries`/`pairings`/`results`. Full V1 tournament scope: A10 below.
 
-**Status:** not started — architecture only, no code.
+**Status (Claude, 2026-10-03):** built and tested: rooms, server clocks, reconnect, presence, rate limits, ratings, tournaments (details: `AUTONOMOUS_LOG.md`). Open: the real two-browser test on Hostinger (A19-10) and the VPS decision (A16).
 
 ### A10. Tournament plan (Phase 3)
+
+**Owner: Shekhar (playtest and rule review), Claude (fixes)**
 
 **Status (Claude, 2026-10-03):** V1 built and tested (single elimination, byes, seeding by rating, replay after a draw, walkover after 5 minutes, organiser dialog; Run 3). Open: a real playtest with 4+ people on the hosted site, and Shekhar's review of the rules in DECISIONS C34–C38. Not in V1: Swiss/round-robin, prizes, cross-region latency guarantees.
 
@@ -125,9 +145,13 @@ Needs its own design pass once accounts (A7) land — reviews need at least ligh
 
 ### A11. Human playtest, all 7 boards
 
+**Owner: Shekhar**
+
 `npm run web:smartbeads`; feel/balance — human sign-off only. Not done.
 
 ### A12. Your unconfirmed browser checks
+
+**Owner: Shekhar**
 
 *(Shekhar to fill in: what's already been tested, which boards, when — move confirmed items to a "Confirmed" list below as you go.)*
 
@@ -151,6 +175,8 @@ Needs its own design pass once accounts (A7) land — reviews need at least ligh
 
 ### A13. Open risks (carried forward, not yet closed)
 
+**Owner: Shekhar**
+
 - Touch precision on the 16-bead board (37 nodes, tight spacing) — not yet verified on a real phone/tablet.
 - Expert AI think time is now milliseconds (worst measured 46 ms desktop, 336 ms at 6x CPU throttle; `GPT_PROJECT_AUDIT_05P.md` § 10) — still worth one real-phone check when Android work starts (emulated only).
 - Everything fixed 2026-09-14/15 (render-crash fix, timer race fix, rewritten chain tests, dead-code removal — full detail in `GPT_PROJECT_AUDIT_05P.md` 5th cycle) is Jest-verified only — no human has watched any of it on a real device or browser yet.
@@ -159,13 +185,19 @@ Needs its own design pass once accounts (A7) land — reviews need at least ligh
 
 ### A14. Company email setup
 
+**Owner: Shekhar**
+
 Not done — needed for Play Store registration and general business use.
 
 ### A15. Hosting — purchase checklist
 
+**Owner: Shekhar**
+
 Human buys: (1) domain — **DONE**; (2) host with Node + DB support — **confirmed** (Hostinger plan already has this, see Hosting Reference at bottom of doc); (3) database — included in current plan, see Hosting Reference at bottom.
 
 ### A16. VPS/hosting timing — don't buy yet
+
+**Owner: Shekhar**
 
 VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Store side (Part B). The real gate is the web engineering work: buying a VPS now means paying for a live server with nothing to deploy to it, since the account system (A7) + multiplayer server (A9) don't exist yet. **Buy VPS when the implementer is actually ready to deploy client+API+DB to staging** — i.e., once A7/A9 are substantially built, not before.
 
@@ -176,10 +208,12 @@ VPS timing has nothing to do with DUNS — DUNS only blocks the Android/Play Sto
 | Task | Owner | Status / Notes |
 |------|-------|--------|
 | Choose host (VPS / Railway) | Shekhar | **Not yet — wait.** See A16 for why |
-| Deploy client + API + DB | Implementer | Blocked on A7 + A9 + host choice |
+| Deploy client + API + DB | Claude | Blocked on A7 + A9 + host choice |
 | Live smoke vs local | Shekhar | Blocked on deploy |
 
 ### A18. Music — replace the current soundimage.org tracks (Shekhar's call)
+
+**Owner: Shekhar picks, Claude wires**
 
 Shekhar finds the present music weak. YouTube songs cannot be used (copyright). Options, any one:
 1. **Free licensed libraries (credit line needed):** Pixabay Music, Incompetech, Free Music Archive. Claude shortlists by mood; Shekhar listens and picks; Claude reads each licence and updates `public/credits.html`.
@@ -192,7 +226,7 @@ Shekhar finds the present music weak. YouTube songs cannot be used (copyright). 
 
 ### A19. Shekhar-only items (everything on Shekhar's name, one list)
 
-"Unblocks" = which Claude items wait for it (details in A22). Nothing else in this list is Claude's.
+"Unblocks" = which Claude items wait for it (the rest is in this list's own items). Nothing else in this list is Claude's.
 
 1. **Game look decisions.** Claude applies them afterwards. Unblocks: nothing.
 2. **Music selection (A18).** Pick a route and send track URLs or AI-tool files. Unblocks: music wiring.
@@ -205,23 +239,15 @@ Shekhar finds the present music weak. YouTube songs cannot be used (copyright). 
 9. **Razorpay account (A20).** razorpay.com → sign up → business KYC (PAN, bank account, GST if any; takes days). Start with Test mode keys; Key Secret stays private. Unblocks: ad-removal payment.
 10. **Hostinger two-browser test.** hPanel → Websites → Add website → Node.js Apps → connect the GitHub repo; build command `npm install && npm run build && npm run build:server`; entry file `server-dist/main.js`; Node 22; set the environment variables Claude lists. Open the site in two browsers and play online (steps in `AUTONOMOUS_LOG.md`). Unblocks: knowing whether a VPS is needed.
 11. **VPS purchase** only at the A16 trigger.
-12. **Testing only you can do.** A11/A12 playtests, real-phone checks (A13, B6), a real screen reader (NVDA free, or VoiceOver) on the keyboard play. Unblocks: opening more online boards (A21).
+12. **Testing only you can do.** A11/A12 playtests, real-phone checks (A13, B6), a real screen reader (NVDA free, or VoiceOver) on the keyboard play. Unblocks: opening the other four boards online (the first three are open).
 13. **Android:** B5, B7, B8.
 14. **Decisions:** ad / consent flow, and the hub items still "coming soon".
 
 ### A20. Ad-removal payment (do last)
 
+**Owner: Shekhar (Razorpay account, price), then Claude (test payment)**
+
 Built behind a switch (Razorpay orders, signature check, webhook; Run 3). Off until `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` and `AD_REMOVAL_PRICE_PAISE` are set. Open: Shekhar creates the Razorpay account (A19-9) and picks the price; Claude then runs a test-mode payment. On Android also a Play Store payment profile (B8).
-
-### A21. Online play, to discuss
-
-Missing: the other four boards online (after the human playtest A11 covers each). Ratings and tournaments are built (Run 3).
-
-### A22. Claude items waiting on something (dependency map, 2026-10-03)
-
-- **Waiting on A19:** A7 accounts (e-mail login: item 6; Google login: 7; Facebook login: 8) · A20 payment (A7 + 9) · hosted online play and the VPS decision (10, then 11) · music wiring (2) · final legal pages (3, 6) · look changes (1) · more online boards (12) · A10 tournaments (A7 + stable A9) · A1 coach video polish (needs the discussion).
-- **Claude, next:** nothing in the web list is waiting on Claude; open items need Shekhar (A19) or real devices and people (A11–A13).
-- **Done 2026-10-02/03 (first run in `AUTONOMOUS_LOG.md`, audits in `GPT_PROJECT_AUDIT_05P.md` rows 10 to 12):** W1, W3–W9, A3 server clocks, A4 online lobby and room screen, A9 first online server, reconnect after a closed browser, AI draw-valuation fix, server crash fixes, rate limits, compression and ranges, idle CPU fix, accessibility labels, font consolidation, Firefox and WebKit CI job.
 
 ---
 
@@ -245,18 +271,16 @@ Missing: the other four boards online (after the human playtest A11 covers each)
 - **Declined:** U5 (the whole start page deliberately uses the system font; tiles were not inconsistent); U11 (live board in the look preview: Shekhar removed the preview lines on 2026-09-24).
 - **Still open (needs the owner):** (a) review and finish the Privacy and Terms drafts and add a support e-mail address (`public/privacy.html`, `terms.html`); (b) confirm the source and licence of the sound effects in `public/audio` and state it on the Credits page; (c) read the soundimage.org licence and host the music files yourself (they are still hot-linked); (d) ad / consent flow when real ads are added; (e) hub items that are not built (Community, Tournament, Review, Online play) still show "coming soon"; (f) first-run sound hint (sound is off by default); (g) Firefox cannot be launched on the dev PC, so it is untested.
 
-### A23. Disconnects and idle (Shekhar, 2026-10-03)
-
-Open: a real phone getting hot after a long Watch AI or online session (Shekhar, A12, A13). Everything else in this section is done (Run 3).
-
 ### A24. On Shekhar from the 2026-10-03 audit work, and Claude's own choices to confirm (Claude)
 
-Items 8 to 13 below: Shekhar accepted them in chat on 2026-10-03, so they are (Claude & reviewed); they are recorded in `GPT_PROJECT_DECISIONS_05P.md` §15. Item 14 is still (Claude).
+**Owner: Shekhar for items 1–7, Claude for item 14**
+
+The reviewed choices (rate limits, resignation lapse, seat code, repaint, shot-clock table, Firefox job) are recorded in `GPT_PROJECT_DECISIONS_05P.md` §15 as (Claude & reviewed). Item 14 is still (Claude).
 
 **Decisions only you can make**
 1. **Frame embedding:** may other websites (game portals) show the game inside their page? Claude suggests yes for the game page, and no for login and payment pages when they are built (A7, A20). Needed before the Content-Security-Policy is added.
 2. **Music sites (A18):** send the sites or files. The Content-Security-Policy must list them, or you host the music yourself (A19-5). Claude builds the CSP after this.
-3. **Watch AI time limit:** 2 or 3 minutes (see A23). Claude suggests 3.
+3. **Watch AI time limit:** built at 3 minutes (C32); say so if you prefer 2.
 4. **"Claim win" button:** in untimed online games, after the opponent has been away a few minutes, should the player who stayed get a "Claim win" button? Claude suggests yes. Not built.
 
 **Things only you can do**
@@ -264,18 +288,22 @@ Items 8 to 13 below: Shekhar accepted them in chat on 2026-10-03, so they are (C
 6. **Real-phone heat check (A12, A13):** play 10 minutes or more on a phone and note whether it warms. Claude's measured proxy: idle CPU 4.2% down to 1.0%, random play 33.8% down to 14.2%.
 7. **Privacy and Terms review (A19-3):** the Privacy page now includes online play.
 
-**Claude's own choices, to confirm or change** (all already in code)
-8. **(Claude & reviewed) Rate limits:** 20 room creations per 10 minutes and 30 join attempts per minute per client address; 429 beyond that.
-9. **(Claude & reviewed) Resignation offer lapses after 2 minutes** unanswered and play continues. This is a new rule, not in `DECISIONS`, and resignation is locked, so it needs your yes.
-10. **(Claude & reviewed) Seat code kept 3 hours** in the browser (same as the server's idle limit).
-11. **(Claude & reviewed) Board repaint:** every 5 seconds when idle, and about 30 per second for the opening rings (was 60 per second).
-12. **(Claude & reviewed) Shot clock correction in `DECISIONS` §6** (10-bead 120 s, 7-bead 90 s). Not implemented in code until tournaments.
-13. **(Claude & reviewed) Playwright Firefox reinstalled on this PC** (outside the repo, about 120 MB). A CI job now runs Firefox and WebKit.
+**Claude's own choice, to confirm or change**
 14. **(Claude) Audit probe scripts** (rules reference check, AI oracle, soak, CPU) live only in a temporary folder. Claude suggests saving them under `PROJECTS/SmartBeads/scripts/audit-tools/` so the evidence can be re-run. Waiting for your yes.
 
 ### A25. Review of Claude's decisions with Shekhar (Claude)
 
+**Owner: Shekhar, with Claude**
+
 `GPT_PROJECT_DECISIONS_05P.md` §15 lists every decision Claude made since autonomous mode started (2026-10-02), each marked (Claude), with where it lives and whether Shekhar has accepted it. Go through it with Claude when there is time; anything Shekhar changes becomes a normal decision in the right section.
+
+### A26. Second project and clean-up of Smart Beads (Shekhar decided 2026-10-03) (Claude)
+
+**Owner: Shekhar decides; Claude does the work.**
+
+- Smart Emergency gets its own repo and folder in `D:\Business Idea\` (nothing in this repo changes). It is created from a new session opened in that folder; this vault's session never edits outside the vault without "Go — outside vault" and the exact path.
+- Smart Beads is rearranged and cleaned. Claude first writes the plan (what moves where, the `VISION/` → `PROJECTS/SmartBeads/AGENT_PROMPTS/` move with its 8 references, the root web files), tags the last good commit, works on a branch, and merges only when every test and gate give the same results as before.
+- Open: Shekhar says what "rearrange" should include, for example moving the root web files into `PROJECTS/SmartBeads/`.
 
 ---
 
@@ -285,19 +313,19 @@ Items 8 to 13 below: Shekhar accepted them in chat on 2026-10-03, so they are (C
 
 ### B1. Install Capacitor + Android platform
 
-Owner: Implementer. Can start now. Capacitor wrap confirmed (not native WebView bridge).
+Owner: Claude. Can start now. Capacitor wrap confirmed (not native WebView bridge).
 
 ### B2. Icon, splash, package ID
 
-Owner: Shekhar assets; implementer wires. Can start now.
+Owner: Shekhar (assets), Claude wires. Can start now.
 
 ### B3. Signed `.aab` build process
 
-Owner: Implementer builds. Can start now. (Keystore custody itself is a Shekhar task — see B5 below.)
+Owner: Claude builds. Can start now. (Keystore custody itself is a Shekhar task — see B5 below.)
 
 ### B4. Phone layout pass
 
-Owner: Implementer + Shekhar. Can start now.
+Owner: Claude + Shekhar. Can start now.
 
 **Out of V1 Android scope — do not let these creep in:** haptics, offline match persistence, native WebView bridge.
 
