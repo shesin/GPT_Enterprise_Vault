@@ -268,16 +268,23 @@ describe('snapshotFromView (server state mirrored into the local session)', () =
 
 describe('rejoin after a page reload (onlineResume)', () => {
   const mem = new Map<string, string>();
-  beforeAll(() => {
-    (globalThis as unknown as { sessionStorage: unknown }).sessionStorage = {
-      getItem: (k: string) => mem.get(k) ?? null,
-      setItem: (k: string, v: string) => void mem.set(k, v),
-      removeItem: (k: string) => void mem.delete(k),
-    };
+  const disk = new Map<string, string>(); // localStorage: survives a closed tab or a relaunched browser
+  const fake = (m: Map<string, string>) => ({
+    getItem: (k: string) => m.get(k) ?? null,
+    setItem: (k: string, v: string) => void m.set(k, v),
+    removeItem: (k: string) => void m.delete(k),
   });
-  beforeEach(() => mem.clear());
+  beforeAll(() => {
+    (globalThis as unknown as { sessionStorage: unknown }).sessionStorage = fake(mem);
+    (globalThis as unknown as { localStorage: unknown }).localStorage = fake(disk);
+  });
+  beforeEach(() => {
+    mem.clear();
+    disk.clear();
+  });
   afterAll(() => {
     delete (globalThis as unknown as { sessionStorage?: unknown }).sessionStorage;
+    delete (globalThis as unknown as { localStorage?: unknown }).localStorage;
   });
 
   it('saves and loads a session; garbage is ignored', () => {
@@ -296,12 +303,74 @@ describe('rejoin after a page reload (onlineResume)', () => {
     };
     saveOnlineSession(session);
     expect(loadOnlineSession()).toEqual(session);
-    mem.set('sb-online-session', '{"code":"abc","token":"x"}');
+    for (const store of [mem, disk]) {
+      store.set('sb-online-session', '{"code":"abc","token":"x"}');
+    }
     expect(loadOnlineSession()).toBeNull();
-    mem.set('sb-online-session', 'not json');
+    for (const store of [mem, disk]) store.set('sb-online-session', 'not json');
     expect(loadOnlineSession()).toBeNull();
+    saveOnlineSession(session);
     saveOnlineSession(null);
     expect(mem.has('sb-online-session')).toBe(false);
+    expect(disk.has('sb-online-session')).toBe(false);
+  });
+
+  const SESSION = {
+    code: 'ABCDE',
+    token: 'sometokenvalue123',
+    seat: 'BLUE' as const,
+    boardId: '6x4' as const,
+    settings: {
+      timer: 'off',
+      tournamentTimer: 'off',
+      shotClock: 'off',
+      centerRule: 'off',
+    } as const,
+  };
+
+  it('a closed tab or relaunched browser (empty session storage) still finds the seat', () => {
+    saveOnlineSession(SESSION);
+    mem.clear(); // the tab is gone; the browser profile is not
+    expect(loadOnlineSession()).toEqual(SESSION);
+  });
+
+  it('a saved seat older than the 3 hours the server keeps a room is ignored', () => {
+    const now = Date.now();
+    const spy = jest.spyOn(Date, 'now');
+    try {
+      spy.mockReturnValue(now);
+      saveOnlineSession(SESSION);
+      mem.clear();
+      spy.mockReturnValue(now + 3 * 60 * 60 * 1000 - 60_000);
+      expect(loadOnlineSession()).toEqual(SESSION);
+      spy.mockReturnValue(now + 3 * 60 * 60 * 1000 + 60_000);
+      expect(loadOnlineSession()).toBeNull();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('leaving the game forgets the seat everywhere, so a later start page is not hijacked', () => {
+    saveOnlineSession(SESSION);
+    saveOnlineSession(null);
+    mem.clear();
+    expect(loadOnlineSession()).toBeNull();
+  });
+
+  it('a relaunched browser rejoins the same live room and seat', async () => {
+    const p = await setup(wsFactory);
+    await waitFor(() => p.viewsA.find((v) => v.started));
+    saveOnlineSession(p.b.getSession());
+    p.b.close(); // the player's browser is killed
+    mem.clear(); // and comes back as a new process with no tab state
+    const game = await resumeOnlineGame(
+      () => new OnlineClient({ baseUrl: base, createSocket: wsFactory }),
+      base,
+    );
+    expect(game?.session.seat).toBe('BLUE');
+    expect(game?.session.code).toBe(p.a.getSession()!.code);
+    game?.client.close();
+    p.a.close();
   });
 
   it('a live room is resumed with the same seat and keeps its game', async () => {

@@ -245,6 +245,13 @@ Missing: ratings, a reconnect grace rule, tournaments (A10), and the other four 
 - **Declined:** U5 (the whole start page deliberately uses the system font; tiles were not inconsistent); U11 (live board in the look preview: Shekhar removed the preview lines on 2026-09-24).
 - **Still open (needs the owner):** (a) review and finish the Privacy and Terms drafts and add a support e-mail address (`public/privacy.html`, `terms.html`); (b) confirm the source and licence of the sound effects in `public/audio` and state it on the Credits page; (c) read the soundimage.org licence and host the music files yourself (they are still hot-linked); (d) ad / consent flow when real ads are added; (e) hub items that are not built (Community, Tournament, Review, Online play) still show "coming soon"; (f) first-run sound hint (sound is off by default); (g) Firefox cannot be launched on the dev PC, so it is untested.
 
+### A23. Disconnects and idle (Shekhar, 2026-10-03)
+
+- **Disconnect is never a loss by itself.** The player gets the chance to reconnect; only the clock running out loses. Tournament shot clocks (A10): 16, 12, 10-bead = 120 s; 8, 7-bead = 90 s; 6-bead = 60 s. In untimed games nobody loses: the other player sees "Opponent disconnected" and waits.
+- **Reconnect (done 2026-10-03):** the seat code is now saved in both the tab and the browser (`localStorage`) for 3 hours, the same time the server keeps an idle room. A refresh, a closed tab or a relaunched browser rejoins the same seat and game. Leaving the game clears it. Tournament players will also rejoin through their account (A7) once accounts exist.
+- **Watch AI time limit:** Watch AI stops by itself after a fixed time, 2 or 3 minutes (Shekhar to pick; Claude suggests 3), then shows "Still watching? Tap to continue". Music is separate and keeps playing if on. Not built.
+- **Long-session checks Claude will run:** a 2-hour idle and hidden-tab run, random-click ("monkey") play, and CPU throttled 4x and 6x. A real phone getting hot only Shekhar can check (A12, A13).
+
 ---
 
 # PART B — APP (Android)

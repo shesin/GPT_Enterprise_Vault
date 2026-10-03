@@ -446,6 +446,19 @@ async function main() {
       await sleep(3000);
       const idleDraws = await page.evaluate(() => window.__draws);
       record('Idle redraw: at most about 1 per second', idleDraws <= 8, `${idleDraws} draws in 3 s (selected piece, ${s.currentPlayer} to move)`);
+      // Audit 2026-10-03: the loop asked for a 60 Hz animation frame forever even when it drew only once a
+      // second, keeping a phone's CPU awake. At rest the page must also stop asking for frames.
+      await page.evaluate(() => {
+        window.__frames = 0;
+        const raf = window.requestAnimationFrame.bind(window);
+        window.requestAnimationFrame = (cb) => {
+          window.__frames += 1;
+          return raf(cb);
+        };
+      });
+      await sleep(3000);
+      const idleFrames = await page.evaluate(() => window.__frames);
+      record('Idle: no 60 Hz animation-frame requests while nothing moves (at most about 1 per second)', idleFrames <= 10, `${idleFrames} frame requests in 3 s (selected piece)`);
       await page.evaluate(() => {
         CanvasRenderingContext2D.prototype.clearRect = function () {
           throw new Error('simulated draw failure');
@@ -463,6 +476,41 @@ async function main() {
       const after = await page.evaluate(() => window.__draws);
       const bars = await page.locator('.sb-error-banner').count();
       record('Render loop survives a throwing draw, one error bar', after >= 1 && bars === 1, `draws after=${after} bars=${bars}`);
+      await ctx.close();
+    }
+
+    // 7b. The pulsing opening rings repaint the whole board; that must stay at about 30 per second at most.
+    {
+      const { ctx, page } = await open(browser);
+      await startPvp(page);
+      await page.evaluate(() => {
+        window.__ringDraws = 0;
+        const P = CanvasRenderingContext2D.prototype;
+        const good = P.clearRect;
+        P.clearRect = function (...a) {
+          window.__ringDraws += 1;
+          return good.apply(this, a);
+        };
+      });
+      await page.evaluate(() => (window.__ringDraws = 0));
+      await sleep(3000);
+      const ringDraws = await page.evaluate(() => window.__ringDraws);
+      const rings = await page.evaluate(() => window.__SB_TEST__.session.shouldShowTurnStartRings());
+      record('Opening rings: board repainted at most ~30 times per second', rings && ringDraws <= 110, `${ringDraws} repaints in 3 s, rings showing=${rings}`);
+      await ctx.close();
+    }
+
+    // 7c. A look changed in another tab shows at once (the idle repaint is only every 5 s, so this must not rely on it).
+    {
+      const { ctx, page } = await open(browser);
+      const other = await ctx.newPage();
+      await other.goto(URL, { waitUntil: 'networkidle' });
+      const before = await page.evaluate(() => document.getElementById('play-shell').getAttribute('data-play-board-look'));
+      const next = ['25', '1', '5'].find((id) => id !== before);
+      await other.evaluate((id) => localStorage.setItem('sb-play-board-look', id), next);
+      await sleep(1500);
+      const after = await page.evaluate(() => document.getElementById('play-shell').getAttribute('data-play-board-look'));
+      record('Cross-tab look sync: a look picked in another tab shows within 1.5 s', after === next, `before=${before} expected=${next} after=${after}`);
       await ctx.close();
     }
 

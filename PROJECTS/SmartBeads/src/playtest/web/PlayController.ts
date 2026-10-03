@@ -146,6 +146,7 @@ export function bootstrapPlayShell(
   let turnPulse = 0;
   let timerId: ReturnType<typeof setInterval> | null = null;
   let pulseRaf = 0;
+  let pulseWake: ReturnType<typeof setTimeout> | null = null;
   let animRaf = 0;
   let aiRunId = 0;
   let lastGameOverPlayed = false;
@@ -670,7 +671,7 @@ export function bootstrapPlayShell(
 
   function launchCoachLesson(): void {
     if (timerId) clearInterval(timerId);
-    cancelAnimationFrame(pulseRaf);
+    stopPulseLoop();
     cancelAnimationFrame(animRaf);
     cancelAiWork();
     aiThinking = false;
@@ -699,7 +700,7 @@ export function bootstrapPlayShell(
     syncModeUi();
     initCoachVideoPlayer(true);
     undoBtn.disabled = true;
-    pulseRaf = requestAnimationFrame(loopPulse);
+    wakePulseLoop();
 
     if (bgmSelect.value && bgmAudio.paused) {
       if (!bgmAudio.src) bgmAudio.src = bgmSelect.value;
@@ -1373,6 +1374,9 @@ export function bootstrapPlayShell(
     timerId = setInterval(runClockTick, 1000);
   }
 
+  // Another tab changed the board look: show it now instead of waiting for the next idle repaint.
+  window.addEventListener('storage', () => drawBoard()); // drawBoard repairs a drifted look first
+
   // A returning hidden tab settles the ticks it missed at once, not up to a second later.
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) runClockTick();
@@ -1387,8 +1391,11 @@ export function bootstrapPlayShell(
     );
   }
 
-  /** Nothing moves while idle, so the board is repainted this often at most (keeps the cross-tab look sync in drawBoard). */
-  const IDLE_REPAINT_MS = 1000;
+  /**
+   * Nothing moves while idle, so the board is repainted this often at most, only as a safety net. A look changed
+   * in another tab arrives at once through the `storage` event (below), not through this repaint.
+   */
+  const IDLE_REPAINT_MS = 5000;
   let lastRepaintMs = 0;
   /** Players who ask for reduced motion get static rings (no pulsing). */
   const reducedMotion =
@@ -1396,26 +1403,59 @@ export function bootstrapPlayShell(
       ? window.matchMedia('(prefers-reduced-motion: reduce)')
       : null;
 
-  function loopPulse(ts: number): void {
-    // Request the next frame first: a draw that throws must not stop the loop for good.
+  /** The turn-start rings repaint the whole board; about 30 per second looks the same as 60 for a slow pulse. */
+  const RING_FRAME_MS = 33;
+  /** Stops the pulse loop (animation frame and any pending idle wake-up). */
+  function stopPulseLoop(): void {
+    cancelAnimationFrame(pulseRaf);
+    if (pulseWake !== null) clearTimeout(pulseWake);
+    pulseWake = null;
+  }
+
+  /** (Re)starts the pulse loop at once. Call it whenever something begins to animate (capture pulse, new game). */
+  function wakePulseLoop(): void {
+    stopPulseLoop();
     pulseRaf = requestAnimationFrame(loopPulse);
-    const still = reducedMotion?.matches === true;
-    turnPulse = still ? 0 : ts / 280;
-    const now = performance.now();
-    for (let i = capturePulseStarts.length - 1; i >= 0; i -= 1) {
-      if (now - capturePulseStarts[i]!.startMs >= CAPTURE_PULSE_MS) {
-        capturePulseStarts.splice(i, 1);
-      }
+  }
+
+  /**
+   * Frames are requested at the display rate only while something moves (rings, capture pulses). At rest the
+   * loop sleeps and wakes once per IDLE_REPAINT_MS, so a phone's CPU is not woken 60 times a second for nothing.
+   */
+  function schedulePulseFrame(animatingNow: boolean): void {
+    if (animatingNow) {
+      pulseRaf = requestAnimationFrame(loopPulse);
+      return;
     }
-    const pulsesActive = capturePulseStarts.length > 0;
-    if (animating && !pulsesActive) return;
-    if (
-      pulsesActive ||
-      (!still && turnStartRingsPulsing()) ||
-      now - lastRepaintMs >= IDLE_REPAINT_MS
-    ) {
-      lastRepaintMs = now;
-      drawBoard();
+    pulseWake = setTimeout(() => {
+      pulseWake = null;
+      pulseRaf = requestAnimationFrame(loopPulse);
+    }, IDLE_REPAINT_MS);
+  }
+
+  function loopPulse(ts: number): void {
+    let animatingNow = false;
+    // Scheduling sits in `finally`: a draw that throws must not stop the loop for good.
+    try {
+      const still = reducedMotion?.matches === true;
+      turnPulse = still ? 0 : ts / 280;
+      const now = performance.now();
+      for (let i = capturePulseStarts.length - 1; i >= 0; i -= 1) {
+        if (now - capturePulseStarts[i]!.startMs >= CAPTURE_PULSE_MS) {
+          capturePulseStarts.splice(i, 1);
+        }
+      }
+      const pulsesActive = capturePulseStarts.length > 0;
+      const ringsPulsing = !still && turnStartRingsPulsing();
+      animatingNow = pulsesActive || ringsPulsing;
+      if (animating && !pulsesActive) return;
+      const since = now - lastRepaintMs;
+      if (pulsesActive || (ringsPulsing && since >= RING_FRAME_MS) || since >= IDLE_REPAINT_MS) {
+        lastRepaintMs = now;
+        drawBoard();
+      }
+    } finally {
+      schedulePulseFrame(animatingNow);
     }
   }
 
@@ -1497,6 +1537,7 @@ export function bootstrapPlayShell(
       turnCaptures += 1;
       if (captured !== undefined) {
         capturePulseStarts.push({ nodeId: captured, startMs: performance.now() });
+        wakePulseLoop();
       }
     } else {
       soundEffects.playSlide();
@@ -1943,7 +1984,7 @@ export function bootstrapPlayShell(
 
   function resetGame(): void {
     if (timerId) clearInterval(timerId);
-    cancelAnimationFrame(pulseRaf);
+    stopPulseLoop();
     cancelAnimationFrame(animRaf);
     cancelAiWork();
     undoCtl.reset();
@@ -1985,7 +2026,7 @@ export function bootstrapPlayShell(
     session.resetTurnClock();
     updateUI();
     undoBtn.disabled = true;
-    pulseRaf = requestAnimationFrame(loopPulse);
+    wakePulseLoop();
     if (!isAwaitingStart() && !online) {
       startTimers();
       if (!wasCoach) {
@@ -2045,7 +2086,7 @@ export function bootstrapPlayShell(
 
   function prepareBoardSwitch(boardId: ProductBoardId): void {
     if (timerId) clearInterval(timerId);
-    cancelAnimationFrame(pulseRaf);
+    stopPulseLoop();
     cancelAnimationFrame(animRaf);
     cancelAiWork();
     undoCtl.reset();
@@ -2075,7 +2116,7 @@ export function bootstrapPlayShell(
     session.resetTurnClock();
     updateUI();
     undoBtn.disabled = true;
-    pulseRaf = requestAnimationFrame(loopPulse);
+    wakePulseLoop();
   }
 
   function switchBoard(boardId: ProductBoardId): void {

@@ -209,13 +209,18 @@ Central 5×5 matches 10-bead width prominence (~70% vertical play height). Wing 
 5. **Shot breach (HvH):** lose on time only — no softer penalty. 120s/90s/60s per the board-fixed table below judged long enough that a real breach means genuinely stalling.
 6. **Timers (HvH) — board-fixed table, confirmed locked 2026-09-28:**
 
-   | Board group | Match clock options | Shot clock (fixed) |
-   |-------------|---------------------|---------------------|
-   | 16, 12-bead | 5 min or 8 min | 120s |
-   | 10, 8-bead | 3 min or 5 min | 90s |
-   | 7, 6-bead | 2 min or 4 min | 60s |
+   | Board | Match clock options | Shot clock (fixed) |
+   |-------|---------------------|---------------------|
+   | 16-bead | 5 min or 8 min | 120s |
+   | 12-bead | 5 min or 8 min | 120s |
+   | 10-bead | 3 min or 5 min | 120s |
+   | 8-bead | 3 min or 5 min | 90s |
+   | 7-bead | 2 min or 4 min | 90s |
+   | 6-bead (6x4 and 6x3x5) | 2 min or 4 min | 60s |
 
-   Not a Casual/Quick/Standard/Blitz preset menu — fixed and simple, two length options per board-size group, shot clock a single fixed value per group.
+   **Corrected 2026-10-03 (Shekhar):** the shot clock groups are 16, 12, 10-bead = 120s; 8, 7-bead = 90s; 6-bead = 60s. The earlier table had 10-bead at 90s and 7-bead at 60s. Match clock options are unchanged. The shot clock is enforced in tournaments only (default stays off everywhere); it is not implemented in code yet — tournaments (A10) are not built.
+
+   Not a Casual/Quick/Standard/Blitz preset menu — fixed and simple, two match clock lengths per board, a single fixed shot clock value per board.
 7. **Tournament board scope:** all 7 boards for V1 (not 16-bead-only).
 
 ---
