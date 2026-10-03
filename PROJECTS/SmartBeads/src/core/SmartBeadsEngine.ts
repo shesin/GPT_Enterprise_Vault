@@ -24,7 +24,7 @@ import { buildPositionKey, isThreefoldRepetition } from './positionKey';
 export const ENGINE_SAFETY_MAX_PLIES = 120;
 export const ENGINE_SAFETY_MAX_PLIES_LARGE = 240;
 
-const SMALL_BOARD_VARIANTS: readonly BoardVariant[] = ['4', '5', '6', '6x3x5', '7'];
+const SMALL_BOARD_VARIANTS: readonly BoardVariant[] = ['4', '6', '6x3x5', '7'];
 
 export function engineSafetyCapForVariant(variant: BoardVariant): number {
   return SMALL_BOARD_VARIANTS.includes(variant)

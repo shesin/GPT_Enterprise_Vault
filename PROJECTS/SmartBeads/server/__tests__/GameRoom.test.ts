@@ -254,3 +254,21 @@ describe('GameRoom resignation', () => {
     });
   });
 });
+
+describe('GameRoom unanswered resignation offer', () => {
+  it('lapses after two minutes so a silent opponent cannot freeze the game', () => {
+    const { room, clock } = startedRoom();
+    expect(room.act('RED', { type: 'resign' })).toEqual({ ok: true });
+    clock.t += 119_000;
+    room.tick();
+    expect(room.view('RED').pendingResign).toBe('RED');
+    clock.t += 2_000;
+    room.tick();
+    expect(room.view('RED').pendingResign).toBeNull();
+    expect(room.act('BLUE', { type: 'resignRespond', acceptDraw: true })).toMatchObject({
+      ok: false,
+    });
+    const first = room.view('RED').legalMoves[0]!;
+    expect(room.act('RED', { type: 'move', from: first.from, to: first.to })).toEqual({ ok: true });
+  });
+});

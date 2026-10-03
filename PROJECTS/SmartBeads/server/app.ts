@@ -8,7 +8,9 @@
  * The HTTP routes are the polling fallback for hosts that cannot keep WebSocket connections open.
  */
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'http';
-import { readFile } from 'fs/promises';
+import { readFile, stat } from 'fs/promises';
+import { brotliCompress, gzip } from 'zlib';
+import { promisify } from 'util';
 import path from 'path';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { RoomManager, SERVER_BUSY } from './RoomManager';
@@ -22,7 +24,51 @@ export interface AppOptions {
   now?: () => number;
   /** Clock tick period; 1000 in production, small in tests. */
   tickMs?: number;
+  /** Room creations allowed per client address in a window (default 20 per 10 minutes). */
+  createLimit?: RateLimit;
+  /** Join attempts (right or wrong code) allowed per client address in a window (default 30 per minute). */
+  joinLimit?: RateLimit;
+  /** Behind a reverse proxy the client address is the first X-Forwarded-For entry. Off unless the host is trusted. */
+  trustProxy?: boolean;
 }
+
+export interface RateLimit {
+  max: number;
+  windowMs: number;
+}
+
+/** Sliding-window counter per client address. */
+class RateLimiter {
+  private hits = new Map<string, number[]>();
+  constructor(
+    private readonly limit: RateLimit,
+    private readonly now: () => number,
+  ) {}
+
+  /** Records one attempt; returns 0 when allowed, else the seconds until it would be. */
+  hit(key: string): number {
+    const t = this.now();
+    const recent = (this.hits.get(key) ?? []).filter((x) => t - x < this.limit.windowMs);
+    if (recent.length >= this.limit.max) {
+      this.hits.set(key, recent);
+      return Math.max(1, Math.ceil((recent[0]! + this.limit.windowMs - t) / 1000));
+    }
+    recent.push(t);
+    this.hits.set(key, recent);
+    return 0;
+  }
+
+  sweep(): void {
+    const t = this.now();
+    for (const [key, list] of this.hits) {
+      if (list.every((x) => t - x >= this.limit.windowMs)) this.hits.delete(key);
+    }
+  }
+}
+
+const gzipAsync = promisify(gzip);
+const brotliAsync = promisify(brotliCompress);
+const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.json', '.svg', '.webmanifest']);
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -48,6 +94,16 @@ function send(res: ServerResponse, status: number, body?: unknown): void {
   res
     .writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' })
     .end(JSON.stringify(body));
+}
+
+function tooMany(res: ServerResponse, retryAfterSec: number): void {
+  res
+    .writeHead(429, {
+      'content-type': 'application/json',
+      'cache-control': 'no-store',
+      'retry-after': String(retryAfterSec),
+    })
+    .end(JSON.stringify({ error: 'Too many requests. Try again in a little while.' }));
 }
 
 function readJson(req: IncomingMessage): Promise<unknown> {
@@ -98,6 +154,22 @@ export interface RunningApp {
 export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
   const now = options.now ?? (() => Date.now());
   const manager = new RoomManager(now);
+  const createLimiter = new RateLimiter(
+    options.createLimit ?? { max: 20, windowMs: 10 * 60_000 },
+    now,
+  );
+  const joinLimiter = new RateLimiter(options.joinLimit ?? { max: 30, windowMs: 60_000 }, now);
+  const compressed = new Map<string, Buffer>();
+
+  function clientAddress(req: IncomingMessage): string {
+    if (options.trustProxy) {
+      const forwarded = String(req.headers['x-forwarded-for'] ?? '')
+        .split(',')[0]
+        ?.trim();
+      if (forwarded) return forwarded;
+    }
+    return req.socket.remoteAddress ?? 'unknown';
+  }
   const sockets = new Map<string, Set<{ ws: WebSocket; seat: 'RED' | 'BLUE' }>>();
 
   function push(room: GameRoom): void {
@@ -123,20 +195,83 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
     const file = path.resolve(root, rel);
     if (file !== root && !file.startsWith(root + path.sep))
       return send(res, 403, { error: 'Forbidden.' });
+    let info;
     try {
-      const body = await readFile(file);
-      res
-        .writeHead(200, {
-          'content-type': MIME[path.extname(file)] ?? 'application/octet-stream',
-          'x-content-type-options': 'nosniff',
-          // Vite names built files by content hash, so they never change; pages are re-checked each visit.
-          'cache-control': rel.startsWith('assets/')
-            ? 'public, max-age=31536000, immutable'
-            : 'no-cache',
-        })
-        .end(body);
+      info = await stat(file);
+      if (!info.isFile()) throw new Error('not a file');
     } catch {
-      send(res, 404, { error: 'Not found.' });
+      return send(res, 404, { error: 'Not found.' });
+    }
+    try {
+      const ext = path.extname(file);
+      const headers: Record<string, string | number> = {
+        'content-type': MIME[ext] ?? 'application/octet-stream',
+        'x-content-type-options': 'nosniff',
+        'accept-ranges': 'bytes',
+        // Vite names built files by content hash, so they never change; pages are re-checked each visit.
+        'cache-control': rel.startsWith('assets/')
+          ? 'public, max-age=31536000, immutable'
+          : 'no-cache',
+      };
+      let body: Buffer = await readFile(file);
+
+      // Files that are not content-hashed are re-checked with a cheap validator instead of re-sent.
+      const etag = `W/"${info.size.toString(16)}-${Math.floor(info.mtimeMs).toString(16)}"`;
+      if (!rel.startsWith('assets/')) headers['etag'] = etag;
+      if (
+        !rel.startsWith('assets/') &&
+        !req.headers.range &&
+        req.headers['if-none-match'] === etag
+      ) {
+        res.writeHead(304, { etag, 'cache-control': 'no-cache' }).end();
+        return;
+      }
+
+      const range = req.headers.range;
+      if (range) {
+        const m = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+        const size = body.length;
+        let start = m && m[1] ? Number(m[1]) : NaN;
+        let end = m && m[2] ? Number(m[2]) : NaN;
+        if (m && !m[1] && m[2]) {
+          start = Math.max(0, size - Number(m[2])); // "-N" = the last N bytes
+          end = size - 1;
+        } else if (m && m[1] && !m[2]) {
+          end = size - 1;
+        }
+        if (!m || Number.isNaN(start) || Number.isNaN(end) || start > end || start >= size) {
+          res.writeHead(416, { 'content-range': `bytes */${size}` }).end();
+          return;
+        }
+        end = Math.min(end, size - 1);
+        headers['content-range'] = `bytes ${start}-${end}/${size}`;
+        headers['content-length'] = end - start + 1;
+        res.writeHead(206, headers).end(body.subarray(start, end + 1));
+        return;
+      }
+
+      if (COMPRESSIBLE.has(ext)) {
+        headers['vary'] = 'Accept-Encoding';
+        const accepted = String(req.headers['accept-encoding'] ?? '')
+          .split(',')
+          .map((token) => (token.split(';')[0] ?? '').trim().toLowerCase());
+        const encoding = accepted.includes('br') ? 'br' : accepted.includes('gzip') ? 'gzip' : null;
+        if (encoding) {
+          const key = `${file}|${info.mtimeMs}|${encoding}`;
+          let packed = compressed.get(key);
+          if (!packed) {
+            packed = encoding === 'br' ? await brotliAsync(body) : await gzipAsync(body);
+            compressed.set(key, packed);
+          }
+          body = packed;
+          headers['content-encoding'] = encoding;
+        }
+      }
+      headers['content-length'] = body.length;
+      res.writeHead(200, headers).end(body);
+    } catch {
+      if (!res.headersSent) send(res, 500, { error: 'Server error.' });
+      else res.end();
     }
   }
 
@@ -144,6 +279,8 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
     const parts = url.pathname.split('/').filter(Boolean); // ['api','rooms',code?,action?]
     try {
       if (parts.length === 2 && req.method === 'POST') {
+        const wait = createLimiter.hit(clientAddress(req));
+        if (wait) return tooMany(res, wait);
         const body = (await readJson(req)) as { boardId?: unknown; settings?: never };
         const made = manager.create(body.boardId, body.settings);
         if ('error' in made) return send(res, made.error === SERVER_BUSY ? 503 : 400, made);
@@ -152,6 +289,8 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
       const code = parts[2] ?? '';
       const action = parts[3];
       if (action === 'join' && req.method === 'POST') {
+        const wait = joinLimiter.hit(clientAddress(req));
+        if (wait) return tooMany(res, wait);
         const joined = manager.join(code);
         if ('error' in joined)
           return send(res, joined.error.startsWith('No room') ? 404 : 409, joined);
@@ -256,7 +395,14 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
   const ticker = setInterval(() => {
     for (const room of manager.tickAll()) push(room);
   }, options.tickMs ?? 1000);
-  const sweeper = setInterval(() => manager.sweep(), 10 * 60 * 1000);
+  const sweeper = setInterval(
+    () => {
+      manager.sweep();
+      createLimiter.sweep();
+      joinLimiter.sweep();
+    },
+    10 * 60 * 1000,
+  );
   ticker.unref();
   sweeper.unref();
 

@@ -14,6 +14,9 @@ import type { GameFeatureSettings } from '../src/playtest/web/feature/GameFeatur
 import { wallClockTicks } from '../src/playtest/web/feature/clockPolicy';
 import { ONLINE_BOARDS, type Intent, type RoomSettings, type RoomView } from './protocol';
 
+/** A resignation offer nobody answers lapses after this long, so a silent opponent cannot freeze a game. */
+export const RESIGN_OFFER_LAPSE_MS = 2 * 60 * 1000;
+
 export type ActResult = { ok: true } | { ok: false; error: string };
 
 export class GameRoom {
@@ -26,6 +29,7 @@ export class GameRoom {
   private started = false;
   private lastMove: { from: number; to: number; by: Player } | null = null;
   private pendingResign: Player | null = null;
+  private resignOfferedAtMs = 0;
   private lastTickMs: number;
   private carryMs = 0;
   /** Last time anyone touched the room (cleanup of abandoned rooms). */
@@ -141,6 +145,7 @@ export class GameRoom {
     if (intent.type === 'resign') {
       if (seat !== current) return { ok: false, error: 'You can resign only on your own turn.' };
       this.pendingResign = seat;
+      this.resignOfferedAtMs = this.now();
       this.touch();
       return { ok: true };
     }
@@ -179,10 +184,18 @@ export class GameRoom {
       return false;
     }
     const nowMs = this.now();
+    let lapsed = false;
+    if (this.pendingResign !== null && nowMs - this.resignOfferedAtMs >= RESIGN_OFFER_LAPSE_MS) {
+      this.pendingResign = null; // nobody answered: the offer is withdrawn and play goes on
+      lapsed = true;
+    }
     const owed = wallClockTicks(nowMs - this.lastTickMs, this.carryMs);
     this.lastTickMs = nowMs;
     this.carryMs = owed.carryMs;
-    if (owed.ticks === 0) return false;
+    if (owed.ticks === 0) {
+      if (lapsed) this.version += 1;
+      return lapsed;
+    }
     // A pending resignation offer pauses nothing: the clocks keep running while it waits.
     for (let i = 0; i < owed.ticks && !this.session.isGameOver(); i++) this.session.timerTick();
     this.version += 1;

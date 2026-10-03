@@ -6,7 +6,6 @@ import {
 } from '../SmartBeadsEngine';
 import { listBoardVariants, resolveBoard } from '../../config/BoardConfig';
 import { Board4 } from '../../boards/Board4';
-import { Board5 } from '../../boards/Board5';
 import { Board6 } from '../../boards/Board6';
 import { Board6x3x5 } from '../../boards/Board6x3x5';
 import { Board10x5 } from '../../boards/Board10x5';
@@ -16,17 +15,7 @@ import { Board7 } from '../../boards/Board7';
 
 describe('SmartBeadsEngine', () => {
   it('lists the configured board variants', () => {
-    expect(listBoardVariants()).toEqual([
-      '4',
-      '5',
-      '6',
-      '7',
-      '16',
-      '6x3x5',
-      '10x5',
-      '12x6x5',
-      '8x4x6',
-    ]);
+    expect(listBoardVariants()).toEqual(['4', '6', '7', '16', '6x3x5', '10x5', '12x6x5', '8x4x6']);
   });
 
   it('defines Board7 as a 7-bead 4×5 with sholo_guti rules', () => {
@@ -127,7 +116,6 @@ describe('SmartBeadsEngine', () => {
 
   it.each([
     ['4', Board4],
-    ['5', Board5],
     ['6', Board6],
     ['7', Board7],
   ] as const)('initializes variant %s from the board registry', (variant, expectedBoard) => {

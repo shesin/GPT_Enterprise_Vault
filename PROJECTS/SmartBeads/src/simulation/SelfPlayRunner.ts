@@ -79,7 +79,7 @@ export function executeAiRandomMove(engine: SmartBeadsEngine): boolean {
 /**
  * Executes a single automated game using random legal move selection.
  *
- * @param variant Board variant to play (e.g. '4', '5', '6', '7')
+ * @param variant Board variant to play (e.g. '4', '6', '7')
  * @param startingPlayer Player who moves first ('RED' or 'BLUE')
  * @param maxSafetyPlies Safety threshold to prevent infinite loops (default: 500)
  */
