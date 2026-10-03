@@ -205,7 +205,7 @@ Shekhar finds the present music weak. YouTube songs cannot be used (copyright). 
 9. **Razorpay account (A20).** razorpay.com → sign up → business KYC (PAN, bank account, GST if any; takes days). Start with Test mode keys; Key Secret stays private. Unblocks: ad-removal payment.
 10. **Hostinger two-browser test.** hPanel → Websites → Add website → Node.js Apps → connect the GitHub repo; build command `npm install && npm run build && npm run build:server`; entry file `server-dist/main.js`; Node 22; set the environment variables Claude lists. Open the site in two browsers and play online (steps in `AUTONOMOUS_LOG.md`). Unblocks: knowing whether a VPS is needed.
 11. **VPS purchase** only at the A16 trigger.
-12. **Testing only you can do.** A11/A12 playtests, real-phone checks (A13, B6), Firefox once, a real screen reader (NVDA free, or VoiceOver) on the keyboard play. Unblocks: opening more online boards (A21).
+12. **Testing only you can do.** A11/A12 playtests, real-phone checks (A13, B6), a real screen reader (NVDA free, or VoiceOver) on the keyboard play. Unblocks: opening more online boards (A21).
 13. **Android:** B5, B7, B8.
 14. **Decisions:** ad / consent flow, and the hub items still "coming soon".
 
