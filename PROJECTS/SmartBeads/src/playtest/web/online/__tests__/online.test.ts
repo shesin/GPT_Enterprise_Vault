@@ -5,6 +5,7 @@ import { resolveEngineVariant } from '../../../../config/BoardCatalog';
 import { FeatureSession } from '../../feature/FeatureSession';
 import { OnlineClient, type SocketLike } from '../OnlineClient';
 import { snapshotFromView } from '../applyOnlineView';
+import { loadOnlineSession, resumeOnlineGame, saveOnlineSession } from '../onlineResume';
 
 let app: RunningApp;
 let base: string;
@@ -262,5 +263,92 @@ describe('snapshotFromView (server state mirrored into the local session)', () =
       viewOf({ chainPieceId: 5, currentPlayer: 'RED', you: 'BLUE' }),
     );
     expect(theirs.selectedId).toBeNull();
+  });
+});
+
+describe('rejoin after a page reload (onlineResume)', () => {
+  const mem = new Map<string, string>();
+  beforeAll(() => {
+    (globalThis as unknown as { sessionStorage: unknown }).sessionStorage = {
+      getItem: (k: string) => mem.get(k) ?? null,
+      setItem: (k: string, v: string) => void mem.set(k, v),
+      removeItem: (k: string) => void mem.delete(k),
+    };
+  });
+  beforeEach(() => mem.clear());
+  afterAll(() => {
+    delete (globalThis as unknown as { sessionStorage?: unknown }).sessionStorage;
+  });
+
+  it('saves and loads a session; garbage is ignored', () => {
+    expect(loadOnlineSession()).toBeNull();
+    const session = {
+      code: 'ABCDE',
+      token: 'sometokenvalue123',
+      seat: 'RED' as const,
+      boardId: '6x4' as const,
+      settings: {
+        timer: 'off',
+        tournamentTimer: 'off',
+        shotClock: 'off',
+        centerRule: 'off',
+      } as const,
+    };
+    saveOnlineSession(session);
+    expect(loadOnlineSession()).toEqual(session);
+    mem.set('sb-online-session', '{"code":"abc","token":"x"}');
+    expect(loadOnlineSession()).toBeNull();
+    mem.set('sb-online-session', 'not json');
+    expect(loadOnlineSession()).toBeNull();
+    saveOnlineSession(null);
+    expect(mem.has('sb-online-session')).toBe(false);
+  });
+
+  it('a live room is resumed with the same seat and keeps its game', async () => {
+    const p = await setup(wsFactory);
+    const first = await waitFor(() => p.viewsA.find((v) => v.started));
+    await p.a.sendIntent({ type: 'move', ...first.legalMoves[0]! });
+    await waitFor(() => p.viewsB.find((v) => v.moveCount === 1));
+    saveOnlineSession(p.b.getSession());
+    p.b.close();
+
+    const game = await resumeOnlineGame(
+      () => new OnlineClient({ baseUrl: base, createSocket: wsFactory }),
+      base,
+    );
+    expect(game).not.toBeNull();
+    expect(game!.session.seat).toBe('BLUE');
+    const views: RoomView[] = [];
+    game!.client.onView = (v) => views.push(v);
+    game!.client.connect();
+    const back = await waitFor(() => views[0]);
+    expect(back.you).toBe('BLUE');
+    expect(back.moveCount).toBe(1);
+    game!.client.close();
+    p.a.close();
+  });
+
+  it('a room that no longer exists is forgotten, not resumed', async () => {
+    saveOnlineSession({
+      code: 'ZZZZZ',
+      token: 'sometokenvalue123',
+      seat: 'RED',
+      boardId: '6x4',
+      settings: { timer: 'off', tournamentTimer: 'off', shotClock: 'off', centerRule: 'off' },
+    });
+    expect(await resumeOnlineGame(() => new OnlineClient({ baseUrl: base }), base)).toBeNull();
+    expect(loadOnlineSession()).toBeNull();
+  });
+
+  it('an unreachable server keeps the saved room for another try', async () => {
+    saveOnlineSession({
+      code: 'ABCDE',
+      token: 'sometokenvalue123',
+      seat: 'RED',
+      boardId: '6x4',
+      settings: { timer: 'off', tournamentTimer: 'off', shotClock: 'off', centerRule: 'off' },
+    });
+    expect(await resumeOnlineGame(() => new OnlineClient(), 'http://127.0.0.1:1')).toBeNull();
+    expect(loadOnlineSession()).not.toBeNull();
   });
 });

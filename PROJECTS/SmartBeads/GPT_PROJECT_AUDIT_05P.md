@@ -32,6 +32,7 @@ Enforcement text for Cursor agents lives in `.cursor/rules/smartbeads-core.mdc`,
 | CI failing on 31 unformatted files, lint "non-blocking" for errors that no longer existed | Nobody read the CI | § 13 |
 | One draw error killed the render loop for good; blocked storage broke drawing; no global handler | No fault injection | § 12 / § 13 |
 | Idle redraw 33 times per second | CPU never measured at rest | § 12 |
+| AI took a repetition draw while far ahead (a draw scored as a win in the search) | Repetition test covered only a position seen once; equivalence tests checked move lists, never what the search does with a finished game | AI audit 3 (brute-force oracle + valuation of game-ending moves) |
 | Earlier cycles: repetition rule removed -> infinite Watch-AI loop; render crash on a captured bead; 85 hidden type errors; double game-over on one tick; two silently dead tests; Hard silently downgraded to Easy; timers frozen during AI think | "Jest green" and gap lists without failing tests | 4th and 5th cycles |
 
 ### Record of this audit's own errors (so the next auditor distrusts it too)
@@ -60,6 +61,7 @@ Audits do catch serious problems (the 2026-10-01 AI audits found a 45-second sea
 | 7 | 2026-10-01 § 12 | Four named questions: idle CPU, innerHTML, error handling, memory | Idle redraw, render loop dies on one error | Everything else |
 | 8 | 2026-10-01 § 13 | Whole code except the AI, driven in a real browser: feature interactions, clocks, Undo, result text, phone, CI, storage | Undo reopens lost games and refunds clocks; stuck game after Undo; stalemate overridden; timer invisible on phone; board distorted; CI red | Real phones; Firefox; long sessions; security of a hosted version |
 | 9 | 2026-10-02 § 15 | UI look and portal: hub first screen, legal/trust pages, third-party content, fonts, contrast in 9 looks, dialogs, metadata | No privacy/terms/credits; music hot-linked without credit; Play buttons below the fold on phones; Walnut contrast | Real devices, Lighthouse, real screen reader, brand/design judgement |
+| 10 | 2026-10-03 AI audit 3 | Independent brute-force minimax oracle vs the search (705 checks, boards 6 / 6x3x5 / 7 / 8x4x6, 0 differences); how the search values a move that ends the game | Search ignored `gameOver`/`winner`: a draw by repetition or tied cap scored +900 (a win) for the AI and -900 for the opponent; Medium/Expert took the repetition draw in 51 of 60 positions while 2+ captures ahead (18 of 25 with 3+ pieces ahead, applied on a real engine). FIXED: `evaluate` values finished games by result (draw 0), no-move nodes on a finished game use it; guard `HonestAi.terminalValue.test.ts` (seen failing, then passing; after the fix 0 of 60 and 0 of 25). Full Jest 8 batches PASS | Oracle on 10x5 / 12x6x5 / 16 and the reply-list caps; chain-stop lines skip end-of-turn bookkeeping in the search (UNCONFIRMED); worker in a production browser; real phones; human play |
 
 ### B. Defect class x lens (which lens finds which class)
 

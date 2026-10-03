@@ -86,7 +86,9 @@ async function main() {
   process.exit(0);
 }
 
+const annotate = (msg) => { if (process.env.GITHUB_ACTIONS) console.log('::error::' + String(msg).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A').slice(0, 900)); };
 main().catch((err) => {
   console.error('UNCONFIRMED  live two-click gate:', err.message || err);
+  annotate('live gates: ' + (err.message || err));
   process.exit(1);
 });

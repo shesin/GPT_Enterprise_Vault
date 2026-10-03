@@ -15,9 +15,11 @@ const ENGINES = { chromium, firefox, webkit };
 const ENGINE = process.env.SB_BROWSER || 'chromium';
 const results = [];
 
+const annotate = (msg) => { if (process.env.GITHUB_ACTIONS) console.log('::error::' + String(msg).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A').slice(0, 900)); };
 function record(name, ok, detail) {
   results.push({ name, ok });
   console.log(`${ok ? 'CONFIRMED' : 'UNCONFIRMED'}  ${name}${detail ? ' — ' + detail : ''}`);
+  if (!ok) annotate(`UNCONFIRMED ${name}${detail ? ' — ' + detail : ''}`);
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -305,6 +307,10 @@ async function main() {
         const bSees = await waitFor(b.page, () => window.__SB_TEST__.snapshot().moveCount === 1 && window.__SB_TEST__.snapshot().currentPlayer === 'BLUE', undefined, 8000);
         const bTurn = await waitFor(b.page, () => /your turn/.test(document.getElementById('online-bar-text')?.textContent ?? ''), undefined, 8000);
 
+        // B refreshes the page: it must land back in the same room with the same game
+        await b.page.reload({ waitUntil: 'domcontentloaded' });
+        const resumed = await waitFor(b.page, (c) => /your turn/.test(document.getElementById('online-bar-text')?.textContent ?? '') && document.getElementById('online-bar-text').textContent.includes(c) && window.__SB_TEST__.snapshot().moveCount === 1, code, 10000);
+
         // B resigns on its turn; A is asked and declines: B loses, both screens show the end
         b.page.once('dialog', (d) => d.accept());
         await b.page.locator('#resign-btn').click();
@@ -315,9 +321,9 @@ async function main() {
         const winner = await a.page.evaluate(() => window.__SB_TEST__.session.getDisplayedWinner());
 
         record(
-          'Online: two browsers play through the server (create, join by code, turn lock, move sync, resignation)',
-          lobbyShown && waiting && code.length === 5 && bCannot && bSees && bTurn && offerShown && aOver && bOver && winner === 'RED',
-          `lobby=${lobbyShown} waiting=${waiting} code=${code} bCannot=${bCannot} bSees=${bSees} bTurn=${bTurn} offer=${offerShown} aOver=${aOver} bOver=${bOver} winner=${winner}`,
+          'Online: two browsers play through the server (create, join by code, turn lock, move sync, reload rejoin, resignation)',
+          lobbyShown && waiting && code.length === 5 && bCannot && bSees && bTurn && resumed && offerShown && aOver && bOver && winner === 'RED',
+          `lobby=${lobbyShown} waiting=${waiting} code=${code} bCannot=${bCannot} bSees=${bSees} bTurn=${bTurn} resumed=${resumed} offer=${offerShown} aOver=${aOver} bOver=${bOver} winner=${winner}`,
         );
         await a.ctx.close();
         await b.ctx.close();
@@ -678,5 +684,6 @@ async function main() {
 
 main().catch((e) => {
   console.error('UNCONFIRMED  m3-flow-gate crashed:', e);
+  annotate('m3-flow-gate crashed: ' + (e && e.stack ? e.stack : e));
   process.exit(1);
 });

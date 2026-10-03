@@ -1,7 +1,8 @@
 import { bootstrapPlayHub } from './PlayHub';
 import { bootstrapPlayShell } from './PlayController';
 import { installGlobalErrorBanner } from './globalErrorBanner';
-import { wireOnlineLobby } from './online/onlineLobby';
+import { createBrowserOnlineClient, wireOnlineLobby } from './online/onlineLobby';
+import { resumeOnlineGame } from './online/onlineResume';
 import { AiSearchClient, type AiWorkerLike } from './feature/aiSearchClient';
 import AiSearchWorker from './feature/aiSearchWorker?worker';
 
@@ -54,6 +55,12 @@ function boot(): void {
         },
         (boardId) => lobby.open(boardId),
       );
+      // A refreshed page goes straight back into its online room.
+      void resumeOnlineGame(createBrowserOnlineClient).then((game) => {
+        if (!game) return;
+        showPlayShell();
+        launcher.enterOnline(game);
+      });
       if (coachParam === 'start' || coachParam === '1') {
         document
           .getElementById('hub-section-lesson')

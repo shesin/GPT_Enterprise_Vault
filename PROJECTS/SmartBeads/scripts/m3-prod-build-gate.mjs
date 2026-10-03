@@ -15,9 +15,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.
 const OUT = path.join(os.tmpdir(), `sb-prod-gate-${process.pid}`);
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
 const results = [];
+const annotate = (msg) => { if (process.env.GITHUB_ACTIONS) console.log('::error::' + String(msg).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A').slice(0, 900)); };
 function record(name, ok, detail) {
   results.push(ok);
   console.log(`${ok ? 'CONFIRMED' : 'UNCONFIRMED'}  ${name}${detail ? ' — ' + detail : ''}`);
+  if (!ok) annotate(`UNCONFIRMED ${name}${detail ? ' — ' + detail : ''}`);
 }
 
 const build = spawnSync('npx', ['vite', 'build', '--outDir', OUT, '--emptyOutDir'], { cwd: ROOT, shell: true, encoding: 'utf8', env: { ...process.env, SB_TEST_HOOKS: '' } });

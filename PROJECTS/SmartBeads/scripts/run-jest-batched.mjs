@@ -91,6 +91,7 @@ const BATCHES = [
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.turnEndsEquivalence.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.repetitionSteer.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.terminalValue.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/HonestAi.testAudit.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/FeatureSession.repetition.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/feature/__tests__/spectate.test.ts',

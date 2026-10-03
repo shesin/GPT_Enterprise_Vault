@@ -91,6 +91,7 @@ import type { Intent, RoomView } from '../../../server/protocol';
 import type { OnlineClient, OnlineSession } from './online/OnlineClient';
 import type { OnlineGame } from './online/onlineLobby';
 import { snapshotFromView } from './online/applyOnlineView';
+import { saveOnlineSession } from './online/onlineResume';
 import { projectIntersectionOnCanvas } from './layout/boardProjection';
 import { describeNode, isArrowKey, nextNodeInDirection, ScreenNode } from './render/keyboardNav';
 import { updateMatchRing, updatePlayerTimerMmss, updateShotRing } from './render/timerDisplay';
@@ -1787,6 +1788,7 @@ export function bootstrapPlayShell(
     if (!online) return;
     online.client.close();
     online = null;
+    saveOnlineSession(null);
     resignOfferModal.style.display = 'none';
     renderOnlineBar();
   }
@@ -1801,6 +1803,7 @@ export function bootstrapPlayShell(
     leaveOnline();
     syncPlayShellThemeFromStorage();
     online = { client: game.client, session: game.session, view: null };
+    saveOnlineSession(game.session);
     currentBoardId = game.session.boardId;
     boardSelect.value = currentBoardId;
     syncBoardTitle();

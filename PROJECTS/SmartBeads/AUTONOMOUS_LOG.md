@@ -19,17 +19,18 @@ Rules: `GPT_PROJECT_RULES_01P.md` § Autonomous mode. Nothing here is committed.
 | A9 online server | DONE (first version) | `PROJECTS/SmartBeads/server/`: `GameRoom` (authoritative rules via `FeatureSession`, server-owned clocks that follow real time, resign/draw flow, seat tokens), `RoomManager` (5-letter codes, idle sweep, 2000-room cap), `app.ts` (one Node app: WebSocket `/ws` + HTTP polling fallback `/api/rooms...` + serves `dist/`). Launch boards 6x4, 8x4x6, 16. 32 server tests (rooms + real WebSocket/polling integration); mutations (no clock settle before a move, no turn check, no push after an intent, no token check in polling) each fail a test. Production bundle `npm run build:server` -> `server-dist/main.js`, smoke-tested over HTTP (site served, full game played) |
 | A3 clocks online | DONE | server-side match, tournament and shot clocks (same rules as offline), pushed every second; the browser does not run its own clocks online |
 | A4 online UI | DONE (first version) | hub tile "Play vs Friend - Online" opens a lobby (create room with board/timer/shot clock, or join with the code); game screen shows a room bar (code, whose turn, slow-connection notice, Copy code); resign offers appear for the friend; New game / Play again / Menu return to the start page. Gate scenario "Online" drives TWO real browsers through the server (create, join, turn lock, move sync, resignation) on Chromium and WebKit |
+| Online reload rejoin | DONE (run 2) | `onlineResume.ts` keeps the seat token in sessionStorage; a refreshed page returns to its room (gone rooms are forgotten, an unreachable server keeps the saved room). 4 unit tests + the "Online" gate scenario now reloads one browser mid-game; mutation (save disabled) -> gate no longer confirms |
+| CI | FAILING, cause unknown | GitHub `browser-gates` failed on 87121d0 and on 76cc1f6 (`typecheck-and-test` passed on both; 68a03ae was green). Logs need a GitHub login I do not have, so the gates now print `::error::` annotations (readable through the API) for every unconfirmed scenario and crash. All 24 flow scenarios + 4 production-build scenarios pass locally on Chromium and WebKit, so the failure is something specific to the Linux runner. NEXT: push, read the annotation, fix |
 | A7 accounts | NOT STARTED | blocked on your setup (Google/Facebook developer apps, sending e-mail address) |
 
 ## How to test online play yourself
 1. Local: `npm run server` (port 3000) and, in another window, `npm run web:smartbeads`; the Vite dev server forwards `/api` and `/ws` to port 3001, so run the server with `PORT=3001`. Open the game in two browser windows: Play vs Friend - Online, Create room in one, Join with the code in the other.
 2. Hosted (Hostinger, UNCONFIRMED until you try it): `npm install && npm run build && npm run build:server`, then run `npm start` (it serves the site and the game on `PORT`, default 3000). On Hostinger use Websites -> Node.js app, connect the GitHub repo, build command `npm install && npm run build && npm run build:server`, start file `server-dist/main.js`, Node 22. The game falls back to polling by itself if the host blocks WebSockets; the room bar then shows "slow connection".
-3. What it does NOT do yet: reconnect after a page reload (the room token is kept only in the page), accounts / ratings, tournaments.
+3. What it does NOT do yet: accounts / ratings, tournaments. (A page reload now rejoins the room.)
 
 ## Findings to know
 - `npm test` overwrites the tracked evidence PNGs in `scripts/evidence-2step` and `scripts/evidence-capture` on every run (they show as modified). Restored with `git checkout`; consider git-ignoring them.
 - Premium (ad removal) has no production source yet: until the account server exists, production always shows ads. That is the intended W6 result.
 
 ## Open questions
-- Online reload: should a refreshed page rejoin its room automatically (token kept in sessionStorage)? Default plan: yes, in the next run.
 - A7: Google/Facebook developer apps and the sending e-mail address are needed from you (PENDING A19 items 6 and 8).

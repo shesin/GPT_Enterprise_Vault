@@ -193,6 +193,12 @@ export function evaluate(
   center?: AiCenterContext,
   timer?: AiTimerContext,
 ): number {
+  if (state.gameOver && state.winner !== undefined) {
+    // A finished game is valued by its result, never by material: a draw (repetition, tied safety cap)
+    // is 0, so an AI that is ahead declines it and one that is behind takes it.
+    if (state.winner === 'DRAW') return 0;
+    return state.winner === aiPlayer ? 10000 : -10000;
+  }
   const human = opponentOf(aiPlayer);
   const aiCount = countPieces(state, aiPlayer);
   const humanCount = countPieces(state, human);
@@ -377,7 +383,10 @@ function leafSearch(
     }
     return beta <= alpha;
   });
-  if (!any) return maximizing ? -900 : 900;
+  if (!any) {
+    if (snapshot.state.gameOver) return evaluate(snapshot.state, variant, aiPlayer, center, timer);
+    return maximizing ? -900 : 900;
+  }
   return best;
 }
 
@@ -410,7 +419,10 @@ function minimaxTurns(
 
   const player = maximizing ? aiPlayer : opponentOf(aiPlayer);
   const ends = generateTurnEnds(variant, snapshot, player, branchCap);
-  if (!ends.length) return maximizing ? -900 : 900;
+  if (!ends.length) {
+    if (snapshot.state.gameOver) return evaluate(snapshot.state, variant, aiPlayer, center, timer);
+    return maximizing ? -900 : 900;
+  }
   const ordered = capturesFirst(snapshot.state, ends);
 
   if (maximizing) {
