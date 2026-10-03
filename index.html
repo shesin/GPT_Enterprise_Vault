@@ -278,9 +278,9 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
       <h2>Settings</h2>
       <div class="setting-list">
         <div class="setting" id="pvp-names-container" style="display: none;">
-          <label>Cream player name</label>
+          <label for="pvp-cream-name">Cream player name</label>
           <input type="text" id="pvp-cream-name" maxlength="24" placeholder="Cream side name">
-          <label style="margin-top: 8px;">Black player name</label>
+          <label for="pvp-black-name" style="margin-top: 8px;">Black player name</label>
           <input type="text" id="pvp-black-name" maxlength="24" placeholder="Black side name">
         </div>
         <div class="setting" id="move-hint-aura-setting">
@@ -291,11 +291,11 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
           </select>
         </div>
         <div class="setting" id="ai-level-setting">
-          <label>AI level</label>
+          <label for="ai-level-select">AI level</label>
           <select id="ai-level-select"></select>
         </div>
         <div class="setting" id="coach-level-setting" style="display: none;">
-          <label>Watch AI level</label>
+          <label for="coach-level-select">Watch AI level</label>
           <select id="coach-level-select"></select>
         </div>
         <div class="setting">
@@ -334,7 +334,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
 
       <h2 style="margin-top: 14px;">BGM Music</h2>
       <div class="bgm-section">
-        <select id="bgm-select">
+        <select id="bgm-select" aria-label="Background music track">
           <option value="">— Select Music —</option>
         </select>
         <div class="bgm-controls">
@@ -343,7 +343,7 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
         </div>
         <div class="bgm-vol-row">
           <span class="tiny">Volume</span>
-          <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.3">
+          <input type="range" id="bgm-vol" aria-label="Music volume" min="0" max="1" step="0.05" value="0.3">
         </div>
       </div>
       <p class="bgm-credit">Music: Eric Matyas, <a href="https://soundimage.org" target="_blank" rel="noopener">soundimage.org</a></p>

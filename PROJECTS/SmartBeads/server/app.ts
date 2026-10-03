@@ -11,7 +11,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { WebSocketServer, type WebSocket } from 'ws';
-import { RoomManager } from './RoomManager';
+import { RoomManager, SERVER_BUSY } from './RoomManager';
 import type { GameRoom } from './GameRoom';
 import type { ClientMessage, Intent, ServerMessage } from './protocol';
 
@@ -65,7 +65,11 @@ function readJson(req: IncomingMessage): Promise<unknown> {
     req.on('end', () => {
       if (chunks.length === 0) return resolve({});
       try {
-        resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+        const parsed: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+          return reject(new Error('Bad JSON.'));
+        }
+        resolve(parsed);
       } catch {
         reject(new Error('Bad JSON.'));
       }
@@ -108,7 +112,12 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
 
   async function serveStatic(req: IncomingMessage, res: ServerResponse): Promise<void> {
     if (!options.staticDir) return send(res, 404, { error: 'Not found.' });
-    const urlPath = decodeURIComponent((req.url ?? '/').split('?')[0] ?? '/');
+    let urlPath: string;
+    try {
+      urlPath = decodeURIComponent((req.url ?? '/').split('?')[0] ?? '/');
+    } catch {
+      return send(res, 400, { error: 'Bad request.' });
+    }
     const rel = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
     const root = path.resolve(options.staticDir);
     const file = path.resolve(root, rel);
@@ -117,7 +126,14 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
     try {
       const body = await readFile(file);
       res
-        .writeHead(200, { 'content-type': MIME[path.extname(file)] ?? 'application/octet-stream' })
+        .writeHead(200, {
+          'content-type': MIME[path.extname(file)] ?? 'application/octet-stream',
+          'x-content-type-options': 'nosniff',
+          // Vite names built files by content hash, so they never change; pages are re-checked each visit.
+          'cache-control': rel.startsWith('assets/')
+            ? 'public, max-age=31536000, immutable'
+            : 'no-cache',
+        })
         .end(body);
     } catch {
       send(res, 404, { error: 'Not found.' });
@@ -130,7 +146,7 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
       if (parts.length === 2 && req.method === 'POST') {
         const body = (await readJson(req)) as { boardId?: unknown; settings?: never };
         const made = manager.create(body.boardId, body.settings);
-        if ('error' in made) return send(res, 400, made);
+        if ('error' in made) return send(res, made.error === SERVER_BUSY ? 503 : 400, made);
         return send(res, 200, roomReply(made.room, made.token, made.seat));
       }
       const code = parts[2] ?? '';
@@ -169,17 +185,34 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
   }
 
   const server = createServer((req, res) => {
-    const url = new URL(req.url ?? '/', 'http://localhost');
+    let url: URL;
+    try {
+      url = new URL(req.url ?? '/', 'http://localhost');
+    } catch {
+      return send(res, 400, { error: 'Bad request.' });
+    }
+    const fail = (): void => {
+      if (!res.headersSent) send(res, 500, { error: 'Server error.' });
+      else res.end();
+    };
     if (url.pathname.startsWith('/api/')) {
-      void handleApi(req, res, url);
+      handleApi(req, res, url).catch(fail);
     } else {
-      void serveStatic(req, res);
+      serveStatic(req, res).catch(fail);
     }
   });
 
   const wss = new WebSocketServer({ server, path: '/ws', maxPayload: MAX_BODY });
   wss.on('connection', (ws, req) => {
-    const url = new URL(req.url ?? '/', 'http://localhost');
+    // An oversized or malformed frame makes `ws` emit 'error'; without a listener that kills the process.
+    ws.on('error', () => ws.terminate());
+    let url: URL;
+    try {
+      url = new URL(req.url ?? '/', 'http://localhost');
+    } catch {
+      ws.close();
+      return;
+    }
     const room = manager.get(url.searchParams.get('code') ?? '');
     const seat = room?.seatFor(url.searchParams.get('token'));
     if (!room || !seat) {
@@ -205,7 +238,7 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
         ws.send(JSON.stringify({ type: 'error', message: 'Bad message.' } satisfies ServerMessage));
         return;
       }
-      if (msg.type !== 'intent' || !isIntent(msg.intent)) {
+      if (!msg || typeof msg !== 'object' || msg.type !== 'intent' || !isIntent(msg.intent)) {
         ws.send(
           JSON.stringify({ type: 'error', message: 'Unknown action.' } satisfies ServerMessage),
         );

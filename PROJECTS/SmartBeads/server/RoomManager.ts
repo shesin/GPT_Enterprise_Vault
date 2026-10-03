@@ -9,6 +9,7 @@ const CODE_LENGTH = 5;
 
 export const ROOM_IDLE_LIMIT_MS = 3 * 60 * 60 * 1000;
 export const MAX_ROOMS = 2000;
+export const SERVER_BUSY = 'The server is busy. Try again in a moment.';
 
 export class RoomManager {
   private rooms = new Map<string, GameRoom>();
@@ -33,8 +34,7 @@ export class RoomManager {
     settings: Partial<RoomSettings> | undefined,
   ): { room: GameRoom; seat: 'RED' | 'BLUE'; token: string } | { error: string } {
     this.sweep();
-    if (this.rooms.size >= MAX_ROOMS)
-      return { error: 'The server is busy. Try again in a moment.' };
+    if (this.rooms.size >= MAX_ROOMS) return { error: SERVER_BUSY };
     const checked = GameRoom.validate(boardId, settings);
     if (typeof checked === 'string') return { error: checked };
     const room = new GameRoom(this.newCode(), checked.boardId, checked.settings, this.now);

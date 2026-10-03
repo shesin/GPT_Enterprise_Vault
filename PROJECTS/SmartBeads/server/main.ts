@@ -17,6 +17,10 @@ function findStaticDir(): string | undefined {
   return undefined;
 }
 
+// One bad request must never end every running game: log the fault and keep serving.
+process.on('uncaughtException', (err) => console.error('[server] uncaught exception', err));
+process.on('unhandledRejection', (err) => console.error('[server] unhandled rejection', err));
+
 const staticDir = findStaticDir();
 const port = Number(process.env.PORT ?? 3000);
 

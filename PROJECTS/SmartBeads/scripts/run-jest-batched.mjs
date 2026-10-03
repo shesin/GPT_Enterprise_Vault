@@ -65,6 +65,7 @@ const BATCHES = [
     files: [
       'PROJECTS/SmartBeads/server/__tests__/GameRoom.test.ts',
       'PROJECTS/SmartBeads/server/__tests__/app.test.ts',
+      'PROJECTS/SmartBeads/server/__tests__/app.hostile.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/online/__tests__/online.test.ts',
     ],
   },
@@ -110,6 +111,7 @@ const BATCHES = [
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/playerBarShell.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/processRegressionGuards.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/hubShell.test.ts',
+      'PROJECTS/SmartBeads/src/playtest/web/__tests__/indexA11y.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/playHub.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/layout/__tests__/boardSettingsPanel.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/__tests__/viewportFit.test.ts',

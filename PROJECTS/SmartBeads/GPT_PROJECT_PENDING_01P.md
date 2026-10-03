@@ -190,9 +190,38 @@ Shekhar finds the present music weak. YouTube songs cannot be used (copyright). 
 
 **Also decided 2026-10-02:** the first online boards are 6x4, 8x4x6 and 16 (A9/A10); the other four open after those are stable.
 
-### A19. Shekhar-only items (everything Claude cannot do)
+### A19. Shekhar-only items (everything on Shekhar's name, one list)
 
-One list, nothing else is Claude's: (1) game look decisions; (2) music selection (A18); (3) review/finish `public/privacy.html`, `terms.html`, `credits.html` and give a support e-mail; (4) confirm the source and licence of the sound effects in `public/audio`; (5) decide whether to host the soundimage.org music yourself (or drop it with A18); (6) create the Google and Facebook developer apps and give Claude the client IDs when ready; (7) create the Razorpay account and give the keys when ready; (8) company e-mail (A14) for sending magic links; (9) upload the server to Hostinger and run the two-browser test (Claude gives the steps); (10) buy the VPS only at the A16 trigger; (11) A11/A12 playtests and real-phone checks (A13, B6); (12) Android items B5, B7, B8; (13) ad / consent flow decision, and the hub items still "coming soon".
+"Unblocks" = which Claude items wait for it (details in A22). Nothing else in this list is Claude's.
+
+1. **Game look decisions.** Claude applies them afterwards. Unblocks: nothing.
+2. **Music selection (A18).** Pick a route and send track URLs or AI-tool files. Unblocks: music wiring.
+3. **Privacy, Terms and Credits review.** Review/finish `public/privacy.html`, `terms.html`, `credits.html` and give the support e-mail. Unblocks: final legal pages.
+4. **Sound effects.** Confirm the source and licence of the files in `public/audio`. Unblocks: Credits page.
+5. **soundimage.org music.** Decide: host the files yourself, or drop them with A18.
+6. **Company e-mail on the domain `smartbeadchess.com` (A14).** hPanel → Emails → Email Accounts: create `support@smartbeadchess.com` (shown on the legal pages, contact of the Google/Facebook apps) and `noreply@smartbeadchess.com` (sends login links). Give Claude the SMTP host, port and user name from the same panel (usually smtp.hostinger.com, port 465). The password goes only into the server's environment variables on Hostinger, never in chat or the repo. Also add the SPF/DKIM records the panel shows so mails do not land in spam. Unblocks: A7 e-mail login, legal pages.
+7. **Google developer app (Google sign-in).** console.cloud.google.com → new project "Smart Bead Chess" → APIs & Services → OAuth consent screen (External; app name; support e-mail; authorised domain `smartbeadchess.com`; privacy and terms URLs; scopes openid, email, profile only) → Credentials → Create credentials → OAuth client ID → Web application → authorised JavaScript origins `https://smartbeadchess.com` and `http://localhost:5173`. Send Claude the Client ID (public); keep the Client secret private (server environment). Move the consent screen from Testing to In production before launch, or only test users can sign in. Unblocks: Google login.
+8. **Facebook developer app (Facebook sign-in).** developers.facebook.com → log in → My Apps → Create App → use case "Authenticate and request data from users with Facebook Login" → App settings → Basic: app domain `smartbeadchess.com`, privacy and terms URLs, category Games → Facebook Login → Settings → Valid OAuth Redirect URIs (Claude gives the exact URL when A7 is built). Send Claude the App ID (public); keep the App Secret private. Switch the app from Development to Live (basic e-mail and public profile need no review). Unblocks: Facebook login.
+9. **Razorpay account (A20).** razorpay.com → sign up → business KYC (PAN, bank account, GST if any; takes days). Start with Test mode keys; Key Secret stays private. Unblocks: ad-removal payment.
+10. **Hostinger two-browser test.** hPanel → Websites → Add website → Node.js Apps → connect the GitHub repo; build command `npm install && npm run build && npm run build:server`; entry file `server-dist/main.js`; Node 22; set the environment variables Claude lists. Open the site in two browsers and play online (steps in `AUTONOMOUS_LOG.md`). Unblocks: knowing whether a VPS is needed.
+11. **VPS purchase** only at the A16 trigger.
+12. **Testing only you can do.** A11/A12 playtests, real-phone checks (A13, B6), Firefox once, a real screen reader (NVDA free, or VoiceOver) on the keyboard play. Unblocks: opening more online boards (A21).
+13. **Android:** B5, B7, B8.
+14. **Decisions:** ad / consent flow, and the hub items still "coming soon".
+
+### A20. Ad-removal payment (do last)
+
+The game is free with ads; a paid purchase removes them. Build on the account server (A7) behind a payment switch. Needs the Razorpay account (A19 item 9); on Android also a Play Store payment profile (B8).
+
+### A21. Online play, to discuss
+
+Missing: ratings, a reconnect grace rule, tournaments (A10), and the other four boards online. Open a board online only after the human playtest (A11) covers it.
+
+### A22. Claude items waiting on something (dependency map, 2026-10-03)
+
+- **Waiting on A19:** A7 accounts (e-mail login: item 6; Google login: 7; Facebook login: 8) · A20 payment (A7 + 9) · hosted online play and the VPS decision (10, then 11) · music wiring (2) · final legal pages (3, 6) · look changes (1) · more online boards (12) · A10 tournaments (A7 + stable A9) · A1 coach video polish (needs the discussion).
+- **Claude, next:** confirm CI green for `14119a6`; then start A7 with the e-mail login.
+- **Done 2026-10-02/03 (details in `AUTONOMOUS_LOG.md`):** W1, W3–W9, A3 server clocks, A4 online lobby and room screen, A9 first online server, reload rejoin.
 
 ---
 
