@@ -9,3 +9,16 @@ node_modules/
 dist/
 server-dist/
 data/
+
+# Android (Capacitor): build outputs and signing material never go in the repo
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/app/release/
+android/keystore.properties
+android/capacitor-cordova-android-plugins/build/
+*.jks
+*.keystore
+*.aab
+*.apk

@@ -62,3 +62,24 @@ Hosting variables the server reads: `PUBLIC_URL` (https://smartbeadchess.com), `
 
 ## Open questions
 - A7: Google/Facebook developer apps and the sending e-mail address are needed from you (PENDING A19 items 6 and 8).
+
+## Run 4 - 2026-10-03/04 (scope: PENDING Part B, Android)
+
+Moved here from PENDING (zero net loss): **B1** "Install Capacitor + Android platform. Owner: Claude. Capacitor wrap confirmed (not native WebView bridge)"; **B3** "Signed `.aab` build process. Owner: Claude builds. Keystore custody is Shekhar's (B5)"; **B4** "Phone layout pass. Owner: Claude + Shekhar". B2 stays in PENDING with the package ID filled in. New PENDING items B9-B12.
+
+| Item | Result | Evidence |
+|---|---|---|
+| Session decision (Shekhar: `server.url`) | DONE | `capacitor.config.ts` loads `https://smartbeadchess.com` (override `SB_APP_URL`); package ID `com.smartbeadchess.app` (Shekhar). In the real Android WebView (emulator, attached through Chrome DevTools): `/api/auth/me` null -> sign-in link -> user signed in -> still signed in after reload; WebSocket `/ws` opens. Cookies work because the page stays on the server's own origin |
+| B1 Capacitor + Android platform (Claude) | DONE | Capacitor 8.5.2 (`@capacitor/core`, `cli`, `android`), `android/` project, `npm run android:debug` builds the APK; installed and run in the emulator (Medium Phone API 37): full styled start page against the local server |
+| B3 signed .aab (Claude) | DONE with a throwaway test keystore (outside the repo) | `npm run android:release` -> `android/app/build/outputs/bundle/release/app-release.aab` (3.0 MB), `jarsigner -verify`: jar verified. Signing comes only from `android/keystore.properties` or `SB_KEYSTORE_FILE/_PASSWORD`, `SB_KEY_ALIAS`, `SB_KEY_PASSWORD`; `SB_VERSION_CODE` must rise every Play upload. The script refuses release builds with an http URL or no signing details. The real keystore is still Shekhar's (B5) |
+| B4 phone layout (Claude) | DONE for emulation; real phone is B6 (Shekhar) | FOUND: `hitTestNode` used a fixed 22 canvas-pixel pick radius = 11 CSS px on a 360 px phone, so a finger 12 px off a bead missed (16-bead, 37 nodes, closest nodes 30 px apart). Fixed: radius is 22 CSS px at any scale (nearest bead still wins). Guard: `scripts/m5-phone-touch-gate.mjs` (360x740, 390x844, 412x915 with touch: all 37 nodes hit at the centre and 12 CSS px off-centre; measured min spacing 30.3 / 36.2 / 38.6 px). Mutation: old fixed radius -> gate UNCONFIRMED at 360x740; fix restored -> CONFIRMED. Wired into `m2-2step-npm-gate.mjs` (Chromium only). Full gate chain: all CONFIRMED |
+| Guard tests | DONE | `server/__tests__/androidWrap.test.ts` (7): package ID, https default, cleartext only for http dev URLs, offline page, ignore rules, nothing signing-related tracked by git, no literal passwords in Gradle, release refuses http / missing signing. Mutations (wrong appId, `*.jks` removed from .gitignore, https check removed, literal password, cleartext always on): each fails one test; restored -> 7 pass. tsc, ESLint, Prettier clean |
+| .gitignore | DONE | `*.jks`, `*.keystore`, `*.aab`, `*.apk`, `android/keystore.properties`, `android/local.properties`, Gradle and build folders |
+| B2 icon / splash | WAITING | no art supplied; the app uses Capacitor's default icon |
+| Tools installed on the PC (outside the vault, Shekhar said go) | DONE | Android Studio 2026.2.1 (winget), Android SDK + emulator through its wizard, Temurin JDK 21 (Android Studio's own JDK 25 is too new for Gradle 8.14). Gradle downloaded platform 36 and build-tools 35 itself |
+
+**Found, not fixed (PENDING B11):** the live site `smartbeadchess.com` serves `index.html` but `/assets/main-*.js` and `.css` return 404 (checked with curl, 2026-10-03), so the real site loads unstyled and dead; the first emulator run against it showed exactly that. The app cannot be tested against the hosted site until it is deployed (A17).
+
+**Three risks (Shekhar's brief), checked against the code:** (1) sessions: confirmed, cookie `SameSite=Lax` and relative `/api`, `/ws` calls; solved by `server.url`. (2) payment: Razorpay calls exist only on the web path; Play Billing is PENDING B10. (3) Google sign-in: web credential flow, off in the app; Facebook and the e-mail link leave the app, so PENDING B9 (typed code).
+
+**Build commands (Windows):** `npm run android:debug` (APK; `SB_APP_URL=http://10.0.2.2:3001` points the emulator at a local server started with `STATIC_DIR=dist PORT=3001 npm run server`), `npm run android:release` (signed AAB).

@@ -95,6 +95,8 @@ SmartBeads/
 │   ├── m2-2step-npm-gate.mjs          # boots Vite once, runs both live gates for `npm test`
 │   ├── m2-capture-geometry-browser.mjs # real-click captures, 16 junction both ways, chain, optional stop
 │   ├── m3-flow-gate.mjs               # real-browser flow gate: Undo x clocks, resign, phone layout, tap targets, keyboard play (Chromium + WebKit)
+│   ├── m5-phone-touch-gate.mjs        # phone touch gate: all 37 nodes of the 16-bead board hit by touch at 360/390/412 px wide (Chromium only)
+│   ├── android-build.mjs              # `npm run android:debug` / `android:release` (Capacitor + Gradle, signed .aab; Android project is repo-root `android/`, config `capacitor.config.ts`)
 │   ├── lib/live-ply.mjs               # live snapshot / isolated ply helpers
 │   ├── lib/play-shell-setup.mjs       # playShellUrl, waitForPlayShell, resetBoardViaTestApi
 │   ├── lib/project-node.mjs           # Playwright canvas click by node

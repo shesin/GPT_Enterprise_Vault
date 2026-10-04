@@ -311,23 +311,27 @@ The reviewed choices (rate limits, resignation lapse, seat code, repaint, shot-c
 
 ## Claude task 
 
-### B1. Install Capacitor + Android platform
-
-Owner: Claude. Can start now. Capacitor wrap confirmed (not native WebView bridge).
-
 ### B2. Icon, splash, package ID
 
-Owner: Shekhar (assets), Claude wires. Can start now.
-
-### B3. Signed `.aab` build process
-
-Owner: Claude builds. Can start now. (Keystore custody itself is a Shekhar task — see B5 below.)
-
-### B4. Phone layout pass
-
-Owner: Claude + Shekhar. Can start now.
+Owner: Shekhar (assets), Claude wires. Package ID decided: `com.smartbeadchess.app`. Waiting for a 1024x1024 icon and the splash art; Claude then runs `@capacitor/assets` and rebuilds.
 
 **Out of V1 Android scope — do not let these creep in:** haptics, offline match persistence, native WebView bridge.
+
+### B9. E-mail sign-in code for the app (Claude)
+
+The e-mailed link opens Chrome, not the app, so an in-app player needs a typed code beside the link. Security-sensitive: needs high effort. Google and Facebook sign-in stay off in the app for V1 (Google refuses embedded WebViews).
+
+### B10. Play Billing for ad removal (Claude)
+
+Ad removal is a digital good: hide Razorpay inside the app, check a Play purchase token on the server, set the same `adsRemoved` flag. Needs the B8 payment profile. Not a V1 blocker (payment is off).
+
+### B11. Hosted site is broken (Claude)
+
+On 2026-10-03 `smartbeadchess.com/assets/main-*.js` and `.css` returned 404, so the page loads unstyled. The app loads that site, so it cannot ship before A17 (deploy) is done. Google may also reject a thin website wrapper: the offline screen and own icon are the mitigation.
+
+### B12. Emulator checks still UNCONFIRMED (Claude)
+
+"Try again" on the offline screen, the Android back button, and a run against the real hosted site once B11 is fixed.
 
 ## Shekhar task — 
 

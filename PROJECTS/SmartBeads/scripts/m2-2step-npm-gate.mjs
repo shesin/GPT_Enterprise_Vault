@@ -21,6 +21,7 @@ const GATES = [
   path.join(SCRIPT_DIR, 'm2-capture-geometry-browser.mjs'),
   path.join(SCRIPT_DIR, 'm3-flow-gate.mjs'),
   path.join(SCRIPT_DIR, 'm3-prod-build-gate.mjs'),
+  path.join(SCRIPT_DIR, 'm5-phone-touch-gate.mjs'),
 ];
 
 function sleep(ms) {

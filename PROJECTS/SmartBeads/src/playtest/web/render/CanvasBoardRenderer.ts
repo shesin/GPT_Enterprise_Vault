@@ -518,7 +518,8 @@ export function hitTestNode(
   const my = (clientY - rect.top) * sy;
 
   let hit = -1;
-  let best = 22;
+  // Finger-sized pick radius: 22 CSS px whatever the canvas scale (a fixed 22 bitmap px was only ~11 CSS px on a 360 px phone).
+  let best = Math.max(22, 22 * Math.max(sx, sy));
   for (const node of board.intersections) {
     if (node.x === undefined || node.y === undefined) continue;
     const { x, y } = projectIntersectionOnCanvas(node, canvas.width, canvas.height, board);
