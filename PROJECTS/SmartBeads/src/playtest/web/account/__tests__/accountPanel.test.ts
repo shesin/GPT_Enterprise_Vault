@@ -10,7 +10,8 @@ const DOM = `
 <div id="account-dialog" style="display:none">
   <div id="account-signed-out"><input id="account-email"><button id="account-send-btn"></button>
     <div id="account-google" hidden></div><a id="account-facebook" hidden></a></div>
-  <div id="account-sent" hidden><span id="account-sent-to"></span></div>
+  <div id="account-sent" hidden><span id="account-sent-to"></span>
+    <input id="account-code"><button id="account-code-btn"></button></div>
   <div id="account-signed-in" hidden><span id="account-who"></span>
     <input id="account-name"><button id="account-save-btn"></button>
     <button id="account-remove-ads-btn" hidden></button><p id="account-ads-status" hidden></p><ul id="account-ratings"></ul><button id="account-signout-btn"></button></div>
@@ -35,6 +36,7 @@ function fakeClient(over: Partial<Record<keyof AccountClient, unknown>> = {}): A
     }),
     requestLink: async () => ({ ok: true }),
     verify: async () => ({ user: ann }),
+    verifyCode: async () => ({ user: ann }),
     logout: async () => {},
     rename: async (n: string) => ({ user: { ...ann, displayName: n } }),
     ...over,
@@ -69,6 +71,58 @@ describe('account panel', () => {
     expect(requestLink).toHaveBeenCalledWith('ann@example.com');
     expect(el('account-sent').hidden).toBe(false);
     expect(el('account-sent-to').textContent).toBe('ann@example.com');
+  });
+
+  async function askForCode(client: AccountClient): Promise<void> {
+    await wireAccountPanel(client).ready;
+    el('hub-account-btn').click();
+    el<HTMLInputElement>('account-email').value = 'ann@example.com';
+    el('account-send-btn').click();
+    await flush();
+  }
+
+  it('signs in with the typed code for the address the code was asked for (B9)', async () => {
+    const verifyCode = jest.fn(async () => ({ user: ann }));
+    await askForCode(fakeClient({ verifyCode }));
+    el<HTMLInputElement>('account-email').value = 'someone-else@example.com'; // editing the first field later changes nothing
+    el<HTMLInputElement>('account-code').value = '482913';
+    el('account-code-btn').click();
+    await flush();
+    expect(verifyCode).toHaveBeenCalledWith('ann@example.com', '482913');
+    expect(el('hub-account-btn').textContent).toBe('ann');
+    expect(el('account-signed-in').hidden).toBe(false);
+    expect(el('account-message').textContent).toContain('ann@example.com');
+  });
+
+  it('Enter in the code field signs in', async () => {
+    const verifyCode = jest.fn(async () => ({ user: ann }));
+    await askForCode(fakeClient({ verifyCode }));
+    const input = el<HTMLInputElement>('account-code');
+    input.value = '482913';
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    await flush();
+    expect(verifyCode).toHaveBeenCalledTimes(1);
+  });
+
+  it('a wrong code shows the reason and stays on the code form', async () => {
+    await askForCode(
+      fakeClient({ verifyCode: async () => ({ error: 'That code is not right.' }) }),
+    );
+    el<HTMLInputElement>('account-code').value = '000000';
+    el('account-code-btn').click();
+    await flush();
+    expect(el('account-message').textContent).toBe('That code is not right.');
+    expect(el('account-sent').hidden).toBe(false);
+    expect(el('hub-account-btn').textContent).toBe('Sign in');
+  });
+
+  it('an empty code asks for the code and sends nothing', async () => {
+    const verifyCode = jest.fn(async () => ({ user: ann }));
+    await askForCode(fakeClient({ verifyCode }));
+    el('account-code-btn').click();
+    await flush();
+    expect(verifyCode).not.toHaveBeenCalled();
+    expect(el('account-message').textContent).toContain('6-digit code');
   });
 
   it('shows the server error and stays on the form', async () => {

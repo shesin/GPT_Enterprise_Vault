@@ -3,19 +3,23 @@
  * Links are random, stored only as a hash, work once and expire after 15 minutes.
  * The reply to "send me a link" never says whether the address already has an account.
  */
-import { createHash, randomBytes, randomUUID } from 'crypto';
+import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'crypto';
 import type { AccountStore, BoardRating, User } from './AccountStore';
 import type { Mailer } from './Mailer';
 
 export const LINK_TTL_MS = 15 * 60_000;
 export const SESSION_TTL_MS = 30 * 24 * 3600_000;
 const MAX_SESSIONS_PER_USER = 10;
+/** Wrong guesses allowed per typed code (6 digits = 1 in a million per guess); the code is then void. */
+export const MAX_CODE_ATTEMPTS = 5;
 const MAX_NAME = 24;
 
 const EMAIL = /^[^\s@<>"',;:()[\]\\]+@[^\s@<>"',;:()[\]\\]+\.[^\s@<>"',;:()[\]\\]{2,}$/;
 
 export const sha = (s: string): string => createHash('sha256').update(s).digest('hex');
 const newToken = (): string => randomBytes(32).toString('base64url');
+const newCode = (): string => String(randomInt(0, 1_000_000)).padStart(6, '0');
+const codeHash = (email: string, code: string): string => sha(`${email}:${code}`);
 
 export function normalizeEmail(raw: unknown): string | undefined {
   if (typeof raw !== 'string') return undefined;
@@ -78,9 +82,17 @@ export class AuthService {
     recent.push(t);
     this.recentAsks.set(email, recent);
     const token = newToken();
+    const code = newCode();
+    // A new request replaces the e-mail's earlier code, so at most one code is guessable at a time.
     this.store.putLink(sha(token), { email, expiresAt: t + LINK_TTL_MS });
+    this.store.putCode(email, {
+      hash: codeHash(email, code),
+      linkHash: sha(token),
+      expiresAt: t + LINK_TTL_MS,
+      attempts: 0,
+    });
     try {
-      await this.mailer.sendLoginLink(email, `${this.publicUrl}/?login=${token}`);
+      await this.mailer.sendLoginLink(email, `${this.publicUrl}/?login=${token}`, code);
     } catch (e) {
       console.error('[auth] could not send login e-mail', e instanceof Error ? e.message : e);
       return { error: 'Could not send the e-mail. Try again later.', status: 502 };
@@ -95,8 +107,39 @@ export class AuthService {
     }
     const link = this.store.takeLink(sha(rawToken));
     if (!link || link.expiresAt <= this.now()) return undefined;
+    this.store.deleteCode(link.email); // the code in the same e-mail is spent with its link
     let user = this.store.findUserByEmail(link.email);
     if (!user) user = this.createUser(link.email, link.email.split('@')[0] ?? '');
+    return this.startSession(user);
+  }
+
+  /**
+   * Spends a typed 6-digit code (the Android app cannot open the e-mailed link).
+   * Every failure looks the same; a code dies after MAX_CODE_ATTEMPTS wrong guesses or when it expires.
+   */
+  verifyCode(
+    rawEmail: unknown,
+    rawCode: unknown,
+  ): { sessionToken: string; user: PublicUser } | undefined {
+    const email = normalizeEmail(rawEmail);
+    const code = typeof rawCode === 'string' ? rawCode.replace(/\s/g, '') : '';
+    if (!email || !/^\d{6}$/.test(code)) return undefined;
+    const rec = this.store.getCode(email);
+    if (!rec) return undefined;
+    if (rec.expiresAt <= this.now()) {
+      this.store.deleteCode(email);
+      return undefined;
+    }
+    const given = Buffer.from(codeHash(email, code), 'hex');
+    const want = Buffer.from(rec.hash, 'hex');
+    if (given.length !== want.length || !timingSafeEqual(given, want)) {
+      if (this.store.bumpCodeAttempts(email) >= MAX_CODE_ATTEMPTS) this.store.deleteCode(email);
+      return undefined;
+    }
+    this.store.deleteCode(email);
+    this.store.dropLink(rec.linkHash);
+    let user = this.store.findUserByEmail(email);
+    if (!user) user = this.createUser(email, email.split('@')[0] ?? '');
     return this.startSession(user);
   }
 

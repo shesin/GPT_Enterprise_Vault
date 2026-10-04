@@ -317,10 +317,6 @@ Owner: Shekhar (assets), Claude wires. Package ID decided: `com.smartbeadchess.a
 
 **Out of V1 Android scope — do not let these creep in:** haptics, offline match persistence, native WebView bridge.
 
-### B9. E-mail sign-in code for the app (Claude)
-
-The e-mailed link opens Chrome, not the app, so an in-app player needs a typed code beside the link. Security-sensitive: needs high effort. Google and Facebook sign-in stay off in the app for V1 (Google refuses embedded WebViews).
-
 ### B10. Play Billing for ad removal (Claude)
 
 Ad removal is a digital good: hide Razorpay inside the app, check a Play purchase token on the server, set the same `adsRemoved` flag. Needs the B8 payment profile. Not a V1 blocker (payment is off).

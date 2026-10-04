@@ -416,14 +416,16 @@ Play with a Friend (Online) — Create or join a room on another device. Coming 
       <div class="modal-badge">ACCOUNT</div>
       <h3 id="account-title" class="result-title">Your account</h3>
       <div id="account-signed-out" class="online-lobby-section">
-        <p>Type your e-mail address and we send you a link that signs you in. No password.</p>
+        <p>Type your e-mail address and we send you a 6-digit code and a sign-in link. No password.</p>
         <label>E-mail <input id="account-email" type="email" autocomplete="email" spellcheck="false" placeholder="you@example.com" style="text-transform:none;letter-spacing:normal;font-size:1rem;text-align:left"></label>
         <button type="button" id="account-send-btn" class="play-again-btn">Send me a sign-in link</button>
         <div id="account-google" hidden></div>
         <a id="account-facebook" class="result-view-board-btn" href="/api/auth/facebook/start" hidden>Continue with Facebook</a>
       </div>
       <div id="account-sent" class="online-lobby-section" hidden>
-        <p>We sent a sign-in link to <strong id="account-sent-to"></strong>. Open it on this device. It works once and expires in 15 minutes. Check your spam folder if it does not arrive.</p>
+        <p>We sent a 6-digit code and a sign-in link to <strong id="account-sent-to"></strong>. Type the code here, or open the link on this device. Each works once and expires in 15 minutes. Check your spam folder if it does not arrive.</p>
+        <label>6-digit code <input id="account-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="7" spellcheck="false" placeholder="123456" style="text-transform:none;letter-spacing:.2em;font-size:1.25rem;text-align:center"></label>
+        <button type="button" id="account-code-btn" class="play-again-btn">Sign in with the code</button>
       </div>
       <div id="account-signed-in" class="online-lobby-section" hidden>
         <p>Signed in as <strong id="account-who"></strong>.</p>

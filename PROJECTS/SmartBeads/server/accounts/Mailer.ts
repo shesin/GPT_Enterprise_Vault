@@ -6,12 +6,13 @@
 import nodemailer from 'nodemailer';
 
 export interface Mailer {
-  sendLoginLink(to: string, link: string): Promise<void>;
+  /** `code` is the 6-digit code typed in the app (the link opens in the browser, not in the Android app). */
+  sendLoginLink(to: string, link: string, code?: string): Promise<void>;
 }
 
 export class ConsoleMailer implements Mailer {
-  async sendLoginLink(to: string, link: string): Promise<void> {
-    console.log(`[mail] login link for ${to}: ${link}`);
+  async sendLoginLink(to: string, link: string, code?: string): Promise<void> {
+    console.log(`[mail] login link for ${to}: ${link}${code ? ` code: ${code}` : ''}`);
   }
 }
 
@@ -32,13 +33,15 @@ export class SmtpMailer implements Mailer {
     });
   }
 
-  async sendLoginLink(to: string, link: string): Promise<void> {
+  async sendLoginLink(to: string, link: string, code?: string): Promise<void> {
     await this.transport.sendMail({
       from: `Smart Bead Chess <${this.from}>`,
       to,
       subject: 'Your Smart Bead Chess sign-in link',
       text:
-        `Open this link to sign in to Smart Bead Chess. It works once and expires in 15 minutes.\n\n` +
+        (code
+          ? `Your Smart Bead Chess sign-in code: ${code}\nType it in the app. It works once and expires in 15 minutes.\n\nOr open this link in a browser instead:\n`
+          : `Open this link to sign in to Smart Bead Chess. It works once and expires in 15 minutes.\n\n`) +
         `${link}\n\nIf you did not ask for it, ignore this e-mail. Replies go to ${this.from}.`,
     });
   }

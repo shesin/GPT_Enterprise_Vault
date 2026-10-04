@@ -473,6 +473,7 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
     const body = (await readJson(req)) as {
       email?: unknown;
       token?: unknown;
+      code?: unknown;
       displayName?: unknown;
       credential?: unknown;
     };
@@ -506,9 +507,14 @@ export async function startApp(options: AppOptions = {}): Promise<RunningApp> {
     if (action === 'verify') {
       const wait = verifyLimiter.hit(clientAddress(req));
       if (wait) return tooMany(res, wait);
-      const done = auth.verifyLink(body.token);
+      const typed = body.code !== undefined;
+      const done = typed ? auth.verifyCode(body.email, body.code) : auth.verifyLink(body.token);
       if (!done)
-        return send(res, 400, { error: 'This sign-in link has expired or was already used.' });
+        return send(res, 400, {
+          error: typed
+            ? 'That code is not right or has expired. Ask for a new one.'
+            : 'This sign-in link has expired or was already used.',
+        });
       res
         .writeHead(200, {
           'content-type': 'application/json',

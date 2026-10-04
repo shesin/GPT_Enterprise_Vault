@@ -47,10 +47,23 @@ export interface LoginLinkRecord {
   expiresAt: number;
 }
 
+/** A typed sign-in code (B9): the same e-mail that carries the link carries a 6-digit code. */
+export interface LoginCodeRecord {
+  /** sha256 of "email:code" — never the code itself. */
+  hash: string;
+  /** Hash of the link sent in the same e-mail; spending the code also spends that link. */
+  linkHash: string;
+  expiresAt: number;
+  /** Wrong guesses so far; the code dies after too many. */
+  attempts: number;
+}
+
 interface Data {
   users: Record<string, User>;
   sessions: Record<string, SessionRecord>;
   links: Record<string, LoginLinkRecord>;
+  /** One live code per e-mail address (a new request replaces the old code). */
+  codes: Record<string, LoginCodeRecord>;
   orders: Record<string, OrderRecord>;
   /** When each pair of players finished rated games (limits rating farming between two accounts). */
   pairs: Record<string, number[]>;
@@ -62,6 +75,7 @@ export class AccountStore {
     users: {},
     sessions: {},
     links: {},
+    codes: {},
     orders: {},
     pairs: {},
     tournaments: {},
@@ -74,6 +88,7 @@ export class AccountStore {
         users: parsed.users ?? {},
         sessions: parsed.sessions ?? {},
         links: parsed.links ?? {},
+        codes: parsed.codes ?? {},
         orders: parsed.orders ?? {},
         pairs: parsed.pairs ?? {},
         tournaments: parsed.tournaments ?? {},
@@ -162,6 +177,39 @@ export class AccountStore {
     return link;
   }
 
+  putCode(email: string, code: LoginCodeRecord): void {
+    this.data.codes[email] = code;
+    this.save();
+  }
+
+  getCode(email: string): LoginCodeRecord | undefined {
+    return this.data.codes[email];
+  }
+
+  deleteCode(email: string): void {
+    if (this.data.codes[email]) {
+      delete this.data.codes[email];
+      this.save();
+    }
+  }
+
+  /** Counts a wrong guess; returns the new count. */
+  bumpCodeAttempts(email: string): number {
+    const c = this.data.codes[email];
+    if (!c) return 0;
+    c.attempts += 1;
+    this.save();
+    return c.attempts;
+  }
+
+  /** Removes a login link without using it (its code was spent instead). */
+  dropLink(hash: string): void {
+    if (this.data.links[hash]) {
+      delete this.data.links[hash];
+      this.save();
+    }
+  }
+
   putSession(hash: string, session: SessionRecord): void {
     this.data.sessions[hash] = session;
     this.save();
@@ -193,6 +241,12 @@ export class AccountStore {
     for (const [h, l] of Object.entries(this.data.links)) {
       if (l.expiresAt <= now) {
         delete this.data.links[h];
+        changed = true;
+      }
+    }
+    for (const [e, c] of Object.entries(this.data.codes)) {
+      if (c.expiresAt <= now) {
+        delete this.data.codes[e];
         changed = true;
       }
     }

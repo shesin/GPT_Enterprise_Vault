@@ -87,6 +87,17 @@ export class AccountClient {
       : { error: String(r.data.error ?? 'Sign-in failed.') };
   }
 
+  /** The 6-digit code from the e-mail (the Android app cannot open the e-mailed link). */
+  async verifyCode(
+    email: string,
+    code: string,
+  ): Promise<{ user: AccountUser } | { error: string }> {
+    const r = await this.post('/api/auth/verify', { email, code });
+    return r.ok
+      ? { user: r.data.user as AccountUser }
+      : { error: String(r.data.error ?? 'Sign-in failed.') };
+  }
+
   async google(credential: string): Promise<{ user: AccountUser } | { error: string }> {
     const r = await this.post('/api/auth/google', { credential });
     return r.ok

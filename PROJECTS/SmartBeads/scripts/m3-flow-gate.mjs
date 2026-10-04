@@ -75,22 +75,31 @@ async function startPvp(page, extra = {}) {
 }
 
 
+/** Output of the game server this gate started itself (the dev mailer prints sign-in codes there); empty when one was already running. */
+let serverOut = '';
+let serverIsOurs = false;
+
 /** Online play needs the game server; the Vite dev server proxies /api and /ws to it on port 3001. */
+const up = async () => {
+  try {
+    const r = await fetch('http://127.0.0.1:3001/api/nothing');
+    return r.status === 404;
+  } catch {
+    return false;
+  }
+};
+
 async function ensureGameServer() {
-  const up = async () => {
-    try {
-      const r = await fetch('http://127.0.0.1:3001/api/nothing');
-      return r.status === 404;
-    } catch {
-      return false;
-    }
-  };
   if (await up()) return null;
   const child = spawn('npx', ['tsx', 'PROJECTS/SmartBeads/server/main.ts'], {
     cwd: REPO_ROOT,
     shell: true,
     env: { ...process.env, PORT: '3001' },
-    stdio: 'ignore',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+  serverIsOurs = true;
+  child.stdout.on('data', (d) => {
+    serverOut += String(d);
   });
   for (let i = 0; i < 60; i++) {
     if (await up()) return child;
@@ -99,10 +108,12 @@ async function ensureGameServer() {
   throw new Error('game server did not start on port 3001');
 }
 
-function stopGameServer(child) {
+/** Stops the server this gate started and waits until port 3001 is free, so the next scenario cannot find a dying server. */
+async function stopGameServer(child) {
   if (!child) return;
   if (process.platform === 'win32') spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
   else child.kill();
+  for (let i = 0; i < 40 && (await up()); i++) await sleep(250);
 }
 
 async function main() {
@@ -297,6 +308,62 @@ async function main() {
       record('Phone landscape: board uses at least 80% of the height, no scrolling, all controls on screen (740x360, 667x375, 844x390)', problems.length === 0, problems.join('; '));
     }
 
+    // 1g. Typed sign-in code (B9): the e-mail carries a 6-digit code; the Android app has no way to open the link.
+    {
+      const gameServer = await ensureGameServer();
+      try {
+        if (!serverIsOurs) {
+          console.log('SKIP  Typed sign-in code: a game server was already running, so its mailed code cannot be read');
+        } else {
+          const email = `phone.${Date.now()}@example.com`;
+          const hubUrl = URL.replace(/[?&]play=1/, '');
+          const { ctx, page } = await open(browser, { viewport: { width: 375, height: 812 } });
+          await page.goto(hubUrl, { waitUntil: 'networkidle' });
+          await page.locator('#hub-account-btn').click();
+          await page.fill('#account-email', email);
+          await page.locator('#account-send-btn').click();
+          await page.waitForSelector('#account-code', { state: 'visible', timeout: 8000 });
+          // The dialog shows one section at a time: the class sets display:flex, which once beat the hidden attribute.
+          const shownNow = () =>
+            page.evaluate(() =>
+              ['account-signed-out', 'account-sent', 'account-signed-in'].filter(
+                (id) => getComputedStyle(document.getElementById(id)).display !== 'none',
+              ),
+            );
+          const shownOnCode = await shownNow();
+          let code = null;
+          for (let i = 0; i < 40 && !code; i++) {
+            const line = serverOut.split('\n').find((l) => l.includes(`login link for ${email}:`));
+            const m = line ? line.match(/code: (\d{6})/) : null;
+            if (m) code = m[1];
+            else await sleep(250);
+          }
+          const wrong = code === '000000' ? '111111' : '000000';
+          await page.fill('#account-code', wrong);
+          await page.locator('#account-code-btn').click();
+          await page.waitForFunction(() => document.getElementById('account-message').textContent.length > 0, null, { timeout: 5000 }).catch(() => {});
+          const wrongMsg = await page.locator('#account-message').textContent();
+          const stillOut = (await page.locator('#hub-account-btn').textContent()) === 'Sign in';
+          await page.fill('#account-code', code ?? '');
+          await page.locator('#account-code-btn').click();
+          const name = email.split('@')[0];
+          const signedIn = await waitFor(page, (n) => document.getElementById('hub-account-btn').textContent === n, name, 6000);
+          const shownSignedIn = await shownNow();
+          const me = await page.evaluate(async () => (await fetch('/api/auth/me')).json());
+          await page.reload({ waitUntil: 'networkidle' });
+          const afterReload = await waitFor(page, (n) => document.getElementById('hub-account-btn').textContent === n, name, 6000);
+          record(
+            'Typed sign-in code: wrong code refused, right code signs in, still signed in after reload',
+            !!code && stillOut && /code/i.test(wrongMsg ?? '') && signedIn && me.user?.email === email && afterReload && shownOnCode.join() === 'account-sent' && shownSignedIn.join() === 'account-signed-in',
+            `code=${!!code} wrongMsg="${wrongMsg}" stillOut=${stillOut} signedIn=${signedIn} me=${me.user?.email} afterReload=${afterReload} visibleOnCode=${shownOnCode} visibleSignedIn=${shownSignedIn}`,
+          );
+          await ctx.close();
+        }
+      } finally {
+        await stopGameServer(gameServer);
+      }
+    }
+
     // 1f. Online play (A4/A9): two real browsers play one game through the server, with resignation.
     {
       const gameServer = await ensureGameServer();
@@ -392,7 +459,7 @@ async function main() {
         await b.ctx.close();
         }
       } finally {
-        stopGameServer(gameServer);
+        await stopGameServer(gameServer);
       }
     }
 

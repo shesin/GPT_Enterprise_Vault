@@ -45,6 +45,9 @@ async function ensureVite() {
     stdio: 'pipe',
     windowsHide: true,
   });
+  // Nobody reads Vite's output; an unread pipe fills up (its proxy errors are chatty) and then Vite stops answering.
+  child.stdout.resume();
+  child.stderr.resume();
   for (let i = 0; i < 60; i++) {
     await sleep(250);
     if (await isUp()) return child;

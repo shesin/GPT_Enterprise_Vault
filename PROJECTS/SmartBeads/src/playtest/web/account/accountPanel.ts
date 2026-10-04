@@ -44,6 +44,8 @@ export function wireAccountPanel(client: AccountClient = new AccountClient()): {
   const closeBtn = byId<HTMLButtonElement>('account-close-btn');
   const msg = byId('account-message');
   const sentTo = byId('account-sent-to');
+  const codeInput = byId<HTMLInputElement>('account-code');
+  const codeBtn = byId<HTMLButtonElement>('account-code-btn');
   const who = byId('account-who');
   const googleHost = byId('account-google');
   const facebookLink = byId('account-facebook');
@@ -75,6 +77,7 @@ export function wireAccountPanel(client: AccountClient = new AccountClient()): {
   }
 
   let user: AccountUser | null = null;
+  let pendingEmail = ''; // the address the code was asked for
   let available = true;
   let googleStarted = false;
   let price: number | null = null; // paise, when the server sells ad removal
@@ -167,8 +170,33 @@ export function wireAccountPanel(client: AccountClient = new AccountClient()): {
       return;
     }
     sentTo.textContent = email;
+    pendingEmail = email;
+    if (codeInput) codeInput.value = '';
     show('sent');
+    codeInput?.focus();
   };
+  const sendCode = async (): Promise<void> => {
+    const code = codeInput?.value.trim() ?? '';
+    if (!code) {
+      setMessage('Type the 6-digit code from the e-mail.');
+      return;
+    }
+    setMessage('');
+    codeBtn!.disabled = true;
+    const r = await client.verifyCode(pendingEmail, code);
+    codeBtn!.disabled = false;
+    if ('error' in r) {
+      setMessage(r.error);
+      return;
+    }
+    user = r.user;
+    render();
+    setMessage(`Signed in as ${r.user.email}.`);
+  };
+  codeBtn?.addEventListener('click', () => void sendCode());
+  codeInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') void sendCode();
+  });
   sendBtn.addEventListener('click', () => void send());
   emailInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') void send();
