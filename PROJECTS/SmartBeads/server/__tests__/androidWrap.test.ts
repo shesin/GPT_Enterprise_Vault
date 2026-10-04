@@ -18,11 +18,21 @@ describe('Android wrap', () => {
   it('loads the hosted https site by default and only allows cleartext for an http dev URL', () => {
     const cfg = read('capacitor.config.ts');
     expect(cfg).toContain("process.env.SB_APP_URL ?? 'https://smartbeadchess.com'");
-    expect(cfg).toContain("cleartext: (process.env.SB_APP_URL ?? '').startsWith('http://')");
+    expect(cfg).toContain("cleartext: appUrl.startsWith('http://')");
+    expect(cfg).toContain('allowNavigation: [new URL(appUrl).host]');
     expect(cfg).toContain("errorPath: 'offline.html'");
-    expect(fs.existsSync(path.join(ROOT, 'PROJECTS/SmartBeads/android-shell/offline.html'))).toBe(
-      true,
+    const tpl = read('PROJECTS/SmartBeads/android-shell/offline.template.html');
+    // Capacitor serves only offline.html from https://localhost, so the page must be self-contained and know the site URL.
+    expect(tpl).toContain('location.href=__APP_URL__');
+    expect(tpl).not.toContain('getServerUrl'); // not defined in the page; Try again then opened Chrome
+    expect(tpl).not.toMatch(/<script[^>]+src=/);
+    expect(read('PROJECTS/SmartBeads/scripts/android-build.mjs')).toContain(
+      "replace('__APP_URL__'",
     );
+    expect(read('capacitor.config.ts')).toContain(
+      "webDir: 'PROJECTS/SmartBeads/android-shell/www'",
+    );
+    expect(read('.gitignore')).toContain('android-shell/www/');
   });
 
   it('ignores keystores, build outputs and signing properties', () => {

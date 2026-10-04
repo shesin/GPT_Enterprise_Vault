@@ -73,6 +73,7 @@ const BATCHES = [
       'PROJECTS/SmartBeads/server/__tests__/ratings.test.ts',
       'PROJECTS/SmartBeads/server/__tests__/tournament.test.ts',
       'PROJECTS/SmartBeads/server/__tests__/tournament.http.test.ts',
+      'PROJECTS/SmartBeads/server/__tests__/androidWrap.test.ts',
       'PROJECTS/SmartBeads/src/playtest/web/online/__tests__/online.test.ts',
     ],
   },

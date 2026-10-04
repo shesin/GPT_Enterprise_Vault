@@ -331,7 +331,7 @@ On 2026-10-03 `smartbeadchess.com/assets/main-*.js` and `.css` returned 404, so 
 
 ### B12. Emulator checks still UNCONFIRMED (Claude)
 
-"Try again" on the offline screen, the Android back button, and a run against the real hosted site once B11 is fixed.
+Confirmed 2026-10-04 (log Run 4): the offline screen, "Try again", and the back button on the start page. Still open: the back button during a game (it leaves the app), and a run against the real hosted site once B11 is fixed.
 
 ## Shekhar task — 
 

@@ -83,3 +83,14 @@ Moved here from PENDING (zero net loss): **B1** "Install Capacitor + Android pla
 **Three risks (Shekhar's brief), checked against the code:** (1) sessions: confirmed, cookie `SameSite=Lax` and relative `/api`, `/ws` calls; solved by `server.url`. (2) payment: Razorpay calls exist only on the web path; Play Billing is PENDING B10. (3) Google sign-in: web credential flow, off in the app; Facebook and the e-mail link leave the app, so PENDING B9 (typed code).
 
 **Build commands (Windows):** `npm run android:debug` (APK; `SB_APP_URL=http://10.0.2.2:3001` points the emulator at a local server started with `STATIC_DIR=dist PORT=3001 npm run server`), `npm run android:release` (signed AAB).
+
+**Run 4 addendum, 2026-10-04 (B12 emulator checks):**
+
+| Item | Result | Evidence |
+|---|---|---|
+| Offline screen | CONFIRMED | server stopped, app launched in the emulator: the "No connection" page appears (about 2 minutes on the slow emulator; a phone without network fails faster) |
+| Try again | FOUND and FIXED | it opened Chrome: the page runs from https://localhost, `Capacitor.getServerUrl()` is not defined there, so it navigated to `/` and Capacitor sent that to the system browser. Also, with `server.url` Capacitor serves only `offline.html` from https://localhost (an external `app-url.js` is refused, ERR_CONNECTION_REFUSED). Fix: `offline.template.html` is self-contained; `android-build.mjs` writes the site URL into `android-shell/www/offline.html` (generated, ignored); `allowNavigation` lists the site host. After the fix: server stopped -> offline page -> server started -> Try again -> the start page loads inside the app, still signed in as the earlier test player (the cookie survived an app restart). Guard: `androidWrap.test.ts`; mutations (back to `getServerUrl`, a `<script src>` added) each fail one test; restored -> 7 pass |
+| Back button on the start page | CONFIRMED | leaves the app to the launcher; the app starts again normally |
+| Back button during a game | UNCONFIRMED | not tested; PENDING B12 |
+
+| CI on c7d7fff | FAILED, fixed locally, UNCONFIRMED until the next run | GitHub job typecheck-and-test failed at "npm run test:jest:fast" (typecheck, format and lint passed). Likely cause: the runner audit "test files not in any batch" (run-jest-batched.mjs line 287) because androidWrap.test.ts was not listed. Fix: listed in the online-server batch; locally all 5 fast batches PASS (the 5 batches that the fast run covers). Not pushed yet, so GitHub still shows red |

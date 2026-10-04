@@ -44,6 +44,14 @@ if (!jdk) {
 const sdk = process.env.ANDROID_HOME ?? path.join(process.env.LOCALAPPDATA ?? os.homedir(), 'Android', 'Sdk');
 fs.writeFileSync(path.join(androidDir, 'local.properties'), `sdk.dir=${sdk.split(path.sep).join('/')}\n`);
 
+// Offline page (shown when the site cannot load). Capacitor serves only this one file from https://localhost, so it must be self-contained:
+// the site URL for the Try again button is written into it here.
+const shell = path.join(root, 'PROJECTS', 'SmartBeads', 'android-shell');
+const page = fs.readFileSync(path.join(shell, 'offline.template.html'), 'utf8').replace('__APP_URL__', JSON.stringify(url));
+fs.mkdirSync(path.join(shell, 'www'), { recursive: true });
+fs.writeFileSync(path.join(shell, 'www', 'offline.html'), page);
+fs.writeFileSync(path.join(shell, 'www', 'index.html'), page);
+
 const env = { ...process.env, JAVA_HOME: jdk, SB_APP_URL: url };
 const run = (cmd, args, cwd) => {
   const r = spawnSync(cmd, args, { cwd, env, stdio: 'inherit', shell: true });
